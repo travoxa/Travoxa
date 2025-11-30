@@ -46,8 +46,9 @@ export default function Header() {
   return (
     <>
       {/* MAIN NAVBAR */}
-      <header className="w-full bg-white shadow-sm relative z-50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
+      <header className="w-screen  bg-transparent  relative z-50 ">
+        <div className="mt-[24px] custom-shadow backdrop-blur-sm border-[0.5] border-white  w-[80vw] rounded-[40px] mx-auto relative flex items-center justify-between px-4 pr-5 py-3">
+          
 
           {/* LOGO */}
           <div className="flex items-center">
@@ -86,9 +87,9 @@ export default function Header() {
           </nav>
 
           {/* RIGHT SECTION (DESKTOP) */}
-          <div className="hidden lg:flex items-center gap-6">
-            <FiSearch size={20} className="text-gray-800 cursor-pointer" />
-            <div className="w-10 h-10 rounded-full bg-gray-200 shadow-md cursor-pointer"></div>
+          <div className="hidden lg:flex items-center gap-6 text-black text-[14px] bg-white rounded-[30px] px-[24px] py-[12px]">
+            LOGIN
+            
           </div>
 
           {/* MOBILE BUTTON */}
@@ -110,7 +111,7 @@ export default function Header() {
         {/* MOBILE HEADER */}
         <div className="flex items-center justify-between px-4 py-4 border-b">
           <Image
-            src="/travoxa-logo.png"
+            src="/logo.png"
             alt="Travoxa"
             width={110}
             height={35}

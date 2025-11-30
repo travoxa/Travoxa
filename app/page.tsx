@@ -2,7 +2,7 @@ import Index from "./Index";
 
 export default function Home() {
   return (
-    <div>
+    <div className="bg-dots-svg" >
       <Index />
     </div>
   );
