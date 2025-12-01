@@ -1,4 +1,5 @@
 import AboutUsQuote from '@/components/Pages/Home/AboutUsQuote'
+import Choose from '@/components/Pages/Home/Choose'
 import Destinations from '@/components/Pages/Home/Destinations'
 import Hero from '@/components/Pages/Home/Hero'
 import Header from '@/components/ui/Header'
@@ -14,6 +15,7 @@ const Index = () => {
         <HomeFilterSearch />
         <AboutUsQuote />
         <Destinations />
+        <Choose />
         <div className='mt-[50vh]'></div>
     </div>
   )
