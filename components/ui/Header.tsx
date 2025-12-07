@@ -1,47 +1,102 @@
 "use client";
 
 import { useState } from "react";
-import { FiSearch, FiMenu, FiX, FiChevronDown } from "react-icons/fi";
+import { FiMenu, FiX, FiChevronDown } from "react-icons/fi";
 import Image from "next/image";
+import { route } from "@/lib/route";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
+  type DropdownItem = {
+    label: string;
+    path: string;
+  };
+
+  type MenuItem = {
+    label: string;
+    path?: string;
+    dropdown: DropdownItem[];
+  };
+
   const toggleDropdown = (menu: string) => {
     setOpenDropdown(openDropdown === menu ? null : menu);
   };
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     {
       label: "Home",
+      path: "/",
       dropdown: [],
     },
     {
       label: "Tour",
-      dropdown: ["Solo Tours", "Couple Tours", "Family Tours", "Friends Group Tours"], // No items given
+      path: "/tours",
+      dropdown: [
+        { label: "Solo Tours", path: "/tours/solo" },
+        { label: "Couple Tours", path: "/tours/couple" },
+        { label: "Family Tours", path: "/tours/family" },
+        { label: "Friends Group Tours", path: "/tours/groups" },
+      ],
     },
     {
       label: "Travoxa Ai",
-      dropdown: ["Ai Trip", "Mystery Trip", "Nearby Explorer", "Local Connect"],
+      path: "/travoxa-ai",
+      dropdown: [
+        { label: "Ai Trip", path: "/travoxa-ai/ai-trip" },
+        { label: "Mystery Trip", path: "/travoxa-ai/mystery-trip" },
+        { label: "Nearby Explorer", path: "/travoxa-ai/nearby-explorer" },
+        { label: "Local Connect", path: "/travoxa-ai/local-connect" },
+      ],
     },
     {
       label: "Backpackers",
-      dropdown: ["Create Group", "Join Group"],
+      path: "/backpackers",
+      dropdown: [
+        { label: "Create Group", path: "/backpackers/create" },
+        { label: "Join Group", path: "/backpackers/join" },
+      ],
     },
     {
       label: "Pages",
-      dropdown: ["About Us", "Team Member", "Gallery", "Terms & Conditions", "Help Center"],
+      path: "/pages",
+      dropdown: [
+        { label: "About Us", path: "/about" },
+        { label: "Team Member", path: "/team" },
+        { label: "Gallery", path: "/gallery" },
+        { label: "Terms & Conditions", path: "/terms" },
+        { label: "Help Center", path: "/help-center" },
+      ],
     },
     {
       label: "Dashboard",
-      dropdown: ["Dashboard", "My Booking", "My Listing", "Add Tour", "My Favorites", "My Profile"],
+      path: "/dashboard",
+      dropdown: [
+        { label: "Dashboard", path: "/dashboard" },
+        { label: "My Booking", path: "/dashboard/bookings" },
+        { label: "My Listing", path: "/dashboard/listings" },
+        { label: "Add Tour", path: "/dashboard/tours/new" },
+        { label: "My Favorites", path: "/dashboard/favorites" },
+        { label: "My Profile", path: "/dashboard/profile" },
+      ],
     },
     {
       label: "Nestloop",
-      dropdown: [], // nothing
+      path: "/contact",
+      dropdown: [],
     },
   ];
+
+  const navigateTo = (path?: string) => {
+    if (!path) return;
+    route(path);
+    setMobileOpen(false);
+  };
+
+  const routeTo = (path:string) => {
+    route(path)
+  }
 
   return (
     <>
@@ -51,34 +106,40 @@ export default function Header() {
           
 
           {/* LOGO */}
-          <div className="flex items-center">
+          <button onClick={() => routeTo('/')} className="flex items-center">
             <Image
               src="/logo.png"
               alt="Travoxa"
               width={130}
               height={40}
             />
-          </div>
+          </button>
 
           {/* DESKTOP MENU */}
           <nav className="hidden lg:flex items-center gap-8">
-            {menuItems.map((item, index) => (
-              <div key={index} className="relative group">
-                <div className="flex items-center gap-1 text-[15px] font-medium text-gray-900 cursor-pointer group-hover:text-green-600">
+            {menuItems.map((item) => (
+              <div key={item.label} className="relative group">
+                <button
+                  type="button"
+                  onClick={() => navigateTo(item.path)}
+                  className="flex items-center gap-1 text-[15px] font-medium text-gray-900 cursor-pointer group-hover:text-green-600 focus:outline-none"
+                >
                   {item.label}
                   {item.dropdown.length > 0 && <FiChevronDown size={16} />}
-                </div>
+                </button>
 
                 {/* DROPDOWN DESKTOP */}
                 {item.dropdown.length > 0 && (
                   <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all duration-200">
-                    {item.dropdown.map((sub, subIndex) => (
-                      <div
-                        key={subIndex}
-                        className="px-4 py-2 text-sm text-gray-800 hover:bg-green-50 cursor-pointer"
+                    {item.dropdown.map((sub) => (
+                      <button
+                        key={sub.label}
+                        type="button"
+                        onClick={() => navigateTo(sub.path)}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-green-50"
                       >
-                        {sub}
-                      </div>
+                        {sub.label}
+                      </button>
                     ))}
                   </div>
                 )}
@@ -123,27 +184,38 @@ export default function Header() {
 
         {/* MOBILE MENU */}
         <nav className="flex flex-col px-4 py-4 gap-2">
-          {menuItems.map((item, index) => (
-            <div key={index}>
+          {menuItems.map((item) => (
+            <div key={item.label}>
               {/* MAIN ITEM */}
-              <div
-                className="flex items-center justify-between py-3 text-lg font-medium border-b text-gray-900 cursor-pointer"
-                onClick={() => toggleDropdown(item.label)}
+              <button
+                type="button"
+                className="flex items-center justify-between w-full py-3 text-lg font-medium border-b text-gray-900"
+                onClick={() =>
+                  item.dropdown.length > 0
+                    ? toggleDropdown(item.label)
+                    : navigateTo(item.path)
+                }
               >
-                {item.label}
-                {item.dropdown.length > 0 && <FiChevronDown className={`${openDropdown === item.label ? "rotate-180" : ""} transition-transform`} />}
-              </div>
+                <span>{item.label}</span>
+                {item.dropdown.length > 0 && (
+                  <FiChevronDown
+                    className={`${openDropdown === item.label ? "rotate-180" : ""} transition-transform`}
+                  />
+                )}
+              </button>
 
               {/* MOBILE DROPDOWN */}
               {openDropdown === item.label && item.dropdown.length > 0 && (
                 <div className="ml-3 flex flex-col gap-2 py-2">
-                  {item.dropdown.map((sub, subIndex) => (
-                    <div
-                      key={subIndex}
-                      className="py-2 text-gray-700 border-b cursor-pointer"
+                  {item.dropdown.map((sub) => (
+                    <button
+                      key={sub.label}
+                      type="button"
+                      className="py-2 text-left text-gray-700 border-b"
+                      onClick={() => navigateTo(sub.path)}
                     >
-                      {sub}
-                    </div>
+                      {sub.label}
+                    </button>
                   ))}
                 </div>
               )}
