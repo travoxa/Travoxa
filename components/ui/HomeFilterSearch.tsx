@@ -10,7 +10,7 @@ export default function HomeFilterSearch() {
   const [guests] = useState(0);
 
   return (
-    <div className="w-full mt-[-15vh] px-4 md:px-0 flex justify-center ">
+    <div className="w-full mt-[-15vh] px-4 md:px-0 hidden lg:flex justify-center ">
       <div className="bg-white shadow-md rounded-xl p-5 w-[95vw] flex items-center gap-6 overflow-x-auto">
 
         {/* Destination */}

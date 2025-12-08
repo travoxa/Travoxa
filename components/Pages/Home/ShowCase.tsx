@@ -5,9 +5,30 @@ const ShowCase = () => {
   return (
     <div className='mx-[24px] mt-[48px]' >
         <div>
-            <p className='text-[48px] font-medium ' >Experiences that speak louder than words.</p>
+            <p className='leading-[48px] lg:leading-normal text-[48px] font-medium ' >Experiences that speak louder than words.</p>
         </div>
-        <div className='flex gap-[12px]' >
+
+       
+            
+        {/* Left small column */}
+        <div className="mt-4 lg:hidden flex flex-col gap-4 w-full sm:w-[50%]">
+            <div className="flex gap-4">
+            <div className="flex flex-col gap-4 w-[50%]">
+                <Image src="/showcase/showcase_3.jpg" className="h-[150px] w-full object-cover rounded-[12px]" width={1000} height={1000} alt="" />
+                <Image src="/showcase/showcase_3.jpg" className="h-[150px] w-full object-cover rounded-[12px]" width={1000} height={1000} alt="" />
+            </div>
+            <Image src="/showcase/showcase_3.jpg" className="h-[310px] w-[50%] object-cover rounded-[12px]" width={1000} height={1000} alt="" />
+            </div>
+        </div>
+
+        {/* Left top right large image */}
+        <div className="lg:hidden w-full mt-4">
+            <Image src="/showcase/showcase_3.jpg" className="h-[310px] w-full object-cover rounded-[12px]" width={1000} height={1000} alt="" />
+        </div>
+
+            
+
+        <div className='hidden mt-[24px] lg:mt-0 lg:flex gap-[12px]' >
             <div className='flex flex-col gap-[12px] w-[60%]' >
                 {/* left main container */}
                 <div className='flex gap-[12px]' >
@@ -44,7 +65,7 @@ const ShowCase = () => {
                 </div>
             </div>
         </div>
-        <div className='flex gap-[12px] mt-[12px]' >
+        <div className='hidden lg:flex gap-[12px] mt-[12px]' >
 
             {/* RIGHT SIDE becomes LEFT in reverse */}
             <div className='flex flex-col gap-[12px] w-[40%]' >
