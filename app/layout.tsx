@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Providers } from './providers'
 import "./globals.css";
 
 
@@ -19,7 +19,7 @@ export default function RootLayout({
       <body
         
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

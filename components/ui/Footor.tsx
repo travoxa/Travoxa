@@ -5,25 +5,29 @@ import { LiaCopyrightSolid } from "react-icons/lia";
 
 const Footor = () => {
   return (
-    <div className='m-[24px] bg-black text-white rounded-[12px] pt-[48px] pb-[48px]' >
-        <div className='px-[48px]' >
-            <p className='text-[36px] ' >Let Travoxa be your guide to the soul of India. From peaceful escapes to breathtaking adventures, we craft journeys that touch the heart and stay with you forever.</p>
+    <div className='m-[24px] bg-black text-white rounded-[12px] pt-[24px] lg:pt-[48px] pb-[24px] lg:pb-[48px]' >
+        <div className='px-[24px] lg:px-[48px]' >
+            <p className='text-[18px] lg:text-[36px] ' >Let Travoxa be your guide to the soul of India. From peaceful escapes to breathtaking adventures, we craft journeys that touch the heart and stay with you forever.</p>
             
-            <div className='flex mt-[12px] items-center gap-[24px]'  >
-                <ForwordButton text={"repare your Adventure Tody! "} border />
-                <FaInstagram color='white' size={36} className='ml-[48px]' />
-                <FaTwitter color='white' size={36} />
-                <FaFacebook color='white' size={36} />
+            <div className='block lg:flex mt-[12px] items-center gap-[24px]'  >
+                <ForwordButton text={"Prepare your Adventure Tody! "} border />
+                <div className='flex items-center gap-[24px] justify-center mt-[24px] lg:mt-0' >
+                  <FaInstagram color='white' size={36} className='lg:ml-[48px]' />
+                  <FaTwitter color='white' size={36} />
+                  <FaFacebook color='white' size={36} />
+                </div>
 
-                <button className='text-white text-[24px] ml-[48px] font-light' >Help Center</button>
-                <button className='text-white text-[24px]  font-light' >Term of Use</button>
-                <button className='text-white text-[24px]  font-light' >Support</button>
-                <button className='text-white text-[24px]  font-light' >Privacy Policy</button>
+                <div className='mt-[24px] lg:mt-0 flex flex-col lg:flex-row justify-center items-center gap-[12px] lg:gap-[24px]' >
+                  <button className='text-white text-[24px] lg:ml-[48px] font-light' >Help Center</button>
+                  <button className='text-white text-[24px]  font-light' >Term of Use</button>
+                  <button className='text-white text-[24px]  font-light' >Support</button>
+                  <button className='text-white text-[24px]  font-light' >Privacy Policy</button>
+                </div>
             </div>
         </div>
         <div className='text-center flex flex-1 justify-center items-center flex-col mt-[48px]' >
             <p className='text-center flex items-center gap-[12px] font-light' ><LiaCopyrightSolid color='white' />2025 Travoxa. All Rights Reserved.</p>
-            <p className='Mont mt-[36px] text-[16vw] leading-[15vh] tracking-[1vw] font-extrabold ' >TRAVOXA</p>
+            <p className='Mont mt-0 lg:mt-[36px] text-[14vw] lg:text-[16vw] leading-[15vh] tracking-[1vw] font-extrabold ' >TRAVOXA</p>
         </div>
     </div>
   )

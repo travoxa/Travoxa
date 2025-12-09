@@ -4,8 +4,12 @@ import { useState } from "react";
 import { FiMenu, FiX, FiChevronDown } from "react-icons/fi";
 import Image from "next/image";
 import { route } from "@/lib/route";
+import { signOut, useSession } from "next-auth/react";
 
 export default function Header() {
+
+  const { data: session } = useSession()
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -69,18 +73,18 @@ export default function Header() {
         { label: "Help Center", path: "/help-center" },
       ],
     },
-    {
-      label: "Dashboard",
-      path: "/dashboard",
-      dropdown: [
-        { label: "Dashboard", path: "/dashboard" },
-        { label: "My Booking", path: "/dashboard/bookings" },
-        { label: "My Listing", path: "/dashboard/listings" },
-        { label: "Add Tour", path: "/dashboard/tours/new" },
-        { label: "My Favorites", path: "/dashboard/favorites" },
-        { label: "My Profile", path: "/dashboard/profile" },
-      ],
-    },
+    // {
+    //   label: "Dashboard",
+    //   path: "/dashboard",
+    //   dropdown: [
+    //     { label: "Dashboard", path: "/dashboard" },
+    //     { label: "My Booking", path: "/dashboard/bookings" },
+    //     { label: "My Listing", path: "/dashboard/listings" },
+    //     { label: "Add Tour", path: "/dashboard/tours/new" },
+    //     { label: "My Favorites", path: "/dashboard/favorites" },
+    //     { label: "My Profile", path: "/dashboard/profile" },
+    //   ],
+    // },
     {
       label: "Nestloop",
       path: "/contact",
@@ -97,6 +101,8 @@ export default function Header() {
   const routeTo = (path:string) => {
     route(path)
   }
+
+
 
   return (
     <>
@@ -148,10 +154,21 @@ export default function Header() {
           </nav>
 
           {/* RIGHT SECTION (DESKTOP) */}
-          <div className="hidden lg:flex items-center gap-6 text-black text-[14px] bg-white rounded-[30px] px-[24px] py-[12px]">
-            LOGIN
+          {!session?.user?.email ? 
+            <button
             
-          </div>
+            onClick={()=>routeTo('/login')}
+            
+            className="hidden lg:flex items-center gap-6 text-black text-[14px] bg-white rounded-[30px] px-[24px] py-[12px]">
+              LOGIN
+            </button>
+           : <button
+            
+            onClick={()=>signOut()}
+            
+            className="hidden lg:flex items-center gap-6 text-black text-[14px] bg-white rounded-[30px] px-[24px] py-[12px]">
+              DASHBOARD
+            </button>}
 
           {/* MOBILE BUTTON */}
           <button
@@ -217,10 +234,28 @@ export default function Header() {
                       {sub.label}
                     </button>
                   ))}
+                  
                 </div>
               )}
             </div>
           ))}
+
+          {!session?.user?.email ? 
+              <button
+              
+                onClick={()=>routeTo('/login')}
+                
+                className="flex items-center gap-6 text-white text-[14px] bg-black rounded-[30px] px-[24px] py-[12px]">
+                  LOGIN
+              </button>
+              :<button
+              
+                onClick={()=>signOut()}
+                
+                className="flex items-center gap-6 text-white text-[14px] bg-black rounded-[30px] px-[24px] py-[12px]">
+                  DASHBOARD
+              </button>
+            }
         </nav>
       </div>
 

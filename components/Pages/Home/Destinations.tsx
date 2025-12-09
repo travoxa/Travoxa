@@ -22,11 +22,11 @@ const Destinations = () => {
   return (
     <div className='mx-[12px] py-[5vh] border-[0.5px] border-black rounded-[12px] bg-white' >
         <div className='flex flex-col justify-center items-center ' >
-            <p className='text-[30px] Inter font-normal' >Visit Best Destinations in India with <span className="text-[#4da528]" >TRAVOXA</span></p>
-            <button className='mt-[24px] font-light flex justify-center items-center gap-[10px] ' > See all Destinations <div className="p-[8px] bg-black rounded-full" ><HiArrowRight color="white"  /></div></button>
+            <p className='text-center text-[20px]  lg:text-[30px] Inter font-normal' >Visit Best Destinations in India with <span className="text-[#4da528]" >TRAVOXA</span></p>
+            <button className='mt-[24px] text-[10px] lg:text-[18px] font-light flex justify-center items-center gap-[10px] ' > See all Destinations <div className="p-[8px] bg-black rounded-full" ><HiArrowRight color="white"  /></div></button>
         </div>
 
-        <div className="w-full overflow-hidden py-20 relative">
+        <div className="w-full overflow-hidden py-[24px] lg:py-20 relative">
           <div className="flex animate-scroll-horizontal">
             {doubled.map((item, index) => (
               <Card
