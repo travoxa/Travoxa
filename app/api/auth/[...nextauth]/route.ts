@@ -2,7 +2,8 @@ import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { signInWithEmailAndPassword } from "firebase/auth"
-import { auth } from "@/lib/firebaseAuth"
+import { getFirebaseAuth } from "@/lib/firebaseAuth"
+
 const handler = NextAuth({
   providers: [
     GoogleProvider({
@@ -21,6 +22,14 @@ const handler = NextAuth({
         }
 
         try {
+          const auth = getFirebaseAuth();
+          
+          // Check if auth is available
+          if (!auth) {
+            console.error("Firebase Auth is not available");
+            return null;
+          }
+
           // Sign in with Firebase Auth
           const userCredential = await signInWithEmailAndPassword(
             auth,

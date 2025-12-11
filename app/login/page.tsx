@@ -1,9 +1,9 @@
 'use client'
-import { useState,useEffect } from "react"
+import { useState, useEffect } from "react"
 import { signIn, signOut, useSession } from "next-auth/react"
 import { createUserWithEmailAndPassword, updateProfile, fetchSignInMethodsForEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
-import { auth } from "@/lib/firebaseAuth";
+import { getFirebaseAuth } from "@/lib/firebaseAuth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebaseConfig";
 import Loading from "@/components/ui/components/Loading";
@@ -25,6 +25,13 @@ export default function LoginButton() {
 
   // Create account with Firebase Auth
   const createAccount = async () => {
+    const auth = getFirebaseAuth();
+    
+    if (!auth) {
+      setErrorMsg("Authentication service is not available");
+      return;
+    }
+
     // Validation
     if (!firstName) {
       setErrorMsg("Enter First name");
@@ -122,6 +129,13 @@ export default function LoginButton() {
 
   // Login with Firebase Auth via NextAuth
   const emailLogin = async () => {
+    const auth = getFirebaseAuth();
+    
+    if (!auth) {
+      setErrorMsg("Authentication service is not available");
+      return;
+    }
+
     if (!email) {
       setErrorMsg("Enter email");
       return;

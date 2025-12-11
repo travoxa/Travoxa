@@ -1,24 +1,32 @@
 'use client';
 
 import { getAuth, Auth } from "firebase/auth";
-import { getApps } from "firebase/app";
+import { getApps, getApp, initializeApp } from "firebase/app";
 
-let authInstance: Auth | undefined;
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
 
-export const getFirebaseAuth = (): Auth => {
+let authInstance: Auth | null = null;
+
+export const getFirebaseAuth = (): Auth | null => {
   if (typeof window === 'undefined') {
-    throw new Error("Firebase Auth can only be used on the client side");
+    return null;
   }
   
   if (!authInstance) {
-    const apps = getApps();
-    if (apps.length === 0) {
-      throw new Error("Firebase app not initialized");
-    }
-    authInstance = getAuth(apps[0]);
+    // Initialize app if not already initialized
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    authInstance = getAuth(app);
   }
   
   return authInstance;
 };
 
-export const auth = typeof window !== 'undefined' ? getFirebaseAuth() : undefined as any;
+// Export for backwards compatibility
+export const auth = typeof window !== 'undefined' ? getFirebaseAuth() : null;
