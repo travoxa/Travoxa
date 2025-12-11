@@ -5,6 +5,8 @@ import { FiMenu, FiX, FiChevronDown } from "react-icons/fi";
 import Image from "next/image";
 import { route } from "@/lib/route";
 import { signOut, useSession } from "next-auth/react";
+import { signOut as firebaseSignOut } from "firebase/auth";
+import { getFirebaseAuth } from "@/lib/firebaseAuth";
 
 export default function Header() {
 
@@ -102,6 +104,26 @@ export default function Header() {
     route(path)
   }
 
+  // Handle sign out for both NextAuth and Firebase Auth
+  const handleSignOut = async () => {
+    try {
+      const firebaseAuth = getFirebaseAuth();
+      if (!firebaseAuth) {
+        console.warn("Firebase Auth not initialized; skipping Firebase sign-out.");
+      } else {
+        // Sign out from Firebase Auth (for email/password users)
+        await firebaseSignOut(firebaseAuth);
+      }
+      
+      // Sign out from NextAuth (handles both Google and email/password sessions)
+      await signOut({ callbackUrl: '/login' });
+    } catch (error) {
+      console.error("Error signing out:", error);
+      // Even if Firebase sign out fails, still sign out from NextAuth
+      await signOut({ callbackUrl: '/login' });
+    }
+  };
+
 
 
   return (
@@ -164,7 +186,7 @@ export default function Header() {
             </button>
            : <button
             
-            onClick={()=>signOut()}
+            onClick={handleSignOut}
             
             className="hidden lg:flex items-center gap-6 text-black text-[14px] bg-white rounded-[30px] px-[24px] py-[12px]">
               DASHBOARD
@@ -250,7 +272,7 @@ export default function Header() {
               </button>
               :<button
               
-                onClick={()=>signOut()}
+                onClick={handleSignOut}
                 
                 className="flex items-center gap-6 text-white text-[14px] bg-black rounded-[30px] px-[24px] py-[12px]">
                   DASHBOARD
