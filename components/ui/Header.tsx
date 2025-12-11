@@ -6,7 +6,7 @@ import Image from "next/image";
 import { route } from "@/lib/route";
 import { signOut, useSession } from "next-auth/react";
 import { signOut as firebaseSignOut } from "firebase/auth";
-import { auth } from "@/lib/firebaseConfig";
+import { auth } from "@/lib/firebaseAuth";
 
 export default function Header() {
 

@@ -3,7 +3,7 @@ import { useState,useEffect } from "react"
 import { signIn, signOut, useSession } from "next-auth/react"
 import { createUserWithEmailAndPassword, updateProfile, fetchSignInMethodsForEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
-import { auth } from "@/lib/firebaseConfig";
+import { auth } from "@/lib/firebaseAuth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebaseConfig";
 import Loading from "@/components/ui/components/Loading";
