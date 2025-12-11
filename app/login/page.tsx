@@ -8,6 +8,7 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebaseConfig";
 import Loading from "@/components/ui/components/Loading";
 import { useRouter } from "next/navigation";
+import GoBackButton from "@/components/ui/components/GoBackButton";
 
 export default function LoginButton() {
   const { data: session } = useSession()
@@ -242,9 +243,11 @@ export default function LoginButton() {
       {/* Right side form */}
       <div className="Mont w-full lg:w-[calc(50vw-24px)] px-[3vw] mt-[24px]">
         {login ? (
-          // Login Form
           <div>
-            <p className="text-black text-[36px] font-extrabold Mont">Welcome Back!</p>
+            <div className="flex lg:hidden" >
+              <GoBackButton />
+            </div>
+            <p className="text-black mt-[24px] text-[36px] font-extrabold Mont">Welcome Back!</p>
             <button 
               onClick={() => {
                 setLogin(!login);
@@ -283,7 +286,10 @@ export default function LoginButton() {
         ) : (
           // Signup Form
           <div>
-            <p className="text-black text-[36px] font-extrabold Mont">Create a new Account</p>
+            <div className="flex lg:hidden" >
+              <GoBackButton />
+            </div>
+            <p className="text-black text-[36px] font-extrabold Mont mt-[24px]">Create a new Account</p>
             <button 
               onClick={() => {
                 setLogin(!login);
