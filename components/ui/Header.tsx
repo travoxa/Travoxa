@@ -61,7 +61,7 @@ export default function Header() {
       path: "/backpackers",
       dropdown: [
         { label: "Create Group", path: "/backpackers/create" },
-        { label: "Join Group", path: "/backpackers/join" },
+        { label: "Join Group", path: "/backpackers" },
       ],
     },
     {
@@ -129,7 +129,7 @@ export default function Header() {
   return (
     <>
       {/* MAIN NAVBAR */}
-      <header className="w-screen  bg-transparent  relative z-50 ">
+      <header className="w-screen bg-transparent fixed top-0 left-0 right-0 z-50 ">
         <div className="mt-[24px] custom-shadow backdrop-blur-sm border-[0.5] border-white  w-[80vw] rounded-[40px] mx-auto relative flex items-center justify-between px-4 pr-5 py-3">
           
 

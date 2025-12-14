@@ -54,10 +54,10 @@ const initialState: FormState = {
   estimatedCosts: 'stay:20000\ntransport:8000\nfood:6000',
 };
 
-const sectionClass = 'rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur';
-const labelClass = 'text-sm font-medium text-white/70';
+const sectionClass = 'rounded-[12px] border border-black/10 bg-white p-6 shadow-2xl';
+const labelClass = 'text-sm font-medium text-black/70';
 const inputClass =
-  'mt-2 w-full rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-white placeholder-white/50 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/40';
+  'w-full rounded-[8px] border border-black/20 bg-white px-4 py-3 text-black placeholder-black/60 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/40';
 
 const tripTypeOptions = [
   { label: 'Trek', value: 'trek' },
@@ -119,14 +119,14 @@ export default function GroupCreateForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 text-white">
+    <form onSubmit={handleSubmit} className="space-y-6 text-black">
       <section className={sectionClass}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-white/60">Group basics</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-black/60">Group basics</p>
             <h2 className="text-2xl font-semibold">Describe the crew vibe</h2>
           </div>
-          <span className="rounded-full bg-white/10 px-4 py-1 text-xs uppercase text-white/70">
+          <span className="rounded-full bg-black/10 px-4 py-1 text-xs uppercase text-black/70">
             Avg. budget hint: ₹{totalCost.toLocaleString('en-IN')}
           </span>
         </div>
@@ -234,7 +234,7 @@ export default function GroupCreateForm() {
       </section>
 
       <section className={sectionClass}>
-        <p className="text-xs uppercase tracking-[0.3em] text-white/60">Plan specifics</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-black/60">Plan specifics</p>
         <h3 className="text-xl font-semibold">Highlight the slow travel itinerary</h3>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div className="md:col-span-2">
@@ -272,13 +272,13 @@ export default function GroupCreateForm() {
               value={formState.estimatedCosts}
               onChange={(event) => updateField('estimatedCosts', event.target.value)}
             />
-            <p className="mt-2 text-xs text-white/60">Example: stay:22000</p>
+            <p className="mt-2 text-xs text-black/60">Example: stay:22000</p>
           </div>
         </div>
       </section>
 
       <section className={sectionClass}>
-        <p className="text-xs uppercase tracking-[0.3em] text-white/60">Approval criteria</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-black/60">Approval criteria</p>
         <h3 className="text-xl font-semibold">Set entry expectations</h3>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div>
@@ -349,7 +349,7 @@ export default function GroupCreateForm() {
         <button
           type="submit"
           disabled={status === 'submitting'}
-          className="ml-auto inline-flex items-center justify-center rounded-2xl bg-white px-6 py-3 text-base font-semibold text-slate-900 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+          className="ml-auto inline-flex items-center justify-center rounded-2xl bg-black px-6 py-3 text-base font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {status === 'submitting' ? 'Publishing...' : 'Publish backpacker crew'}
         </button>
