@@ -1,8 +1,10 @@
+// app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { signInWithEmailAndPassword } from "firebase/auth"
-import { getFirebaseAuth } from "@/lib/firebaseAuth"
+
+// OPTION 2: Using Firebase REST API (No Admin SDK needed)
+// This is simpler and doesn't require service account setup
 
 const handler = NextAuth({
   providers: [
@@ -17,65 +19,90 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        console.log("🔍 Starting authorization with Firebase REST API");
+        
         if (!credentials?.email || !credentials?.password) {
-          return null
+          console.error("❌ Missing email or password");
+          return null;
         }
 
         try {
-          const auth = getFirebaseAuth();
+          // Use Firebase REST API to verify credentials
+          const FIREBASE_AUTH_URL = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`;
           
-          // Check if auth is available
-          if (!auth) {
-            console.error("Firebase Auth is not available");
+          const response = await fetch(FIREBASE_AUTH_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+              returnSecureToken: true,
+            }),
+          });
+
+          const data = await response.json();
+
+          // Check if authentication failed
+          if (!response.ok) {
+            console.error("❌ Firebase REST API error:", data.error?.message);
+            
+            // Log specific error types
+            if (data.error?.message?.includes('INVALID_PASSWORD')) {
+              console.error("❌ Invalid password");
+            } else if (data.error?.message?.includes('EMAIL_NOT_FOUND')) {
+              console.error("❌ Email not found");
+            } else if (data.error?.message?.includes('USER_DISABLED')) {
+              console.error("❌ User account disabled");
+            }
+            
             return null;
           }
 
-          // Sign in with Firebase Auth
-          const userCredential = await signInWithEmailAndPassword(
-            auth,
-            credentials.email,
-            credentials.password
-          )
+          console.log("✅ Firebase authentication successful");
+          console.log("✅ User ID:", data.localId);
 
-          if (userCredential.user) {
-            // Return user object that will be stored in JWT
-            return {
-              id: userCredential.user.uid,
-              email: userCredential.user.email,
-              name: userCredential.user.displayName,
-            }
-          }
-          return null
-        } catch (error) {
-          console.error("Firebase auth error:", error)
-          // Return null if authentication fails
-          return null
+          // Optionally fetch additional user data from Firestore
+          // You can use your existing getUser function here if needed
+          
+          // Return user object that will be stored in JWT
+          return {
+            id: data.localId,
+            email: data.email,
+            name: data.displayName || data.email,
+            // Add any other user data you need
+          };
+          
+        } catch (error: any) {
+          console.error("❌ Unexpected error during authentication:", error);
+          return null;
         }
       }
     })
   ],
   callbacks: {
     async jwt({ token, user }) {
-      // When user signs in, add user id to token
       if (user) {
-        token.id = user.id
+        token.id = user.id;
       }
-      return token
+      return token;
     },
     async session({ session, token }) {
-      // Add user id to session from token
       if (session?.user) {
-        session.user.id = token.id || token.sub!
+        session.user.id = token.id || token.sub!;
       }
-      return session
+      return session;
     },
   },
   pages: {
-    signIn: '/login', // Your custom login page path
+    signIn: '/login',
   },
   session: {
-    strategy: "jwt", // Use JWT for sessions
+    strategy: "jwt",
   },
-})
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: true, // Enable debug mode to see detailed logs
+});
 
-export { handler as GET, handler as POST }
+export { handler as GET, handler as POST };

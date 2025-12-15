@@ -6,9 +6,11 @@ import { FirebaseError } from "firebase/app";
 import { getFirebaseAuth } from "@/lib/firebaseAuth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebaseConfig";
+import { checkUserExistsByEmail } from "@/lib/userUtils";
 import Loading from "@/components/ui/components/Loading";
 import { useRouter } from "next/navigation";
 import GoBackButton from "@/components/ui/components/GoBackButton";
+import { route } from "@/lib/route";
 
 export default function LoginButton() {
   const { data: session } = useSession()
@@ -23,6 +25,7 @@ export default function LoginButton() {
   const [errorMsg, setErrorMsg] = useState('');
   const [agreement, setAgreement] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(false);
 
   // Create account with Firebase Auth
   const createAccount = async () => {
@@ -64,6 +67,15 @@ export default function LoginButton() {
     setErrorMsg('');
 
     try {
+      // Check if user already exists in Firestore by email
+      const userExists = await checkUserExistsByEmail(email);
+
+      if (userExists.exists) {
+        setErrorMsg("An account with this email already exists. Please login instead.");
+        setLoading(false);
+        return;
+      }
+
       // Try to create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
       const user = userCredential.user;
@@ -76,22 +88,33 @@ export default function LoginButton() {
       // Store user data in Firestore
       const userDocRef = doc(db, "Users", user.uid);
       await setDoc(userDocRef, {
-        firstName: firstName,
-        lastName: lastName,
+        name: `${firstName} ${lastName}`,
         email: email,
-        createdAt: new Date(),
-        authProvider: 'email'
+        phone: "",
+        gender: "",
+        interests: [],
+        hasBike: false,
+        authProvider: 'email',
+        profileComplete: false, // ✅ CRITICAL: Mark profile as incomplete initially
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
 
       // Sign in with NextAuth
-      await signIn("credentials", {
+      const result = await signIn("credentials", {
         email: email,
         password: pass,
         redirect: false,
       });
 
+      
       setLoading(false);
-      router.push('/');
+      
+      if (result?.error) {
+        setErrorMsg("Failed to sign in after registration. Please check the console for details.");
+      } else {
+        router.push('/');
+      }
     } catch (error) {
       setLoading(false);
       
@@ -150,19 +173,43 @@ export default function LoginButton() {
 
     try {
       // First, try to sign in directly with Firebase to get better error messages
-      await signInWithEmailAndPassword(auth, email, pass);
+      const firebaseResult = await signInWithEmailAndPassword(auth, email, pass);
       
+      // Check if user exists in Firestore by email
+      const userExists = await checkUserExistsByEmail(email);
+
+      if (!userExists.exists) {
+        // User doesn't exist, add them to Firestore
+        
+        await setDoc(doc(db, "Users", firebaseResult.user.uid), {
+          name: firebaseResult.user.displayName || email.split('@')[0],
+          email: email,
+          phone: firebaseResult.user.phoneNumber || "",
+          gender: "",
+          interests: [],
+          hasBike: false,
+          authProvider: 'email',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+        
+        router.push('/onboarding');
+        setLoading(false);
+        return;
+      }
+
       // If successful, sign in with NextAuth
       const result = await signIn("credentials", {
         email: email,
         password: pass,
         redirect: false,
       });
-
+      
+      
       setLoading(false);
 
       if (result?.error) {
-        setErrorMsg("Invalid email or password");
+        setErrorMsg("Authentication failed. Please check the console for details.");
       } else {
         router.push('/');
       }
@@ -176,7 +223,6 @@ export default function LoginButton() {
           // Check if this email uses Google sign-in
           try {
             const methods = await fetchSignInMethodsForEmail(auth, email);
-            console.log("Sign-in methods for email:", methods);
             
             if (methods.includes('google.com')) {
               setErrorMsg("This account uses Google sign-in. Please click 'Sign in with Google' below.");
@@ -202,20 +248,80 @@ export default function LoginButton() {
     }
   }
 
-  if (session) {
-    return (
-      <div className="w-screen h-screen p-[12px]">
-        <div className="bg-red-500 flex flex-col w-full h-full rounded-[12px] p-6">
-          <p className="text-white">Signed in as {session.user?.email}</p>
-          <button 
-            onClick={() => signOut({ callbackUrl: '/login' })}
-            className="mt-4 bg-white text-red-500 px-4 py-2 rounded">
-            Sign out
-          </button>
-        </div>
-      </div>
-    )
-  }
+  // Custom Google sign-in function with Firebase Auth check
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      
+      const result = await signIn('google', { redirect: false });
+      
+      if (result?.error) {
+        setErrorMsg("Google sign-in failed. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const auth = getFirebaseAuth();
+      if (!auth) {
+        setErrorMsg("Authentication service is not available");
+        setLoading(false);
+        return;
+      }
+
+      const currentUser = auth.currentUser;
+      
+      if (!currentUser || !currentUser.email) {
+        setErrorMsg("Failed to get user information");
+        setLoading(false);
+        return;
+      }
+
+      // Check Firebase Auth sign-in methods for this email
+      const methods = await fetchSignInMethodsForEmail(auth, currentUser.email);
+      
+      if (methods.includes('password') && !methods.includes('google.com')) {
+        setErrorMsg("This email is already registered for email login. Please use email and password to sign in.");
+        setLoading(false);
+        return;
+      }
+
+      // Check if user exists in Firestore by email
+      const userExists = await checkUserExistsByEmail(currentUser.email);
+
+      if (userExists.exists) {
+        
+        const isProfileComplete = userExists.userData?.profileComplete !== false;
+        
+        if (isProfileComplete) {
+          router.push('/');
+        } else {
+          router.push('/onboarding');
+        }
+      } else {
+        
+        const userDocRef = doc(db, "Users", currentUser.uid);
+        await setDoc(userDocRef, {
+          name: currentUser.displayName || currentUser.email.split('@')[0],
+          email: currentUser.email,
+          phone: currentUser.phoneNumber || "",
+          gender: "",
+          interests: [],
+          hasBike: false,
+          authProvider: 'google',
+          profileComplete: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+        
+        router.push('/onboarding');
+      }
+    } catch (error) {
+      setErrorMsg("An error occurred during sign-in. Please try again.");
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (errorMsg.length > 0) {
@@ -227,6 +333,81 @@ export default function LoginButton() {
     }
   }, [errorMsg]);
 
+  // Check if user exists in Firestore and redirect accordingly
+  useEffect(() => {
+    const checkAndRedirect = async () => {
+      try {
+        setCheckingSession(true);
+        
+        // Wait a bit for Firebase auth to initialize and Firestore writes to complete
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const auth = getFirebaseAuth();
+        if (!auth) return;
+
+        const currentUser = auth.currentUser;
+        
+        if (!currentUser || !currentUser.email) {
+          route('/');
+          return;
+        }
+
+        
+        // Check if user exists in Firestore by email
+        const userExists = await checkUserExistsByEmail(currentUser.email);
+
+        if (userExists.exists) {
+          
+          // Check if profile is complete
+          const isProfileComplete = userExists.userData?.profileComplete !== false;
+          
+          if (isProfileComplete) {
+            router.push('/');
+          } else {
+            router.push('/onboarding');
+          }
+        } else {
+          router.push('/onboarding');
+        }
+      } catch (error) {
+        router.push('/onboarding');
+      } finally {
+        setCheckingSession(false);
+      }
+    };
+
+    // Only check if user is already logged in
+    if (session) {
+      checkAndRedirect();
+    }
+  }, [session]);
+
+  if (session) {
+    if (checkingSession) {
+      return (
+        <div className="w-screen h-screen p-[12px]">
+          <div className="bg-white flex flex-col w-full h-full rounded-[12px] p-6 items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
+            <p className="mt-4 text-black">Checking your profile...</p>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="w-screen h-screen p-[12px]">
+        <div className="bg-white flex flex-col w-full h-full rounded-[12px] p-6">
+          <p className="text-black">Signed in as {session.user?.email}</p>
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="mt-4 bg-white text-black px-4 py-2 rounded">
+            Sign out
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-dots-svg relative max-w-screen overflow-hidden Inter w-screen h-screen flex justify-between items-center bg-white px-[12px]">
       
@@ -235,7 +416,7 @@ export default function LoginButton() {
       {/* Left side image */}
       <div 
         className="hidden lg:flex relative w-[calc(50vw-24px)] h-[calc(100vh-24px)] bg-cover bg-center rounded-[12px]" 
-        style={{ backgroundImage: `url(/Destinations/Des6.jpg)` }}>
+        style={{ backgroundImage: `url('/Destinations/Des6.jpg')` }}>
         <p className="absolute top-[24px] left-[24px] Mont text-[24px] font-light text-white uppercase">TRAVOXA</p>
         <p className="absolute bottom-[24px] left-1/2 text-center transform -translate-x-1/2 text-white font-light Mont text-[2vw]">Where will you go next?</p>
       </div>
@@ -361,8 +542,8 @@ export default function LoginButton() {
         </div>
 
         {/* Google Sign In */}
-        <button 
-          onClick={() => signIn('google', { callbackUrl: '/' })}
+        <button
+          onClick={handleGoogleSignIn}
           className="flex gap-[12px] justify-center items-center text-black font-light border border-[#3e4462] w-full mt-[36px] rounded-[6px] py-[12px]">
           <img 
             width={16}
