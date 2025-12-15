@@ -7,6 +7,7 @@ import { route } from "@/lib/route";
 import { signOut, useSession } from "next-auth/react";
 import { signOut as firebaseSignOut } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseAuth";
+import LoginRequiredPopup from "./LoginRequiredPopup";
 
 export default function Header() {
 
@@ -14,6 +15,7 @@ export default function Header() {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   type DropdownItem = {
     label: string;
@@ -60,7 +62,7 @@ export default function Header() {
       label: "Backpackers",
       path: "/backpackers",
       dropdown: [
-        { label: "Create Group", path: "/backpackers/create" },
+        { label: "Create Group", path: "" },
         { label: "Join Group", path: "/backpackers" },
       ],
     },
@@ -100,6 +102,14 @@ export default function Header() {
     setMobileOpen(false);
   };
 
+  const handleCreateGroupClick = () => {
+    if (!session?.user?.email) {
+      setShowLoginPopup(true);
+      return;
+    }
+    route('/backpackers/create');
+  };
+
   const routeTo = (path:string) => {
     route(path)
   }
@@ -130,16 +140,25 @@ export default function Header() {
     <>
       {/* MAIN NAVBAR */}
       <header className="w-screen bg-transparent fixed top-0 left-0 right-0 z-50 ">
+        <LoginRequiredPopup
+          isOpen={showLoginPopup}
+          onClose={() => setShowLoginPopup(false)}
+          triggerAction={() => route('/login')}
+        />
         <div className="mt-[24px] custom-shadow backdrop-blur-sm border-[0.5] border-white  w-[80vw] rounded-[40px] mx-auto relative flex items-center justify-between px-4 pr-5 py-3">
           
 
           {/* LOGO */}
-          <button onClick={() => routeTo('/')} className="flex items-center">
+          <button 
+            onClick={() => routeTo('/')} 
+            className="flex items-center  h-fit">
             <Image
               src="/logo.png"
               alt="Travoxa"
               width={130}
-              height={40}
+              height={1000}
+              className="h-[50px]"
+              style={{ width: "auto" }}
             />
           </button>
 
@@ -163,7 +182,13 @@ export default function Header() {
                       <button
                         key={sub.label}
                         type="button"
-                        onClick={() => navigateTo(sub.path)}
+                        onClick={() => {
+                          if (sub.label === "Create Group") {
+                            handleCreateGroupClick();
+                          } else {
+                            navigateTo(sub.path);
+                          }
+                        }}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-green-50"
                       >
                         {sub.label}
@@ -215,6 +240,7 @@ export default function Header() {
             alt="Travoxa"
             width={110}
             height={35}
+            style={{ width: "auto", height: "auto" }}
           />
           <button onClick={() => setMobileOpen(false)}>
             <FiX size={26} className="text-gray-700" />
@@ -251,7 +277,14 @@ export default function Header() {
                       key={sub.label}
                       type="button"
                       className="py-2 text-left text-gray-700 border-b"
-                      onClick={() => navigateTo(sub.path)}
+                      onClick={() => {
+                        if (sub.label === "Create Group") {
+                          handleCreateGroupClick();
+                          setMobileOpen(false);
+                        } else {
+                          navigateTo(sub.path);
+                        }
+                      }}
                     >
                       {sub.label}
                     </button>
@@ -288,6 +321,9 @@ export default function Header() {
           onClick={() => setMobileOpen(false)}
         />
       )}
+
+      {/* Login Required Popup */}
+      
     </>
   );
 }

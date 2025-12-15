@@ -15,14 +15,20 @@ const firebaseConfig = {
 let authInstance: Auth | null = null;
 
 export const getFirebaseAuth = (): Auth | null => {
+  console.log("🔍 DEBUG: getFirebaseAuth() called");
+  console.log("🔍 DEBUG: typeof window =", typeof window);
+  
   if (typeof window === 'undefined') {
+    console.error("❌ ERROR: getFirebaseAuth() called on server-side - window is undefined");
     return null;
   }
   
   if (!authInstance) {
+    console.log("🔍 DEBUG: Initializing Firebase Auth instance");
     // Initialize app if not already initialized
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     authInstance = getAuth(app);
+    console.log("🔍 DEBUG: Firebase Auth instance created");
   }
   
   return authInstance;

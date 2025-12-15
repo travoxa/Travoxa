@@ -18,6 +18,7 @@ const initialFilters: GroupFiltersState = {
 interface BackpackersHomeProps {
   groups: BackpackerGroup[];
   initialFilters?: GroupFiltersState;
+  onOpenLoginPopup?: () => void;
 }
 
 const budgetMatchers = {
@@ -26,7 +27,7 @@ const budgetMatchers = {
   '40plus': (value: number) => value > 40000,
 };
 
-export default function BackpackersHome({ groups, initialFilters: presetFilters }: BackpackersHomeProps) {
+export default function BackpackersHome({ groups, initialFilters: presetFilters, onOpenLoginPopup }: BackpackersHomeProps) {
   const [filters, setFilters] = useState<GroupFiltersState>(presetFilters ?? initialFilters);
 
   const filteredGroups = useMemo(() => {
@@ -59,7 +60,7 @@ export default function BackpackersHome({ groups, initialFilters: presetFilters 
           <h2 className="text-2xl font-semibold">Got an itinerary brewing?</h2>
           <p className="text-sm text-white/70">Use our guided form to open applications for your backpacker crew.</p>
         </div>
-        <CreateGroupButton />
+        <CreateGroupButton onOpenLoginPopup={onOpenLoginPopup || (() => {})} />
       </div>
 
       <GroupCardList groups={filteredGroups} />

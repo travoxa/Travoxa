@@ -6,9 +6,11 @@ import { FirebaseError } from "firebase/app";
 import { getFirebaseAuth } from "@/lib/firebaseAuth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebaseConfig";
+import { checkUserExistsByEmail } from "@/lib/userUtils";
 import Loading from "@/components/ui/components/Loading";
 import { useRouter } from "next/navigation";
 import GoBackButton from "@/components/ui/components/GoBackButton";
+import { route } from "@/lib/route";
 
 export default function LoginButton() {
   const { data: session } = useSession()
@@ -23,6 +25,7 @@ export default function LoginButton() {
   const [errorMsg, setErrorMsg] = useState('');
   const [agreement, setAgreement] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(false);
 
   // Create account with Firebase Auth
   const createAccount = async () => {
@@ -64,6 +67,15 @@ export default function LoginButton() {
     setErrorMsg('');
 
     try {
+      // Check if user already exists in Firestore by email
+      const userExists = await checkUserExistsByEmail(email);
+
+      if (userExists.exists) {
+        setErrorMsg("An account with this email already exists. Please login instead.");
+        setLoading(false);
+        return;
+      }
+
       // Try to create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
       const user = userCredential.user;
@@ -75,23 +87,41 @@ export default function LoginButton() {
 
       // Store user data in Firestore
       const userDocRef = doc(db, "Users", user.uid);
+      console.log("🔍 DEBUG: Creating Firestore user document for new user:", user.uid);
       await setDoc(userDocRef, {
-        firstName: firstName,
-        lastName: lastName,
+        name: `${firstName} ${lastName}`,
         email: email,
-        createdAt: new Date(),
-        authProvider: 'email'
+        phone: "",
+        gender: "",
+        interests: [],
+        hasBike: false,
+        authProvider: 'email',
+        profileComplete: false, // ✅ CRITICAL: Mark profile as incomplete initially
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
+      console.log("🔍 DEBUG: Firestore user document created successfully");
 
       // Sign in with NextAuth
-      await signIn("credentials", {
+      console.log("🔍 DEBUG: About to call NextAuth signIn after registration");
+      const result = await signIn("credentials", {
         email: email,
         password: pass,
         redirect: false,
       });
 
+      console.log("🔍 DEBUG: NextAuth signIn result after registration:", result);
+      
       setLoading(false);
-      router.push('/');
+      
+      if (result?.error) {
+        console.error("❌ ERROR: NextAuth signIn failed after registration:", result.error);
+        setErrorMsg("Failed to sign in after registration. Please check the console for details.");
+      } else {
+        console.log("✅ SUCCESS: NextAuth signIn successful after registration");
+        console.log("🔍 DEBUG: About to redirect to home page");
+        router.push('/');
+      }
     } catch (error) {
       setLoading(false);
       
@@ -150,20 +180,49 @@ export default function LoginButton() {
 
     try {
       // First, try to sign in directly with Firebase to get better error messages
-      await signInWithEmailAndPassword(auth, email, pass);
+      const firebaseResult = await signInWithEmailAndPassword(auth, email, pass);
       
+      // Check if user exists in Firestore by email
+      const userExists = await checkUserExistsByEmail(email);
+
+      if (!userExists.exists) {
+        // User doesn't exist, add them to Firestore
+        
+        await setDoc(doc(db, "Users", firebaseResult.user.uid), {
+          name: firebaseResult.user.displayName || email.split('@')[0],
+          email: email,
+          phone: firebaseResult.user.phoneNumber || "",
+          gender: "",
+          interests: [],
+          hasBike: false,
+          authProvider: 'email',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+        
+        router.push('/onboarding');
+        setLoading(false);
+        console.log("🔍 LOGIN DEBUG: Email login - User created in Firestore, redirecting to onboarding");
+        return;
+      }
+
       // If successful, sign in with NextAuth
+      console.log("🔍 DEBUG: About to call NextAuth signIn with credentials");
       const result = await signIn("credentials", {
         email: email,
         password: pass,
         redirect: false,
       });
-
+      
+      console.log("🔍 DEBUG: NextAuth signIn result:", result);
+      
       setLoading(false);
 
       if (result?.error) {
-        setErrorMsg("Invalid email or password");
+        console.error("❌ ERROR: NextAuth signIn failed with error:", result.error);
+        setErrorMsg("Authentication failed. Please check the console for details.");
       } else {
+        console.log("✅ SUCCESS: NextAuth signIn successful, redirecting to home");
         router.push('/');
       }
     } catch (error) {
@@ -202,20 +261,83 @@ export default function LoginButton() {
     }
   }
 
-  if (session) {
-    return (
-      <div className="w-screen h-screen p-[12px]">
-        <div className="bg-red-500 flex flex-col w-full h-full rounded-[12px] p-6">
-          <p className="text-white">Signed in as {session.user?.email}</p>
-          <button 
-            onClick={() => signOut({ callbackUrl: '/login' })}
-            className="mt-4 bg-white text-red-500 px-4 py-2 rounded">
-            Sign out
-          </button>
-        </div>
-      </div>
-    )
-  }
+  // Custom Google sign-in function with user existence check by email
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      
+      // Sign in with Google (without callback URL)
+      const result = await signIn('google', { redirect: false });
+      
+      if (result?.error) {
+        setErrorMsg("Google sign-in failed. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      // Wait for Firebase auth to initialize
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const auth = getFirebaseAuth();
+      if (!auth) {
+        setErrorMsg("Authentication service is not available");
+        setLoading(false);
+        return;
+      }
+
+      const currentUser = auth.currentUser;
+      
+      if (!currentUser || !currentUser.email) {
+        setErrorMsg("Failed to get user information");
+        setLoading(false);
+        return;
+      }
+
+      // Check if user exists in Firestore by email
+      const userExists = await checkUserExistsByEmail(currentUser.email);
+
+      if (userExists.exists) {
+        console.log("🔍 LOGIN DEBUG: Google user exists in Firestore, checking profile completion...");
+        
+        // Check if profile is complete
+        const isProfileComplete = userExists.userData?.profileComplete !== false;
+        console.log("🔍 LOGIN DEBUG: Google user profile complete status:", isProfileComplete);
+        
+        if (isProfileComplete) {
+          console.log("🔍 LOGIN DEBUG: Google user profile complete, redirecting to home");
+          router.push('/');
+        } else {
+          console.log("🔍 LOGIN DEBUG: Google user profile incomplete, redirecting to onboarding");
+          router.push('/onboarding');
+        }
+      } else {
+        console.log("🔍 LOGIN DEBUG: Google user doesn't exist in Firestore, creating document and redirecting to onboarding");
+        
+        // User doesn't exist, add them to Firestore and go to onboarding
+        
+        // Add user to Firestore with Google auth details
+        const userDocRef = doc(db, "Users", currentUser.uid);
+        await setDoc(userDocRef, {
+          name: currentUser.displayName || currentUser.email.split('@')[0],
+          email: currentUser.email,
+          phone: currentUser.phoneNumber || "",
+          gender: "",
+          interests: [],
+          hasBike: false,
+          authProvider: 'google',
+          profileComplete: false, // ✅ CRITICAL: Mark profile as incomplete initially
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+        
+        router.push('/onboarding');
+      }
+    } catch (error) {
+      console.error("Error during Google sign-in:", error);
+      setErrorMsg("An error occurred during sign-in. Please try again.");
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (errorMsg.length > 0) {
@@ -227,6 +349,93 @@ export default function LoginButton() {
     }
   }, [errorMsg]);
 
+  // Check if user exists in Firestore and redirect accordingly
+  useEffect(() => {
+    const checkAndRedirect = async () => {
+      try {
+        setCheckingSession(true);
+        
+        // Wait a bit for Firebase auth to initialize and Firestore writes to complete
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const auth = getFirebaseAuth();
+        if (!auth) return;
+
+        const currentUser = auth.currentUser;
+        console.log("🔍 LOGIN DEBUG: Current user in useEffect:", currentUser);
+        console.log("🔍 LOGIN DEBUG: Session data:", session);
+        
+        if (!currentUser || !currentUser.email) {
+          console.log("🔍 LOGIN DEBUG: No current user or email, skipping redirect");
+          route('/');
+          return;
+        }
+
+        console.log("🔍 LOGIN DEBUG: Checking user existence for email:", currentUser.email);
+        
+        // Check if user exists in Firestore by email
+        const userExists = await checkUserExistsByEmail(currentUser.email);
+        console.log("🔍 LOGIN DEBUG: User exists check result:", userExists);
+
+        if (userExists.exists) {
+          console.log("🔍 LOGIN DEBUG: User found in Firestore, checking profile completion...");
+          
+          // Check if profile is complete
+          const isProfileComplete = userExists.userData?.profileComplete !== false;
+          console.log("🔍 LOGIN DEBUG: Profile complete status:", isProfileComplete);
+          
+          if (isProfileComplete) {
+            console.log("🔍 LOGIN DEBUG: Profile complete, redirecting to home");
+            router.push('/');
+          } else {
+            console.log("🔍 LOGIN DEBUG: Profile incomplete, redirecting to onboarding");
+            router.push('/onboarding');
+          }
+        } else {
+          console.log("🔍 LOGIN DEBUG: User not found in Firestore, redirecting to onboarding");
+          router.push('/onboarding');
+        }
+      } catch (error) {
+        console.error("❌ LOGIN ERROR: Error checking user:", error);
+        router.push('/onboarding');
+      } finally {
+        setCheckingSession(false);
+      }
+    };
+
+    // Only check if user is already logged in
+    if (session) {
+      console.log("🔍 LOGIN DEBUG: Session detected, triggering checkAndRedirect");
+      checkAndRedirect();
+    }
+  }, [session]);
+
+  if (session) {
+    if (checkingSession) {
+      return (
+        <div className="w-screen h-screen p-[12px]">
+          <div className="bg-white flex flex-col w-full h-full rounded-[12px] p-6 items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
+            <p className="mt-4 text-black">Checking your profile...</p>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="w-screen h-screen p-[12px]">
+        <div className="bg-white flex flex-col w-full h-full rounded-[12px] p-6">
+          <p className="text-black">Signed in as {session.user?.email}</p>
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="mt-4 bg-white text-black px-4 py-2 rounded">
+            Sign out
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-dots-svg relative max-w-screen overflow-hidden Inter w-screen h-screen flex justify-between items-center bg-white px-[12px]">
       
@@ -235,7 +444,7 @@ export default function LoginButton() {
       {/* Left side image */}
       <div 
         className="hidden lg:flex relative w-[calc(50vw-24px)] h-[calc(100vh-24px)] bg-cover bg-center rounded-[12px]" 
-        style={{ backgroundImage: `url(/Destinations/Des6.jpg)` }}>
+        style={{ backgroundImage: `url('/Destinations/Des6.jpg')` }}>
         <p className="absolute top-[24px] left-[24px] Mont text-[24px] font-light text-white uppercase">TRAVOXA</p>
         <p className="absolute bottom-[24px] left-1/2 text-center transform -translate-x-1/2 text-white font-light Mont text-[2vw]">Where will you go next?</p>
       </div>
@@ -361,8 +570,8 @@ export default function LoginButton() {
         </div>
 
         {/* Google Sign In */}
-        <button 
-          onClick={() => signIn('google', { callbackUrl: '/' })}
+        <button
+          onClick={handleGoogleSignIn}
           className="flex gap-[12px] justify-center items-center text-black font-light border border-[#3e4462] w-full mt-[36px] rounded-[6px] py-[12px]">
           <img 
             width={16}

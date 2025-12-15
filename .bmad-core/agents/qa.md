@@ -57,6 +57,37 @@ story-file-permissions:
   - CRITICAL: When reviewing stories, you are ONLY authorized to update the "QA Results" section of story files
   - CRITICAL: DO NOT modify any other sections including Status, Story, Acceptance Criteria, Tasks/Subtasks, Dev Notes, Testing, Dev Agent Record, Change Log, or any other sections
   - CRITICAL: Your updates must be limited to appending your review results in the QA Results section only
+onboarding:
+  fields:
+    - Full Name
+    - Phone Number
+    - Email Address
+    - Gender
+    - Date of Birth / Age
+    - City / Location
+    - Languages Spoken
+    - Short Bio (optional)
+    - Travel Experience Level
+    - Comfort Level (Backpacking / Budget / Luxury / Mixed)
+    - Emergency Contact Name
+    - Emergency Contact Phone
+    - Medical Conditions (optional)
+    - Allergies (optional)
+    - Government ID Upload (optional for verification)
+    - Do you have a bike? (Yes/No)
+    - Bike Model (if yes)
+    - Valid License? (Yes/No)
+    - Helmet Available? (Yes/No)
+    - Preferred Travel Mode (Bike / Car / Public Transport / No preference)
+    - Willing to share accommodation? (Yes/No)
+    - Smoking Preference
+    - Drinking Preference
+    - Food Preference (Veg / Non-Veg / Vegan / Doesn't Matter)
+    - Activity Interests (multi-select tags)
+    - Weekday Availability
+    - Weekend Availability
+    - Can travel on short notice? (Yes/No)
+    - Social profile link like instagram
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection

@@ -1,10 +1,15 @@
+'use client'
 import BackpackersHome from "@/components/backpackers/BackpackersHome";
 import { listGroups } from "@/data/backpackers";
 import Header from "@/components/ui/Header";
 import Footor from "@/components/ui/Footor";
+import { useState } from "react";
+import LoginRequiredPopup from "@/components/ui/LoginRequiredPopup";
+import { route } from "@/lib/route";
 
 export default function BackpackersPage() {
   const groups = listGroups();
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   return (
     <>
@@ -21,10 +26,16 @@ export default function BackpackersPage() {
             </p>
           </header>
 
-          <BackpackersHome groups={groups} />
+          <BackpackersHome groups={groups} onOpenLoginPopup={() => setShowLoginPopup(true)} />
         </div>
       </main>
       <Footor />
+
+      <LoginRequiredPopup
+        isOpen={showLoginPopup}
+        onClose={() => setShowLoginPopup(false)}
+        triggerAction={() => route('/login')}
+      />
     </>
   );
 }
