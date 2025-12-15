@@ -87,7 +87,6 @@ export default function LoginButton() {
 
       // Store user data in Firestore
       const userDocRef = doc(db, "Users", user.uid);
-      console.log("🔍 DEBUG: Creating Firestore user document for new user:", user.uid);
       await setDoc(userDocRef, {
         name: `${firstName} ${lastName}`,
         email: email,
@@ -100,26 +99,20 @@ export default function LoginButton() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
-      console.log("🔍 DEBUG: Firestore user document created successfully");
 
       // Sign in with NextAuth
-      console.log("🔍 DEBUG: About to call NextAuth signIn after registration");
       const result = await signIn("credentials", {
         email: email,
         password: pass,
         redirect: false,
       });
 
-      console.log("🔍 DEBUG: NextAuth signIn result after registration:", result);
       
       setLoading(false);
       
       if (result?.error) {
-        console.error("❌ ERROR: NextAuth signIn failed after registration:", result.error);
         setErrorMsg("Failed to sign in after registration. Please check the console for details.");
       } else {
-        console.log("✅ SUCCESS: NextAuth signIn successful after registration");
-        console.log("🔍 DEBUG: About to redirect to home page");
         router.push('/');
       }
     } catch (error) {
@@ -202,27 +195,22 @@ export default function LoginButton() {
         
         router.push('/onboarding');
         setLoading(false);
-        console.log("🔍 LOGIN DEBUG: Email login - User created in Firestore, redirecting to onboarding");
         return;
       }
 
       // If successful, sign in with NextAuth
-      console.log("🔍 DEBUG: About to call NextAuth signIn with credentials");
       const result = await signIn("credentials", {
         email: email,
         password: pass,
         redirect: false,
       });
       
-      console.log("🔍 DEBUG: NextAuth signIn result:", result);
       
       setLoading(false);
 
       if (result?.error) {
-        console.error("❌ ERROR: NextAuth signIn failed with error:", result.error);
         setErrorMsg("Authentication failed. Please check the console for details.");
       } else {
-        console.log("✅ SUCCESS: NextAuth signIn successful, redirecting to home");
         router.push('/');
       }
     } catch (error) {
@@ -235,7 +223,6 @@ export default function LoginButton() {
           // Check if this email uses Google sign-in
           try {
             const methods = await fetchSignInMethodsForEmail(auth, email);
-            console.log("Sign-in methods for email:", methods);
             
             if (methods.includes('google.com')) {
               setErrorMsg("This account uses Google sign-in. Please click 'Sign in with Google' below.");
@@ -261,12 +248,11 @@ export default function LoginButton() {
     }
   }
 
-  // Custom Google sign-in function with user existence check by email
+  // Custom Google sign-in function with Firebase Auth check
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
       
-      // Sign in with Google (without callback URL)
       const result = await signIn('google', { redirect: false });
       
       if (result?.error) {
@@ -275,7 +261,6 @@ export default function LoginButton() {
         return;
       }
 
-      // Wait for Firebase auth to initialize
       await new Promise(resolve => setTimeout(resolve, 500));
       
       const auth = getFirebaseAuth();
@@ -293,29 +278,29 @@ export default function LoginButton() {
         return;
       }
 
+      // Check Firebase Auth sign-in methods for this email
+      const methods = await fetchSignInMethodsForEmail(auth, currentUser.email);
+      
+      if (methods.includes('password') && !methods.includes('google.com')) {
+        setErrorMsg("This email is already registered for email login. Please use email and password to sign in.");
+        setLoading(false);
+        return;
+      }
+
       // Check if user exists in Firestore by email
       const userExists = await checkUserExistsByEmail(currentUser.email);
 
       if (userExists.exists) {
-        console.log("🔍 LOGIN DEBUG: Google user exists in Firestore, checking profile completion...");
         
-        // Check if profile is complete
         const isProfileComplete = userExists.userData?.profileComplete !== false;
-        console.log("🔍 LOGIN DEBUG: Google user profile complete status:", isProfileComplete);
         
         if (isProfileComplete) {
-          console.log("🔍 LOGIN DEBUG: Google user profile complete, redirecting to home");
           router.push('/');
         } else {
-          console.log("🔍 LOGIN DEBUG: Google user profile incomplete, redirecting to onboarding");
           router.push('/onboarding');
         }
       } else {
-        console.log("🔍 LOGIN DEBUG: Google user doesn't exist in Firestore, creating document and redirecting to onboarding");
         
-        // User doesn't exist, add them to Firestore and go to onboarding
-        
-        // Add user to Firestore with Google auth details
         const userDocRef = doc(db, "Users", currentUser.uid);
         await setDoc(userDocRef, {
           name: currentUser.displayName || currentUser.email.split('@')[0],
@@ -325,7 +310,7 @@ export default function LoginButton() {
           interests: [],
           hasBike: false,
           authProvider: 'google',
-          profileComplete: false, // ✅ CRITICAL: Mark profile as incomplete initially
+          profileComplete: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });
@@ -333,7 +318,6 @@ export default function LoginButton() {
         router.push('/onboarding');
       }
     } catch (error) {
-      console.error("Error during Google sign-in:", error);
       setErrorMsg("An error occurred during sign-in. Please try again.");
       setLoading(false);
     }
@@ -362,41 +346,30 @@ export default function LoginButton() {
         if (!auth) return;
 
         const currentUser = auth.currentUser;
-        console.log("🔍 LOGIN DEBUG: Current user in useEffect:", currentUser);
-        console.log("🔍 LOGIN DEBUG: Session data:", session);
         
         if (!currentUser || !currentUser.email) {
-          console.log("🔍 LOGIN DEBUG: No current user or email, skipping redirect");
           route('/');
           return;
         }
 
-        console.log("🔍 LOGIN DEBUG: Checking user existence for email:", currentUser.email);
         
         // Check if user exists in Firestore by email
         const userExists = await checkUserExistsByEmail(currentUser.email);
-        console.log("🔍 LOGIN DEBUG: User exists check result:", userExists);
 
         if (userExists.exists) {
-          console.log("🔍 LOGIN DEBUG: User found in Firestore, checking profile completion...");
           
           // Check if profile is complete
           const isProfileComplete = userExists.userData?.profileComplete !== false;
-          console.log("🔍 LOGIN DEBUG: Profile complete status:", isProfileComplete);
           
           if (isProfileComplete) {
-            console.log("🔍 LOGIN DEBUG: Profile complete, redirecting to home");
             router.push('/');
           } else {
-            console.log("🔍 LOGIN DEBUG: Profile incomplete, redirecting to onboarding");
             router.push('/onboarding');
           }
         } else {
-          console.log("🔍 LOGIN DEBUG: User not found in Firestore, redirecting to onboarding");
           router.push('/onboarding');
         }
       } catch (error) {
-        console.error("❌ LOGIN ERROR: Error checking user:", error);
         router.push('/onboarding');
       } finally {
         setCheckingSession(false);
@@ -405,7 +378,6 @@ export default function LoginButton() {
 
     // Only check if user is already logged in
     if (session) {
-      console.log("🔍 LOGIN DEBUG: Session detected, triggering checkAndRedirect");
       checkAndRedirect();
     }
   }, [session]);

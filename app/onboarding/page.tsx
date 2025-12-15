@@ -86,15 +86,11 @@ export default function OnboardingPage() {
   });
 
   useEffect(() => {
-    console.log("🔍 ONBOARDING DEBUG: Onboarding useEffect triggered");
-    console.log("🔍 ONBOARDING DEBUG: Session data:", session);
     
     if (session?.user?.email) {
-      console.log("🔍 ONBOARDING DEBUG: Email found in session, checking user existence");
       // Check if user already exists and redirect if they do
       checkUserExists();
     } else {
-      console.log("🔍 ONBOARDING DEBUG: No email in session, redirecting to login");
       router.push("/login");
     }
   }, [session, router]);
@@ -102,15 +98,12 @@ export default function OnboardingPage() {
   // Check if user exists in Firestore by email
   const checkUserExists = async () => {
     try {
-      console.log("🔍 ONBOARDING DEBUG: Starting checkUserExists function");
-      console.log("🔍 ONBOARDING DEBUG: Session user data:", session?.user);
       
       // Wait a bit to ensure Firebase auth is fully initialized
       await new Promise(resolve => setTimeout(resolve, 500));
       
       const userEmail = session?.user?.email;
       if (!userEmail) {
-        console.log("⚠️ ONBOARDING DEBUG: No email in session");
         setFormData((prev) => ({
           ...prev,
           name: session?.user?.name || "",
@@ -121,26 +114,19 @@ export default function OnboardingPage() {
         return;
       }
 
-      console.log("🔍 ONBOARDING DEBUG: Checking user existence for email:", userEmail);
       
       // Check if user exists in Firestore by email
       const userExists = await checkUserExistsByEmail(userEmail);
-      console.log("🔍 ONBOARDING DEBUG: User exists check result:", userExists);
 
       if (userExists.exists && userExists.userData) {
-        console.log("✅ ONBOARDING DEBUG: User exists in Firestore");
-        console.log("🔍 ONBOARDING DEBUG: User data:", userExists.userData);
         
         // Check if profile is complete
         const isProfileComplete = userExists.userData.profileComplete !== false;
-        console.log("🔍 ONBOARDING DEBUG: Profile complete status:", isProfileComplete);
 
         if (isProfileComplete) {
-          console.log("✅ ONBOARDING DEBUG: Profile complete, redirecting to home");
           router.push("/");
           return;
         } else {
-          console.log("⚠️ ONBOARDING DEBUG: Profile incomplete, staying on onboarding");
           // Pre-fill form with existing data
           setFormData((prev) => ({
             ...prev,
@@ -148,14 +134,12 @@ export default function OnboardingPage() {
           }));
         }
       } else {
-        console.log("⚠️ ONBOARDING DEBUG: User doesn't exist in Firestore, creating basic document...");
         
         // Create a basic user document if it doesn't exist
         const auth = getFirebaseAuth();
         const firebaseUser = auth?.currentUser;
         const userUid = session?.user?.id || firebaseUser?.uid;
         
-        console.log("🔍 ONBOARDING DEBUG: User UID for new document:", userUid);
         
         if (userUid) {
           const db = getFirestore();
@@ -174,7 +158,6 @@ export default function OnboardingPage() {
             updatedAt: new Date().toISOString(),
           });
           
-          console.log("✅ ONBOARDING DEBUG: Basic user document created");
         }
         
         // Pre-fill form with session data
@@ -188,7 +171,6 @@ export default function OnboardingPage() {
       
       setLoading(false);
     } catch (error) {
-      console.error("❌ ONBOARDING ERROR: Error checking user:", error);
       setError("Failed to check user status. Please try again.");
       setLoading(false);
     }
@@ -249,14 +231,12 @@ export default function OnboardingPage() {
     setError(null);
 
     try {
-      console.log("🔍 Saving onboarding data...");
       
       const auth = getFirebaseAuth();
       const firebaseUser = auth?.currentUser;
       
       // Get the Firebase UID from NextAuth session or Firebase Auth
       const userUid = session?.user?.id || firebaseUser?.uid;
-      console.log("🔍 User UID:", userUid);
       
       if (!userUid) {
         throw new Error("No authenticated user found");
@@ -269,16 +249,13 @@ export default function OnboardingPage() {
       const userDoc = await getDoc(userRef);
       
       if (userDoc.exists()) {
-        console.log("✅ ONBOARDING DEBUG: Updating existing user document");
         // Update existing user with profileComplete flag
         await updateDoc(userRef, {
           ...formData,
           profileComplete: true, // ✅ CRITICAL: Mark profile as complete
           updatedAt: new Date().toISOString(),
         });
-        console.log("✅ ONBOARDING DEBUG: User document updated with profileComplete: true");
       } else {
-        console.log("✅ ONBOARDING DEBUG: Creating new user document");
         // Create new user document
         await setDoc(userRef, {
           ...formData,
@@ -286,14 +263,10 @@ export default function OnboardingPage() {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });
-        console.log("✅ ONBOARDING DEBUG: New user document created with profileComplete: true");
       }
       
-      console.log("✅ ONBOARDING DEBUG: Onboarding complete, redirecting to home");
-      console.log("🔍 ONBOARDING DEBUG: About to call router.push('/')");
       router.push("/");
     } catch (error) {
-      console.error("❌ Error saving user data:", error);
       setError("Failed to save user data. Please try again.");
     } finally {
       setSubmitting(false);
