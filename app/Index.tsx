@@ -10,7 +10,7 @@ import HomeFilterSearch from '@/components/ui/HomeFilterSearch'
 const Index = () => {
   return (
     <div className='relative' >
-        <div className='fixed top-0' >
+        <div className='fixed top-0 z-50' >
           <Header />
         </div>
         <Hero />
