@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkUserExists, createUser, updateUser, upsertUser, getUser } from "@/lib/mongodbUtils";
+import { checkUserExists, createUser, updateUser, getUser } from "@/lib/mongodbUtils";
 
 export async function POST(request: NextRequest) {
   try {

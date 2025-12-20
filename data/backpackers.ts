@@ -617,6 +617,11 @@ export function createBackpackerGroup(payload: CreateGroupPayload) {
     badges: defaultBadges,
   };
 
+  // Note: MongoDB operations are now handled server-side via API routes
+  // The createBackpackerGroup function should only be called from server-side contexts
+  // For client-side usage, use the API route at /api/groups instead
+  
+  // Add to memory for backward compatibility (client-side usage)
   backpackerGroups.push(newGroup);
   return newGroup;
 }
