@@ -1,411 +1,332 @@
-'use client'
-import { useState, useEffect } from "react"
+"use client";
+
+import { useState, useEffect } from "react";
 import { signIn, signOut, useSession } from "next-auth/react"
 import { createUserWithEmailAndPassword, updateProfile, fetchSignInMethodsForEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
-import { getFirebaseAuth } from "@/lib/firebaseAuth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebaseConfig";
-import { checkUserExistsByEmail } from "@/lib/userUtils";
-import Loading from "@/components/ui/components/Loading";
 import { useRouter } from "next/navigation";
+import { getFirebaseAuth } from "@/lib/firebaseAuth";
+import Loading from "@/components/ui/components/Loading";
 import GoBackButton from "@/components/ui/components/GoBackButton";
-import { route } from "@/lib/route";
 
-export default function LoginButton() {
-  const { data: session } = useSession()
-  const router = useRouter();
-
-  const [login, setLogin] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [pass, setPass] = useState('');
-  const [rePass, setRePass] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
+export default function Login() {
+  const [isLogin, setIsLogin] = useState(true);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [agreement, setAgreement] = useState(false);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isGithubLoading, setIsGithubLoading] = useState(false);
 
-  // Create account with Firebase Auth
-  const createAccount = async () => {
-    const auth = getFirebaseAuth();
-    
-    if (!auth) {
-      setErrorMsg("Authentication service is not available");
-      return;
-    }
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-    // Validation
-    if (!firstName) {
-      setErrorMsg("Enter First name");
-      return;
-    } else if (!lastName) {
-      setErrorMsg("Enter Last name");
-      return;
-    } else if (!agreement) {
-      setErrorMsg("Agree to the terms & conditions");
-      return;
-    } else if (!email) {
-      setErrorMsg("Enter Email");
-      return;
-    } else if (!pass) {
-      setErrorMsg("Enter Password");
-      return;
-    } else if (pass.length < 6) {
-      setErrorMsg("Password must be at least 6 characters");
-      return;
-    } else if (!rePass) {
-      setErrorMsg("Confirm your password");
-      return;
-    } else if (pass !== rePass) {
-      setErrorMsg("Passwords do not match!");
-      return;
-    }
-
-    setLoading(true);
-    setErrorMsg('');
-
-    try {
-      // Check if user already exists in Firestore by email
-      const userExists = await checkUserExistsByEmail(email);
-
-      if (userExists.exists) {
-        setErrorMsg("An account with this email already exists. Please login instead.");
-        setLoading(false);
-        return;
-      }
-
-      // Try to create user in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-      const user = userCredential.user;
-
-      // Update display name
-      await updateProfile(user, {
-        displayName: `${firstName} ${lastName}`
-      });
-
-      // Store user data in Firestore
-      const userDocRef = doc(db, "Users", user.uid);
-      await setDoc(userDocRef, {
-        name: `${firstName} ${lastName}`,
-        email: email,
-        phone: "",
-        gender: "",
-        interests: [],
-        hasBike: false,
-        authProvider: 'email',
-        profileComplete: false, // ✅ CRITICAL: Mark profile as incomplete initially
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-
-      // Sign in with NextAuth
-      const result = await signIn("credentials", {
-        email: email,
-        password: pass,
-        redirect: false,
-      });
-
-      
-      setLoading(false);
-      
-      if (result?.error) {
-        setErrorMsg("Failed to sign in after registration. Please check the console for details.");
-      } else {
-        router.push('/');
-      }
-    } catch (error) {
-      setLoading(false);
-      
-      if (error instanceof FirebaseError) {
-        if (error.code === 'auth/email-already-in-use') {
-          // Check what provider is being used
-          try {
-            const methods = await fetchSignInMethodsForEmail(auth, email);
-            
-            if (methods.includes('google.com')) {
-              setErrorMsg("This email is already registered with Google. Please sign in with Google instead.");
-            } else if (methods.includes('password')) {
-              setErrorMsg("This email is already registered. Please login instead.");
-            } else if (methods.length === 0) {
-              // Account exists but no methods (edge case with Google)
-              setErrorMsg("This email is already registered with Google. Please sign in with Google instead.");
-            } else {
-              setErrorMsg("This email is already in use. Please use the sign-in method you registered with.");
-            }
-          } catch (fetchError) {
-            // If fetchSignInMethodsForEmail fails, assume Google
-            setErrorMsg("This email is already registered. Try signing in with Google or use a different email.");
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      // Check if user exists in MongoDB by email
+      const checkUserInDB = async () => {
+        try {
+          // Wait a bit for Firebase auth to initialize and Firestore writes to complete
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Check if user exists in MongoDB by email
+          const response = await fetch(`/api/users/check?email=${encodeURIComponent(session.user.email!)}`);
+          
+          if (!response.ok) {
+            console.error('Failed to check user in MongoDB');
+            return;
           }
-        } else if (error.code === 'auth/invalid-email') {
-          setErrorMsg("Invalid email address");
-        } else if (error.code === 'auth/weak-password') {
-          setErrorMsg("Password is too weak");
-        } else {
-          setErrorMsg("Failed to create account. Please try again.");
-        }
-      } else {
-        setErrorMsg("Failed to create account. Please try again.");
-      }
-    }
-  }
+          
+          const result = await response.json();
+          
+          if (!result.exists) {
+            // User doesn't exist, add them to MongoDB
+            const createResponse = await fetch('/api/users', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                email: session.user.email,
+                name: session.user.name || session.user.email?.split('@')[0] || 'User',
+                phone: '',
+                gender: 'prefer-not-to-say',
+                interests: [],
+                hasBike: false,
+                authProvider: session.user.email?.includes('gmail.com') ? 'google' : session.user.email?.includes('@users.noreply.github.com') ? 'github' : 'email',
+              }),
+            });
 
-  // Login with Firebase Auth via NextAuth
-  const emailLogin = async () => {
-    const auth = getFirebaseAuth();
-    
-    if (!auth) {
-      setErrorMsg("Authentication service is not available");
-      return;
-    }
-
-    if (!email) {
-      setErrorMsg("Enter email");
-      return;
-    } else if (!pass) {
-      setErrorMsg("Enter Password");
-      return;
-    }
-
-    setLoading(true);
-    setErrorMsg('');
-
-    try {
-      // First, try to sign in directly with Firebase to get better error messages
-      const firebaseResult = await signInWithEmailAndPassword(auth, email, pass);
-      
-      // Check if user exists in Firestore by email
-      const userExists = await checkUserExistsByEmail(email);
-
-      if (!userExists.exists) {
-        // User doesn't exist, add them to Firestore
-        
-        await setDoc(doc(db, "Users", firebaseResult.user.uid), {
-          name: firebaseResult.user.displayName || email.split('@')[0],
-          email: email,
-          phone: firebaseResult.user.phoneNumber || "",
-          gender: "",
-          interests: [],
-          hasBike: false,
-          authProvider: 'email',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
-        
-        router.push('/onboarding');
-        setLoading(false);
-        return;
-      }
-
-      // If successful, sign in with NextAuth
-      const result = await signIn("credentials", {
-        email: email,
-        password: pass,
-        redirect: false,
-      });
-      
-      
-      setLoading(false);
-
-      if (result?.error) {
-        setErrorMsg("Authentication failed. Please check the console for details.");
-      } else {
-        router.push('/');
-      }
-    } catch (error) {
-      setLoading(false);
-      
-      if (error instanceof FirebaseError) {
-        if (error.code === 'auth/user-not-found') {
-          setErrorMsg("No account found with this email. Please sign up first.");
-        } else if (error.code === 'auth/wrong-password') {
-          // Check if this email uses Google sign-in
-          try {
-            const methods = await fetchSignInMethodsForEmail(auth, email);
-            
-            if (methods.includes('google.com')) {
-              setErrorMsg("This account uses Google sign-in. Please click 'Sign in with Google' below.");
-            } else if (methods.length === 0) {
-              // Edge case: email exists but no password set (signed up with Google)
-              setErrorMsg("This account uses Google sign-in. Please click 'Sign in with Google' below.");
-            } else {
-              setErrorMsg("Incorrect password. Please try again.");
+            if (!createResponse.ok) {
+              console.error('Failed to save user to MongoDB');
             }
-          } catch (fetchError) {
-            setErrorMsg("Incorrect password. If you signed up with Google, please use the Google sign-in button.");
           }
-        } else if (error.code === 'auth/invalid-email') {
-          setErrorMsg("Invalid email address");
-        } else if (error.code === 'auth/user-disabled') {
-          setErrorMsg("This account has been disabled. Please contact support.");
-        } else {
-          setErrorMsg("Login failed. Please try again.");
+          
+          // Redirect to onboarding if profile is incomplete, otherwise to home
+          router.push("/onboarding");
+        } catch (error) {
+          console.error("Error checking user in MongoDB:", error);
+          setError("Failed to connect to database. Please try again.");
         }
-      } else {
-        setErrorMsg("Login failed. Please try again.");
-      }
+      };
+
+      checkUserInDB();
     }
-  }
+  }, [session, status, router]);
 
-  // Custom Google sign-in function with Firebase Auth check
-  const handleGoogleSignIn = async () => {
+  const handleEmailPasswordSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setError("");
+    setLoading(true);
+
     try {
-      setLoading(true);
-      
-      const result = await signIn('google', { redirect: false });
-      
-      if (result?.error) {
-        setErrorMsg("Google sign-in failed. Please try again.");
-        setLoading(false);
-        return;
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
       const auth = getFirebaseAuth();
       if (!auth) {
-        setErrorMsg("Authentication service is not available");
-        setLoading(false);
-        return;
+        throw new Error("Firebase Auth is not available");
       }
 
-      const currentUser = auth.currentUser;
-      
-      if (!currentUser || !currentUser.email) {
-        setErrorMsg("Failed to get user information");
-        setLoading(false);
-        return;
-      }
-
-      // Check Firebase Auth sign-in methods for this email
-      const methods = await fetchSignInMethodsForEmail(auth, currentUser.email);
-      
-      if (methods.includes('password') && !methods.includes('google.com')) {
-        setErrorMsg("This email is already registered for email login. Please use email and password to sign in.");
-        setLoading(false);
-        return;
-      }
-
-      // Check if user exists in Firestore by email
-      const userExists = await checkUserExistsByEmail(currentUser.email);
-
-      if (userExists.exists) {
-        
-        const isProfileComplete = userExists.userData?.profileComplete !== false;
-        
-        if (isProfileComplete) {
-          router.push('/');
-        } else {
-          router.push('/onboarding');
+      if (isLogin) {
+        // Login flow
+        if (!email) {
+          setError("Enter email");
+          setLoading(false);
+          return;
+        } else if (!password) {
+          setError("Enter Password");
+          setLoading(false);
+          return;
         }
-      } else {
+
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        if (methods.length === 0) {
+          setError("No account found with this email. Please sign up first.");
+          setLoading(false);
+          return;
+        }
+
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Check if user exists in MongoDB by email
+        const response = await fetch(`/api/users/check?email=${encodeURIComponent(email)}`);
         
-        const userDocRef = doc(db, "Users", currentUser.uid);
-        await setDoc(userDocRef, {
-          name: currentUser.displayName || currentUser.email.split('@')[0],
-          email: currentUser.email,
-          phone: currentUser.phoneNumber || "",
-          gender: "",
-          interests: [],
-          hasBike: false,
-          authProvider: 'google',
-          profileComplete: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+        if (!response.ok) {
+          console.error('Failed to check user in MongoDB');
+          setLoading(false);
+          return;
+        }
+        
+        const result = await response.json();
+
+        if (!result.exists) {
+          // User doesn't exist, add them to MongoDB
+          const createResponse = await fetch('/api/users', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: user.email,
+              name: user.displayName || user.email?.split('@')[0] || 'User',
+              phone: '',
+              gender: 'prefer-not-to-say',
+              interests: [],
+              hasBike: false,
+              authProvider: 'email',
+            }),
+          });
+
+          if (!createResponse.ok) {
+            console.error('Failed to save user to MongoDB');
+          }
+        }
+
+        // Sign in with NextAuth
+        await signIn("credentials", {
+          email: user.email,
+          password,
+          redirect: false,
         });
-        
-        router.push('/onboarding');
+
+        router.push("/onboarding");
+      } else {
+        // Sign up flow
+        if (!firstName) {
+          setError("Enter First name");
+          setLoading(false);
+          return;
+        } else if (!lastName) {
+          setError("Enter Last name");
+          setLoading(false);
+          return;
+        } else if (!agreement) {
+          setError("Agree to the terms & conditions");
+          setLoading(false);
+          return;
+        } else if (!email) {
+          setError("Enter Email");
+          setLoading(false);
+          return;
+        } else if (!password) {
+          setError("Enter Password");
+          setLoading(false);
+          return;
+        } else if (password.length < 6) {
+          setError("Password must be at least 6 characters");
+          setLoading(false);
+          return;
+        } else if (!confirmPassword) {
+          setError("Confirm your password");
+          setLoading(false);
+          return;
+        } else if (password !== confirmPassword) {
+          setError("Passwords do not match!");
+          setLoading(false);
+          return;
+        }
+
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        if (methods.length > 0) {
+          setError("An account with this email already exists. Please sign in.");
+          setLoading(false);
+          return;
+        }
+
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        if (firstName.trim() || lastName.trim()) {
+          await updateProfile(user, { displayName: `${firstName.trim()} ${lastName.trim()}` });
+        }
+
+        // IMMEDIATELY create user in MongoDB with basic info
+        const response = await fetch('/api/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: user.email,
+            name: `${firstName.trim()} ${lastName.trim()}` || user.displayName || 'User',
+            phone: '',
+            gender: 'prefer-not-to-say',
+            interests: [],
+            hasBike: false,
+            authProvider: 'email',
+            city: '', // Add this
+            profileComplete: false, // Add this flag
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Failed to save user to MongoDB:', errorData);
+          throw new Error('Failed to create user account');
+        }
+
+        // Sign in with NextAuth
+        await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+
+        router.push("/onboarding");
       }
     } catch (error) {
-      setErrorMsg("An error occurred during sign-in. Please try again.");
+      console.error("Authentication error:", error);
+      
+      if (error instanceof FirebaseError) {
+        switch (error.code) {
+          case 'auth/invalid-email':
+            setError("Invalid email address");
+            break;
+          case 'auth/user-not-found':
+            setError("No account found with this email. Please sign up first.");
+            break;
+          case 'auth/wrong-password':
+            // Check if this email uses Google sign-in
+            try {
+              const auth = getFirebaseAuth();
+              if (auth) {
+                const methods = await fetchSignInMethodsForEmail(auth, email);
+                if (methods.includes('google.com')) {
+                  setError("This account uses Google sign-in. Please click 'Sign in with Google' below.");
+                } else {
+                  setError("Incorrect password. Please try again.");
+                }
+              } else {
+                setError("Incorrect password. Please try again.");
+              }
+            } catch (fetchError) {
+              setError("Incorrect password. If you signed up with Google, please use the Google sign-in button.");
+            }
+            break;
+          case 'auth/email-already-in-use':
+            setError("An account with this email already exists. Please sign in.");
+            break;
+          case 'auth/weak-password':
+            setError("Password is too weak. Please use at least 6 characters");
+            break;
+          case 'auth/network-request-failed':
+            setError("Network error. Please check your internet connection");
+            break;
+          default:
+            setError(error.message || "An authentication error occurred");
+        }
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+    } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (errorMsg.length > 0) {
-      const timer = setTimeout(() => {
-        setErrorMsg('');
-      }, 6000);
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    try {
+      await signIn("google", { callbackUrl: "/onboarding" });
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+      setError("Failed to sign in with Google. Please try again.");
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
 
+  const handleGithubSignIn = async () => {
+    setIsGithubLoading(true);
+    try {
+      await signIn("github", { callbackUrl: "/onboarding" });
+    } catch (error) {
+      console.error("GitHub sign-in error:", error);
+      setError("Failed to sign in with GitHub. Please try again.");
+    } finally {
+      setIsGithubLoading(false);
+    }
+  };
+
+  // Auto-clear error after 6 seconds
+  useEffect(() => {
+    if (error.length > 0) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 6000);
       return () => clearTimeout(timer);
     }
-  }, [errorMsg]);
+  }, [error]);
 
-  // Check if user exists in Firestore and redirect accordingly
-  useEffect(() => {
-    const checkAndRedirect = async () => {
-      try {
-        setCheckingSession(true);
-        
-        // Wait a bit for Firebase auth to initialize and Firestore writes to complete
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const auth = getFirebaseAuth();
-        if (!auth) return;
+  if (status === "loading") {
+    return <Loading />;
+  }
 
-        const currentUser = auth.currentUser;
-        
-        if (!currentUser || !currentUser.email) {
-          route('/');
-          return;
-        }
-
-        
-        // Check if user exists in Firestore by email
-        const userExists = await checkUserExistsByEmail(currentUser.email);
-
-        if (userExists.exists) {
-          
-          // Check if profile is complete
-          const isProfileComplete = userExists.userData?.profileComplete !== false;
-          
-          if (isProfileComplete) {
-            router.push('/');
-          } else {
-            router.push('/onboarding');
-          }
-        } else {
-          router.push('/onboarding');
-        }
-      } catch (error) {
-        router.push('/onboarding');
-      } finally {
-        setCheckingSession(false);
-      }
-    };
-
-    // Only check if user is already logged in
-    if (session) {
-      checkAndRedirect();
-    }
-  }, [session]);
-
-  if (session) {
-    if (checkingSession) {
-      return (
-        <div className="w-screen h-screen p-[12px]">
-          <div className="bg-white flex flex-col w-full h-full rounded-[12px] p-6 items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
-            <p className="mt-4 text-black">Checking your profile...</p>
-          </div>
-        </div>
-      )
-    }
-
-    return (
-      <div className="w-screen h-screen p-[12px]">
-        <div className="bg-white flex flex-col w-full h-full rounded-[12px] p-6">
-          <p className="text-black">Signed in as {session.user?.email}</p>
-          <button
-            onClick={() => signOut({ callbackUrl: '/login' })}
-            className="mt-4 bg-white text-black px-4 py-2 rounded">
-            Sign out
-          </button>
-        </div>
-      </div>
-    )
+  if (status === "authenticated") {
+    return <Loading />;
   }
 
   return (
@@ -423,7 +344,7 @@ export default function LoginButton() {
 
       {/* Right side form */}
       <div className="Mont w-full lg:w-[calc(50vw-24px)] px-[3vw] mt-[24px]">
-        {login ? (
+        {isLogin ? (
           <div>
             <div className="flex lg:hidden" >
               <GoBackButton />
@@ -431,16 +352,19 @@ export default function LoginButton() {
             <p className="text-black mt-[24px] text-[36px] font-extrabold Mont">Welcome Back!</p>
             <button 
               onClick={() => {
-                setLogin(!login);
-                setErrorMsg('');
+                setIsLogin(!isLogin);
+                setError("");
+                setEmail("");
+                setPassword("");
+                setConfirmPassword("");
               }}
               className="text-black mt-[2.5vh] text-[12px] font-light">
               Create a new Account! <span className="underline">Click Here</span>
             </button>
             
-            {errorMsg.length > 0 && (
+            {error.length > 0 && (
               <div className="text-red-500 text-[13px] mt-[12px] bg-red-50 p-3 rounded-md border border-red-200">
-                {errorMsg}
+                {error}
               </div>
             )}
 
@@ -454,14 +378,14 @@ export default function LoginButton() {
               className="mt-[3vh] bg-white text-black text-[14px] outline-none border-[0.5px] border-[#3e4462] placeholder-[#00000090] w-full rounded-[6px] px-[24px] py-[16px]"
               type="password" 
               placeholder="Enter your Password"
-              value={pass}
-              onChange={(e) => setPass(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && emailLogin()} />
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleEmailPasswordSubmit()} />
 
             <button 
-              onClick={emailLogin}
+              onClick={() => handleEmailPasswordSubmit()}
               className="text-white font-light w-full bg-black mt-[6vh] rounded-[6px] py-[12px]">
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
           </div>
         ) : (
@@ -473,16 +397,22 @@ export default function LoginButton() {
             <p className="text-black text-[36px] font-extrabold Mont mt-[24px]">Create a new Account</p>
             <button 
               onClick={() => {
-                setLogin(!login);
-                setErrorMsg('');
+                setIsLogin(!isLogin);
+                setError("");
+                setFirstName("");
+                setLastName("");
+                setEmail("");
+                setPassword("");
+                setConfirmPassword("");
+                setAgreement(false);
               }}
               className="text-black mt-[2.5vh] text-[12px] font-light">
               Already have an account! <span className="underline">Login Here</span>
             </button>
             
-            {errorMsg.length > 0 && (
+            {error.length > 0 && (
               <div className="text-red-500 mt-[12px] text-[13px] bg-red-50 p-3 rounded-md border border-red-200">
-                {errorMsg}
+                {error}
               </div>
             )}
 
@@ -510,14 +440,14 @@ export default function LoginButton() {
               className="mt-[2.5vh] bg-white text-black text-[14px] outline-none border-[0.5px] border-[#3e4462] placeholder-[#00000090] w-full rounded-[6px] px-[24px] py-[16px]"
               type="password" 
               placeholder="Enter your Password"
-              value={pass}
-              onChange={(e) => setPass(e.target.value)} />
+              value={password}
+              onChange={(e) => setPassword(e.target.value)} />
             <input 
               className="mt-[2.5vh] bg-white text-black text-[14px] outline-none border-[0.5px] border-[#3e4462] placeholder-[#00000090] w-full rounded-[6px] px-[24px] py-[16px]"
               type="password" 
               placeholder="Re-Enter your Password"
-              value={rePass}
-              onChange={(e) => setRePass(e.target.value)} />
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)} />
 
             <div className="flex gap-[12px] items-center mt-[2.5vh]">
               <input 
@@ -528,9 +458,9 @@ export default function LoginButton() {
             </div>
 
             <button 
-              onClick={createAccount}
+              onClick={() => handleEmailPasswordSubmit()}
               className="text-white font-light w-full bg-black mt-[6vh] rounded-[6px] py-[12px]">
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
           </div>
         )}
@@ -544,13 +474,23 @@ export default function LoginButton() {
         {/* Google Sign In */}
         <button
           onClick={handleGoogleSignIn}
-          className="flex gap-[12px] justify-center items-center text-black font-light border border-[#3e4462] w-full mt-[36px] rounded-[6px] py-[12px]">
-          <img 
-            width={16}
-            src="https://www.gstatic.com/marketing-cms/assets/images/d5/dc/cfe9ce8b4425b410b49b7f2dd3f3/g.webp=s96-fcrop64=1,00000000ffffffff-rw" 
-            alt="" />
-          Google
+          disabled={isGoogleLoading}
+          className="flex gap-[12px] justify-center items-center text-black font-light border border-[#3e4462] w-full mt-[36px] rounded-[6px] py-[12px] disabled:opacity-50 disabled:cursor-not-allowed">
+          {isGoogleLoading ? (
+            <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <>
+              <img 
+                width={16}
+                src="https://www.gstatic.com/marketing-cms/assets/images/d5/dc/cfe9ce8b4425b410b49b7f2dd3f3/g.webp=s96-fcrop64=1,00000000ffffffff-rw" 
+                alt="Google" />
+              <span>Google</span>
+            </>
+          )}
         </button>
+
+        
+        
       </div>
     </div>
   );
