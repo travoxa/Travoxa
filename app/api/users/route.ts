@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkUserExists, createUser, updateUser, upsertUser } from "@/lib/userUtils";
-import { doc, getDoc } from "firebase/firestore";
-import { getFirestore } from "firebase/firestore";
+import { checkUserExists, createUser, updateUser, upsertUser, getUser } from "@/lib/mongodbUtils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,17 +23,13 @@ export async function POST(request: NextRequest) {
       authProvider: authProvider || "email",
     };
 
-    // For API calls, we need to get the UID from the session or auth
-    // Since this is an API route, we'll need to handle auth differently
-    // For now, we'll use email as the identifier for API calls
-    const db = getFirestore();
-    const userRef = doc(db, "Users", email);
-    const userSnap = await getDoc(userRef);
+    // For API calls, we use email as the identifier for MongoDB
+    const exists = await checkUserExists(email);
     
-    if (userSnap.exists()) {
+    if (exists) {
       await updateUser(email, userData);
     } else {
-      await createUser(email, userData);
+      await createUser(userData);
     }
 
     return NextResponse.json(
@@ -43,12 +37,14 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error in users API:", error);
-    return NextResponse.json(
-      { error: "Failed to save user data" },
-      { status: 500 }
-    );
-  }
+      console.error("Error in users API:", error);
+      console.error("Error details:", error instanceof Error ? error.message : error);
+      console.error("Stack:", error instanceof Error ? error.stack : 'No stack');
+      return NextResponse.json(
+        { error: "Failed to save user data", details: error instanceof Error ? error.message : String(error) },
+        { status: 500 }
+      );
+    }
 }
 
 export async function GET(request: NextRequest) {
@@ -63,9 +59,15 @@ export async function GET(request: NextRequest) {
     }
 
     const exists = await checkUserExists(email);
+    let userData = null;
+
+    if (exists) {
+      const userResult = await getUser(email);
+      userData = userResult;
+    }
 
     return NextResponse.json(
-      { exists },
+      { exists, userData: exists ? userData : null },
       { status: 200 }
     );
   } catch (error) {

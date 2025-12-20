@@ -5,10 +5,8 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/ui/Header";
 import Footor from "@/components/ui/Footor";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { getFirestore } from "firebase/firestore";
 import { getFirebaseAuth } from "@/lib/firebaseAuth";
-import { upsertUser, checkUserExistsByEmail } from "@/lib/userUtils";
+import { checkUserExistsByEmail } from "@/lib/clientUtils";
 
 interface UserFormData {
   name: string;
@@ -78,27 +76,24 @@ export default function OnboardingPage() {
     foodPreference: "",
     activityInterests: [],
     weekdayAvailability: false,
-    weekendAvailability: false,
+    weekendAvailability: true,
     shortNoticeTravel: false,
     socialProfileLink: "",
     interests: [],
-    authProvider: "google",
+    authProvider: "email",
   });
 
   useEffect(() => {
-    
     if (session?.user?.email) {
-      // Check if user already exists and redirect if they do
       checkUserExists();
     } else {
       router.push("/login");
     }
   }, [session, router]);
 
-  // Check if user exists in Firestore by email
+  // Check if user exists in MongoDB by email
   const checkUserExists = async () => {
     try {
-      
       // Wait a bit to ensure Firebase auth is fully initialized
       await new Promise(resolve => setTimeout(resolve, 500));
       
@@ -108,64 +103,32 @@ export default function OnboardingPage() {
           ...prev,
           name: session?.user?.name || "",
           email: session?.user?.email || "",
-          authProvider: session?.user?.image ? "google" : "email",
+          authProvider: "email",
         }));
         setLoading(false);
         return;
       }
 
-      
-      // Check if user exists in Firestore by email
+      // Check if user exists in MongoDB by email
       const userExists = await checkUserExistsByEmail(userEmail);
 
       if (userExists.exists && userExists.userData) {
-        
-        // Check if profile is complete
-        const isProfileComplete = userExists.userData.profileComplete !== false;
-
-        if (isProfileComplete) {
-          router.push("/");
-          return;
-        } else {
-          // Pre-fill form with existing data
-          setFormData((prev) => ({
-            ...prev,
-            ...userExists.userData,
-          }));
-        }
+        // Pre-fill form with existing data
+        setFormData((prev) => ({
+          ...prev,
+          ...userExists.userData,
+          name: userExists.userData.name || session?.user?.name || "",
+          email: userExists.userData.email || userEmail,
+          weekendAvailability: userExists.userData.weekendAvailability !== false,
+          authProvider: userExists.userData.authProvider || "email",
+        }));
       } else {
-        
-        // Create a basic user document if it doesn't exist
-        const auth = getFirebaseAuth();
-        const firebaseUser = auth?.currentUser;
-        const userUid = session?.user?.id || firebaseUser?.uid;
-        
-        
-        if (userUid) {
-          const db = getFirestore();
-          const userRef = doc(db, "Users", userUid);
-          
-          await setDoc(userRef, {
-            name: session?.user?.name || "",
-            email: userEmail,
-            phone: "",
-            gender: "",
-            interests: [],
-            hasBike: false,
-            authProvider: session?.user?.image ? "google" : "email",
-            profileComplete: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          });
-          
-        }
-        
         // Pre-fill form with session data
         setFormData((prev) => ({
           ...prev,
           name: session?.user?.name || "",
           email: userEmail,
-          authProvider: session?.user?.image ? "google" : "email",
+          authProvider: "email",
         }));
       }
       
@@ -231,42 +194,46 @@ export default function OnboardingPage() {
     setError(null);
 
     try {
-      
       const auth = getFirebaseAuth();
-      const firebaseUser = auth?.currentUser;
-      
-      // Get the Firebase UID from NextAuth session or Firebase Auth
-      const userUid = session?.user?.id || firebaseUser?.uid;
-      
-      if (!userUid) {
-        throw new Error("No authenticated user found");
+      if (!auth) {
+        throw new Error("Firebase Auth is not available");
       }
 
-      const db = getFirestore();
-      const userRef = doc(db, "Users", userUid);
-      
-      // Check if user document exists
-      const userDoc = await getDoc(userRef);
-      
-      if (userDoc.exists()) {
-        // Update existing user with profileComplete flag
-        await updateDoc(userRef, {
-          ...formData,
-          profileComplete: true, // ✅ CRITICAL: Mark profile as complete
-          updatedAt: new Date().toISOString(),
-        });
-      } else {
-        // Create new user document
-        await setDoc(userRef, {
-          ...formData,
-          profileComplete: true, // ✅ CRITICAL: Mark profile as complete
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        router.push("/login");
+        return;
+      }
+
+      // Update Firebase Auth profile if name changed
+      if (currentUser.displayName !== formData.name) {
+        await (currentUser as any).updateProfile({
+          displayName: formData.name
         });
       }
-      
+
+      // Update user in MongoDB via API route (not create, but update)
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          email: currentUser.email!,
+          authProvider: currentUser.email?.includes('gmail.com') ? 'google' : 
+                        currentUser.email?.includes('github') ? 'github' : 'email',
+          profileComplete: true, // Mark profile as complete
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save user data');
+      }
+
       router.push("/");
     } catch (error) {
+      console.error("Error saving profile:", error);
       setError("Failed to save user data. Please try again.");
     } finally {
       setSubmitting(false);
@@ -376,7 +343,7 @@ export default function OnboardingPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-black/70">City / Location</label>
+                <label className="text-sm font-medium text-black/70">City / Location *</label>
                 <input
                   type="text"
                   className="w-full rounded-[8px] border border-black/20 bg-white px-4 py-3 text-black placeholder-black/60 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/40"
@@ -470,7 +437,7 @@ export default function OnboardingPage() {
             <div className="mt-6">
               <label className="text-sm font-medium text-black/70 mb-2 block">Comfort Level</label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {["backpacking", "budget", "luxury", "mixed"].map((level) => (
+                {["budget", "mid-range", "luxury"].map((level) => (
                   <button
                     key={level}
                     type="button"
@@ -490,7 +457,7 @@ export default function OnboardingPage() {
             <div className="mt-6">
               <label className="text-sm font-medium text-black/70 mb-2 block">Preferred Travel Mode</label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {["bike", "car", "public-transport", "no-preference"].map((mode) => (
+                {["bike", "car", "public-transport", "hiking", "trekking"].map((mode) => (
                   <button
                     key={mode}
                     type="button"
@@ -510,7 +477,7 @@ export default function OnboardingPage() {
             <div className="mt-6">
               <label className="text-sm font-medium text-black/70 mb-2 block">Activity Interests</label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {["hiking", "camping", "sightseeing", "shopping", "nightlife", "museums", "beach", "mountains"].map((activity) => (
+                {["photography", "hiking", "camping", "sightseeing", "adventure", "culture", "food", "shopping", "relaxation"].map((activity) => (
                   <button
                     key={activity}
                     type="button"
@@ -650,10 +617,11 @@ export default function OnboardingPage() {
                   onChange={(e) => setFormData({ ...formData, foodPreference: e.target.value })}
                 >
                   <option value="">Select preference</option>
-                  <option value="veg">Veg</option>
-                  <option value="non-veg">Non-Veg</option>
+                  <option value="vegetarian">Vegetarian</option>
+                  <option value="non-vegetarian">Non-Vegetarian</option>
                   <option value="vegan">Vegan</option>
-                  <option value="no-matter">Doesn't Matter</option>
+                  <option value="eggetarian">Eggetarian</option>
+                  <option value="no-restriction">No Restriction</option>
                 </select>
               </div>
             </div>

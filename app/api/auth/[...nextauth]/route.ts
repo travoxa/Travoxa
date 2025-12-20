@@ -60,8 +60,7 @@ const handler = NextAuth({
             return null;
           }
 
-          console.log("✅ Firebase authentication successful");
-          console.log("✅ User ID:", data.localId);
+          
 
           // Optionally fetch additional user data from Firestore
           // You can use your existing getUser function here if needed
