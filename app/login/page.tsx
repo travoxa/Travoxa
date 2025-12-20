@@ -19,9 +19,7 @@ export default function Login() {
   const [agreement, setAgreement] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [isGithubLoading, setIsGithubLoading] = useState(false);
 
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -299,17 +297,7 @@ export default function Login() {
     }
   };
 
-  const handleGithubSignIn = async () => {
-    setIsGithubLoading(true);
-    try {
-      await signIn("github", { callbackUrl: "/onboarding" });
-    } catch (error) {
-      console.error("GitHub sign-in error:", error);
-      setError("Failed to sign in with GitHub. Please try again.");
-    } finally {
-      setIsGithubLoading(false);
-    }
-  };
+  
 
   // Auto-clear error after 6 seconds
   useEffect(() => {

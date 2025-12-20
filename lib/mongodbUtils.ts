@@ -47,25 +47,6 @@ export const checkUserExists = async (email: string): Promise<boolean> => {
   }
 };
 
-export const checkUserExistsByEmail = async (email: string): Promise<{ exists: boolean; userData?: IUser }> => {
-  try {
-    await connectDB();
-    const userData = await User.findOne({ email });
-    
-    if (userData) {
-      return {
-        exists: true,
-        userData
-      };
-    }
-    
-    return { exists: false };
-  } catch (error) {
-    console.error("Error checking user by email:", error);
-    throw new Error("Failed to check user existence by email");
-  }
-};
-
 export const getUser = async (email: string): Promise<IUser | null> => {
   try {
     await connectDB();
@@ -113,23 +94,6 @@ export const updateUser = async (email: string, updates: Partial<UserFormData>):
   } catch (error) {
     console.error("Error updating user:", error);
     throw new Error("Failed to update user");
-  }
-};
-
-export const upsertUser = async (userData: UserFormData): Promise<IUser> => {
-  try {
-    await connectDB();
-    
-    const existingUser = await User.findOne({ email: userData.email });
-    
-    if (existingUser) {
-      return await updateUser(userData.email, userData) as IUser;
-    } else {
-      return await createUser(userData);
-    }
-  } catch (error) {
-    console.error("Error upserting user:", error);
-    throw new Error("Failed to save user data");
   }
 };
 

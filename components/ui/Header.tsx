@@ -145,7 +145,7 @@ export default function Header() {
           onClose={() => setShowLoginPopup(false)}
           triggerAction={() => route('/login')}
         />
-        <div className="z-50 mt-[24px] custom-shadow backdrop-blur-lg border-[0.5] border-white  w-[80vw] rounded-[40px] mx-auto relative flex items-center justify-between px-4 pr-5 py-3">
+        <div className="z-50 mt-[24px] shadow-md backdrop-blur-lg border-[0.5] border-white  w-[80vw] rounded-[40px] mx-auto relative flex items-center justify-between px-4 pr-5 py-3">
           
 
           {/* LOGO */}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkUserExistsByEmail } from "@/lib/mongodbUtils";
+import { checkUserExists } from "@/lib/mongodbUtils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,10 +12,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const result = await checkUserExistsByEmail(email);
+    const result = await checkUserExists(email);
 
     return NextResponse.json(
-      { exists: result.exists, userData: result.exists ? result.userData : null },
+      { exists: result },
       { status: 200 }
     );
   } catch (error) {
