@@ -132,26 +132,12 @@ export default function GroupCreateForm() {
   if (!formState.groupName || !formState.startLocation || !formState.endLocation || !formState.startDate || !formState.endDate) {
     setStatus('error');
     alert('Please fill in all required fields: Group Name, Start Location, End Location, Start Date, and End Date.');
-    console.log('Form validation failed:', {
-      groupName: formState.groupName,
-      startLocation: formState.startLocation,
-      endLocation: formState.endLocation,
-      startDate: formState.startDate,
-      endDate: formState.endDate
-    });
+    
     return;
   }
 
   try {
-    console.log('Submitting form data:', {
-      ...formState,
-      creatorId: session.user.email,
-      mandatoryRules: parseList(formState.mandatoryRules),
-      itinerary: parseList(formState.itinerary),
-      activities: parseList(formState.activities),
-      estimatedCosts: parseKeyValueLines(formState.estimatedCosts),
-      tripType: formState.tripType,
-    });
+    
 
     const response = await fetch('/api/groups', {
       method: 'POST',

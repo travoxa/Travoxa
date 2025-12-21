@@ -19,7 +19,6 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        console.log("🔍 Starting authorization with Firebase REST API");
         
         if (!credentials?.email || !credentials?.password) {
           console.error("❌ Missing email or password");

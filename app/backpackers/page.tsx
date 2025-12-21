@@ -1,14 +1,14 @@
 'use client'
 import BackpackersHome from "@/components/backpackers/BackpackersHome";
-import { listGroups } from "@/data/backpackers";
 import Header from "@/components/ui/Header";
 import Footor from "@/components/ui/Footor";
 import { useState } from "react";
 import LoginRequiredPopup from "@/components/ui/LoginRequiredPopup";
 import { route } from "@/lib/route";
+import { useGroups } from "@/lib/hooks/useGroups";
 
 export default function BackpackersPage() {
-  const groups = listGroups();
+  const { groups, loading, error } = useGroups();
   const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   return (
@@ -26,7 +26,22 @@ export default function BackpackersPage() {
             </p>
           </header>
 
-          <BackpackersHome groups={groups} onOpenLoginPopup={() => setShowLoginPopup(true)} />
+          {loading && (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+              <span className="ml-3 text-sm text-black/70">Loading groups...</span>
+            </div>
+          )}
+
+          {error && (
+            <div className="rounded-2xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-red-500 text-center">
+              Failed to load groups: {error}
+            </div>
+          )}
+
+          {!loading && !error && (
+            <BackpackersHome groups={groups} onOpenLoginPopup={() => setShowLoginPopup(true)} />
+          )}
         </div>
       </main>
       <Footor />

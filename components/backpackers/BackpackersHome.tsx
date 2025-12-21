@@ -16,7 +16,7 @@ const initialFilters: GroupFiltersState = {
 };
 
 interface BackpackersHomeProps {
-  groups: BackpackerGroup[];
+  groups?: BackpackerGroup[];
   initialFilters?: GroupFiltersState;
   onOpenLoginPopup?: () => void;
 }
@@ -27,7 +27,7 @@ const budgetMatchers = {
   '40plus': (value: number) => value > 40000,
 };
 
-export default function BackpackersHome({ groups, initialFilters: presetFilters, onOpenLoginPopup }: BackpackersHomeProps) {
+export default function BackpackersHome({ groups = [], initialFilters: presetFilters, onOpenLoginPopup }: BackpackersHomeProps) {
   const [filters, setFilters] = useState<GroupFiltersState>(presetFilters ?? initialFilters);
 
   const filteredGroups = useMemo(() => {
@@ -49,6 +49,8 @@ export default function BackpackersHome({ groups, initialFilters: presetFilters,
       return matchesSearch && matchesTripType && matchesBudget && matchesMonth;
     });
   }, [filters, groups]);
+
+  
 
   return (
     <div className="space-y-8 Mont">

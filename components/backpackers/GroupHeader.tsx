@@ -48,7 +48,7 @@ export default function GroupHeader({ group }: GroupHeaderProps) {
 
           <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4">
             <p className="text-sm font-semibold text-emerald-200">Host handle</p>
-            <p className="text-base text-white">@{group.creatorId.replace("user_", "")}</p>
+            <p className="text-base text-white">@{group.hostProfile?.handle || group.creatorId.replace("user_", "")}</p>
             <p className="text-xs text-emerald-100/80">DM host for quick clarifications before applying.</p>
           </div>
         </div>

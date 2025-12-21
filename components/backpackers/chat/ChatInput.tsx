@@ -24,7 +24,7 @@ export default function ChatInput({ groupId, onMessageSent }: ChatInputProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          senderId: displayName.trim() ? `user_${displayName.trim().replace(/\s+/g, '-').toLowerCase()}` : 'user_guest',
+          senderId: displayName.trim() ? displayName.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : 'guest',
           senderName: displayName.trim() || 'Guest explorer',
           text: message.trim(),
         }),
