@@ -74,6 +74,7 @@ export interface BackpackerGroup {
   members: GroupMember[];
   hostProfile: HostProfile;
   badges: Badge[];
+  requests: JoinRequest[];
 }
 
 export interface GroupDetail {
@@ -103,6 +104,8 @@ export interface GroupDetail {
   };
   badges: Badge[];
   members: GroupMember[];
+  comments: GroupComment[];
+  requests: JoinRequest[];
 }
 
 export interface GroupComment {
@@ -114,6 +117,7 @@ export interface GroupComment {
   text: string;
   createdAt: string;
   likes: number;
+  roleLabel?: string;
 }
 
 export type JoinRequestStatus = "pending" | "approved" | "rejected";
@@ -139,7 +143,7 @@ export interface GroupMessage {
 
 export const backpackerGroups: BackpackerGroup[] = [];
 
-export const groupComments: GroupComment[] = [];
+// Comments are now stored in MongoDB via the BackpackerGroup.comments field
 
 export const joinRequests: JoinRequest[] = [];
 
@@ -207,6 +211,8 @@ export async function getGroupDetail(id: string): Promise<GroupDetail | null> {
       },
       badges: group.badges,
       members: group.members,
+      comments: group.comments || [],
+      requests: group.requests || [],
     };
   } catch (error) {
     console.error('Error fetching group detail:', error);
@@ -222,58 +228,8 @@ export function listMessagesByGroup(groupId: string) {
   return groupMessages.filter((message) => message.groupId === groupId);
 }
 
-export function listComments(groupId: string) {
-  return groupComments.filter((comment) => comment.groupId === groupId);
-}
-
-export function addComment({
-  groupId,
-  authorId,
-  authorName,
-  avatarColor,
-  text,
-}: {
-  groupId: string;
-  authorId: string;
-  authorName: string;
-  avatarColor: string;
-  text: string;
-}) {
-  const trimmed = text.trim();
-  if (!trimmed) throw new Error("Comment text required");
-
-  const comment: GroupComment = {
-    id: `cmt_${Date.now().toString(36)}`,
-    groupId,
-    authorId,
-    authorName,
-    avatarColor,
-    text: trimmed,
-    createdAt: new Date().toISOString(),
-    likes: 0,
-  };
-
-  groupComments.unshift(comment);
-  return comment;
-}
-
-export function removeComment(groupId: string, commentId: string, requesterId: string) {
-  const index = groupComments.findIndex((comment) => comment.id === commentId && comment.groupId === groupId);
-  if (index === -1) return null;
-  const comment = groupComments[index];
-  if (comment.authorId !== requesterId) {
-    throw new Error("Not authorized to delete this comment");
-  }
-  groupComments.splice(index, 1);
-  return comment;
-}
-
-export function toggleCommentLike(groupId: string, commentId: string, like: boolean) {
-  const comment = groupComments.find((item) => item.id === commentId && item.groupId === groupId);
-  if (!comment) return null;
-  comment.likes = Math.max(0, comment.likes + (like ? 1 : -1));
-  return comment;
-}
+// Comment functions moved to server-side only to avoid Mongoose client-side import issues
+// These functions are now handled directly in the CommentSection component via fetch calls
 
 export interface CreateGroupPayload {
   groupName: string;
@@ -393,6 +349,7 @@ export async function createBackpackerGroup(payload: CreateGroupPayload) {
     members: [hostMember],
     hostProfile,
     badges: defaultBadges,
+    requests: [],
   };
 
   // Note: MongoDB operations are now handled server-side via API routes

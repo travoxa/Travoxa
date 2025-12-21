@@ -49,6 +49,25 @@ export interface IDocumentsRequired {
   emergencyContact: boolean;
 }
 
+export interface IGroupComment {
+  id: string;
+  authorId: string;
+  authorName: string;
+  avatarColor: string;
+  text: string;
+  createdAt: Date;
+  likes: number;
+  roleLabel?: string;
+}
+
+export interface IJoinRequest {
+  id: string;
+  userId: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: Date;
+  note?: string;
+}
+
 export interface IBackpackerGroup extends Document {
   id: string;
   groupName: string;
@@ -72,6 +91,8 @@ export interface IBackpackerGroup extends Document {
   members: IGroupMember[];
   hostProfile: IHostProfile;
   badges: IBadge[];
+  comments: IGroupComment[];
+  requests: IJoinRequest[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -130,6 +151,30 @@ const documentsRequiredSchema = new Schema<IDocumentsRequired>({
   aadhaar: { type: Boolean, default: true },
   passport: { type: Boolean, default: false },
   emergencyContact: { type: Boolean, default: true },
+});
+
+const groupCommentSchema = new Schema<IGroupComment>({
+  id: { type: String, required: true },
+  authorId: { type: String, required: true },
+  authorName: { type: String, required: true, trim: true },
+  avatarColor: { type: String, required: true },
+  text: { type: String, required: true, trim: true },
+  createdAt: { type: Date, required: true, default: Date.now },
+  likes: { type: Number, required: true, default: 0, min: 0 },
+  roleLabel: { type: String, required: false },
+});
+
+const joinRequestSchema = new Schema<IJoinRequest>({
+  id: { type: String, required: true },
+  userId: { type: String, required: true },
+  status: {
+    type: String,
+    required: true,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending"
+  },
+  createdAt: { type: Date, required: true, default: Date.now },
+  note: { type: String, trim: true },
 });
 
 const badgeSchema = new Schema<IBadge>({
@@ -242,6 +287,15 @@ const backpackerGroupSchema = new Schema<IBackpackerGroup>({
   badges: {
     type: [badgeSchema],
     required: true,
+    default: [],
+  },
+  comments: {
+    type: [groupCommentSchema],
+    required: true,
+    default: [],
+  },
+  requests: {
+    type: [joinRequestSchema],
     default: [],
   },
   createdAt: {

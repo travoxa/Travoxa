@@ -12,12 +12,6 @@ interface CommentSectionProps {
   initialComments: GroupComment[];
 }
 
-const fallbackUser = {
-  id: 'user_guest',
-  name: 'Guest Explorer',
-  avatarColor: '#34d399',
-};
-
 export default function CommentSection({ groupId, initialComments }: CommentSectionProps) {
   const [comments, setComments] = useState<GroupComment[]>(initialComments);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,7 +24,7 @@ export default function CommentSection({ groupId, initialComments }: CommentSect
       const response = await fetch(`/api/groups/${groupId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, authorId: fallbackUser.id, authorName: fallbackUser.name, avatarColor: fallbackUser.avatarColor }),
+        body: JSON.stringify({ text }),
       });
 
       if (!response.ok) throw new Error('Failed');
@@ -44,7 +38,7 @@ export default function CommentSection({ groupId, initialComments }: CommentSect
   const handleToggleLike = async (commentId: string, like: boolean) => {
     setLikeBusyId(commentId);
     try {
-      const response = await fetch(`/api/groups/${groupId}/comments/${commentId}/like`, {
+      const response = await fetch(`/api/groups/${groupId}/comments/${commentId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ like }),

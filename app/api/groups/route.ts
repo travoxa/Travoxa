@@ -80,6 +80,17 @@ export async function GET() {
       members: group.members,
       hostProfile: await createHostProfile(group.creatorId),
       badges: group.badges,
+      comments: group.comments.map((comment: any) => ({
+        id: comment.id,
+        groupId: group._id.toString(),
+        authorId: comment.authorId,
+        authorName: comment.authorName,
+        avatarColor: comment.avatarColor,
+        text: comment.text,
+        createdAt: comment.createdAt.toISOString(),
+        likes: comment.likes,
+        roleLabel: comment.roleLabel || "Explorer",
+      })),
     })));
     
     return NextResponse.json({ groups });
@@ -185,6 +196,7 @@ export async function POST(request: Request) {
       members: [hostMember],
       hostProfile,
       badges: defaultBadges,
+      comments: [],
     });
 
     // Save to MongoDB
