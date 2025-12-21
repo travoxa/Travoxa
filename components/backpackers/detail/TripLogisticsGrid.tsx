@@ -24,13 +24,13 @@ export default function TripLogisticsGrid({
   maxMembers,
 }: TripLogisticsGridProps) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white">
+    <section className="rounded-3xl border border-gray-200 bg-white p-6 text-black">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-white/60">Trip logistics</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-600">Trip logistics</p>
           <h2 className="text-2xl font-semibold">Plan at a glance</h2>
         </div>
-        <span className="rounded-full border border-white/15 px-4 py-1 text-sm text-white/80">
+        <span className="rounded-full border border-gray-200 bg-green-50 px-4 py-1 text-sm text-gray-600">
           {currentMembers}/{maxMembers} confirmed
         </span>
       </header>
@@ -55,9 +55,9 @@ export default function TripLogisticsGrid({
           })();
 
           return (
-            <article key={tile.key} className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <p className="text-xs uppercase text-white/60">{tile.label}</p>
-              <p className="text-lg font-semibold text-white">{value}</p>
+            <article key={tile.key} className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+              <p className="text-xs uppercase text-gray-600">{tile.label}</p>
+              <p className="text-lg font-semibold text-black">{value}</p>
             </article>
           );
         })}

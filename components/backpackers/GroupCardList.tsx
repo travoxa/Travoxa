@@ -21,6 +21,8 @@ const formatDateRange = (start: string, end: string) => {
   return `${formatter.format(startDate)} • ${formatter.format(endDate)}`;
 };
 
+
+
 export default function GroupCardList({ groups }: GroupCardListProps) {
   if (groups.length === 0) {
     return (
@@ -32,6 +34,7 @@ export default function GroupCardList({ groups }: GroupCardListProps) {
       </div>
     );
   }
+
 
   return (
     <div className="mt-8 grid gap-6 lg:grid-cols-2 ">
@@ -83,7 +86,13 @@ export default function GroupCardList({ groups }: GroupCardListProps) {
               </div>
               <div className="space-y-1">
                 <p className="text-xs uppercase text-white/50">Host</p>
-                <p className="font-medium">{group.creatorId.replace("user_", "@")} </p>
+                <p className="font-medium">
+                  {group.hostProfile?.name
+                    ? group.hostProfile.name
+                    : group.hostProfile?.handle
+                      ? group.hostProfile.handle
+                      : group.hostProfile?.handle || (group.creatorId ? `@${group.creatorId.replace("user_", "")}` : "Unknown Host")}
+                </p>
               </div>
             </div>
 

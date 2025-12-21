@@ -5,6 +5,45 @@ import { checkUserExists, getUser } from "@/lib/mongodbUtils";
 import { connectDB } from "@/lib/mongodb";
 import BackpackerGroup, { type IBackpackerGroup } from "../../../lib/models/BackpackerGroup";
 
+/**
+ * Helper function to fetch user details and construct host profile
+ */
+async function createHostProfile(creatorId: string): Promise<any> {
+  try {
+    const user = await getUser(creatorId);
+    if (!user) {
+      throw new Error(`User not found for creatorId: ${creatorId}`);
+    }
+    
+    const actualUserName = user?.name || creatorId;
+    
+    return {
+      id: creatorId,
+      name: actualUserName,
+      handle: `@${actualUserName.toLowerCase().replace(/\s+/g, "")}`,
+      verificationLevel: "Pending verification",
+      pastTripsHosted: 0,
+      testimonials: [],
+      bio: "Host will update their bio soon.",
+      avatarColor: "#34d399",
+    };
+  } catch (error) {
+    console.error("Failed to create host profile:", error);
+    // Return a fallback host profile if user fetch fails
+    const fallbackUserName = creatorId;
+    return {
+      id: creatorId,
+      name: fallbackUserName,
+      handle: `@${fallbackUserName.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "")}`,
+      verificationLevel: "Pending verification",
+      pastTripsHosted: 0,
+      testimonials: [],
+      bio: "Host will update their bio soon.",
+      avatarColor: "#34d399",
+    };
+  }
+}
+
 export async function GET() {
   try {
     // Connect to MongoDB
@@ -14,8 +53,8 @@ export async function GET() {
     const mongoGroups = await BackpackerGroup.find().sort({ createdAt: -1 });
     
     // Convert MongoDB documents to the expected format
-    const groups = mongoGroups.map((group: any) => ({
-      id: group.id,
+    const groups = await Promise.all(mongoGroups.map(async (group: any) => ({
+      id: group._id.toString(),
       groupName: group.groupName,
       destination: group.destination,
       startDate: group.startDate,
@@ -39,9 +78,9 @@ export async function GET() {
       creatorId: group.creatorId,
       coverImage: group.coverImage,
       members: group.members,
-      hostProfile: group.hostProfile,
+      hostProfile: await createHostProfile(group.creatorId),
       badges: group.badges,
-    }));
+    })));
     
     return NextResponse.json({ groups });
   } catch (error) {
@@ -92,24 +131,16 @@ export async function POST(request: Request) {
       .replace(/(^-|-$)/g, "")
       .concat("-", Date.now().toString(36));
 
-    // Create host member and profile
+    // Create host member and profile using the helper function
     const creatorId = payload.creatorId;
+    const hostProfile = await createHostProfile(creatorId);
+    
     const hostMember = {
       id: creatorId,
-      name: creatorId.replace("user_", "").replace(/(^|-)?\w/g, (c) => c.toUpperCase()),
-      avatarColor: "#34d399",
+      name: hostProfile.name,
+      avatarColor: hostProfile.avatarColor,
       role: "host" as const,
       expertise: "Trip curator",
-    };
-
-    const hostProfile = {
-      id: creatorId,
-      handle: `@${hostMember.name.toLowerCase().replace(/\s+/g, "")}`,
-      verificationLevel: "Pending verification",
-      pastTripsHosted: 0,
-      testimonials: [],
-      bio: "Host will update their bio soon.",
-      avatarColor: hostMember.avatarColor,
     };
 
     const defaultBadges = [
@@ -159,7 +190,7 @@ export async function POST(request: Request) {
     // Save to MongoDB
     const savedGroup = await mongoGroup.save();
 
-    // Also add to memory for backward compatibility
+    // Return the saved group data
     const newGroup = {
       id: savedGroup.id,
       groupName: savedGroup.groupName,

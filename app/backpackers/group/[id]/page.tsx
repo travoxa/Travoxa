@@ -18,9 +18,13 @@ interface BackpackerGroupDetailPageProps {
 
 export default async function BackpackerGroupDetailPage({ params }: BackpackerGroupDetailPageProps) {
   const { id } = await params;
-  const group = getGroupDetail(id);
-
+  
+  
+  const group = await getGroupDetail(id);
+  
+  
   if (!group) {
+    
     notFound();
   }
 
@@ -29,7 +33,7 @@ export default async function BackpackerGroupDetailPage({ params }: BackpackerGr
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-dots-svg px-4 py-24 text-black sm:px-6 lg:px-12 bg-black">
+      <main className="pt-[15vh] min-h-screen bg-dots-svg px-4 py-24 text-black sm:px-6 lg:px-12">
         <div className="mx-auto max-w-7xl space-y-10 Mont">
           <GroupHeroBanner
             groupName={group.groupName}

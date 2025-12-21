@@ -68,13 +68,13 @@ export default function CommentSection({ groupId, initialComments }: CommentSect
   };
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white">
+    <section className="rounded-3xl border border-gray-200 bg-white p-6 text-black">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-white/60">Community thread</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-600">Community thread</p>
           <h2 className="text-2xl font-semibold">Ask hosts or past travellers</h2>
         </div>
-        <span className="rounded-full border border-white/15 px-4 py-1 text-sm text-white/70">{comments.length} comments</span>
+        <span className="rounded-full border border-gray-200 px-4 py-1 text-sm text-gray-600">{comments.length} comments</span>
       </header>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">

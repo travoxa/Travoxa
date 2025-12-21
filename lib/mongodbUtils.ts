@@ -58,6 +58,17 @@ export const getUser = async (email: string): Promise<IUser | null> => {
   }
 };
 
+export const getUserById = async (id: string): Promise<IUser | null> => {
+  try {
+    await connectDB();
+    const user = await User.findOne({ _id: id });
+    return user;
+  } catch (error) {
+    console.error("Error getting user by ID:", error);
+    throw new Error("Failed to get user data");
+  }
+};
+
 export const createUser = async (userData: UserFormData): Promise<IUser> => {
   try {
     await connectDB();
