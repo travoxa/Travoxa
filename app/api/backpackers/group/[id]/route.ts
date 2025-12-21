@@ -101,6 +101,17 @@ export async function GET(
       members: mongoGroup.members,
       hostProfile: await createHostProfile(mongoGroup.creatorId),
       badges: mongoGroup.badges,
+      comments: mongoGroup.comments.map((comment: any) => ({
+        id: comment.id,
+        groupId: mongoGroup._id.toString(),
+        authorId: comment.authorId,
+        authorName: comment.authorName,
+        avatarColor: comment.avatarColor,
+        text: comment.text,
+        createdAt: comment.createdAt.toISOString(),
+        likes: comment.likes,
+        roleLabel: comment.roleLabel || "Explorer",
+      })),
     };
 
     return NextResponse.json({ group });

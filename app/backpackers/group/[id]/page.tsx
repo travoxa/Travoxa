@@ -8,7 +8,7 @@ import SafetyAndRulesCard from "@/components/backpackers/detail/SafetyAndRulesCa
 import TripLogisticsGrid from "@/components/backpackers/detail/TripLogisticsGrid";
 import JoinRequestButton from "@/components/backpackers/JoinRequestButton";
 import MemberList from "@/components/backpackers/MemberList";
-import { getGroupDetail, listComments } from "@/data/backpackers";
+import { getGroupDetail } from "@/data/backpackers";
 import Header from "@/components/ui/Header";
 import Footor from "@/components/ui/Footor";
 
@@ -28,7 +28,7 @@ export default async function BackpackerGroupDetailPage({ params }: BackpackerGr
     notFound();
   }
 
-  const comments = listComments(group.id);
+  const comments = group.comments || [];
 
   return (
     <>

@@ -40,7 +40,7 @@ export default function MemberList({ members }: MemberListProps) {
             className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3"
           >
             <span
-              className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-semibold text-slate-900"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-slate-900"
               style={{ backgroundColor: member.avatarColor }}
             >
               {initials(member.name)}

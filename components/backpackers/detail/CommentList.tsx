@@ -25,11 +25,22 @@ export default function CommentList({ comments, likedCommentIds, onToggleLike, l
         return (
           <li key={comment.id} className="rounded-3xl border border-gray-200 bg-gray-50 p-5 text-black">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-semibold" style={{ backgroundColor: comment.avatarColor }}>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold" style={{ backgroundColor: comment.avatarColor }}>
                 {comment.authorName.replace(/^@/, "").slice(0, 2).toUpperCase()}
               </div>
               <div>
-                <p className="text-sm font-semibold">{comment.authorName}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold">{comment.authorName}</p>
+                  {comment.roleLabel && (
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                      comment.roleLabel === 'Host'
+                        ? 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+                        : 'bg-green-100 text-green-800 border border-green-200'
+                    }`}>
+                      {comment.roleLabel}
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-gray-600">{formatter.format(new Date(comment.createdAt))}</p>
               </div>
             </div>
