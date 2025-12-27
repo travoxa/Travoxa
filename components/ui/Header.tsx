@@ -305,7 +305,7 @@ export default function Header() {
               </button>
               :<button
               
-                onClick={handleSignOut}
+                onClick={()=>routeTo('/dashboard')}
                 
                 className="flex items-center gap-6 text-white text-[14px] bg-black rounded-[30px] px-[24px] py-[12px]">
                   DASHBOARD
