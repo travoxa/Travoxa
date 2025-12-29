@@ -63,10 +63,13 @@ export default function Login() {
             if (!createResponse.ok) {
               console.error('Failed to save user to MongoDB');
             }
+            
+            // New user - go to onboarding
+            router.push("/onboarding");
+          } else {
+            // Existing user - go to home
+            router.push("/");
           }
-          
-          // Redirect to onboarding if profile is incomplete, otherwise to home
-          router.push("/onboarding");
         } catch (error) {
           console.error("Error checking user in MongoDB:", error);
           setError("Failed to connect to database. Please try again.");
@@ -78,72 +81,65 @@ export default function Login() {
   }, [session, status, router]);
 
   const handleEmailPasswordSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    setError("");
-    setLoading(true);
+  if (e) e.preventDefault();
+  setError("");
+  setLoading(true);
 
-    try {
-      const auth = getFirebaseAuth();
-      if (!auth) {
-        throw new Error("Firebase Auth is not available");
+  try {
+    const auth = getFirebaseAuth();
+    if (!auth) {
+      throw new Error("Firebase Auth is not available");
+    }
+
+    if (isLogin) {
+      // Login flow
+      if (!email) {
+        setError("Enter email");
+        setLoading(false);
+        return;
+      } else if (!password) {
+        setError("Enter Password");
+        setLoading(false);
+        return;
       }
 
-      if (isLogin) {
-        // Login flow
-        if (!email) {
-          setError("Enter email");
-          setLoading(false);
-          return;
-        } else if (!password) {
-          setError("Enter Password");
-          setLoading(false);
-          return;
+      // Directly sign in without checking methods first
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Check if user exists in MongoDB by email
+      const response = await fetch(`/api/users/check?email=${encodeURIComponent(email)}`);
+      
+      if (!response.ok) {
+        console.error('Failed to check user in MongoDB');
+        setLoading(false);
+        return;
+      }
+      
+      const result = await response.json();
+
+      if (!result.exists) {
+        // User doesn't exist, add them to MongoDB
+        const createResponse = await fetch('/api/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: user.email,
+            name: user.displayName || user.email?.split('@')[0] || 'User',
+            phone: '',
+            gender: 'prefer-not-to-say',
+            interests: [],
+            hasBike: false,
+            authProvider: 'email',
+          }),
+        });
+
+        if (!createResponse.ok) {
+          console.error('Failed to save user to MongoDB');
         }
-
-        const methods = await fetchSignInMethodsForEmail(auth, email);
-        if (methods.length === 0) {
-          setError("No account found with this email. Please sign up first.");
-          setLoading(false);
-          return;
-        }
-
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Check if user exists in MongoDB by email
-        const response = await fetch(`/api/users/check?email=${encodeURIComponent(email)}`);
         
-        if (!response.ok) {
-          console.error('Failed to check user in MongoDB');
-          setLoading(false);
-          return;
-        }
-        
-        const result = await response.json();
-
-        if (!result.exists) {
-          // User doesn't exist, add them to MongoDB
-          const createResponse = await fetch('/api/users', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              email: user.email,
-              name: user.displayName || user.email?.split('@')[0] || 'User',
-              phone: '',
-              gender: 'prefer-not-to-say',
-              interests: [],
-              hasBike: false,
-              authProvider: 'email',
-            }),
-          });
-
-          if (!createResponse.ok) {
-            console.error('Failed to save user to MongoDB');
-          }
-        }
-
         // Sign in with NextAuth
         await signIn("credentials", {
           email: user.email,
@@ -151,143 +147,143 @@ export default function Login() {
           redirect: false,
         });
 
+        // New user - go to onboarding
         router.push("/onboarding");
       } else {
-        // Sign up flow
-        if (!firstName) {
-          setError("Enter First name");
-          setLoading(false);
-          return;
-        } else if (!lastName) {
-          setError("Enter Last name");
-          setLoading(false);
-          return;
-        } else if (!agreement) {
-          setError("Agree to the terms & conditions");
-          setLoading(false);
-          return;
-        } else if (!email) {
-          setError("Enter Email");
-          setLoading(false);
-          return;
-        } else if (!password) {
-          setError("Enter Password");
-          setLoading(false);
-          return;
-        } else if (password.length < 6) {
-          setError("Password must be at least 6 characters");
-          setLoading(false);
-          return;
-        } else if (!confirmPassword) {
-          setError("Confirm your password");
-          setLoading(false);
-          return;
-        } else if (password !== confirmPassword) {
-          setError("Passwords do not match!");
-          setLoading(false);
-          return;
-        }
-
-        const methods = await fetchSignInMethodsForEmail(auth, email);
-        if (methods.length > 0) {
-          setError("An account with this email already exists. Please sign in.");
-          setLoading(false);
-          return;
-        }
-
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        if (firstName.trim() || lastName.trim()) {
-          await updateProfile(user, { displayName: `${firstName.trim()} ${lastName.trim()}` });
-        }
-
-        // IMMEDIATELY create user in MongoDB with basic info
-        const response = await fetch('/api/users', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: user.email,
-            name: `${firstName.trim()} ${lastName.trim()}` || user.displayName || 'User',
-            phone: '',
-            gender: 'prefer-not-to-say',
-            interests: [],
-            hasBike: false,
-            authProvider: 'email',
-            city: '', // Add this
-            profileComplete: false, // Add this flag
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('Failed to save user to MongoDB:', errorData);
-          throw new Error('Failed to create user account');
-        }
-
-        // Sign in with NextAuth
+        // Existing user - sign in and go to home
         await signIn("credentials", {
-          email,
+          email: user.email,
           password,
           redirect: false,
         });
+        
+        router.push("/");
+      }
+    } else {
+      // Sign up flow
+      if (!firstName) {
+        setError("Enter First name");
+        setLoading(false);
+        return;
+      } else if (!lastName) {
+        setError("Enter Last name");
+        setLoading(false);
+        return;
+      } else if (!agreement) {
+        setError("Agree to the terms & conditions");
+        setLoading(false);
+        return;
+      } else if (!email) {
+        setError("Enter Email");
+        setLoading(false);
+        return;
+      } else if (!password) {
+        setError("Enter Password");
+        setLoading(false);
+        return;
+      } else if (password.length < 6) {
+        setError("Password must be at least 6 characters");
+        setLoading(false);
+        return;
+      } else if (!confirmPassword) {
+        setError("Confirm your password");
+        setLoading(false);
+        return;
+      } else if (password !== confirmPassword) {
+        setError("Passwords do not match!");
+        setLoading(false);
+        return;
+      }
 
-        router.push("/onboarding");
+      const methods = await fetchSignInMethodsForEmail(auth, email);
+      if (methods.length > 0) {
+        setError("An account with this email already exists. Please sign in.");
+        setLoading(false);
+        return;
       }
-    } catch (error) {
-      console.error("Authentication error:", error);
-      
-      if (error instanceof FirebaseError) {
-        switch (error.code) {
-          case 'auth/invalid-email':
-            setError("Invalid email address");
-            break;
-          case 'auth/user-not-found':
-            setError("No account found with this email. Please sign up first.");
-            break;
-          case 'auth/wrong-password':
-            // Check if this email uses Google sign-in
-            try {
-              const auth = getFirebaseAuth();
-              if (auth) {
-                const methods = await fetchSignInMethodsForEmail(auth, email);
-                if (methods.includes('google.com')) {
-                  setError("This account uses Google sign-in. Please click 'Sign in with Google' below.");
-                } else {
-                  setError("Incorrect password. Please try again.");
-                }
-              } else {
-                setError("Incorrect password. Please try again.");
-              }
-            } catch (fetchError) {
-              setError("Incorrect password. If you signed up with Google, please use the Google sign-in button.");
-            }
-            break;
-          case 'auth/email-already-in-use':
-            setError("An account with this email already exists. Please sign in.");
-            break;
-          case 'auth/weak-password':
-            setError("Password is too weak. Please use at least 6 characters");
-            break;
-          case 'auth/network-request-failed':
-            setError("Network error. Please check your internet connection");
-            break;
-          default:
-            setError(error.message || "An authentication error occurred");
-        }
-      } else {
-        setError("An unexpected error occurred. Please try again.");
+
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      if (firstName.trim() || lastName.trim()) {
+        await updateProfile(user, { displayName: `${firstName.trim()} ${lastName.trim()}` });
       }
-    } finally {
-      setLoading(false);
+
+      // IMMEDIATELY create user in MongoDB with basic info
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: user.email,
+          name: `${firstName.trim()} ${lastName.trim()}` || user.displayName || 'User',
+          phone: '',
+          gender: 'prefer-not-to-say',
+          interests: [],
+          hasBike: false,
+          authProvider: 'email',
+          city: '',
+          profileComplete: false,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to save user to MongoDB:', errorData);
+        throw new Error('Failed to create user account');
+      }
+
+      // Sign in with NextAuth
+      await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      router.push("/onboarding");
     }
-  };
+  } catch (error) {
+    console.error("Authentication error:", error);
+    
+    if (error instanceof FirebaseError) {
+      switch (error.code) {
+        case 'auth/invalid-email':
+          setError("Invalid email address");
+          break;
+        case 'auth/user-not-found':
+          setError("No account found with this email. Please sign up first.");
+          break;
+        case 'auth/wrong-password':
+          setError("Incorrect password. Please try again.");
+          break;
+        case 'auth/invalid-credential':
+          setError("Invalid email or password. Please check your credentials.");
+          break;
+        case 'auth/email-already-in-use':
+          setError("An account with this email already exists. Please sign in.");
+          break;
+        case 'auth/weak-password':
+          setError("Password is too weak. Please use at least 6 characters");
+          break;
+        case 'auth/network-request-failed':
+          setError("Network error. Please check your internet connection");
+          break;
+        default:
+          setError(error.message || "An authentication error occurred");
+      }
+    } else {
+      setError("An unexpected error occurred. Please try again.");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
+      // Google sign-in will redirect to onboarding page which will handle the logic
       await signIn("google", { callbackUrl: "/onboarding" });
     } catch (error) {
       console.error("Google sign-in error:", error);
