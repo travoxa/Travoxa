@@ -91,7 +91,7 @@ export default function OnboardingPage() {
     }
   }, [session, router]);
 
-  // Check if user exists in MongoDB by email
+  // Check if user exists in MongoDB by email and redirect existing users to dashboard
   const checkUserExists = async () => {
     try {
       // Wait a bit to ensure Firebase auth is fully initialized
@@ -113,17 +113,11 @@ export default function OnboardingPage() {
       const userExists = await checkUserExistsByEmail(userEmail);
 
       if (userExists.exists && userExists.userData) {
-        // Pre-fill form with existing data
-        setFormData((prev) => ({
-          ...prev,
-          ...userExists.userData,
-          name: userExists.userData.name || session?.user?.name || "",
-          email: userExists.userData.email || userEmail,
-          weekendAvailability: userExists.userData.weekendAvailability !== false,
-          authProvider: userExists.userData.authProvider || "email",
-        }));
+        // Existing user - always go to home page
+        router.push("/");
+        return;
       } else {
-        // Pre-fill form with session data
+        // New user - pre-fill form with session data
         setFormData((prev) => ({
           ...prev,
           name: session?.user?.name || "",
@@ -185,6 +179,7 @@ export default function OnboardingPage() {
   };
 
   const handleSave = async () => {
+    // Only require name, email, gender, and city (as specified)
     if (!formData.name || !formData.email || !formData.gender || !formData.city) {
       setError("Please fill in all required fields (name, email, gender, and city).");
       return;
@@ -212,8 +207,8 @@ export default function OnboardingPage() {
         });
       }
 
-      // Update user in MongoDB via API route (not create, but update)
-      const response = await fetch('/api/users', {
+      // Use the new onboarding endpoint
+      const response = await fetch('/api/users/edit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -221,9 +216,9 @@ export default function OnboardingPage() {
         body: JSON.stringify({
           ...formData,
           email: currentUser.email!,
-          authProvider: currentUser.email?.includes('gmail.com') ? 'google' : 
+          authProvider: currentUser.email?.includes('gmail.com') ? 'google' :
                         currentUser.email?.includes('github') ? 'github' : 'email',
-          profileComplete: true, // Mark profile as complete
+          profileComplete: true,
         }),
       });
 
