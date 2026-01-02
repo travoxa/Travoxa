@@ -202,7 +202,7 @@ const UserProfileCard: React.FC = () => {
       setSuccess(null);
       setSaving(true);
 
-      const response = await fetch('/api/users', {
+      const response = await fetch('/api/users/edit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -276,164 +276,170 @@ const UserProfileCard: React.FC = () => {
           onClick={() => setEditing(!editing)}
           className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
         >
-          {editing ? 'Cancel' : 'Edit Profile'}
+          {editing ? 'Cancel Edit' : 'Edit Profile'}
         </button>
       </div>
 
-      {success && (
-        <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+      {/* Success message - positioned at top but only shows when not editing to avoid overlay effect */}
+      {!editing && success && (
+        <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded animate-fade-in">
           {success}
         </div>
       )}
 
-      
-
-      {/* Layer 1: User Image and Name */}
-      <div className="border-b border-gray-200 pb-4 mb-4">
-        <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 bg-gray-300 rounded-full"></div>
-          <div>
-            <p className="font-medium text-xl">{formData.name}</p>
-            <p className="text-sm text-gray-500">Email: {formData.email}</p>
-            <p className="text-sm text-gray-500">Gender: {formData.gender}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Layer 2: User Information in Key:Value Format */}
-      <div className="border-b border-gray-200 pb-4 mb-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {/* Column 1 */}
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Phone:</span>
-              <span className="text-sm text-gray-600">{formData.phone || 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">City:</span>
-              <span className="text-sm text-gray-600">{formData.city || 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Date of Birth:</span>
-              <span className="text-sm text-gray-600">{formData.dateOfBirth ? formData.dateOfBirth : 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Travel Experience:</span>
-              <span className="text-sm text-gray-600">{formData.travelExperience || 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Languages:</span>
-              <span className="text-sm text-gray-600">{formData.languages.length > 0 ? formData.languages.join(", ") : 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Interests:</span>
-              <span className="text-sm text-gray-600">{formData.interests.length > 0 ? formData.interests.join(", ") : 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Activity Interests:</span>
-              <span className="text-sm text-gray-600">{formData.activityInterests.length > 0 ? formData.activityInterests.join(", ") : 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Comfort Level:</span>
-              <span className="text-sm text-gray-600">{formData.comfortLevel.length > 0 ? formData.comfortLevel.join(", ") : 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Preferred Travel Mode:</span>
-              <span className="text-sm text-gray-600">{formData.preferredTravelMode.length > 0 ? formData.preferredTravelMode.join(", ") : 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Bike:</span>
-              <span className="text-sm text-gray-600">{formData.hasBike ? (formData.bikeModel || "Yes") : 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">License:</span>
-              <span className="text-sm text-gray-600">{formData.hasLicense ? 'Yes' : 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Helmet:</span>
-              <span className="text-sm text-gray-600">{formData.hasHelmet ? 'Yes' : 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Shares Accommodation:</span>
-              <span className="text-sm text-gray-600">{formData.shareAccommodation ? 'Yes' : 'undefined'}</span>
-            </div>
-          </div>
-
-          {/* Column 2 */}
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Smoking Preference:</span>
-              <span className="text-sm text-gray-600">{formData.smokingPreference || 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Drinking Preference:</span>
-              <span className="text-sm text-gray-600">{formData.drinkingPreference || 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Food Preference:</span>
-              <span className="text-sm text-gray-600">{formData.foodPreference || 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Weekday Availability:</span>
-              <span className="text-sm text-gray-600">{formData.weekdayAvailability ? 'Yes' : 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Weekend Availability:</span>
-              <span className="text-sm text-gray-600">{formData.weekendAvailability ? 'Yes' : 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Short Notice Travel:</span>
-              <span className="text-sm text-gray-600">{formData.shortNoticeTravel ? 'Yes' : 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Social Profile:</span>
-              <span className="text-sm text-gray-600">{formData.socialProfileLink || 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Emergency Contact:</span>
-              <span className="text-sm text-gray-600">{formData.emergencyContactName || 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Emergency Phone:</span>
-              <span className="text-sm text-gray-600">{formData.emergencyContactPhone || 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Medical Conditions:</span>
-              <span className="text-sm text-gray-600">{formData.medicalConditions || 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Allergies:</span>
-              <span className="text-sm text-gray-600">{formData.allergies || 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm font-medium text-gray-700">Bio:</span>
-              <span className="text-sm text-gray-600">{formData.bio || 'undefined'}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Layer 3: Warning */}
+      {/* Only show profile showcase when NOT editing */}
       {!editing && (
-        <div className="flex items-center space-x-4">
-          {!formData.phone || !formData.city || !formData.dateOfBirth || !formData.travelExperience || !formData.bio ? (
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-              <span className="text-sm text-yellow-700">Some profile details are incomplete</span>
-              <button
-                onClick={() => setEditing(true)}
-                className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-sm hover:bg-yellow-200 transition-colors"
-              >
-                Fill Details
-              </button>
+        <>
+          {/* Layer 1: User Image and Name */}
+          <div className="border-b border-gray-200 pb-4 mb-4">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 bg-gray-300 rounded-full"></div>
+              <div>
+                <p className="font-medium text-xl">{formData.name}</p>
+                <p className="text-sm text-gray-500">Email: {formData.email}</p>
+                <p className="text-sm text-gray-500">Gender: {formData.gender}</p>
+              </div>
             </div>
-          ) : null}
-        </div>
+          </div>
+
+          {/* Layer 2: User Information in Key:Value Format */}
+          <div className="border-b border-gray-200 pb-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Column 1 */}
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Phone:</span>
+                  <span className="text-sm text-gray-600">{formData.phone || 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">City:</span>
+                  <span className="text-sm text-gray-600">{formData.city || 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Date of Birth:</span>
+                  <span className="text-sm text-gray-600">{formData.dateOfBirth ? formData.dateOfBirth : 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Travel Experience:</span>
+                  <span className="text-sm text-gray-600">{formData.travelExperience || 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Languages:</span>
+                  <span className="text-sm text-gray-600">{formData.languages.length > 0 ? formData.languages.join(", ") : 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Interests:</span>
+                  <span className="text-sm text-gray-600">{formData.interests.length > 0 ? formData.interests.join(", ") : 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Activity Interests:</span>
+                  <span className="text-sm text-gray-600">{formData.activityInterests.length > 0 ? formData.activityInterests.join(", ") : 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Comfort Level:</span>
+                  <span className="text-sm text-gray-600">{formData.comfortLevel.length > 0 ? formData.comfortLevel.join(", ") : 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Preferred Travel Mode:</span>
+                  <span className="text-sm text-gray-600">{formData.preferredTravelMode.length > 0 ? formData.preferredTravelMode.join(", ") : 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Bike:</span>
+                  <span className="text-sm text-gray-600">{formData.hasBike ? (formData.bikeModel || "Yes") : 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">License:</span>
+                  <span className="text-sm text-gray-600">{formData.hasLicense ? 'Yes' : 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Helmet:</span>
+                  <span className="text-sm text-gray-600">{formData.hasHelmet ? 'Yes' : 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Shares Accommodation:</span>
+                  <span className="text-sm text-gray-600">{formData.shareAccommodation ? 'Yes' : 'undefined'}</span>
+                </div>
+              </div>
+
+              {/* Column 2 */}
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Smoking Preference:</span>
+                  <span className="text-sm text-gray-600">{formData.smokingPreference || 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Drinking Preference:</span>
+                  <span className="text-sm text-gray-600">{formData.drinkingPreference || 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Food Preference:</span>
+                  <span className="text-sm text-gray-600">{formData.foodPreference || 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Weekday Availability:</span>
+                  <span className="text-sm text-gray-600">{formData.weekdayAvailability ? 'Yes' : 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Weekend Availability:</span>
+                  <span className="text-sm text-gray-600">{formData.weekendAvailability ? 'Yes' : 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Short Notice Travel:</span>
+                  <span className="text-sm text-gray-600">{formData.shortNoticeTravel ? 'Yes' : 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Social Profile:</span>
+                  <span className="text-sm text-gray-600">{formData.socialProfileLink || 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Emergency Contact:</span>
+                  <span className="text-sm text-gray-600">{formData.emergencyContactName || 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Emergency Phone:</span>
+                  <span className="text-sm text-gray-600">{formData.emergencyContactPhone || 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Medical Conditions:</span>
+                  <span className="text-sm text-gray-600">{formData.medicalConditions || 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Allergies:</span>
+                  <span className="text-sm text-gray-600">{formData.allergies || 'undefined'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Bio:</span>
+                  <span className="text-sm text-gray-600">{formData.bio || 'undefined'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Layer 3: Warning */}
+          <div className="flex items-center space-x-4">
+            {!formData.phone || !formData.city || !formData.dateOfBirth || !formData.travelExperience || !formData.bio ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                <span className="text-sm text-yellow-700">Some profile details are incomplete</span>
+                <button
+                  onClick={() => setEditing(true)}
+                  className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-sm hover:bg-yellow-200 transition-colors"
+                >
+                  Fill Details
+                </button>
+              </div>
+            ) : null}
+          </div>
+        </>
       )}
 
-      {/* Edit Mode - Keep existing edit form */}
-      {editing ? (
-          <div className="space-y-4">
+      {/* Edit Mode - Show only the edit form */}
+      {editing && (
+          <div className="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold text-black">Edit Your Profile</h3>
+              <p className="text-sm text-gray-600">Update your information and click Save Changes</p>
+            </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className="text-sm font-medium text-black/70">Full Name *</label>
@@ -1000,7 +1006,7 @@ const UserProfileCard: React.FC = () => {
               
             </div>
           </div>
-        ) : null}
+        )}
         <button
           onClick={handleSignOut}
           className="mt-[16px] px-6 py-3 text-red-600 hover:text-red-700 font-medium transition-colors"
