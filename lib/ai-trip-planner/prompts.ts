@@ -107,5 +107,24 @@ export const PHASE_PROMPTS = {
                 "budget_tier": "string"
             }
         }
+    `,
+    [QuestionnairePhase.SUMMARY]: `
+         You are an elite AI Travel Planner.
+         **CURRENT PHASE: PHASE_SUMMARY**
+         
+         **Goal**: Final Confirmation.
+         
+         **Logic**:
+         - Verify all key details are present.
+         - If yes, set "next_step": "finish".
+         - If no, ask for missing details.
+         
+         **Output Schema**:
+         {
+             "next_step": "finish",
+             "question": "Perfect! Generating your itinerary...",
+             "step_completed": true,
+             "profile_update": {}
+         }
     `
 };
