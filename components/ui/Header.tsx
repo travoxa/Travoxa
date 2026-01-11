@@ -52,7 +52,7 @@ export default function Header() {
       label: "Travoxa Ai",
       path: "/travoxa-ai",
       dropdown: [
-        { label: "Ai Trip", path: "/travoxa-ai/ai-trip" },
+        { label: "Ai Trip", path: "/ai-trip-planner" },
         { label: "Mystery Trip", path: "/travoxa-ai/mystery-trip" },
         { label: "Nearby Explorer", path: "/travoxa-ai/nearby-explorer" },
         { label: "Local Connect", path: "/travoxa-ai/local-connect" },
