@@ -34,11 +34,6 @@ export default function Header() {
 
   const menuItems: MenuItem[] = [
     {
-      label: "Home",
-      path: "/",
-      dropdown: [],
-    },
-    {
       label: "Tour",
       path: "/tours",
       dropdown: [
@@ -110,7 +105,7 @@ export default function Header() {
     route('/backpackers/create');
   };
 
-  const routeTo = (path:string) => {
+  const routeTo = (path: string) => {
     route(path)
   }
 
@@ -124,7 +119,7 @@ export default function Header() {
         // Sign out from Firebase Auth (for email/password users)
         await firebaseSignOut(firebaseAuth);
       }
-      
+
       // Sign out from NextAuth (handles both Google and email/password sessions)
       await signOut({ callbackUrl: '/login' });
     } catch (error) {
@@ -146,11 +141,11 @@ export default function Header() {
           triggerAction={() => route('/login')}
         />
         <div className="z-50 mt-[24px] shadow-md backdrop-blur-lg border-[0.5] border-white  w-[80vw] rounded-[40px] mx-auto relative flex items-center justify-between px-4 pr-5 py-3">
-          
+
 
           {/* LOGO */}
-          <button 
-            onClick={() => routeTo('/')} 
+          <button
+            onClick={() => routeTo('/')}
             className="flex items-center  h-fit">
             <Image
               src="/logo.png"
@@ -201,19 +196,19 @@ export default function Header() {
           </nav>
 
           {/* RIGHT SECTION (DESKTOP) */}
-          {!session?.user?.email ? 
+          {!session?.user?.email ?
             <button
-            
-            onClick={()=>routeTo('/login')}
-            
-            className="hidden lg:flex items-center gap-6 text-black text-[14px] bg-white rounded-[30px] px-[24px] py-[12px]">
+
+              onClick={() => routeTo('/login')}
+
+              className="hidden lg:flex items-center gap-6 text-black text-[14px] bg-white rounded-[30px] px-[24px] py-[12px]">
               LOGIN
             </button>
-           : <button
-            
-            onClick={()=>route('/dashboard')}
-            
-            className="hidden lg:flex items-center gap-6 text-black text-[14px] bg-white rounded-[30px] px-[24px] py-[12px]">
+            : <button
+
+              onClick={() => route('/dashboard')}
+
+              className="hidden lg:flex items-center gap-6 text-black text-[14px] bg-white rounded-[30px] px-[24px] py-[12px]">
               DASHBOARD
             </button>}
 
@@ -229,9 +224,8 @@ export default function Header() {
 
       {/* MOBILE SIDEBAR */}
       <div
-        className={`fixed top-0 left-0 h-full w-[75%] max-w-xs bg-white shadow-xl z-50 transform transition-transform duration-300 ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 h-full w-[75%] max-w-xs bg-white shadow-xl z-50 transform transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         {/* MOBILE HEADER */}
         <div className="flex items-center justify-between px-4 py-4 border-b">
@@ -289,28 +283,28 @@ export default function Header() {
                       {sub.label}
                     </button>
                   ))}
-                  
+
                 </div>
               )}
             </div>
           ))}
 
-          {!session?.user?.email ? 
-              <button
-              
-                onClick={()=>routeTo('/login')}
-                
-                className="flex items-center gap-6 text-white text-[14px] bg-black rounded-[30px] px-[24px] py-[12px]">
-                  LOGIN
-              </button>
-              :<button
-              
-                onClick={()=>routeTo('/dashboard')}
-                
-                className="flex items-center gap-6 text-white text-[14px] bg-black rounded-[30px] px-[24px] py-[12px]">
-                  DASHBOARD
-              </button>
-            }
+          {!session?.user?.email ?
+            <button
+
+              onClick={() => routeTo('/login')}
+
+              className="flex items-center gap-6 text-white text-[14px] bg-black rounded-[30px] px-[24px] py-[12px]">
+              LOGIN
+            </button>
+            : <button
+
+              onClick={() => routeTo('/dashboard')}
+
+              className="flex items-center gap-6 text-white text-[14px] bg-black rounded-[30px] px-[24px] py-[12px]">
+              DASHBOARD
+            </button>
+          }
         </nav>
       </div>
 
@@ -323,7 +317,7 @@ export default function Header() {
       )}
 
       {/* Login Required Popup */}
-      
+
     </>
   );
 }
