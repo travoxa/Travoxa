@@ -2,6 +2,10 @@
 module.exports = {
   theme: {
     extend: {
+      fontFamily: {
+        display: ['var(--font-playfair)', 'serif'],
+        sans: ['var(--font-montserrat)', 'sans-serif'],
+      },
       keyframes: {
         loop: {
           "0%": { transform: "translateX(0)" },
