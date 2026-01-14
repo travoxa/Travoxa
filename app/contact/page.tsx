@@ -2,8 +2,8 @@
 
 import Footor from "@/components/ui/Footor";
 import Header from "@/components/ui/Header";
-import { IoLocationOutline, IoCallOutline, IoMailOpenOutline, IoPaperPlane } from "react-icons/io5";
 import { useState } from "react";
+import { IoPaperPlane } from "react-icons/io5";
 
 export default function ContactPage() {
     const [formData, setFormData] = useState({
@@ -45,153 +45,130 @@ export default function ContactPage() {
     };
 
     return (
-        <div className="bg-dots-svg min-h-screen flex flex-col">
+        <div className="bg-white min-h-screen flex flex-col font-sans">
             <Header />
 
-            <main className="flex-grow pt-[120px]">
-                {/* Hero Section */}
-                <div className="relative h-[40vh] w-full bg-cover bg-center overflow-hidden"
-                    style={{ backgroundImage: `url('/contact/contact.jpg')` }}>
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent flex items-center px-6 lg:px-24">
-                        <div className="max-w-xl space-y-4 animate-fadeIn">
-                            <h1 className="text-4xl lg:text-6xl font-extrabold text-white leading-tight">
-                                Let's Start a <br /><span className="text-[#4da528]">Conversation</span>
+            <main className="flex-grow pt-[140px] px-6 lg:px-24 max-w-[1600px] mx-auto w-full mb-20">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                    {/* Left Section: Headings & Info */}
+                    <div className="space-y-16">
+                        <div>
+                            <h1 className="text-6xl md:text-8xl font-light text-black tracking-tighter mb-8">
+                                Contact us
                             </h1>
-                            <p className="text-gray-200 text-lg">
-                                Whether you have a question about tours, pricing, or just want to say hello, we're ready to answer all your questions.
+                            <p className="text-xl text-zinc-600 max-w-md font-light">
+                                Get in touch with us for any enquiries and questions
                             </p>
                         </div>
-                    </div>
-                </div>
 
-                <div className="max-w-7xl mx-auto px-4 lg:px-8 py-16 -mt-12 relative z-10 space-y-16">
-
-                    {/* Contact Info Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <ContactCard
-                            icon={<IoLocationOutline size={28} />}
-                            title="Visit Us"
-                            content={
-                                <p>Travoxa HQ, Howrah<br />West Bengal, India</p>
-                            }
-                        />
-                        <ContactCard
-                            icon={<IoCallOutline size={28} />}
-                            title="Call Us"
-                            content={
-                                <div className="flex flex-col">
-                                    <a href="tel:+917439708923" className="hover:text-[#4da528] transition">+91 7439708923</a>
-                                    <a href="tel:+917449443669" className="hover:text-[#4da528] transition">+91 7449443669</a>
+                        {/* Contact Details Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-12 gap-x-8">
+                            <div className="space-y-4">
+                                <h3 className="text-lg text-zinc-400 font-light lowercase">general inquiries</h3>
+                                <div className="space-y-1">
+                                    <p className="font-medium text-lg text-black">work@travoxa.com</p>
+                                    <p className="font-medium text-lg text-black">+91 7439708923</p>
                                 </div>
-                            }
-                        />
-                        <ContactCard
-                            icon={<IoMailOpenOutline size={28} />}
-                            title="Email Us"
-                            content={
-                                <div className="flex flex-col">
-                                    <a href="mailto:support@travoxa.com" className="hover:text-[#4da528] transition">support@travoxa.com</a>
-                                    <a href="mailto:info@travoxa.com" className="hover:text-[#4da528] transition">info@travoxa.com</a>
-                                </div>
-                            }
-                        />
-                    </div>
+                            </div>
 
-                    {/* Form Section */}
-                    <div className="flex flex-col lg:flex-row gap-12 items-start">
-                        {/* Left Side: Text */}
-                        <div className="lg:w-1/3 space-y-6">
-                            <p className="text-[#4da528] tracking-widest uppercase text-sm font-bold">Get In Touch</p>
-                            <h2 className="text-4xl font-bold text-gray-900">Have specific requirements?</h2>
-                            <p className="text-gray-600 leading-relaxed">
-                                Fill out the form and our team will get back to you within 24 hours. We love hearing from fellow travelers and future adventurers!
-                            </p>
-                            <div className="h-1 w-20 bg-[#4da528] rounded-full"></div>
+                            <div className="space-y-4">
+                                <h3 className="text-lg text-zinc-400 font-light lowercase">careers</h3>
+                                <div className="space-y-1">
+                                    <p className="font-medium text-lg text-black">hr@travoxa.com</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <h3 className="text-lg text-zinc-400 font-light lowercase">collaborations</h3>
+                                <div className="space-y-1">
+                                    <p className="font-medium text-lg text-black">partners@travoxa.com</p>
+                                    <p className="font-medium text-lg text-black">+91 7449443669</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <h3 className="text-lg text-zinc-400 font-light lowercase">address</h3>
+                                <div className="space-y-1">
+                                    <p className="font-medium text-lg text-black">Travoxa HQ, Howrah</p>
+                                    <p className="font-medium text-lg text-black">West Bengal, India</p>
+                                </div>
+                            </div>
                         </div>
+                    </div>
 
-                        {/* Right Side: Form */}
-                        <div className="flex-1 w-full bg-white/70 backdrop-blur-xl border border-gray-200 p-8 lg:p-12 rounded-3xl shadow-xl">
+                    {/* Right Section: Form (Placed at bottom/right area) */}
+                    <div className="flex flex-col justify-end">
+                        <div className="bg-zinc-50 p-8 md:p-12 rounded-3xl w-full max-w-xl ml-auto border border-zinc-100 shadow-sm">
+                            <h3 className="text-2xl font-light text-black mb-8">Send a message</h3>
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700">Your Name</label>
+                                        <label className="text-xs uppercase tracking-wider text-zinc-500 font-medium">Name</label>
                                         <input
                                             name="name"
                                             value={formData.name}
                                             onChange={handleChange}
                                             required
                                             type="text"
-                                            placeholder="John Doe"
-                                            className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 focus:border-[#4da528] focus:ring-1 focus:ring-[#4da528] outline-none transition"
+                                            className="w-full bg-transparent border-b border-zinc-300 py-2 focus:border-black outline-none transition-colors text-black placeholder-zinc-300"
+                                            placeholder="Your name"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700">Phone Number</label>
+                                        <label className="text-xs uppercase tracking-wider text-zinc-500 font-medium">Phone</label>
                                         <input
                                             name="phone"
                                             value={formData.phone}
                                             onChange={handleChange}
                                             type="tel"
-                                            placeholder="+91 99999 99999"
-                                            className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 focus:border-[#4da528] focus:ring-1 focus:ring-[#4da528] outline-none transition"
+                                            className="w-full bg-transparent border-b border-zinc-300 py-2 focus:border-black outline-none transition-colors text-black placeholder-zinc-300"
+                                            placeholder="Your phone"
                                         />
                                     </div>
                                 </div>
+
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Email Address</label>
+                                    <label className="text-xs uppercase tracking-wider text-zinc-500 font-medium">Email</label>
                                     <input
                                         name="email"
                                         value={formData.email}
                                         onChange={handleChange}
                                         required
                                         type="email"
-                                        placeholder="john@example.com"
-                                        className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 focus:border-[#4da528] focus:ring-1 focus:ring-[#4da528] outline-none transition"
+                                        className="w-full bg-transparent border-b border-zinc-300 py-2 focus:border-black outline-none transition-colors text-black placeholder-zinc-300"
+                                        placeholder="Your email address"
                                     />
                                 </div>
+
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700">Message</label>
+                                    <label className="text-xs uppercase tracking-wider text-zinc-500 font-medium">Message</label>
                                     <textarea
                                         name="message"
                                         value={formData.message}
                                         onChange={handleChange}
                                         required
-                                        rows={4}
-                                        placeholder="Tell us about your trip..."
-                                        className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 focus:border-[#4da528] focus:ring-1 focus:ring-[#4da528] outline-none transition"
+                                        rows={3}
+                                        className="w-full bg-transparent border-b border-zinc-300 py-2 focus:border-black outline-none transition-colors text-black placeholder-zinc-300 resize-none"
+                                        placeholder="How can we help?"
                                     ></textarea>
                                 </div>
 
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="w-full bg-[#4da528] hover:bg-green-600 text-white font-semibold py-4 rounded-xl transition-all shadow-lg shadow-green-500/30 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                                >
-                                    {isLoading ? "Sending..." : "Send Message"} <IoPaperPlane />
-                                </button>
+                                <div className="pt-4">
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="w-full bg-black hover:bg-zinc-800 text-white font-medium py-4 rounded-full transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed group"
+                                    >
+                                        {isLoading ? "Sending..." : "Send Message"}
+                                        <IoPaperPlane className="group-hover:translate-x-1 transition-transform" />
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
-
                 </div>
             </main>
             <Footor />
-        </div>
-    );
-}
-
-function ContactCard({ icon, title, content }: { icon: React.ReactNode, title: string, content: React.ReactNode }) {
-    return (
-        <div className="bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center gap-4 hover:shadow-md transition-all group">
-            <div className="p-4 bg-gray-50 text-[#4da528] rounded-full group-hover:bg-[#4da528] group-hover:text-white transition-colors duration-300">
-                {icon}
-            </div>
-            <div>
-                <h3 className="font-bold text-gray-800 text-lg mb-1">{title}</h3>
-                <div className="text-gray-600 text-sm leading-relaxed">
-                    {content}
-                </div>
-            </div>
         </div>
     );
 }

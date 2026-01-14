@@ -1,118 +1,73 @@
 import Image from 'next/image'
 import React from 'react'
+import { HiArrowRight } from "react-icons/hi2"
 
 const ShowCase = () => {
-  return (
-    <div className='mx-[24px] mt-[48px]' >
-        <div>
-            <p className='leading-[48px] lg:leading-normal text-[48px] font-medium ' >Experiences that speak louder than words.</p>
-        </div>
 
-       
-            
-        {/* Left small column */}
-        <div className="mt-4 lg:hidden flex flex-col gap-4 w-full sm:w-[50%]">
-            <div className="flex gap-4">
-            <div className="flex flex-col gap-4 w-[50%]">
-                <Image src="/home/tourist-places1.jpg" className="h-[150px] w-full object-cover rounded-[12px]" width={1000} height={1000} alt="" />
-                <Image src="/home/tourist-places2.jpg" className="h-[150px] w-full object-cover rounded-[12px]" width={1000} height={1000} alt="" />
+    const blogs = [
+        {
+            title: "Exploring Local Culture and Traditions",
+            author: "Admin",
+            date: "Dec 12, 2025",
+            image: "/home/tourist-places1.jpg"
+        },
+        {
+            title: "The Beauty of the Sea at Sand",
+            author: "Admin",
+            date: "Dec 15, 2025",
+            image: "/home/tourist-places2.jpg"
+        },
+        {
+            title: "Sunrise in Bromo Tengger Semeru",
+            author: "Admin",
+            date: "Dec 20, 2025",
+            image: "/home/tourist-places3.jpg"
+        }
+    ]
+
+    return (
+        <div className='container mx-auto px-6 lg:px-20 py-20' >
+            <div className='flex flex-col lg:flex-row justify-between items-end mb-12' data-aos="fade-right">
+                <div className="max-w-2xl">
+                    <h2 className='text-4xl lg:text-6xl text-black mb-6 Mont' >Travel Blog <br /> <span className="">Around Travoxa</span></h2>
+                    <p className="text-gray-600 Inter text-lg">This blog features beautiful photography and personal experiences, providing insights into the local culture.</p>
+                </div>
+                <div className="flex gap-4 mt-6 lg:mt-0">
+                    <button className="bg-black text-white px-6 py-2 rounded-full text-sm font-medium">Reminder me</button>
+                    <button className="px-6 py-2 rounded-full border border-gray-300 text-sm font-medium hover:bg-gray-50">Learn More</button>
+                </div>
             </div>
-            <Image src="/home/tourist-places3.jpg" className="h-[310px] w-[50%] object-cover rounded-[12px]" width={1000} height={1000} alt="" />
-            </div>
-        </div>
 
-        {/* Left top right large image */}
-        <div className="lg:hidden w-full mt-4">
-            <Image src="/home/tourist-places4.jpg" className="h-[310px] w-full object-cover rounded-[12px]" width={1000} height={1000} alt="" />
-        </div>
-
-            
-
-        <div className='hidden mt-[24px] lg:mt-0 lg:flex gap-[12px]' >
-            <div className='flex flex-col gap-[12px] w-[60%]' >
-                {/* left main container */}
-                <div className='flex gap-[12px]' >
-                    {/* left top */}
-                    <div className='flex gap-[12px] w-[50%]' >
-                        {/* left top left */}
-                        <div className='flex flex-col gap-[12px] w-[50%]' >
-                            {/* left top left col */}
-                            <Image src="/home/tourist-places5.jpg" className='h-[150px] object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
-                            <Image src="/home/tourist-places6.jpg" className='h-[150px] object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" data-aos="fade-up" data-aos-delay="200">
+                {blogs.map((blog, idx) => (
+                    <div key={idx} className="group cursor-pointer">
+                        <div className="rounded-2xl overflow-hidden mb-4 relative h-[250px]">
+                            <Image
+                                src={blog.image}
+                                alt={blog.title}
+                                fill
+                                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                            <div className="absolute top-4 right-4 p-2 bg-white/30 backdrop-blur-md rounded-full">
+                                <HiArrowRight className="text-white -rotate-45 group-hover:rotate-0 transition-transform" />
+                            </div>
                         </div>
-                        <Image src="/home/tourist-places7.jpg" className='h-full w-[50%] object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
-                    </div>
-                    <div className='w-[50%]' >
-                        {/* left top right */}
-                        <Image src="/home/tourist-places8.jpeg" className='h-full object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
-                    </div>
-                </div>
-                <div>
-                    <Image src="/home/tourist-places9.jpg" className='h-[150px] object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
-                    {/* left bottom */}
-                </div>
-            </div>
-            <div className='flex flex-col gap-[12px] w-[40%]' >
-                {/* right main contrainer */}
-                <div>
-                    {/* right top */}
-                    <Image src="/home/tourist-places1.jpg" className='h-[200px] object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
-                </div>
-                <div className='flex gap-[12px] h-full' >
-                    {/* right bottom */}
-                    <Image src="/home/tourist-places2.jpg" className='w-[50%] h-full object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
-                    <Image src="/home/tourist-places3.jpg" className='w-[50%] h-full object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
-                </div>
-            </div>
-        </div>
-        <div className='hidden lg:flex gap-[12px] mt-[12px]' >
-
-            {/* RIGHT SIDE becomes LEFT in reverse */}
-            <div className='flex flex-col gap-[12px] w-[40%]' >
-                {/* right (now left) main container */}
-                <div>
-                    {/* right top */}
-                    <Image src="/home/tourist-places4.jpg" className='h-[200px] object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
-                </div>
-                <div className='flex gap-[12px] h-full' >
-                    {/* right bottom */}
-                    <Image src="/home/tourist-places10.jpeg" className='w-[50%] h-full object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
-                    <Image src="/home/tourist-places11.jpeg" className='w-[50%] h-full object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
-                </div>
-            </div>
-
-            {/* LEFT SIDE becomes RIGHT in reverse */}
-            <div className='flex flex-col gap-[12px] w-[60%]' >
-                {/* left (now right) main container */}
-                <div className='flex gap-[12px]' >
-
-                    {/* left top (reversed inside) */}
-                    <div className='w-[50%]' >
-                        {/* left top right becomes left top left */}
-                        <Image src="/home/tourist-places16.jpeg" className='h-full object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
-                    </div>
-
-                    <div className='flex gap-[12px] w-[50%]' >
-                        {/* left top left becomes right side inside */}
-                        <Image src="/home/tourist-places15.jpeg" className='h-full w-[50%] object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
-
-                        {/* column moves to right */}
-                        <div className='flex flex-col gap-[12px] w-[50%]' >
-                            <Image src="/home/tourist-places14.jpeg" className='h-[150px] object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
-                            <Image src="/home/tourist-places12.jpeg" className='h-[150px] object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
+                        <div>
+                            <div className="flex gap-4 text-xs text-gray-500 mb-2 uppercase tracking-wide font-medium">
+                                <span>{blog.author}</span>
+                                <span>•</span>
+                                <span>{blog.date}</span>
+                            </div>
+                            <h3 className="text-xl font-bold leading-tight group-hover:text-green-600 transition-colors">
+                                {blog.title}
+                            </h3>
                         </div>
                     </div>
-                </div>
-
-                <div>
-                    {/* left bottom (same, just moved to right column) */}
-                    <Image src="/home/tourist-places13.jpeg" className='h-[150px] object-cover rounded-[12px]' width={1000} height={1000} alt="Showcase Image" />
-                </div>
+                ))}
             </div>
 
         </div>
-    </div>
-  )
+    )
 }
 
 export default ShowCase

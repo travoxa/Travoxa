@@ -9,36 +9,46 @@ interface CardProps {
 }
 
 export default function Card({ name, description, image, index }: CardProps) {
-  const isEven = index % 2 === 0;
-
   return (
     <div
       className={`
-        group relative w-[50vw] lg:w-[30vw] h-[20vh] lg:h-[50vh] shrink-0 rounded-xl overflow-hidden shadow-lg
-        mx-4 p-4
-        bg-cover bg-center bg-no-repeat
-        transition-transform duration-300 hover:scale-105
-        border-[0.5px] border-black
-        ${isEven ? "mt-6" : "mb-6"}
+        group relative w-[300px] lg:w-[350px] shrink-0 rounded-2xl overflow-hidden
+        mx-3 bg-white
+        transition-all duration-300 hover:shadow-xl
+        border border-gray-100
       `}
-      style={{ backgroundImage: `url(${image})` }}
     >
-      {/* Bottom-to-top gradient overlay */}
-      <div
-        className="absolute inset-0 opacity-100 group-hover:opacity-0 transition-opacity duration-300"
-        style={{ background: "linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.3), transparent)" }}
-      />
-      
-      {/* Card content */}
-      <div className="absolute bottom-2 lg:bottom-5 left-2 lg:left-5 opacity-100 group-hover:opacity-0 transition-opacity duration-300">
-        <h3 className="text-[12px] lg:text-lg font-semibold text-white">{name}</h3>
-        <p className="text-[10px] lg:text-sm text-gray-200 mt-2">{description}</p>
-        <button className="text-[10px] text-white mt-0 lg:mt-[12px] font-light flex justify-center items-center gap-[10px]">
-          See Destinations
-          <div className="p-[8px] bg-white rounded-full">
-            <HiArrowRight color="black" />
+      {/* Image Section */}
+      <div className="h-[220px] relative overflow-hidden">
+        <div
+          className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+          style={{ backgroundImage: `url(${image})` }}
+        ></div>
+        {/* Rating Mock */}
+        <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+          <span>★</span> 4.8
+        </div>
+      </div>
+
+      {/* Content Section */}
+      <div className="p-5">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-lg font-bold text-gray-900">{name}</h3>
+          <span className="text-lg font-bold text-black">$285</span>
+        </div>
+        <div className="flex items-center gap-1 mb-4 text-gray-500 text-xs uppercase tracking-wide">
+          <span>Bali, Indonesia</span> {/* Mock location */}
+        </div>
+
+        <p className="text-sm text-gray-500 line-clamp-2 mb-4 leading-relaxed">{description}</p>
+
+        <div className="flex justify-between items-center border-t border-gray-100 pt-4">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-gray-200"></div> {/* User Avatar Mock */}
+            <span className="text-xs text-gray-500">Hosted by Milan</span>
           </div>
-        </button>
+          <button className="text-xs font-bold text-black border-b border-black pb-0.5 hover:text-green-600 hover:border-green-600 transition-colors">BOOK NOW</button>
+        </div>
       </div>
     </div>
   );

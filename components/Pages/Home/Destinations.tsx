@@ -1,5 +1,6 @@
 import { HiArrowRight } from "react-icons/hi2";
 import Card from "@/components/ui/Cards";
+import HomeFilterSearch from "@/components/ui/HomeFilterSearch";
 
 interface CardProps {
   name: string;
@@ -75,20 +76,19 @@ const Destinations = () => {
   const doubled = [...cardsData, ...cardsData];
 
   return (
-    <div className='mx-[12px] py-[5vh] border-[0.5px] border-black rounded-[12px] bg-white relative z-10'>
-      <div className='flex flex-col justify-center items-center'>
-        <p className='text-center text-[20px] lg:text-[40px] Mont font-normal'>
-          Visit Best Destinations in India with <span className="text-[#4da528]">TRAVOXA</span>
-        </p>
-        <button className='mt-[24px] text-[10px] lg:text-[18px] font-light flex justify-center items-center gap-[10px]'>
-          See all Destinations 
-          <div className="p-[8px] bg-black rounded-full">
-            <HiArrowRight color="white" />
-          </div>
-        </button>
+    <div className='bg-white relative z-10 p-0'>
+
+      <div className='flex flex-col justify-center items-center pt-24 pb-8' data-aos="fade-up">
+        <h2 className='text-center text-3xl lg:text-5xl text-black mb-6 Mont leading-tight'>
+          A Selection Of Exceptional <br /> <span className="">Villas And Hotels</span>
+        </h2>
+        {/* Filter Section directly embedded */}
+        <div className="w-full max-w-5xl mx-auto mt-6" data-aos="fade-up" data-aos-delay="200">
+          <HomeFilterSearch />
+        </div>
       </div>
-      
-      <div className="w-full overflow-hidden py-[24px] lg:py-20 relative">
+
+      <div className="w-full overflow-hidden py-10 relative" data-aos="fade-left" data-aos-delay="400">
         <div className="flex animate-scroll-horizontal">
           {doubled.map((item, index) => (
             <Card
