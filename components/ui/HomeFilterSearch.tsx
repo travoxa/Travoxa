@@ -14,11 +14,9 @@ export default function HomeFilterSearch() {
       <div className="bg-white/80 backdrop-blur-md rounded-full border border-gray-200 p-2 inline-flex items-center gap-2 shadow-sm">
 
         {/* Buttons */}
-        <button className="px-6 py-2 rounded-full bg-black text-white text-sm font-medium">All</button>
-        <button className="px-6 py-2 rounded-full text-gray-600 hover:bg-gray-100 text-sm font-medium transition-colors">Resort</button>
-        <button className="px-6 py-2 rounded-full text-gray-600 hover:bg-gray-100 text-sm font-medium transition-colors">Villa</button>
-        <button className="px-6 py-2 rounded-full text-gray-600 hover:bg-gray-100 text-sm font-medium transition-colors">Hotel</button>
-        <button className="px-6 py-2 rounded-full text-gray-600 hover:bg-gray-100 text-sm font-medium transition-colors">Cottage</button>
+        {/* Buttons */}
+        {/* Buttons */}
+        <button className="px-6 py-2 rounded-full bg-black text-white text-sm font-medium">Tour Packages</button>
 
         <div className="h-6 w-px bg-gray-300 mx-2"></div>
 

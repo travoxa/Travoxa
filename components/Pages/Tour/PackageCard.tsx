@@ -8,15 +8,21 @@ import { HiLocationMarker, HiStar, HiClock } from "react-icons/hi";
 
 interface PackageCardProps {
     pkg: TourPackage;
+    isBlurItem?: boolean;
 }
 
-export default function PackageCard({ pkg }: PackageCardProps) {
+export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
     const router = useRouter();
 
     return (
         <div
-            onClick={() => router.push(`/tour/${pkg.id}`)}
-            className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-100 flex flex-col h-full"
+            onClick={() => !isBlurItem && router.push(`/tour/${pkg.id}`)}
+            className={`bg-white rounded-3xl overflow-hidden border border-gray-100 flex flex-col h-full transition-all duration-300
+                ${isBlurItem
+                    ? ''
+                    : 'group shadow-sm hover:shadow-2xl cursor-pointer'
+                }
+            `}
         >
             {/* Image Container */}
             <div className="relative h-[250px] w-full overflow-hidden">
