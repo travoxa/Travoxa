@@ -26,6 +26,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
     label: string;
     path?: string;
     dropdown: DropdownItem[];
+    className?: string;
   };
 
   const toggleDropdown = (menu: string) => {
@@ -55,6 +56,18 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
         { label: "Create Group", path: "" },
         { label: "Join Group", path: "/backpackers" },
       ],
+    },
+    {
+      label: "Collab",
+      path: "/travoxa-partners",
+      dropdown: [],
+      className: "text-emerald-600 font-bold",
+    },
+    {
+      label: "Yatra",
+      path: "/travoxa-yatra",
+      dropdown: [],
+      className: "text-emerald-600 font-bold",
     },
     {
       label: "Pages",
@@ -167,7 +180,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
                 <button
                   type="button"
                   onClick={() => navigateTo(item.path)}
-                  className="flex items-center gap-1 text-[15px] font-medium text-gray-900 cursor-pointer group-hover:text-green-600 focus:outline-none"
+                  className={`flex items-center gap-1 text-[15px] font-medium cursor-pointer focus:outline-none transition-colors ${item.className ? item.className : 'text-gray-900 group-hover:text-green-600'}`}
                 >
                   {item.label}
                   {item.dropdown.length > 0 && <FiChevronDown size={16} />}
@@ -251,7 +264,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
               {/* MAIN ITEM */}
               <button
                 type="button"
-                className="flex items-center justify-between w-full py-3 text-lg font-medium border-b text-gray-900"
+                className={`flex items-center justify-between w-full py-3 text-lg font-medium border-b ${item.className ? item.className : 'text-gray-900'}`}
                 onClick={() =>
                   item.dropdown.length > 0
                     ? toggleDropdown(item.label)
