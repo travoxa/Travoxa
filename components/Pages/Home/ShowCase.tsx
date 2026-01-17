@@ -25,16 +25,94 @@ const ShowCase = () => {
         }
     ]
 
+    const [email, setEmail] = React.useState('')
+    const [isSubmitting, setIsSubmitting] = React.useState(false)
+    const [status, setStatus] = React.useState<'idle' | 'success' | 'error' | 'already_subscribed'>('idle')
+    const [showInput, setShowInput] = React.useState(false)
+
+    const handleSubscribe = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!email) return
+
+        setIsSubmitting(true)
+        setStatus('idle')
+
+        try {
+            const res = await fetch('/api/blog-subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            })
+
+            const data = await res.json()
+
+            if (res.ok) {
+                if (data.message === 'You are already subscribed!') {
+                    setStatus('already_subscribed')
+                } else {
+                    setStatus('success')
+                    setEmail('')
+                }
+            } else {
+                setStatus('error')
+            }
+        } catch (error) {
+            setStatus('error')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
     return (
         <div className='container mx-auto px-6 lg:px-20 py-20' >
             <div className='flex flex-col lg:flex-row justify-between items-end mb-12' data-aos="fade-right">
                 <div className="max-w-2xl">
-                    <h2 className='text-4xl lg:text-6xl text-black mb-6 Mont' >Travel Blog <br /> <span className="">Around Travoxa</span></h2>
+                    <h2 className='text-3xl lg:text-5xl text-black mb-6 Mont' >Travel Blog <br /> <span className="">Around Travoxa</span></h2>
                     <p className="text-gray-600 Inter text-lg">This blog features beautiful photography and personal experiences, providing insights into the local culture.</p>
                 </div>
-                <div className="flex gap-4 mt-6 lg:mt-0">
-                    <button className="bg-black text-white px-6 py-2 rounded-full text-sm font-medium">Reminder me</button>
-                    <button className="px-6 py-2 rounded-full border border-gray-300 text-sm font-medium hover:bg-gray-50">Learn More</button>
+                <div className="flex gap-4 mt-6 lg:mt-0 items-center h-[50px]">
+                    {!showInput ? (
+                        <button
+                            onClick={() => setShowInput(true)}
+                            className="bg-black text-white px-8 py-3 rounded-full text-sm font-medium hover:bg-black/80 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                            Subscribe
+                        </button>
+                    ) : (
+                        <form onSubmit={handleSubscribe} className="flex gap-2 items-center animate-in fade-in slide-in-from-right-4 duration-300">
+                            <div className="relative group">
+                                <input
+                                    type="email"
+                                    placeholder="Enter your email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="px-6 py-3 rounded-full border border-gray-300 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all w-[250px] shadow-sm group-hover:shadow-md"
+                                    required
+                                    disabled={status === 'success'}
+                                />
+                                {status === 'success' && (
+                                    <span className="absolute -bottom-6 left-4 text-xs text-green-600 font-medium animate-in fade-in slide-in-from-top-1">Subscribed successfully!</span>
+                                )}
+                                {status === 'already_subscribed' && (
+                                    <span className="absolute -bottom-6 left-4 text-xs text-blue-600 font-medium animate-in fade-in slide-in-from-top-1">Already subscribed!</span>
+                                )}
+                                {status === 'error' && (
+                                    <span className="absolute -bottom-6 left-4 text-xs text-red-500 font-medium animate-in fade-in slide-in-from-top-1">Something went wrong</span>
+                                )}
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || status === 'success'}
+                                className="bg-black text-white p-3 rounded-full hover:bg-black/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                            >
+                                {isSubmitting ? (
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <HiArrowRight className="text-lg" />
+                                )}
+                            </button>
+                        </form>
+                    )}
                 </div>
             </div>
 
@@ -58,7 +136,7 @@ const ShowCase = () => {
                                 <span>•</span>
                                 <span>{blog.date}</span>
                             </div>
-                            <h3 className="text-xl font-bold leading-tight group-hover:text-green-600 transition-colors">
+                            <h3 className="text-xl font-medium leading-tight group-hover:text-green-600 transition-colors">
                                 {blog.title}
                             </h3>
                         </div>
