@@ -323,7 +323,7 @@ const Choose = () => {
         <h2 className=" text-[56px] lg:text-[68px] Mont font-light leading-[1.1] mb-[20px] bg-gradient-to-r from-black to-gray-600 bg-clip-text text-transparent">
           Features We Offer
         </h2>
-        <p className="Mont text-[22px] text-gray-600 leading-[1.6] max-w-5xl mx-auto Inter">
+        <p className="Mont text-[22px] text-gray-600 leading-[1.6] max-w-5xl mx-auto ">
           Every trip tells a story, and we help you write yours beautifully.
           From smart planning to real-time guidance, we combine intelligence with human care.
         </p>

@@ -50,6 +50,21 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
       ],
     },
     {
+      label: "Discovery",
+      path: "/travoxa-discovery",
+      dropdown: [
+        { label: "Sightseeing", path: "/travoxa-discovery/sightseeing" },
+        { label: "Rentals", path: "/travoxa-discovery/rentals" },
+        { label: "Local Connect", path: "/travoxa-discovery/local-connect" },
+        { label: "Activities", path: "/travoxa-discovery/activities" },
+        { label: "Attractions", path: "/travoxa-discovery/attractions" },
+        { label: "Food & Cafes", path: "/travoxa-discovery/food-and-cafes" },
+        { label: "Emergency Help", path: "/travoxa-discovery/emergency-help" },
+        { label: "Volunteer Yatra", path: "/travoxa-discovery/volunteer-yatra" },
+        { label: "Creator Collab", path: "/travoxa-discovery/creator-collab" },
+      ]
+    },
+    {
       label: "Backpackers",
       path: "/backpackers",
       dropdown: [
@@ -57,18 +72,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
         { label: "Join Group", path: "/backpackers" },
       ],
     },
-    {
-      label: "Collab",
-      path: "/travoxa-partners",
-      dropdown: [],
-      className: "text-emerald-600 font-bold",
-    },
-    {
-      label: "Yatra",
-      path: "/travoxa-yatra",
-      dropdown: [],
-      className: "text-emerald-600 font-bold",
-    },
+
     {
       label: "Pages",
       path: "/pages",
@@ -150,7 +154,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
   return (
     <>
       {/* MAIN NAVBAR */}
-      <header className="w-screen bg-transparent fixed top-0 left-0 right-0 z-50 ">
+      <header className="w-screen bg-transparent fixed top-0 left-0 right-0 z-50 Mont">
         <LoginRequiredPopup
           isOpen={showLoginPopup}
           onClose={() => setShowLoginPopup(false)}
@@ -180,10 +184,10 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
                 <button
                   type="button"
                   onClick={() => navigateTo(item.path)}
-                  className={`flex items-center gap-1 text-[15px] font-medium cursor-pointer focus:outline-none transition-colors ${item.className ? item.className : 'text-gray-900 group-hover:text-green-600'}`}
+                  className={`flex items-center gap-1 text-[13px] font-medium cursor-pointer focus:outline-none transition-colors ${item.className ? item.className : 'text-gray-900 group-hover:text-green-600'}`}
                 >
                   {item.label}
-                  {item.dropdown.length > 0 && <FiChevronDown size={16} />}
+                  {item.dropdown.length > 0 && <FiChevronDown size={14} />}
                 </button>
 
                 {/* DROPDOWN DESKTOP */}
@@ -200,7 +204,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
                             navigateTo(sub.path);
                           }
                         }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-green-50"
+                        className="block w-full text-left px-4 py-2 text-xs text-gray-800 hover:bg-green-50"
                       >
                         {sub.label}
                       </button>
@@ -264,7 +268,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
               {/* MAIN ITEM */}
               <button
                 type="button"
-                className={`flex items-center justify-between w-full py-3 text-lg font-medium border-b ${item.className ? item.className : 'text-gray-900'}`}
+                className={`flex items-center justify-between w-full py-3 text-sm font-medium border-b ${item.className ? item.className : 'text-gray-900'}`}
                 onClick={() =>
                   item.dropdown.length > 0
                     ? toggleDropdown(item.label)
@@ -286,7 +290,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
                     <button
                       key={sub.label}
                       type="button"
-                      className="py-2 text-left text-gray-700 border-b"
+                      className="py-2 text-left text-xs text-gray-700 border-b"
                       onClick={() => {
                         if (sub.label === "Create Group") {
                           handleCreateGroupClick();
