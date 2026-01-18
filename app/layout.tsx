@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${playfair.variable} ${montserrat.variable} font-sans`}
+        className={`${playfair.variable} ${montserrat.variable} font-sans `}
       >
         <Providers>{children}</Providers>
       </body>

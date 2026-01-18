@@ -2,7 +2,7 @@ import React from 'react';
 
 const ActivityFeedCard: React.FC = () => {
   return (
-    <div className="bg-white p-6 rounded-3xl shadow-md">
+    <div className="bg-white p-6 rounded-xl shadow-sm">
       <h2 className="text-xl font-semibold mb-4">ActivityFeedCard</h2>
       <div className="space-y-2">
         <p className="text-gray-600">Recent activity and community interactions</p>
