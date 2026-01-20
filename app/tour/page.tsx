@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { tourData } from "@/data/tourData";
 import PackageCard from "@/components/Pages/Tour/PackageCard";
 import CustomTourForm from "@/components/Pages/Tour/CustomTourForm";
@@ -11,8 +12,38 @@ import Footer from "@/components/ui/Footor"; // Note: typo in original file 'Foo
 import Image from "next/image";
 
 export default function TourPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <TourContent />
+        </Suspense>
+    );
+}
+
+function TourContent() {
+    const searchParams = useSearchParams();
     const [filteredPackages, setFilteredPackages] = useState(tourData);
     const [isExpanded, setIsExpanded] = useState(false);
+
+    // Initial filter from URL params
+    useEffect(() => {
+        const priceParam = searchParams.get("priceRange");
+        const queryParam = searchParams.get("searchQuery");
+
+        // We can reuse the logic by constructing a filter object, 
+        // but handleFilter expects a specific shape and also triggers setFilteredPackages.
+        // Let's call handleFilter with the params if they exist.
+
+        const initialFilters = {
+            searchQuery: queryParam || "",
+            priceRange: priceParam || "Any Price",
+            duration: "Any Duration"
+        };
+
+        // Only trigger if there's actually a param to filter by, otherwise default load is fine
+        if (priceParam || queryParam) {
+            handleFilter(initialFilters);
+        }
+    }, [searchParams]);
 
     const handleFilter = (filters: { searchQuery: string, priceRange: string, duration: string }) => {
         let results = tourData;

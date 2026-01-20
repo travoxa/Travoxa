@@ -24,13 +24,43 @@ const LocalConnectPage = () => {
                 <p className="text-slate-500 text-lg max-w-2xl mx-auto mb-10 Inter leading-relaxed">
                     Stop following guidebooks. Connect with storytellers, foodies, and experts who open doors to the real soul of their city.
                 </p>
-                <div className="flex justify-center gap-4">
-                    <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-full font-bold shadow-xl shadow-emerald-500/30 transition-all Mont">
-                        Explore Cities
-                    </button>
-                    <button className="bg-white border-2 border-slate-200 text-slate-900 px-8 py-4 rounded-full font-bold hover:bg-slate-50 transition-all Mont">
-                        Become a Local Connector
-                    </button>
+                <div className="flex flex-col lg:flex-row items-center justify-center gap-4 mb-4">
+                    {/* Search Bar */}
+                    <div className="bg-white rounded-full p-2.5 flex items-center border border-slate-200 hover:border-emerald-500/30 transition-colors shadow-sm">
+                        <div className="relative group w-64">
+                            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-hover:text-emerald-500 transition-colors">
+                                <FaLocationDot size={10} />
+                            </div>
+                            <select
+                                className="w-full h-9 pl-10 pr-6 rounded-full bg-slate-50 hover:bg-slate-100 border-none text-slate-600 text-xs font-light focus:outline-none focus:ring-0 appearance-none cursor-pointer transition-colors"
+                            >
+                                <option value="">Select City</option>
+                                <option value="Goa">Goa</option>
+                                <option value="Jaipur">Jaipur</option>
+                                <option value="Varanasi">Varanasi</option>
+                                <option value="Kolkata">Kolkata</option>
+                                <option value="Udaipur">Udaipur</option>
+                                <option value="Mumbai">Mumbai</option>
+                            </select>
+                        </div>
+
+                        {/* Search Button */}
+                        <button className="w-9 h-9 bg-slate-900 hover:bg-emerald-600 text-white text-[10px] font-medium rounded-full transition-all flex items-center justify-center ml-1">
+                            <FaUsers size={10} />
+                        </button>
+                    </div>
+
+                    <div className="h-8 w-[1px] bg-slate-200 hidden lg:block"></div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                        <button className="h-10 px-6 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 Mont tracking-wide">
+                            Explore Cities
+                        </button>
+                        <button className="h-10 px-6 bg-white border border-slate-200 hover:bg-slate-50 text-slate-900 text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 Mont tracking-wide">
+                            Become a Connector
+                        </button>
+                    </div>
                 </div>
             </div>
 

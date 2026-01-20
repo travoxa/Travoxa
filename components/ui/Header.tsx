@@ -41,12 +41,12 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
     },
     {
       label: "Travoxa Ai",
-      path: "/travoxa-ai",
+      path: "/ai-trip-planner",
       dropdown: [
         { label: "Ai Trip", path: "/ai-trip-planner" },
-        { label: "Mystery Trip", path: "/travoxa-ai/mystery-trip" },
-        { label: "Nearby Explorer", path: "/travoxa-ai/nearby-explorer" },
-        { label: "Local Connect", path: "/travoxa-ai/local-connect" },
+        { label: "Mystery Trip", path: "/ai-trip-planner" },
+        { label: "Nearby Explorer", path: "/ai-trip-planner" },
+        { label: "Local Connect", path: "/ai-trip-planner" },
       ],
     },
     {
