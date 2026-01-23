@@ -2,6 +2,8 @@
 
 import Footor from "@/components/ui/Footor";
 import Header from "@/components/ui/Header";
+import MomentsSlider from "@/components/Pages/Team/MomentsSlider";
+
 
 export default function TeamPage() {
     return (
@@ -58,16 +60,16 @@ export default function TeamPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-0 items-stretch">
 
                         {/* LEFT PANEL: FOUNDER */}
-                        <div className="bg-[#EAE8E4] rounded-[3rem] lg:rounded-tr-none p-4 md:p-6 lg:p-8 flex flex-col relative order-2 lg:order-1 transition-transform hover:scale-[1.01] duration-500">
+                        <div className="bg-[#EAE8E490] rounded-[1rem] lg:rounded-tr-none p-4 md:p-6 lg:p-8 flex flex-col relative order-2 lg:order-1 transition-transform hover:scale-[1.01] duration-500">
                             {/* Inner Image Container */}
-                            <div className="aspect-[3/4] rounded-[2.5rem] overflow-hidden bg-white shadow-sm relative w-full h-full">
+                            <div className="aspect-[3/4] rounded-[1.5rem] overflow-hidden bg-white shadow-sm relative w-full h-full">
                                 <img
                                     src="https://i.postimg.cc/sfYj4WHh/Aditya-Proffestional-photo-2.jpg"
                                     alt="Aditya Pathak"
                                     className="w-full h-full object-cover object-top filter grayscale hover:grayscale-0 transition-all duration-700"
                                 />
                                 {/* Overlay Card */}
-                                <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md p-5 rounded-[1.5rem] text-center border border-white/40 shadow-lg">
+                                <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md p-5 rounded-[1rem] text-center border border-white/40 shadow-lg">
                                     <h3 className="text-xl font-bold text-black uppercase Mont leading-none mb-1">Aditya Pathak</h3>
                                     <p className="text-[10px] font-bold text-green-600 uppercase tracking-widest">Founder & Principal</p>
                                 </div>
@@ -78,11 +80,9 @@ export default function TeamPage() {
                         <div className="order-1 lg:order-2 flex flex-col justify-center items-center py-12 lg:py-0 relative z-10">
 
                             {/* THE BRIDGE (Desktop Only) */}
-                            <div className="hidden lg:block absolute top-0 left-0 right-0 h-24 bg-[#EAE8E4]  z-0"></div>
+                            <div className="hidden lg:block absolute top-0 left-0 right-0 h-24 bg-[#EAE8E490] z-0"></div>
 
-                            <div className="text-center w-full rounded-t-[3rem] bg-white h-[500px] pt-[100px] space-y-6 relative z-10 lg:mt-16">
-                                {/* Removed the icon as requested */}
-
+                            <div className="text-center w-full rounded-t-[2rem] bg-white h-[500px] pt-[100px] space-y-6 relative z-10 lg:mt-16 flex flex-col items-center">
                                 <div className="space-y-[-0.3rem]">
                                     <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-widest text-black Mont leading-none">
                                         Meet The
@@ -101,7 +101,7 @@ export default function TeamPage() {
                         </div>
 
                         {/* RIGHT PANEL: TEAM GRID */}
-                        <div className="bg-[#EAE8E4] rounded-[3rem] lg:rounded-tl-none p-6 lg:p-10 flex flex-col justify-center order-3 lg:order-3 hover:shadow-xl transition-shadow duration-500">
+                        <div className="bg-[#EAE8E490] rounded-[1rem] lg:rounded-tl-none p-6 lg:p-10 flex flex-col justify-center order-3 lg:order-3 hover:shadow-xl transition-shadow duration-500">
                             <div className="h-full flex flex-col justify-between gap-6">
                                 <div className="text-left pl-2">
                                     <h4 className="text-2xl font-light text-black Mont">Core Team</h4>
@@ -115,7 +115,7 @@ export default function TeamPage() {
                                         { name: "Karthik", role: "Partnerships", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400" },
                                         { name: "Mustak", role: "Research", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400" }
                                     ].map((member, i) => (
-                                        <div key={i} className="bg-white p-3 rounded-[2rem] shadow-sm border border-white flex flex-col items-center justify-center text-center gap-3 group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
+                                        <div key={i} className="bg-white p-3 rounded-[1.5rem] shadow-sm border border-white flex flex-col items-center justify-center text-center gap-3 group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
                                             <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-zinc-100 ring-2 ring-zinc-50 group-hover:ring-green-400 transition-all">
                                                 <img
                                                     src={member.img}
@@ -138,8 +138,9 @@ export default function TeamPage() {
 
                 {/* 5. JOURNEY */}
                 <section>
-                    <h2 className="text-3xl md:text-4xl font-extralight text-black mb-12 text-center Mont">My Travel Journey Across India</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <h2 className="text-3xl md:text-4xl font-extralight text-black mb-4 text-center Mont">My Travel Journey Across India</h2>
+
+                    <div className="space-y-5 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
                         {[
                             { title: "Ayodhya", img: "https://via.placeholder.com/280x200", desc: "The spiritual vibration here taught me that travel is about peace, not just sightseeing." },
                             { title: "Varanasi", img: "https://via.placeholder.com/280x200", desc: "Wandering the ghats at 4 AM showed me the beauty of local rhythm and deep history." },
@@ -148,45 +149,39 @@ export default function TeamPage() {
                             { title: "Mayapur", img: "https://via.placeholder.com/280x200", desc: "Community living here gave birth to the 'Volunteer Yatra' concept in Travoxa." },
                             { title: "Delhi", img: "https://via.placeholder.com/280x200", desc: "The chaos and the food helped me understand the need for 'Food & Cafe' discovery." },
                         ].map((item, i) => (
-                            <div key={i} className="flex flex-col gap-4 group">
-                                <div className="overflow-hidden rounded-2xl">
-                                    <img src={item.img} alt={item.title} className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105" />
+                            <div key={i} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                                {/* Icon/Dot */}
+                                <div className="flex items-center justify-center w-8 h-8 rounded-full border border-white bg-green-500 text-slate-50 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 font-bold z-10 text-sm">
+                                    {i + 1}
                                 </div>
-                                <div>
-                                    <h3 className="text-xl font-medium text-black">📍 {item.title}</h3>
-                                    <p className="text-zinc-600 font-light mt-2">{item.desc}</p>
+
+                                {/* Card */}
+                                <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2rem)] bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex flex-col gap-2 relative overflow-hidden">
+                                    {/* Title & Desc - Always Visible */}
+                                    <div>
+                                        <h3 className="text-lg font-medium text-black">📍 {item.title}</h3>
+                                        <p className="text-zinc-600 font-light text-sm">{item.desc}</p>
+                                    </div>
+
+                                    {/* Image - Hidden initially, shown on hover */}
+                                    <div className="max-h-0 opacity-0 group-hover:max-h-48 group-hover:opacity-100 transition-all duration-500 ease-in-out overflow-hidden rounded-[1rem] w-full mt-0 group-hover:mt-3">
+                                        <img src={item.img} alt={item.title} className="w-full h-full object-cover" />
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
                 </section>
 
-                {/* 6. MOMENTS */}
-                <section>
-                    <h2 className="text-3xl md:text-4xl font-extralight text-black mb-12 text-center Mont">Moments That Built Travoxa</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {[
-                            { title: "Banaras Ganga Aarti", img: "https://via.placeholder.com/350x250" },
-                            { title: "Darjeeling Sunrise", img: "https://via.placeholder.com/350x250" },
-                            { title: "Gangtok Streets", img: "https://via.placeholder.com/350x250" },
-                            { title: "Ayodhya Ram Mandir", img: "https://via.placeholder.com/350x250" }
-                        ].map((item, i) => (
-                            <div key={i} className="relative group overflow-hidden rounded-2xl h-64">
-                                <img src={item.img} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
-                                    <p className="text-white font-medium">{item.title}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
+                {/* 6. MOMENTS (Infinite Card Slider) */}
+                <MomentsSlider />
 
                 {/* 7. CTA */}
-                <section className="text-center py-16 bg-zinc-50 rounded-3xl">
-                    <p className="text-xl md:text-2xl font-light text-zinc-700 max-w-3xl mx-auto mb-8 leading-relaxed">
+                <section className="text-center mt-[-4rem] pt-8 pb-8 bg-zinc-50 rounded-3xl">
+                    <p className="text-xl md:text-2xl font-light text-green-600 max-w-3xl mx-auto mb-8 leading-relaxed">
                         Travoxa is built with travelers, creators, volunteers, and locals — together creating India’s most helpful travel ecosystem.
                     </p>
-                    <a href="/travoxa-discovery" className="inline-block bg-black text-white px-10 py-4 rounded-full font-medium hover:bg-zinc-800 transition-colors hover:scale-105 transform duration-300">
+                    <a href="/travoxa-discovery" className="inline-block bg-black text-white px-10 py-4 rounded-full font-medium hover:bg-zinc-800 transition-all hover:scale-105 transform duration-300">
                         Explore With Travoxa
                     </a>
                 </section>
