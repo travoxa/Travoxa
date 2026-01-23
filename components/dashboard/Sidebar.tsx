@@ -10,7 +10,8 @@ import {
     RiBarChartLine,
     RiNotification3Line,
     RiLogoutBoxLine,
-    RiCloseLine
+    RiCloseLine,
+    RiHomeLine
 } from 'react-icons/ri';
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
@@ -21,21 +22,28 @@ interface SidebarProps {
     user?: { name?: string | null, email?: string | null, image?: string | null };
     activeTab: string;
     setActiveTab: (tab: string) => void;
+    isAdmin?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab }) => {
+const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmin = false }) => {
     const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
     const handleSignOut = async () => {
-        try {
-            const firebaseAuth = getFirebaseAuth();
-            if (firebaseAuth) {
-                await firebaseSignOut(firebaseAuth);
+        if (isAdmin) {
+            // Admin logout - redirect to admin login
+            window.location.href = '/api/admin/logout';
+        } else {
+            // User logout
+            try {
+                const firebaseAuth = getFirebaseAuth();
+                if (firebaseAuth) {
+                    await firebaseSignOut(firebaseAuth);
+                }
+                await signOut({ callbackUrl: '/login' });
+            } catch (error) {
+                console.error("Error signing out:", error);
+                await signOut({ callbackUrl: '/login' });
             }
-            await signOut({ callbackUrl: '/login' });
-        } catch (error) {
-            console.error("Error signing out:", error);
-            await signOut({ callbackUrl: '/login' });
         }
     };
 
@@ -59,81 +67,104 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab }) => {
 
                 {/* Navigation */}
                 <nav className="space-y-2">
-                    <NavItem
-                        icon={<RiUserLine size={20} />}
-                        label="Profile"
-                        id="UserProfileCard"
-                        activeTab={activeTab}
-                        onClick={setActiveTab}
-                    />
-                    <NavItem
-                        icon={<RiMapPinLine size={20} />}
-                        label="Trips"
-                        id="Trips"
-                        activeTab={activeTab}
-                        onClick={setActiveTab}
-                    />
-                    <NavItem
-                        icon={<RiSettings4Line size={20} />}
-                        label="Preferences"
-                        id="PreferencesCard"
-                        activeTab={activeTab}
-                        onClick={setActiveTab}
-                    />
-                    <NavItem
-                        icon={<RiShieldCheckLine size={20} />}
-                        label="Safety"
-                        id="SafetyCard"
-                        activeTab={activeTab}
-                        onClick={setActiveTab}
-                    />
-                    <NavItem
-                        icon={<RiFileListLine size={20} />}
-                        label="Activity"
-                        id="ActivityFeedCard"
-                        activeTab={activeTab}
-                        onClick={setActiveTab}
-                    />
-                    <NavItem
-                        icon={<RiBarChartLine size={20} />}
-                        label="Insights"
-                        id="InsightsCard"
-                        activeTab={activeTab}
-                        onClick={setActiveTab}
-                    />
-                    <NavItem
-                        icon={<RiNotification3Line size={20} />}
-                        label="Notifications"
-                        id="Notification"
-                        activeTab={activeTab}
-                        onClick={setActiveTab}
-                    />
-                    <button
-                        onClick={() => setShowLogoutPopup(true)}
-                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group text-red-500 hover:bg-red-50 hover:text-red-600"
-                    >
-                        <div className="flex items-center gap-3">
-                            <span><RiLogoutBoxLine size={20} /></span>
-                            <span className="text-sm font-medium">Logout</span>
-                        </div>
-                    </button>
+                    {isAdmin ? (
+                        <>
+                            <NavItem
+                                icon={<RiBarChartLine size={20} />}
+                                label="Overview"
+                                id="Overview"
+                                activeTab={activeTab}
+                                onClick={setActiveTab}
+                            />
+                            <NavItem
+                                icon={<RiHomeLine size={20} />}
+                                label="Landing"
+                                id="Landing"
+                                activeTab={activeTab}
+                                onClick={setActiveTab}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <NavItem
+                                icon={<RiUserLine size={20} />}
+                                label="Profile"
+                                id="UserProfileCard"
+                                activeTab={activeTab}
+                                onClick={setActiveTab}
+                            />
+                            <NavItem
+                                icon={<RiMapPinLine size={20} />}
+                                label="Trips"
+                                id="Trips"
+                                activeTab={activeTab}
+                                onClick={setActiveTab}
+                            />
+                            <NavItem
+                                icon={<RiSettings4Line size={20} />}
+                                label="Preferences"
+                                id="PreferencesCard"
+                                activeTab={activeTab}
+                                onClick={setActiveTab}
+                            />
+                            <NavItem
+                                icon={<RiShieldCheckLine size={20} />}
+                                label="Safety"
+                                id="SafetyCard"
+                                activeTab={activeTab}
+                                onClick={setActiveTab}
+                            />
+                            <NavItem
+                                icon={<RiFileListLine size={20} />}
+                                label="Activity"
+                                id="ActivityFeedCard"
+                                activeTab={activeTab}
+                                onClick={setActiveTab}
+                            />
+                            <NavItem
+                                icon={<RiBarChartLine size={20} />}
+                                label="Insights"
+                                id="InsightsCard"
+                                activeTab={activeTab}
+                                onClick={setActiveTab}
+                            />
+                            <NavItem
+                                icon={<RiNotification3Line size={20} />}
+                                label="Notifications"
+                                id="Notification"
+                                activeTab={activeTab}
+                                onClick={setActiveTab}
+                            />
+                            <button
+                                onClick={() => setShowLogoutPopup(true)}
+                                className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group text-red-500 hover:bg-red-50 hover:text-red-600"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span><RiLogoutBoxLine size={20} /></span>
+                                    <span className="text-sm font-medium">Logout</span>
+                                </div>
+                            </button>
+                        </>
+                    )}
                 </nav>
             </div>
 
-            {/* User Profile */}
-            <div className="flex flex-col items-center text-center mt-auto">
-                <div className="w-12 h-12 mx-auto mb-3 rounded-full overflow-hidden border-2 border-white shadow-sm bg-gray-200">
-                    {user?.image ? (
-                        <img src={user.image} alt="User" className="w-full h-full object-cover" />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600 font-bold text-lg">
-                            {user?.name?.[0] || 'U'}
-                        </div>
-                    )}
+            {/* User Profile - Only show if NOT admin */}
+            {!isAdmin && (
+                <div className="flex flex-col items-center text-center mt-auto">
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-full overflow-hidden border-2 border-white shadow-sm bg-gray-200">
+                        {user?.image ? (
+                            <img src={user.image} alt="User" className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600 font-bold text-lg">
+                                {user?.name?.[0] || 'U'}
+                            </div>
+                        )}
+                    </div>
+                    <h4 className="text-sm font-bold text-gray-900">{user?.name || 'User'}</h4>
+                    <p className="text-xs text-gray-500 truncate w-full">{user?.email || ''}</p>
                 </div>
-                <h4 className="text-sm font-bold text-gray-900">{user?.name || 'User'}</h4>
-                <p className="text-xs text-gray-500 truncate w-full">{user?.email || ''}</p>
-            </div>
+            )}
 
             {/* Logout Confirmation Popup */}
             {

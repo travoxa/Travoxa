@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { RiSearchLine, RiArrowLeftLine, RiMapPinLine, RiUserLine, RiSettings4Line, RiShieldCheckLine, RiFileListLine, RiBarChartLine, RiNotification3Line, RiCompass3Line, RiHomeLine, RiRobotLine } from 'react-icons/ri';
+import { RiSearchLine, RiArrowLeftLine, RiMapPinLine, RiUserLine, RiSettings4Line, RiShieldCheckLine, RiFileListLine, RiBarChartLine, RiNotification3Line, RiCompass3Line, RiHomeLine, RiRobotLine, RiLogoutBoxLine } from 'react-icons/ri';
 
 interface SearchItem {
     id: string;
@@ -13,9 +13,10 @@ interface SearchItem {
 
 interface TopBarProps {
     onNavigate?: (tab: string) => void;
+    isAdmin?: boolean;
 }
 
-const TopBar = ({ onNavigate }: TopBarProps) => {
+const TopBar = ({ onNavigate, isAdmin = false }: TopBarProps) => {
     const router = useRouter();
     const [query, setQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
@@ -149,15 +150,25 @@ const TopBar = ({ onNavigate }: TopBarProps) => {
                 )}
             </div>
 
-            {/* Back Button - Capsule design */}
+            {/* Back Button or Logout Button - Capsule design */}
             <div>
-                <button
-                    onClick={() => window.history.back()}
-                    className="flex items-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-full text-sm font-bold transition-all shadow-sm group"
-                >
-                    <RiArrowLeftLine className="group-hover:-translate-x-1 transition-transform" />
-                    Back
-                </button>
+                {isAdmin ? (
+                    <button
+                        onClick={() => window.location.href = '/api/admin/logout'}
+                        className="flex items-center gap-2 px-6 py-3 bg-white hover:bg-red-50 border border-red-200 text-red-500 rounded-full text-sm font-bold transition-all shadow-sm group"
+                    >
+                        <RiLogoutBoxLine className="group-hover:translate-x-1 transition-transform" />
+                        Logout
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => window.history.back()}
+                        className="flex items-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-full text-sm font-bold transition-all shadow-sm group"
+                    >
+                        <RiArrowLeftLine className="group-hover:-translate-x-1 transition-transform" />
+                        Back
+                    </button>
+                )}
             </div>
         </div>
     );
