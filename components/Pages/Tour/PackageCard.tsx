@@ -14,6 +14,11 @@ interface PackageCardProps {
 export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
     const router = useRouter();
 
+    // Handle both string and array formats for image (MongoDB returns array)
+    const imageUrl = Array.isArray(pkg.image)
+        ? (pkg.image[0] || '/placeholder.jpg')
+        : (pkg.image || '/placeholder.jpg');
+
     return (
         <div
             onClick={() => !isBlurItem && router.push(`/tour/${pkg.id}`)}
@@ -27,7 +32,7 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
             {/* Image Container */}
             <div className="relative h-[250px] w-full overflow-hidden">
                 <Image
-                    src={pkg.image}
+                    src={imageUrl}
                     alt={pkg.title}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -36,7 +41,7 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
 
                 {/* Price Tag */}
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg">
-                    <span className="text-sm font-bold text-gray-900">${pkg.price}</span>
+                    <span className="text-sm font-bold text-gray-900">₹{pkg.price}</span>
                 </div>
 
                 {/* Rating */}

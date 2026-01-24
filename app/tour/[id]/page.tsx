@@ -1,16 +1,40 @@
-
-import { getPackageById, tourPackages } from "@/data/tourPackages";
-import Header from "@/components/ui/Header";
+import { tourData } from "@/data/tourData";
+import NormalHeader from "@/components/ui/NormalHeader";
 import Footer from "@/components/ui/Footor";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { HiCheck, HiX, HiLocationMarker, HiStar, HiClock, HiCalendar } from "react-icons/hi";
+import { HiCheck, HiX, HiCalendar } from "react-icons/hi";
+import HeroCarousel from "@/components/tour/HeroCarousel";
 
-// Generate static params for all packages
-export async function generateStaticParams() {
-    return tourPackages.map((pkg) => ({
-        id: pkg.id,
-    }));
+// Fetch tour from API (MongoDB) or static data
+async function getTourById(id: string) {
+    // First try to fetch from MongoDB
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/tours`, {
+            cache: 'no-store'
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            console.log('[DETAIL PAGE] Fetched tours from API:', data.data?.length);
+            if (data.success && data.data) {
+                const tour = data.data.find((t: any) => t.id === id || t._id === id);
+                if (tour) {
+                    console.log('[DETAIL PAGE] Found MongoDB tour with id:', id);
+                    return tour;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('[DETAIL PAGE] Error fetching from API:', error);
+    }
+
+    // Fallback to static data
+    const staticTour = tourData.find(t => t.id === id);
+    if (staticTour) {
+        console.log('[DETAIL PAGE] Found static tour with id:', id);
+    }
+    return staticTour;
 }
 
 interface PageProps {
@@ -21,52 +45,30 @@ interface PageProps {
 
 export default async function TourDetailPage({ params }: PageProps) {
     const { id } = await params;
-    const pkg = getPackageById(id);
+    const pkg = await getTourById(id);
 
     if (!pkg) {
+        console.error('[DETAIL PAGE] Tour not found for id:', id);
         notFound();
     }
 
+    // Normalize images to always be an array
+    const images = Array.isArray(pkg.image) ? pkg.image : [pkg.image];
+
     return (
         <main className="min-h-screen bg-white">
-            <Header />
+            <NormalHeader />
 
-            {/* Hero Section */}
-            <div className="relative h-[70vh] w-full">
-                <Image
-                    src={pkg.image}
-                    alt={pkg.title}
-                    fill
-                    className="object-cover"
-                    priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/30" />
 
-                <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 text-white z-10 max-w-7xl mx-auto">
-                    <div className="flex flex-wrap gap-3 mb-4">
-                        <span className="bg-green-600 px-3 py-1 rounded-full text-sm font-bold uppercase tracking-wider">
-                            Best Seller
-                        </span>
-                        <div className="flex items-center gap-1 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-sm">
-                            <HiStar className="text-yellow-400" />
-                            <span className="font-bold">{pkg.rating}</span>
-                            <span className="opacity-80">({pkg.reviews} reviews)</span>
-                        </div>
-                    </div>
-                    <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">{pkg.title}</h1>
-                    <div className="flex items-center gap-4 text-lg text-white/90">
-                        <div className="flex items-center gap-1">
-                            <HiLocationMarker className="text-green-400" />
-                            {pkg.location}
-                        </div>
-                        <span>|</span>
-                        <div className="flex items-center gap-1">
-                            <HiClock className="text-green-400" />
-                            {pkg.duration}
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {/* Hero Section with Carousel */}
+            <HeroCarousel
+                images={images}
+                title={pkg.title}
+                rating={pkg.rating}
+                reviews={pkg.reviews}
+                location={pkg.location}
+                duration={pkg.duration}
+            />
 
             <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
                 {/* Main Content */}
@@ -81,25 +83,27 @@ export default async function TourDetailPage({ params }: PageProps) {
                     </section>
 
                     {/* Itinerary */}
-                    <section>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-8">Itinerary</h2>
-                        <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
-                            {pkg.itinerary.map((item, index) => (
-                                <div key={index} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                                    {/* Icon/Dot */}
-                                    <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-green-500 text-slate-50 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 font-bold z-10">
-                                        {item.day}
-                                    </div>
+                    {pkg.itinerary && pkg.itinerary.length > 0 && (
+                        <section>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-8">Itinerary</h2>
+                            <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+                                {pkg.itinerary.map((item: any, index: number) => (
+                                    <div key={index} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                                        {/* Icon/Dot */}
+                                        <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-green-500 text-slate-50 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 font-bold z-10">
+                                            {item.day}
+                                        </div>
 
-                                    {/* Card */}
-                                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                        <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
-                                        <p className="text-gray-500 text-sm leading-relaxed">{item.description}</p>
+                                        {/* Card */}
+                                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                            <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
+                                            <p className="text-gray-500 text-sm leading-relaxed">{item.description}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
+                                ))}
+                            </div>
+                        </section>
+                    )}
 
                     {/* Inclusions & Exclusions */}
                     <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -108,7 +112,7 @@ export default async function TourDetailPage({ params }: PageProps) {
                                 <HiCheck className="text-green-600 text-xl" /> What's Included
                             </h3>
                             <ul className="space-y-3">
-                                {pkg.inclusions.map((inc, i) => (
+                                {(pkg.inclusions || []).map((inc: string, i: number) => (
                                     <li key={i} className="flex items-start gap-3 text-sm text-gray-600">
                                         <span className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 shrink-0" />
                                         {inc}
@@ -122,7 +126,7 @@ export default async function TourDetailPage({ params }: PageProps) {
                                 <HiX className="text-red-500 text-xl" /> What's Excluded
                             </h3>
                             <ul className="space-y-3">
-                                {pkg.exclusions.map((exc, i) => (
+                                {(pkg.exclusions || []).map((exc: string, i: number) => (
                                     <li key={i} className="flex items-start gap-3 text-sm text-gray-600">
                                         <span className="w-1.5 h-1.5 rounded-full bg-red-300 mt-1.5 shrink-0" />
                                         {exc}
@@ -143,7 +147,7 @@ export default async function TourDetailPage({ params }: PageProps) {
                         <div className="mb-6">
                             <p className="text-gray-500 text-sm mb-1">Starting from</p>
                             <div className="flex items-baseline gap-1">
-                                <span className="text-3xl font-bold text-gray-900">${pkg.price}</span>
+                                <span className="text-3xl font-bold text-gray-900">₹{pkg.price}</span>
                                 <span className="text-gray-400">/ person</span>
                             </div>
                         </div>
@@ -153,7 +157,9 @@ export default async function TourDetailPage({ params }: PageProps) {
                                 <HiCalendar className="text-gray-400 text-xl" />
                                 <div>
                                     <p className="text-xs text-gray-400 font-medium">Select Date</p>
-                                    <p className="text-sm font-semibold text-gray-900">Choose Availability</p>
+                                    <p className="text-sm font-semibold text-gray-900">
+                                        {pkg.availabilityDate || 'Choose Availability'}
+                                    </p>
                                 </div>
                             </div>
 
@@ -163,7 +169,9 @@ export default async function TourDetailPage({ params }: PageProps) {
                                 </div>
                                 <div>
                                     <p className="text-xs text-gray-400 font-medium">Guests</p>
-                                    <p className="text-sm font-semibold text-gray-900">2 Adults</p>
+                                    <p className="text-sm font-semibold text-gray-900">
+                                        {pkg.maxPeople || '2 Adults'}
+                                    </p>
                                 </div>
                             </div>
                         </div>
