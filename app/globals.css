@@ -30,7 +30,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Inter, sans-serif;
-  font-weight: lighter;
+  font-weight: 300;
 }
 
 

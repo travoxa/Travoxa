@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { RiDeleteBinLine, RiAddLine, RiCloseLine, RiMoreLine } from 'react-icons/ri';
+import { useState, useEffect, SetStateAction } from 'react';
+import { RiDeleteBinLine, RiAddLine, RiMoreLine, RiCloseLine, RiEditLine } from 'react-icons/ri';
 import { CldUploadWidget } from 'next-cloudinary';
 
 const INCLUSION_OPTIONS = [
@@ -24,6 +24,8 @@ export default function AddTourClient() {
     const [tours, setTours] = useState<any[]>([]);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [loadingTours, setLoadingTours] = useState(true);
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -40,6 +42,7 @@ export default function AddTourClient() {
 
     // Fetch tours
     const fetchTours = async () => {
+        setLoadingTours(true);
         try {
             const res = await fetch('/api/tours');
             const data = await res.json();
@@ -48,6 +51,8 @@ export default function AddTourClient() {
             }
         } catch (error) {
             console.error('Failed to fetch tours:', error);
+        } finally {
+            setLoadingTours(false);
         }
     };
 
@@ -138,6 +143,25 @@ export default function AddTourClient() {
         });
     };
 
+    // Handle edit
+    const handleEdit = (tour: any) => {
+        setEditingId(tour.id);
+        setFormData({
+            title: tour.title,
+            location: tour.location,
+            price: tour.price.toString(),
+            duration: tour.duration,
+            availabilityDate: tour.availabilityDate || '',
+            maxPeople: tour.maxPeople || '',
+            overview: tour.overview || '',
+            inclusions: tour.inclusions || [],
+            itinerary: tour.itinerary || [],
+            images: tour.images || []
+        });
+        setShowForm(true);
+        setOpenMenuId(null);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         console.log('[FORM] Submit triggered');
@@ -146,16 +170,26 @@ export default function AddTourClient() {
         setSuccess('');
 
         const payload = {
-            ...formData,
+            title: formData.title,
+            location: formData.location,
             price: Number(formData.price),
-            image: formData.images,
+            duration: formData.duration,
+            availabilityDate: formData.availabilityDate,
+            maxPeople: formData.maxPeople,
+            overview: formData.overview,
+            inclusions: formData.inclusions,
+            itinerary: formData.itinerary,
+            images: formData.images,
         };
 
         console.log('[FORM] Sending payload to /api/tours:', payload);
 
         try {
-            const res = await fetch('/api/tours', {
-                method: 'POST',
+            const method = editingId ? 'PUT' : 'POST';
+            const url = editingId ? `/api/tours/${editingId}` : '/api/tours';
+
+            const res = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
@@ -165,11 +199,11 @@ export default function AddTourClient() {
             console.log('[FORM] Response data:', data);
 
             if (!res.ok) {
-                throw new Error(data.error || 'Failed to create tour');
+                throw new Error(data.error || `Failed to ${editingId ? 'update' : 'create'} tour`);
             }
 
-            console.log('[FORM] Tour created successfully!');
-            setSuccess('Tour created successfully!');
+            console.log(`[FORM] Tour ${editingId ? 'updated' : 'created'} successfully!`);
+            setSuccess(`Tour ${editingId ? 'updated' : 'created'} successfully!`);
             // Reset form
             setFormData({
                 title: '',
@@ -183,11 +217,12 @@ export default function AddTourClient() {
                 itinerary: [],
                 images: []
             });
+            setEditingId(null);
 
             // Refresh tour list
             fetchTours();
 
-            // Hide form after successful creation
+            // Hide form after successful creation/update
             setTimeout(() => {
                 setShowForm(false);
                 setSuccess('');
@@ -215,19 +250,36 @@ export default function AddTourClient() {
             {!showForm ? (
                 <>
                     {/* Create Tour Button - Top */}
-                    <div className="bg-white rounded-xl border border-gray-100 p-8 w-fit">
+                    <div className="bg-white rounded-xl border border-gray-100 p-8 w-[40%]">
                         <h2 className="text-lg font-medium text-gray-800 mb-4">Tour Management</h2>
-                        <p className="text-gray-600 mb-6">Create and manage tour packages</p>
                         <button
                             onClick={() => setShowForm(true)}
                             className="px-6 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all"
                         >
-                            + Create New Tour
+                            Create New Tour
                         </button>
                     </div>
 
                     {/* Tour Listing - Below */}
-                    {tours.length > 0 && (
+                    {loadingTours ? (
+                        <div className="bg-white rounded-xl border border-gray-100 p-6">
+                            <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Tours</h2>
+
+                            {/* Loading Skeleton */}
+                            <div className="space-y-3">
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="flex items-center justify-between py-3 animate-pulse">
+                                        <div className="flex-1 grid grid-cols-3 gap-4">
+                                            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                                        </div>
+                                        <div className="w-10 h-4 bg-gray-200 rounded"></div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : tours.length > 0 && (
                         <div className="bg-white rounded-xl border border-gray-100 p-6">
                             <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Tours</h2>
 
@@ -268,9 +320,19 @@ export default function AddTourClient() {
                                                     <button
                                                         onClick={() => {
                                                             setOpenMenuId(null);
+                                                            handleEdit(tour);
+                                                        }}
+                                                        className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center gap-2 text-sm"
+                                                    >
+                                                        <RiEditLine size={16} />
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setOpenMenuId(null);
                                                             handleDelete(tour.id);
                                                         }}
-                                                        className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2 text-sm"
+                                                        className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2 text-sm"
                                                     >
                                                         <RiDeleteBinLine size={16} />
                                                         Delete
@@ -294,7 +356,7 @@ export default function AddTourClient() {
                         <RiCloseLine size={24} />
                     </button>
 
-                    <h2 className="text-lg font-medium text-gray-800 mb-6">Create New Tour</h2>
+                    <h2 className="text-lg font-medium text-gray-800 mb-6">{editingId ? 'Edit' : 'Create New'} Tour</h2>
 
                     {error && (
                         <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
@@ -510,7 +572,7 @@ export default function AddTourClient() {
                                 disabled={loading}
                                 className="flex-1 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                {loading ? 'Creating Tour...' : 'Save New Tour'}
+                                {loading ? `${editingId ? 'Updating' : 'Creating'} Tour...` : editingId ? 'Update Tour' : 'Save New Tour'}
                             </button>
                         </div>
 

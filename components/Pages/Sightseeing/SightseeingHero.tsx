@@ -4,17 +4,17 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaUserFriends, FaChevronDown } from "react-icons/fa";
-import { sightseeingPackages } from "@/data/sightseeingData";
+import { SightseeingPackage } from "@/data/sightseeingData";
 
 interface SightseeingHeroProps {
     onSearch: (filters: { state: string; city: string; date: string; members: string }) => void;
+    packages: SightseeingPackage[];
 }
 
-export default function SightseeingHero({ onSearch }: SightseeingHeroProps) {
+export default function SightseeingHero({ onSearch, packages }: SightseeingHeroProps) {
     const [states, setStates] = useState<string[]>([]);
     const [cities, setCities] = useState<string[]>([]);
 
-    // Form State
     // Form State
     const [selectedState, setSelectedState] = useState("");
     const [selectedCity, setSelectedCity] = useState("");
@@ -22,14 +22,16 @@ export default function SightseeingHero({ onSearch }: SightseeingHeroProps) {
 
     // Initialize States from data
     useEffect(() => {
-        const uniqueStates = Array.from(new Set(sightseeingPackages.map(pkg => pkg.state)));
-        setStates(uniqueStates.sort());
-    }, []);
+        if (packages && packages.length > 0) {
+            const uniqueStates = Array.from(new Set(packages.map(pkg => pkg.state)));
+            setStates(uniqueStates.sort());
+        }
+    }, [packages]);
 
     // Update Cities when State changes
     useEffect(() => {
-        if (selectedState) {
-            const relevantCities = sightseeingPackages
+        if (selectedState && packages) {
+            const relevantCities = packages
                 .filter(pkg => pkg.state === selectedState)
                 .map(pkg => pkg.city);
             setCities(Array.from(new Set(relevantCities)).sort());
@@ -37,7 +39,7 @@ export default function SightseeingHero({ onSearch }: SightseeingHeroProps) {
         } else {
             setCities([]);
         }
-    }, [selectedState]);
+    }, [selectedState, packages]);
 
     const handleSearch = () => {
         onSearch({

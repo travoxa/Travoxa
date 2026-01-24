@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/ui/Header';
 import Footor from '@/components/ui/Footor';
-import { rentalsData, RentalItem } from '@/data/rentalsData';
+import { RentalItem } from '@/data/rentalsData';
 import RentalHero from '@/components/Pages/Rentals/RentalHero';
 import RentalFilterSidebar from '@/components/Pages/Rentals/RentalFilterSidebar';
 import RentalCard from '@/components/Pages/Rentals/RentalCard';
@@ -11,6 +11,36 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 
 const RentalsPage = () => {
+    // State
+    const [allRentals, setAllRentals] = useState<RentalItem[]>([]);
+    const [filteredRentals, setFilteredRentals] = useState<RentalItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState({ city: "", type: "", date: "" });
+    const [filters, setFilters] = useState({
+        vehicleType: [] as string[],
+        priceRange: "",
+        fuel: [] as string[]
+    });
+
+    // Fetch rentals from API
+    useEffect(() => {
+        const fetchRentals = async () => {
+            try {
+                const res = await fetch('/api/rentals');
+                const data = await res.json();
+                if (data.success) {
+                    setAllRentals(data.data);
+                    setFilteredRentals(data.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch rentals:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRentals();
+    }, []);
+
     useEffect(() => {
         AOS.init({
             duration: 800,
@@ -19,22 +49,9 @@ const RentalsPage = () => {
         });
     }, []);
 
-    // State
-    const [filteredRentals, setFilteredRentals] = useState<RentalItem[]>(rentalsData);
-    const [searchQuery, setSearchQuery] = useState({ city: "", type: "", date: "" });
-    const [filters, setFilters] = useState({
-        vehicleType: [] as string[],
-        priceRange: "",
-        fuel: [] as string[]
-    });
-
     // Handle Search from Hero
     const handleSearch = (query: { city: string; type: string; date: string }) => {
         setSearchQuery(query);
-        // If a vehicle type is selected in search, we can treat it as part of the filter or just search query. 
-        // For consistency with sightseeing, let's update the filter state if it matches? 
-        // Actually, let's keep search separate but pre-apply it.
-        // Or better, let's mimic the behavior: search query drives the initial list, filters refine it.
         applyFilters(query, filters);
     };
 
@@ -70,14 +87,13 @@ const RentalsPage = () => {
 
     // Apply Logic
     const applyFilters = (query: typeof searchQuery, currentFilters: typeof filters) => {
-        let results = rentalsData;
+        let results = allRentals;
 
         // 1. Search Query
         if (query.city) {
             results = results.filter(item => item.location.toLowerCase().includes(query.city.toLowerCase()));
         }
         if (query.type) {
-            // If searched by type (e.g. Scooter)
             results = results.filter(item => item.type.toLowerCase().includes(query.type.toLowerCase()) || item.type === query.type);
         }
 
@@ -130,7 +146,18 @@ const RentalsPage = () => {
                         </h2>
                     </div>
 
-                    {filteredRentals.length > 0 ? (
+                    {loading ? (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[1, 2, 3, 4, 5, 6].map((i) => (
+                                <div key={i} className="bg-white rounded-2xl border border-slate-200 p-4 animate-pulse">
+                                    <div className="h-40 bg-slate-200 rounded-xl mb-4"></div>
+                                    <div className="h-5 bg-slate-200 rounded w-3/4 mb-2"></div>
+                                    <div className="h-4 bg-slate-200 rounded w-1/2 mb-4"></div>
+                                    <div className="h-8 bg-slate-200 rounded w-1/3"></div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : filteredRentals.length > 0 ? (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredRentals.map((item, index) => (
                                 <div key={item.id} data-aos="fade-up" data-aos-delay={index * 50}>

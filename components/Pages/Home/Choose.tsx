@@ -519,8 +519,8 @@ const Choose = () => {
                 <div
                   key={absoluteIndex}
                   className={`bg-white rounded-[12px] border border-gray-100 hover:shadow-xl hover:shadow-gray-200/60 hover:-translate-y-[3px] transition-all duration-300 flex flex-col group relative overflow-hidden ${isBig
-                    ? 'flex-[1.6] p-[32px] min-h-[320px]'
-                    : 'flex-[1] p-[24px] min-h-[260px]'
+                    ? 'flex-[1.6] p-[32px] min-h-[256px]'
+                    : 'flex-[1] p-[24px] min-h-[208px]'
                     }`}
                 >
                   {/* Premium Accent Line */}

@@ -3,27 +3,59 @@
 
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { sightseeingPackages } from "@/data/sightseeingData";
-import Header from "@/components/ui/Header";
+import { SightseeingPackage } from "@/data/sightseeingData";
+import NormalHeader from "@/components/ui/NormalHeader";
 import Footor from "@/components/ui/Footor";
 import { FaClock, FaCar, FaUserFriends, FaMapMarkerAlt, FaCheckCircle, FaTimesCircle, FaWhatsapp, FaArrowLeft } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function SightseeingDetailPage() {
     const params = useParams();
     const router = useRouter();
     const id = params.id as string;
-    const pkg = sightseeingPackages.find((p) => p.id === id);
 
-    // Booking Modal State (Simple Implementation)
+    const [pkg, setPkg] = useState<SightseeingPackage | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    // Booking Modal State
     const [isBookingOpen, setIsBookingOpen] = useState(false);
     const [bookingDate, setBookingDate] = useState("");
     const [name, setName] = useState("");
 
+    // Fetch package from API
+    useEffect(() => {
+        const fetchPackage = async () => {
+            setLoading(true);
+            try {
+                const res = await fetch('/api/sightseeing');
+                const data = await res.json();
+                if (data.success) {
+                    const foundPackage = data.data.find((p: SightseeingPackage) => p.id === id);
+                    setPkg(foundPackage || null);
+                }
+            } catch (error) {
+                console.error('Failed to fetch sightseeing package:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPackage();
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+                <NormalHeader />
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mt-20"></div>
+            </div>
+        );
+    }
+
     if (!pkg) {
         return (
             <div className="min-h-screen bg-white flex flex-col items-center justify-center">
-                <Header forceWhite={true} />
+                <NormalHeader />
                 <h1 className="text-2xl font-bold text-slate-900 mt-20">Package Not Found</h1>
                 <button
                     onClick={() => router.back()}
@@ -48,7 +80,7 @@ export default function SightseeingDetailPage() {
 
     return (
         <div className="bg-white min-h-screen font-sans">
-            <Header forceWhite={true} />
+            <NormalHeader />
 
             {/* HERO BANNER */}
             <div className="relative h-[60vh] lg:h-[70vh] w-full">

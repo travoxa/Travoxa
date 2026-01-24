@@ -91,6 +91,13 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmi
                                 activeTab={activeTab}
                                 onClick={setActiveTab}
                             />
+                            <NavItem
+                                icon={<RiMapPinLine size={20} />}
+                                label="Discovery"
+                                id="Discovery"
+                                activeTab={activeTab}
+                                onClick={setActiveTab}
+                            />
                         </>
                     ) : (
                         <>

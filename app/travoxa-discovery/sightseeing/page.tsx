@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/ui/Header';
 import Footor from '@/components/ui/Footor';
-import { sightseeingPackages, SightseeingPackage } from '@/data/sightseeingData';
+import { SightseeingPackage } from '@/data/sightseeingData';
 import SightseeingHero from '@/components/Pages/Sightseeing/SightseeingHero';
 import SightseeingFilterSidebar from '@/components/Pages/Sightseeing/SightseeingFilterSidebar';
 import SightseeingPackageCard from '@/components/Pages/Sightseeing/SightseeingPackageCard';
@@ -20,15 +20,36 @@ const SightseeingPage = () => {
     }, []);
 
     // State
-    // State
-    const [filteredPackages, setFilteredPackages] = useState<SightseeingPackage[]>(sightseeingPackages);
-    // Removed date from state
+    const [sightseeingPackages, setSightseeingPackages] = useState<SightseeingPackage[]>([]);
+    const [filteredPackages, setFilteredPackages] = useState<SightseeingPackage[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState({ state: "", city: "", members: "" });
     const [filters, setFilters] = useState({
         duration: [] as string[],
         vehicleType: [] as string[],
         priceRange: ""
     });
+
+    // Fetch sightseeing packages from API
+    useEffect(() => {
+        const fetchPackages = async () => {
+            setLoading(true);
+            try {
+                const res = await fetch('/api/sightseeing');
+                const data = await res.json();
+                if (data.success) {
+                    setSightseeingPackages(data.data);
+                    setFilteredPackages(data.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch sightseeing packages:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPackages();
+    }, []);
 
     // Handle Search from Hero
     const handleSearch = (query: { state: string; city: string; members: string }) => {
@@ -118,7 +139,7 @@ const SightseeingPage = () => {
             <Header forceWhite={true} />
 
             {/* HERO WITH SEARCH */}
-            <SightseeingHero onSearch={handleSearch} />
+            <SightseeingHero onSearch={handleSearch} packages={sightseeingPackages} />
 
             {/* MAIN CONTENT */}
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col lg:flex-row gap-8">

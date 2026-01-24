@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation'
 // Admin-specific components
 // import AddLocationClient from '@/app/admin/add-locations/AddLocationClient'
 import AddTourClient from '@/app/admin/tour/AddTourClient'
+import AddSightseeingClient from '@/app/admin/sightseeing/AddSightseeingClient'
+import AddRentalsClient from '@/app/admin/rentals/AddRentalsClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -18,6 +20,7 @@ interface AdminDashboardClientProps {
 
 const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }) => {
     const [activeTab, setActiveTab] = useState('Overview')
+    const [activeDiscoveryForm, setActiveDiscoveryForm] = useState<'sightseeing' | 'rentals' | null>(null)
     const router = useRouter()
 
     const renderContent = () => {
@@ -25,29 +28,81 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             case 'Landing':
                 return (
                     <div className="space-y-6">
-                        <div className="bg-white rounded-xl border border-gray-100 p-8">
-                            <h1 className="text-4xl font-bold text-gray-800">Landing</h1>
-                        </div>
+                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Landing</h1>
                     </div>
                 )
 
             case 'Tour':
-                return <AddTourClient />
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Tour</h1>
+                        <AddTourClient />
+                    </div>
+                )
+
+            case 'Discovery':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Discovery</h1>
+
+                        {/* Full-width form when active - appears at top */}
+                        {activeDiscoveryForm === 'sightseeing' && (
+                            <AddSightseeingClient
+                                showManagementBox={false}
+                                showListings={false}
+                                showFormDirectly={true}
+                                onFormClose={() => setActiveDiscoveryForm(null)}
+                            />
+                        )}
+
+                        {activeDiscoveryForm === 'rentals' && (
+                            <AddRentalsClient
+                                showManagementBox={false}
+                                showListings={false}
+                                showFormDirectly={true}
+                                onFormClose={() => setActiveDiscoveryForm(null)}
+                            />
+                        )}
+
+                        {/* Row 1: Management Boxes - Side by Side (hidden when form is open) */}
+                        {!activeDiscoveryForm && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <AddSightseeingClient
+                                    showManagementBox={true}
+                                    showListings={false}
+                                    onFormOpen={() => setActiveDiscoveryForm('sightseeing')}
+                                />
+                                <AddRentalsClient
+                                    showManagementBox={true}
+                                    showListings={false}
+                                    onFormOpen={() => setActiveDiscoveryForm('rentals')}
+                                />
+                            </div>
+                        )}
+
+                        {/* Row 2: Sightseeing Listings */}
+                        <AddSightseeingClient showManagementBox={false} showListings={true} />
+
+                        {/* Row 3: Rentals Listings */}
+                        <AddRentalsClient showManagementBox={false} showListings={true} />
+                    </div>
+                )
 
             case 'Overview':
                 return (
                     <div className="space-y-6">
-                        <div className="bg-white rounded-xl border border-gray-100 p-8">
-                            <h1 className="text-4xl font-bold text-gray-800">ADMIN</h1>
-                        </div>
+                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Overview</h1>
                     </div>
                 )
 
             default:
                 return (
-                    <div className="bg-white rounded-xl border border-gray-100 p-8">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Coming Soon</h2>
-                        <p className="text-gray-600">This section is under development.</p>
+                    <div className="space-y-6">
+                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">{activeTab}</h1>
+                        <div className="bg-white rounded-xl border border-gray-100 p-8">
+                            <h2 className="text-2xl font-bold text-gray-800 mb-4">Coming Soon</h2>
+                            <p className="text-gray-600">This section is under development.</p>
+                        </div>
                     </div>
                 )
         }
@@ -59,7 +114,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             <Sidebar user={adminUser} activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={true} />
 
             {/* Main Content */}
-            <main className="flex-1 ml-64 p-8 lg:p-12 overflow-y-auto">
+            <main className="flex-1 ml-52 p-8 lg:p-12 overflow-y-auto">
                 <div className="max-w-7xl mx-auto space-y-8">
                     <TopBar onNavigate={setActiveTab} isAdmin={true} />
 
