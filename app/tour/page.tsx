@@ -21,17 +21,47 @@ export default function TourPage() {
 
 function TourContent() {
     const searchParams = useSearchParams();
-    const [filteredPackages, setFilteredPackages] = useState(tourData);
+    const [filteredPackages, setFilteredPackages] = useState<any[]>(tourData);
+    const [allPackages, setAllPackages] = useState<any[]>(tourData); // Keep track of all available packages
     const [isExpanded, setIsExpanded] = useState(false);
+
+    // Fetch dynamic tours from API
+    useEffect(() => {
+        const fetchTours = async () => {
+            try {
+                const res = await fetch('/api/tours');
+                const data = await res.json();
+                if (data.success) {
+                    // Combine static and dynamic tours
+                    // Map dynamic tours to match TourPackage interface if needed
+                    const combined = [...data.data, ...tourData];
+                    setAllPackages(combined);
+
+                    // Re-apply filters if any params exist, otherwise just set filtered to combined
+                    const priceParam = searchParams.get("priceRange");
+                    const queryParam = searchParams.get("searchQuery");
+
+                    if (priceParam || queryParam) {
+                        // Filters will be applied by the next useEffect dependent on searchParams
+                        // But we need to make sure handleFilter uses the updated 'allPackages'
+                        // Implementation detail: handleFilter currently uses tourData directly.
+                        // We need to refactor handleFilter to use 'allPackages' state.
+                    } else {
+                        setFilteredPackages(combined);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch tours:", error);
+            }
+        };
+
+        fetchTours();
+    }, []);
 
     // Initial filter from URL params
     useEffect(() => {
         const priceParam = searchParams.get("priceRange");
         const queryParam = searchParams.get("searchQuery");
-
-        // We can reuse the logic by constructing a filter object, 
-        // but handleFilter expects a specific shape and also triggers setFilteredPackages.
-        // Let's call handleFilter with the params if they exist.
 
         const initialFilters = {
             searchQuery: queryParam || "",
@@ -39,14 +69,13 @@ function TourContent() {
             duration: "Any Duration"
         };
 
-        // Only trigger if there's actually a param to filter by, otherwise default load is fine
         if (priceParam || queryParam) {
             handleFilter(initialFilters);
         }
-    }, [searchParams]);
+    }, [searchParams, allPackages]); // Add allPackages dependency so it re-runs when data loads
 
     const handleFilter = (filters: { searchQuery: string, priceRange: string, duration: string }) => {
-        let results = tourData;
+        let results = allPackages; // Use state instead of static import
 
         // Filter by Search Query (Title or Location)
         if (filters.searchQuery) {
@@ -202,7 +231,7 @@ function TourContent() {
                         <p className="text-gray-500">Try adjusting your search criteria or price range.</p>
                         <button
                             onClick={() => {
-                                setFilteredPackages(tourData);
+                                setFilteredPackages(allPackages);
                                 // Note: This doesn't reset the Search Component state, simpler to just let user manually clear
                             }}
                             className="mt-4 text-green-600 font-bold hover:underline"

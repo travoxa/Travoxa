@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 
 // Admin-specific components
 // import AddLocationClient from '@/app/admin/add-locations/AddLocationClient'
+import AddTourClient from '@/app/admin/tour/AddTourClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -24,16 +25,19 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             case 'Landing':
                 return (
                     <div className="space-y-6">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                        <div className="bg-white rounded-xl border border-gray-100 p-8">
                             <h1 className="text-4xl font-bold text-gray-800">Landing</h1>
                         </div>
                     </div>
                 )
 
+            case 'Tour':
+                return <AddTourClient />
+
             case 'Overview':
                 return (
                     <div className="space-y-6">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                        <div className="bg-white rounded-xl border border-gray-100 p-8">
                             <h1 className="text-4xl font-bold text-gray-800">ADMIN</h1>
                         </div>
                     </div>
@@ -41,7 +45,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
 
             default:
                 return (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                    <div className="bg-white rounded-xl border border-gray-100 p-8">
                         <h2 className="text-2xl font-bold text-gray-800 mb-4">Coming Soon</h2>
                         <p className="text-gray-600">This section is under development.</p>
                     </div>
