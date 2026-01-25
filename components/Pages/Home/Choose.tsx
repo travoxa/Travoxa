@@ -384,9 +384,9 @@ const Choose = () => {
               <a
                 href="/ai-trip-planner"
                 onClick={handleTransition}
-                className="mt-10 bg-black text-white font-bold Mont px-8 py-4 rounded-full hover:scale-105 transition-transform shadow-lg shadow-black/20 flex items-center gap-3 w-fit cursor-pointer"
+                className="mt-6 lg:mt-10 bg-black text-white font-bold Mont px-6 py-3 lg:px-8 lg:py-4 text-sm lg:text-base rounded-full hover:scale-105 transition-transform shadow-lg shadow-black/20 flex items-center gap-2 lg:gap-3 w-fit cursor-pointer"
               >
-                <RiRobotLine className="text-xl" />
+                <RiRobotLine className="text-lg lg:text-xl" />
                 TRY AI PLANNER
               </a>
             </div>
@@ -507,8 +507,8 @@ const Choose = () => {
         </div>
       </div>
 
-      {/* Cards Grid - Alternating big/small layout with reduced height */}
-      <div className="flex flex-col gap-[24px] max-w-6xl mx-auto">
+      {/* Cards Grid - Alternating big/small layout with reduced height - Hidden on Mobile */}
+      <div className="hidden lg:flex flex-col gap-[24px] max-w-6xl mx-auto">
         {rows.map((row, rowIndex) => (
           <div key={rowIndex} className="flex gap-[24px] items-stretch" data-aos="fade-up" data-aos-delay={rowIndex * 100}>
             {row.map((feature, featureIndex) => {
@@ -576,41 +576,31 @@ const Choose = () => {
         ))}
       </div>
 
-      {/* Mobile Layout */}
-      <div className="lg:hidden flex flex-col gap-[20px] max-w-3xl mx-auto mt-[48px]">
+      {/* Mobile Layout - 2 column grid with cubic boxes */}
+      <div className="lg:hidden grid grid-cols-2 gap-3 max-w-lg mx-auto mt-[48px] px-2">
         {featureData.map((feature, index) => (
           <div
             key={index}
-            className="bg-white rounded-[12px] p-[24px] border border-gray-100 shadow-md relative overflow-hidden group"
+            className="bg-white rounded-[12px] p-4 border border-gray-100 shadow-md relative overflow-hidden group aspect-square flex flex-col justify-between"
           >
             {/* Background Icon */}
-            <feature.icon className="absolute -bottom-6 -right-6 text-[140px] text-[#4da528] opacity-10 pointer-events-none" />
+            <feature.icon className="absolute -bottom-4 -right-4 text-[80px] text-[#4da528] opacity-10 pointer-events-none" />
 
-            <h3 className="text-[18px] font-medium Mont mb-[6px] leading-[1.2] relative z-10">
+            {/* Title only - no description on mobile */}
+            <h3 className="text-[14px] font-medium Mont leading-[1.2] relative z-10">
               {feature.title}
             </h3>
 
-            <p className="text-[13px] text-gray-600 mb-[10px] font-light leading-[1.5] Inter relative z-10">
-              {feature.description}
-            </p>
-
-            <div className="flex flex-col gap-[6px] mb-[12px] relative z-10">
-              {feature.bullets.slice(0, 3).map((bullet, bulletIndex) => (
-                <div key={bulletIndex} className="flex items-center gap-[5px]">
-                  <span className="text-[12px] text-[#4da528] font-bold flex-shrink-0 leading-none">•</span>
-                  <span className="text-[12px] text-gray-700 font-light Inter">{bullet}</span>
-                </div>
-              ))}
+            {/* Icon centered */}
+            <div className="flex-1 flex items-center justify-center relative z-10">
+              <feature.icon className="text-[36px] text-[#4da528] opacity-80" />
             </div>
 
-            <div className="flex items-center justify-between pt-[10px] border-t border-gray-100 relative z-10">
-              <button className="bg-black text-white text-[11px] font-bold Mont px-[12px] py-[5px] rounded-full hover:bg-[#4da528] transition-colors duration-200">
+            {/* Small See More button */}
+            <div className="relative z-10">
+              <button className="bg-black text-white text-[9px] font-bold Mont px-[10px] py-[4px] rounded-full hover:bg-[#4da528] transition-colors duration-200">
                 SEE MORE
               </button>
-              <div className="flex items-center gap-[4px] opacity-60">
-                <div className="w-[20px] h-[2px] bg-[#4da528] rounded-full"></div>
-                <div className="w-[6px] h-[2px] bg-gray-300 rounded-full"></div>
-              </div>
             </div>
           </div>
         ))}
