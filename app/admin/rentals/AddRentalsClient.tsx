@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { RiDeleteBinLine, RiAddLine, RiCloseLine, RiMoreLine, RiEditLine } from 'react-icons/ri';
+import { RiDeleteBinLine, RiAddLine, RiCloseLine, RiMoreLine, RiEditLine, RiMapPinLine } from 'react-icons/ri';
 import { CldUploadWidget } from 'next-cloudinary';
+import { INDIA_STATES, getCitiesForState, YEAR_OPTIONS } from '@/data/indiaStatesAndCities';
 
 const TYPE_OPTIONS = ["Scooter", "Bike", "Car", "SUV", "Tempo Traveller"];
 const FUEL_OPTIONS = ["Petrol", "Diesel", "Electric", "CNG"];
@@ -14,6 +15,19 @@ interface AddRentalsClientProps {
     onFormOpen?: () => void;
     onFormClose?: () => void;
 }
+
+// Helper function to format number input with commas
+const formatNumber = (value: string): string => {
+    // Remove all non-numeric characters
+    const numericValue = value.replace(/[^\d]/g, '');
+    // Add commas for thousands
+    return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
+// Helper function to parse formatted number
+const parseFormattedNumber = (value: string): string => {
+    return value.replace(/,/g, '');
+};
 
 export default function AddRentalsClient({
     showManagementBox = true,
@@ -32,11 +46,13 @@ export default function AddRentalsClient({
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [loadingRentals, setLoadingRentals] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [availableCities, setAvailableCities] = useState<string[]>([]);
+    const [showMapInput, setShowMapInput] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
         type: 'Scooter',
-        model: '',
+        model: YEAR_OPTIONS[0].toString(),
         rating: '',
         reviews: '',
         mileage: '',
@@ -46,8 +62,27 @@ export default function AddRentalsClient({
         price: '',
         image: '',
         verified: false,
-        location: ''
+        state: '',
+        city: '',
+        whatsapp: '',
+        mapLocation: { lat: '', lng: '' },
+        rentalServiceName: ''
     });
+
+    // Update available cities when state changes
+    useEffect(() => {
+        if (formData.state) {
+            const cities = getCitiesForState(formData.state);
+            setAvailableCities(cities);
+            // Reset city if not in new list
+            if (!cities.includes(formData.city)) {
+                setFormData(prev => ({ ...prev, city: '' }));
+            }
+        } else {
+            setAvailableCities([]);
+            setFormData(prev => ({ ...prev, city: '' }));
+        }
+    }, [formData.state]);
 
     // Fetch rentals
     const fetchRentals = async () => {
@@ -107,15 +142,20 @@ export default function AddRentalsClient({
             model: rental.model,
             rating: rental.rating.toString(),
             reviews: rental.reviews.toString(),
-            mileage: rental.mileage,
-            seats: rental.seats,
+            mileage: formatNumber(rental.mileage?.toString() || ''),
+            seats: formatNumber(rental.seats?.toString() || ''),
             fuel: rental.fuel,
             helmet: rental.helmet,
-            price: rental.price.toString(),
+            price: formatNumber(rental.price.toString()),
             image: rental.image,
             verified: rental.verified,
-            location: rental.location
+            state: rental.state || '',
+            city: rental.city || '',
+            whatsapp: rental.whatsapp || '',
+            mapLocation: rental.mapLocation || { lat: '', lng: '' },
+            rentalServiceName: rental.rentalServiceName || ''
         });
+        setShowMapInput(!!rental.mapLocation?.lat);
         setShowFormInternal(true);
         setOpenMenuId(null);
     };
@@ -130,7 +170,12 @@ export default function AddRentalsClient({
             ...formData,
             rating: Number(formData.rating) || 0,
             reviews: Number(formData.reviews) || 0,
-            price: Number(formData.price),
+            mileage: Number(parseFormattedNumber(formData.mileage)),
+            seats: Number(parseFormattedNumber(formData.seats)),
+            price: Number(parseFormattedNumber(formData.price)),
+            mapLocation: formData.mapLocation.lat && formData.mapLocation.lng
+                ? { lat: Number(formData.mapLocation.lat), lng: Number(formData.mapLocation.lng) }
+                : undefined,
         };
 
         try {
@@ -154,7 +199,7 @@ export default function AddRentalsClient({
             setFormData({
                 name: '',
                 type: 'Scooter',
-                model: '',
+                model: YEAR_OPTIONS[0].toString(),
                 rating: '',
                 reviews: '',
                 mileage: '',
@@ -164,9 +209,14 @@ export default function AddRentalsClient({
                 price: '',
                 image: '',
                 verified: false,
-                location: ''
+                state: '',
+                city: '',
+                whatsapp: '',
+                mapLocation: { lat: '', lng: '' },
+                rentalServiceName: ''
             });
             setEditingId(null);
+            setShowMapInput(false);
 
             // Refresh list
             fetchRentals();
@@ -382,42 +432,44 @@ export default function AddRentalsClient({
                                 </select>
                             </div>
 
-                            {/* Model */}
+                            {/* Model (Year Dropdown) */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Model *</label>
-                                <input
-                                    type="text"
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Model Year *</label>
+                                <select
                                     required
                                     value={formData.model}
                                     onChange={e => setFormData({ ...formData, model: e.target.value })}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="2023 MODEL"
-                                />
+                                >
+                                    {YEAR_OPTIONS.map(year => (
+                                        <option key={year} value={year.toString()}>{year}</option>
+                                    ))}
+                                </select>
                             </div>
 
-                            {/* Mileage */}
+                            {/* Mileage (Number formatted) */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Mileage *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Mileage (km/l) *</label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.mileage}
-                                    onChange={e => setFormData({ ...formData, mileage: e.target.value })}
+                                    onChange={e => setFormData({ ...formData, mileage: formatNumber(e.target.value) })}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="45 km/l"
+                                    placeholder="45"
                                 />
                             </div>
 
-                            {/* Seats */}
+                            {/* Seats (Number formatted) */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Seats *</label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.seats}
-                                    onChange={e => setFormData({ ...formData, seats: e.target.value })}
+                                    onChange={e => setFormData({ ...formData, seats: formatNumber(e.target.value) })}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="2 Seats"
+                                    placeholder="2"
                                 />
                             </div>
 
@@ -436,31 +488,131 @@ export default function AddRentalsClient({
                                 </select>
                             </div>
 
-                            {/* Price */}
+                            {/* Price (Number formatted) */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Price (per day) *</label>
-                                <input
-                                    type="number"
-                                    required
-                                    value={formData.price}
-                                    onChange={e => setFormData({ ...formData, price: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="399"
-                                />
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.price}
+                                        onChange={e => setFormData({ ...formData, price: formatNumber(e.target.value) })}
+                                        className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        placeholder="399"
+                                    />
+                                </div>
                             </div>
 
-                            {/* Location */}
+                            {/* State Dropdown */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Location *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">State *</label>
+                                <select
+                                    required
+                                    value={formData.state}
+                                    onChange={e => setFormData({ ...formData, state: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                >
+                                    <option value="">Select State</option>
+                                    {INDIA_STATES.map(state => (
+                                        <option key={state} value={state}>{state}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* City Dropdown */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
+                                <select
+                                    required
+                                    value={formData.city}
+                                    onChange={e => setFormData({ ...formData, city: e.target.value })}
+                                    disabled={!formData.state}
+                                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${!formData.state ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                >
+                                    <option value="">{formData.state ? 'Select City' : 'Select State first'}</option>
+                                    {availableCities.map(city => (
+                                        <option key={city} value={city}>{city}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* WhatsApp Number */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Number *</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">+91</span>
+                                    <input
+                                        type="tel"
+                                        required
+                                        value={formData.whatsapp}
+                                        onChange={e => setFormData({ ...formData, whatsapp: e.target.value.replace(/[^\d]/g, '').slice(0, 10) })}
+                                        className="w-full pl-14 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        placeholder="9876543210"
+                                        maxLength={10}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Rental Service Name (Optional) */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Rental Service Name (Optional)</label>
                                 <input
                                     type="text"
-                                    required
-                                    value={formData.location}
-                                    onChange={e => setFormData({ ...formData, location: e.target.value })}
+                                    value={formData.rentalServiceName}
+                                    onChange={e => setFormData({ ...formData, rentalServiceName: e.target.value })}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="Calangute, Goa"
+                                    placeholder="ABC Rentals"
                                 />
                             </div>
+                        </div>
+
+                        {/* Map Location (Optional) */}
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-sm font-medium text-gray-700">Map Location (Optional)</label>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowMapInput(!showMapInput)}
+                                    className="flex items-center gap-1 text-sm text-green-600 hover:text-green-700"
+                                >
+                                    <RiMapPinLine size={16} />
+                                    {showMapInput ? 'Hide' : 'Add Location'}
+                                </button>
+                            </div>
+                            {showMapInput && (
+                                <div className="grid grid-cols-2 gap-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                                    <div>
+                                        <label className="block text-xs text-gray-500 mb-1">Latitude</label>
+                                        <input
+                                            type="text"
+                                            value={formData.mapLocation.lat}
+                                            onChange={e => setFormData({
+                                                ...formData,
+                                                mapLocation: { ...formData.mapLocation, lat: e.target.value }
+                                            })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                                            placeholder="15.2993"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-gray-500 mb-1">Longitude</label>
+                                        <input
+                                            type="text"
+                                            value={formData.mapLocation.lng}
+                                            onChange={e => setFormData({
+                                                ...formData,
+                                                mapLocation: { ...formData.mapLocation, lng: e.target.value }
+                                            })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                                            placeholder="74.1240"
+                                        />
+                                    </div>
+                                    <p className="col-span-2 text-xs text-gray-400">
+                                        You can get coordinates from Google Maps by right-clicking on a location.
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         {/* Image Upload */}

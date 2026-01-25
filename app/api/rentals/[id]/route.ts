@@ -34,12 +34,15 @@ export async function PUT(
         const body = await req.json();
 
         // Validate required fields
-        if (!body.name || !body.type || !body.price || !body.location) {
+        if (!body.name || !body.type || !body.price || !body.state || !body.city || !body.whatsapp) {
             return NextResponse.json(
                 { success: false, error: 'Please provide all required fields' },
                 { status: 400 }
             );
         }
+
+        // Set location from state and city for backward compatibility
+        body.location = `${body.city}, ${body.state}`;
 
         const updatedRental = await Rental.findByIdAndUpdate(
             id,
