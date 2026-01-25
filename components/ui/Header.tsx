@@ -268,7 +268,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
               {/* MAIN ITEM */}
               <button
                 type="button"
-                className={`flex items-center justify-between w-full py-3 text-sm font-medium border-b ${item.className ? item.className : 'text-gray-900'}`}
+                className={`flex items-center justify-between w-full py-3 text-sm font-medium ${item.className ? item.className : 'text-gray-900'}`}
                 onClick={() =>
                   item.dropdown.length > 0
                     ? toggleDropdown(item.label)
@@ -290,7 +290,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
                     <button
                       key={sub.label}
                       type="button"
-                      className="py-2 text-left text-xs text-gray-700 border-b"
+                      className="py-2 text-left text-xs text-gray-700"
                       onClick={() => {
                         if (sub.label === "Create Group") {
                           handleCreateGroupClick();

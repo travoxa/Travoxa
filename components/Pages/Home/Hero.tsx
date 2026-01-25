@@ -89,32 +89,32 @@ export default function Hero() {
         {/* Overlay for better text visibility if needed */}
         <div className="absolute inset-0 bg-black/10 rounded-[12px]"></div>
 
-        <div className="relative z-10 flex flex-col items-center justify-center h-full">
+        <div className="relative z-10 flex flex-col items-center justify-center h-full pt-16 md:pt-0">
           {/* Title */}
-          <p className="text-center text-[12vw] lg:text-[14vw] font-bold text-white Mont tracking-wider text-shadow-blue-400 leading-none drop-shadow-lg" data-aos="fade-down">TRAVOXA</p>
+          <p className="text-center text-[14vw] md:text-[12vw] lg:text-[14vw] font-bold text-white Mont tracking-wider text-shadow-blue-400 leading-none drop-shadow-lg" data-aos="fade-down">TRAVOXA</p>
 
           {/* Subtitle */}
-          <p className=" text-center text-lg lg:text-2xl text-white font-medium Mont tracking-wide mt-2 mb-12 drop-shadow-md" data-aos="fade-up" data-aos-delay="100">
+          <p className="text-center text-sm md:text-lg lg:text-2xl text-white font-medium Mont tracking-wide mt-2 mb-6 md:mb-12 drop-shadow-md" data-aos="fade-up" data-aos-delay="100">
             Your AI-Powered Travel Companion.
           </p>
 
           {/* Refined Search Bar Component */}
-          <div className="w-full max-w-[90%] lg:max-w-5xl mx-auto relative z-50" data-aos="fade-up" data-aos-delay="200">
+          <div className="w-full max-w-[95%] md:max-w-[90%] lg:max-w-5xl mx-auto relative z-50" data-aos="fade-up" data-aos-delay="200">
 
-            {/* Main Search Container */}
-            <div className="bg-white rounded-full p-1 shadow-2xl flex flex-col lg:flex-row items-center gap-1 relative max-w-3xl mx-auto border border-slate-200">
+            {/* Main Search Container - Horizontal on mobile */}
+            <div className="bg-white rounded-full p-1 shadow-2xl flex flex-row items-center gap-1 relative max-w-3xl mx-auto border border-slate-200">
 
               {/* General Search Input (Leftmost) */}
-              <div ref={queryRef} className="flex-[1.5] w-full lg:w-auto relative group px-4 py-1.5 rounded-full hover:bg-slate-50 transition-colors flex items-center gap-2 h-9">
-                <FaSearch className="text-slate-400 text-xs" />
+              <div ref={queryRef} className="flex-1 relative group px-2 md:px-4 py-1 md:py-1.5 rounded-full hover:bg-slate-50 transition-colors flex items-center gap-1 md:gap-2 h-8 md:h-9">
+                <FaSearch className="text-slate-400 text-[10px] md:text-xs flex-shrink-0" />
                 <input
                   type="text"
                   value={query}
                   onChange={(e) => { setQuery(e.target.value); setShowQueryDropdown(true); }}
                   onFocus={() => setShowQueryDropdown(true)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Search destinations, tours..."
-                  className="w-full bg-transparent border-none outline-none text-slate-700 placeholder-slate-400 text-xs font-medium focus:ring-0 p-0"
+                  placeholder="Search..."
+                  className="w-full bg-transparent border-none outline-none text-slate-700 placeholder-slate-400 text-[10px] md:text-xs font-medium focus:ring-0 p-0"
                 />
 
                 {/* Query Dropdown */}
@@ -134,12 +134,12 @@ export default function Hero() {
                 )}
               </div>
 
-              <div className="w-[1px] h-5 bg-slate-200 hidden lg:block"></div>
+              <div className="w-[1px] h-4 md:h-5 bg-slate-200"></div>
 
               {/* Location Field */}
-              <div ref={locationRef} className="flex-1 w-full lg:w-auto relative group px-3 py-1.5 hover:bg-slate-50 rounded-full transition-colors cursor-pointer border lg:border-none border-slate-100 h-9 flex items-center justify-between">
-                <div className="flex items-center gap-2 w-full">
-                  <FaMapMarkerAlt className="text-slate-400 text-xs group-hover:text-emerald-500 transition-colors flex-shrink-0" />
+              <div ref={locationRef} className="flex-1 relative group px-2 md:px-3 py-1 md:py-1.5 hover:bg-slate-50 rounded-full transition-colors cursor-pointer h-8 md:h-9 flex items-center justify-between">
+                <div className="flex items-center gap-1 md:gap-2 w-full">
+                  <FaMapMarkerAlt className="text-slate-400 text-[10px] md:text-xs group-hover:text-emerald-500 transition-colors flex-shrink-0" />
                   <input
                     type="text"
                     value={location}
@@ -147,7 +147,7 @@ export default function Hero() {
                     onFocus={() => setShowLocationDropdown(true)}
                     onKeyDown={handleKeyDown}
                     placeholder="Location"
-                    className="w-full bg-transparent border-none outline-none text-slate-600 placeholder-slate-600 font-medium text-xs focus:ring-0 p-0"
+                    className="w-full bg-transparent border-none outline-none text-slate-600 placeholder-slate-600 font-medium text-[10px] md:text-xs focus:ring-0 p-0"
                   />
                 </div>
                 {/* Location Dropdown */}
@@ -167,10 +167,10 @@ export default function Hero() {
                 )}
               </div>
 
-              <div className="w-[1px] h-5 bg-slate-200 hidden lg:block"></div>
+              <div className="w-[1px] h-4 md:h-5 bg-slate-200 hidden md:block"></div>
 
-              {/* Type/Activity Field (Visual only for now, or could link to filters later) */}
-              <div className="flex-1 w-full lg:w-auto relative group px-3 py-1.5 hover:bg-slate-50 rounded-full transition-colors cursor-pointer border lg:border-none border-slate-100 h-9 flex items-center justify-between">
+              {/* Type/Activity Field - Hidden on mobile */}
+              <div className="hidden md:flex flex-1 w-full lg:w-auto relative group px-3 py-1.5 hover:bg-slate-50 rounded-full transition-colors cursor-pointer border lg:border-none border-slate-100 h-9 items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FaRegCompass className="text-slate-400 text-xs group-hover:text-emerald-500 transition-colors" />
                   <span className="text-slate-600 font-medium text-xs">Type</span>
@@ -180,8 +180,8 @@ export default function Hero() {
 
               <div className="w-[1px] h-5 bg-slate-200 hidden lg:block"></div>
 
-              {/* Travelers Field (Visual only) */}
-              <div className="flex-1 w-full lg:w-auto relative group px-3 py-1.5 hover:bg-slate-50 rounded-full transition-colors cursor-pointer border lg:border-none border-slate-100 h-9 flex items-center justify-between">
+              {/* Travelers Field - Hidden on mobile */}
+              <div className="hidden md:flex flex-1 w-full lg:w-auto relative group px-3 py-1.5 hover:bg-slate-50 rounded-full transition-colors cursor-pointer border lg:border-none border-slate-100 h-9 items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FaUserFriends className="text-slate-400 text-xs group-hover:text-emerald-500 transition-colors" />
                   <span className="text-slate-600 font-medium text-xs">Guests</span>
@@ -190,8 +190,8 @@ export default function Hero() {
               </div>
 
               {/* Search Button */}
-              <button onClick={handleSearch} className="w-full lg:w-auto aspect-square h-9 bg-slate-900 hover:bg-emerald-600 rounded-full flex items-center justify-center text-white transition-all shadow-md active:scale-95 group mt-2 lg:mt-0 ml-1">
-                <FaSearch className="text-xs group-hover:scale-110 transition-transform" />
+              <button onClick={handleSearch} className="aspect-square h-8 md:h-9 bg-slate-900 hover:bg-emerald-600 rounded-full flex items-center justify-center text-white transition-all shadow-md active:scale-95 group ml-1">
+                <FaSearch className="text-[10px] md:text-xs group-hover:scale-110 transition-transform" />
               </button>
 
             </div>

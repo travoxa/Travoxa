@@ -65,28 +65,29 @@ const ShowCase = () => {
 
     return (
         <div className='container mx-auto px-6 lg:px-20 py-20' >
-            <div className='flex flex-col lg:flex-row justify-between items-end mb-12' data-aos="fade-right">
+            <div className='flex flex-col lg:flex-row justify-between items-start lg:items-end mb-12' data-aos="fade-right">
                 <div className="max-w-2xl">
                     <h2 className='text-3xl lg:text-5xl text-black mb-6 Mont' >Travel Blog <br /> <span className="">Around Travoxa</span></h2>
                     <p className="text-gray-600 Inter text-lg">This blog features beautiful photography and personal experiences, providing insights into the local culture.</p>
                 </div>
-                <div className="flex gap-4 mt-6 lg:mt-0 items-center h-[50px]">
+                {/* Subscribe section - full width on mobile */}
+                <div className="w-full lg:w-auto flex gap-4 mt-6 lg:mt-0 items-center h-[50px]">
                     {!showInput ? (
                         <button
                             onClick={() => setShowInput(true)}
-                            className="bg-black text-white px-8 py-3 rounded-full text-sm font-medium hover:bg-black/80 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                            className="w-full lg:w-auto bg-black text-white px-8 py-3 rounded-full text-sm font-medium hover:bg-black/80 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                         >
                             Subscribe
                         </button>
                     ) : (
-                        <form onSubmit={handleSubscribe} className="flex gap-2 items-center animate-in fade-in slide-in-from-right-4 duration-300">
-                            <div className="relative group">
+                        <form onSubmit={handleSubscribe} className="w-full lg:w-auto flex gap-2 items-center animate-in fade-in slide-in-from-right-4 duration-300">
+                            <div className="relative group flex-1 lg:flex-none">
                                 <input
                                     type="email"
                                     placeholder="Enter your email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="px-6 py-3 rounded-full border border-gray-300 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all w-[250px] shadow-sm group-hover:shadow-md"
+                                    className="w-full px-6 py-3 rounded-full border border-gray-300 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all lg:w-[250px] shadow-sm group-hover:shadow-md"
                                     required
                                     disabled={status === 'success'}
                                 />
@@ -103,7 +104,7 @@ const ShowCase = () => {
                             <button
                                 type="submit"
                                 disabled={isSubmitting || status === 'success'}
-                                className="bg-black text-white p-3 rounded-full hover:bg-black/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                                className="bg-black text-white p-3 rounded-full hover:bg-black/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex-shrink-0"
                             >
                                 {isSubmitting ? (
                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
