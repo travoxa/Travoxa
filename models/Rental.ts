@@ -12,7 +12,7 @@ const RentalSchema = new mongoose.Schema({
     },
     model: {
         type: String,
-        required: [true, 'Please provide a model']
+        required: [true, 'Please provide a model year']
     },
     rating: {
         type: Number,
@@ -23,11 +23,11 @@ const RentalSchema = new mongoose.Schema({
         default: 0
     },
     mileage: {
-        type: String,
+        type: Number,
         required: [true, 'Please provide mileage']
     },
     seats: {
-        type: String,
+        type: Number,
         required: [true, 'Please provide number of seats']
     },
     fuel: {
@@ -51,12 +51,37 @@ const RentalSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    state: {
+        type: String,
+        required: [true, 'Please provide a state']
+    },
+    city: {
+        type: String,
+        required: [true, 'Please provide a city']
+    },
+    whatsapp: {
+        type: String,
+        required: [true, 'Please provide a WhatsApp number']
+    },
+    mapLocation: {
+        type: {
+            lat: Number,
+            lng: Number
+        },
+        required: false
+    },
+    rentalServiceName: {
+        type: String,
+        required: false
+    },
+    // Keep location for backward compatibility (computed from state + city)
     location: {
         type: String,
-        required: [true, 'Please provide a location']
+        required: false
     }
 }, {
     timestamps: true
 });
 
 export default mongoose.models.Rental || mongoose.model('Rental', RentalSchema);
+

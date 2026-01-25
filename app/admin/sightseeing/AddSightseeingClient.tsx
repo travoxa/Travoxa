@@ -7,6 +7,48 @@ import { CldUploadWidget } from 'next-cloudinary';
 const VEHICLE_TYPE_OPTIONS = ["Sedan", "SUV", "Tempo Traveller", "Mini Bus"];
 const PRICE_TYPE_OPTIONS = ["per_vehicle", "per_person"];
 
+// Indian States and Cities mapping
+const INDIAN_STATES_CITIES: Record<string, string[]> = {
+    "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Tirupati", "Kakinada", "Rajahmundry", "Kadapa", "Anantapur", "Kurnool"],
+    "Arunachal Pradesh": ["Itanagar", "Naharlagun", "Pasighat", "Tawang", "Ziro", "Bomdila", "Along", "Tezu", "Namsai", "Roing"],
+    "Assam": ["Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Nagaon", "Tinsukia", "Tezpur", "Bongaigaon", "Karimganj", "Sivasagar"],
+    "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Purnia", "Darbhanga", "Bihar Sharif", "Arrah", "Begusarai", "Katihar"],
+    "Chhattisgarh": ["Raipur", "Bhilai", "Bilaspur", "Korba", "Durg", "Rajnandgaon", "Raigarh", "Jagdalpur", "Ambikapur", "Dhamtari"],
+    "Goa": ["Panaji", "Margao", "Vasco da Gama", "Mapusa", "Ponda", "Bicholim", "Curchorem", "Canacona", "Quepem", "Sanguem"],
+    "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Junagadh", "Gandhinagar", "Gandhidham", "Anand"],
+    "Haryana": ["Gurugram", "Faridabad", "Panipat", "Ambala", "Karnal", "Rohtak", "Hisar", "Sonipat", "Yamunanagar", "Panchkula"],
+    "Himachal Pradesh": ["Shimla", "Dharamshala", "Manali", "Solan", "Mandi", "Kullu", "Bilaspur", "Chamba", "Una", "Hamirpur"],
+    "Jharkhand": ["Ranchi", "Jamshedpur", "Dhanbad", "Bokaro", "Deoghar", "Hazaribagh", "Giridih", "Ramgarh", "Phusro", "Medininagar"],
+    "Karnataka": ["Bengaluru", "Mysuru", "Hubli", "Mangaluru", "Belgaum", "Gulbarga", "Davangere", "Bellary", "Shimoga", "Tumkur"],
+    "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Kollam", "Kannur", "Alappuzha", "Kottayam", "Palakkad", "Malappuram"],
+    "Madhya Pradesh": ["Bhopal", "Indore", "Jabalpur", "Gwalior", "Ujjain", "Sagar", "Dewas", "Satna", "Ratlam", "Rewa"],
+    "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Nashik", "Aurangabad", "Solapur", "Kolhapur", "Amravati", "Navi Mumbai"],
+    "Manipur": ["Imphal", "Thoubal", "Bishnupur", "Churachandpur", "Kakching", "Ukhrul", "Senapati", "Tamenglong", "Chandel", "Jiribam"],
+    "Meghalaya": ["Shillong", "Tura", "Jowai", "Nongstoin", "Williamnagar", "Baghmara", "Mairang", "Resubelpara", "Nongpoh", "Khliehriat"],
+    "Mizoram": ["Aizawl", "Lunglei", "Champhai", "Serchhip", "Kolasib", "Lawngtlai", "Saiha", "Mamit", "Saitual", "Khawzawl"],
+    "Nagaland": ["Kohima", "Dimapur", "Mokokchung", "Tuensang", "Wokha", "Zunheboto", "Mon", "Phek", "Kiphire", "Longleng"],
+    "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Berhampur", "Sambalpur", "Puri", "Balasore", "Bhadrak", "Baripada", "Jharsuguda"],
+    "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Pathankot", "Hoshiarpur", "Batala", "Moga"],
+    "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Bikaner", "Ajmer", "Bhilwara", "Alwar", "Sikar", "Bharatpur"],
+    "Sikkim": ["Gangtok", "Namchi", "Gyalshing", "Mangan", "Rangpo", "Singtam", "Jorethang", "Ravangla", "Lachung", "Pelling"],
+    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tiruppur", "Erode", "Vellore", "Thoothukudi", "Dindigul"],
+    "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Khammam", "Ramagundam", "Mahbubnagar", "Nalgonda", "Adilabad", "Suryapet"],
+    "Tripura": ["Agartala", "Udaipur", "Dharmanagar", "Kailashahar", "Belonia", "Khowai", "Ambassa", "Sabroom", "Sonamura", "Melaghar"],
+    "Uttar Pradesh": ["Lucknow", "Kanpur", "Varanasi", "Agra", "Prayagraj", "Meerut", "Ghaziabad", "Noida", "Bareilly", "Aligarh"],
+    "Uttarakhand": ["Dehradun", "Haridwar", "Rishikesh", "Nainital", "Mussoorie", "Haldwani", "Roorkee", "Kashipur", "Rudrapur", "Pithoragarh"],
+    "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri", "Darjeeling", "Kharagpur", "Haldia", "Bardhaman", "Malda"],
+    "Andaman and Nicobar Islands": ["Port Blair", "Diglipur", "Rangat", "Mayabunder", "Wandoor", "Ferrargunj", "Garacharma", "Bambooflat", "Prothrapur", "Haddo"],
+    "Chandigarh": ["Chandigarh"],
+    "Dadra and Nagar Haveli and Daman and Diu": ["Daman", "Diu", "Silvassa", "Amli", "Naroli", "Khanvel", "Vapi", "Samarvarni", "Dunetha", "Dadra"],
+    "Delhi": ["New Delhi", "Central Delhi", "South Delhi", "North Delhi", "East Delhi", "West Delhi", "Dwarka", "Rohini", "Shahdara", "Saket"],
+    "Jammu and Kashmir": ["Srinagar", "Jammu", "Anantnag", "Baramulla", "Sopore", "Udhampur", "Kathua", "Kupwara", "Pulwama", "Ganderbal"],
+    "Ladakh": ["Leh", "Kargil", "Diskit", "Hunder", "Turtuk", "Pangong", "Nubra", "Zanskar", "Drass", "Nyoma"],
+    "Lakshadweep": ["Kavaratti", "Agatti", "Minicoy", "Amini", "Andrott", "Kalpeni", "Kiltan", "Chetlat", "Kadmat", "Bangaram"],
+    "Puducherry": ["Puducherry", "Karaikal", "Yanam", "Mahe", "Ozhukarai", "Villianur", "Ariyankuppam", "Bahour", "Nettapakkam", "Mannadipet"]
+};
+
+const INDIAN_STATES = Object.keys(INDIAN_STATES_CITIES).sort();
+
 interface AddSightseeingClientProps {
     showManagementBox?: boolean;
     showListings?: boolean;
@@ -37,7 +79,8 @@ export default function AddSightseeingClient({
         title: '',
         city: '',
         state: '',
-        duration: '',
+        durationDays: '',
+        durationNights: '',
         maxPeople: '',
         vehicleType: 'Sedan',
         highlights: [] as string[],
@@ -203,11 +246,22 @@ export default function AddSightseeingClient({
     // Handle edit
     const handleEdit = (pkg: any) => {
         setEditingId(pkg.id);
+        // Parse duration from pkg.duration (e.g., "2 Days / 1 Night" or just days)
+        let durationDays = '';
+        let durationNights = '';
+        if (pkg.duration) {
+            const daysMatch = pkg.duration.match(/(\d+)\s*Day/i);
+            const nightsMatch = pkg.duration.match(/(\d+)\s*Night/i);
+            if (daysMatch) durationDays = daysMatch[1];
+            if (nightsMatch) durationNights = nightsMatch[1];
+        }
+
         setFormData({
             title: pkg.title,
             city: pkg.city,
             state: pkg.state,
-            duration: pkg.duration,
+            durationDays,
+            durationNights,
             maxPeople: pkg.maxPeople.toString(),
             vehicleType: pkg.vehicleType,
             highlights: pkg.highlights || [],
@@ -231,8 +285,16 @@ export default function AddSightseeingClient({
         setError('');
         setSuccess('');
 
+        // Build duration string from days and nights
+        const durationParts = [];
+        if (formData.durationDays) durationParts.push(`${formData.durationDays} Day${Number(formData.durationDays) > 1 ? 's' : ''}`);
+        if (formData.durationNights) durationParts.push(`${formData.durationNights} Night${Number(formData.durationNights) > 1 ? 's' : ''}`);
+        const duration = durationParts.join(' / ') || 'Full Day';
+
+        const { durationDays, durationNights, ...restFormData } = formData;
         const payload = {
-            ...formData,
+            ...restFormData,
+            duration,
             maxPeople: Number(formData.maxPeople),
             price: Number(formData.price),
         };
@@ -259,7 +321,8 @@ export default function AddSightseeingClient({
                 title: '',
                 city: '',
                 state: '',
-                duration: '',
+                durationDays: '',
+                durationNights: '',
                 maxPeople: '',
                 vehicleType: 'Sedan',
                 highlights: [],
@@ -463,37 +526,64 @@ export default function AddSightseeingClient({
                                 />
                             </div>
                             <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                <select
+                                    required
+                                    value={formData.state}
+                                    onChange={e => setFormData({ ...formData, state: e.target.value, city: '' })}
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white"
+                                >
+                                    <option value="">Select State</option>
+                                    {INDIAN_STATES.map(state => (
+                                        <option key={state} value={state}>{state}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                                <input
-                                    type="text"
+                                <select
                                     required
                                     value={formData.city}
                                     onChange={e => setFormData({ ...formData, city: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. Jaipur"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.state}
-                                    onChange={e => setFormData({ ...formData, state: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. Rajasthan"
-                                />
+                                    disabled={!formData.state}
+                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white ${!formData.state ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    <option value="">{formData.state ? 'Select City' : 'Select State First'}</option>
+                                    {formData.state && INDIAN_STATES_CITIES[formData.state]?.map(city => (
+                                        <option key={city} value={city}>{city}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.duration}
-                                    onChange={e => setFormData({ ...formData, duration: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. Full Day (8 Hours)"
-                                />
+                                <div className="flex gap-3">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={formData.durationDays}
+                                                onChange={e => setFormData({ ...formData, durationDays: e.target.value })}
+                                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                placeholder="0"
+                                            />
+                                            <span className="text-sm text-gray-600 whitespace-nowrap">Days</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={formData.durationNights}
+                                                onChange={e => setFormData({ ...formData, durationNights: e.target.value })}
+                                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                placeholder="0"
+                                            />
+                                            <span className="text-sm text-gray-600 whitespace-nowrap">Nights</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Max People</label>

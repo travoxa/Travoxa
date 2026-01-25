@@ -13,7 +13,12 @@ export default function RentalCard({ item }: RentalCardProps) {
 
     const handleWhatsApp = () => {
         const message = `Hi, I'm interested in renting ${item.name} (${item.model}) in ${item.location}. Please provide details.`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+        // Use the whatsapp number if available, otherwise open generic WhatsApp share
+        if (item.whatsapp) {
+            window.open(`https://wa.me/91${item.whatsapp}?text=${encodeURIComponent(message)}`, '_blank');
+        } else {
+            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+        }
     };
 
     return (
@@ -37,6 +42,13 @@ export default function RentalCard({ item }: RentalCardProps) {
                 <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white px-2 py-1 rounded text-[10px] font-medium">
                     {item.model}
                 </div>
+
+                {/* Rental Service Badge */}
+                {item.rentalServiceName && (
+                    <div className="absolute top-3 left-3 bg-emerald-500/90 backdrop-blur-sm text-white px-2 py-1 rounded text-[10px] font-medium">
+                        {item.rentalServiceName}
+                    </div>
+                )}
             </div>
 
             {/* Content Section */}
@@ -55,10 +67,10 @@ export default function RentalCard({ item }: RentalCardProps) {
                 {/* Features Grid */}
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     <div className="flex items-center gap-2 text-[10px] text-slate-500 bg-slate-50 p-2 rounded-lg Inter font-medium">
-                        <FaGasPump className="text-slate-400" /> {item.mileage}
+                        <FaGasPump className="text-slate-400" /> {item.mileage} km/l
                     </div>
                     <div className="flex items-center gap-2 text-[10px] text-slate-500 bg-slate-50 p-2 rounded-lg Inter font-medium">
-                        <FaUserGroup className="text-slate-400" /> {item.seats}
+                        <FaUserGroup className="text-slate-400" /> {item.seats} Seats
                     </div>
                     <div className="flex items-center gap-2 text-[10px] text-slate-500 bg-slate-50 p-2 rounded-lg Inter font-medium">
                         <FaGasPump className="text-slate-400" /> {item.fuel}
@@ -72,7 +84,7 @@ export default function RentalCard({ item }: RentalCardProps) {
                     <div>
                         <p className="text-[10px] text-slate-400 font-medium mb-0.5 uppercase tracking-wide">Daily Rate</p>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-xl font-bold text-slate-900">₹{item.price}</span>
+                            <span className="text-xl font-bold text-slate-900">₹{item.price.toLocaleString('en-IN')}</span>
                             <span className="text-[10px] text-slate-500 font-medium">/ day</span>
                         </div>
                     </div>
@@ -89,3 +101,4 @@ export default function RentalCard({ item }: RentalCardProps) {
         </div>
     );
 }
+

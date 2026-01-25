@@ -1,21 +1,30 @@
 export interface RentalItem {
-    id: number;
+    id: string;
     name: string;
     type: string;
     model: string;
     rating: number;
     reviews: number;
-    mileage: string;
-    seats: string;
+    mileage: number;
+    seats: number;
     fuel: string;
     helmet: string;
     price: number;
     image: string;
     verified: boolean;
     location: string;
+    state?: string;
+    city?: string;
+    whatsapp?: string;
+    mapLocation?: {
+        lat: number;
+        lng: number;
+    };
+    rentalServiceName?: string;
 }
 
 // All rental items are now managed through the admin panel
 // and stored in the database. This file only contains the TypeScript interface.
 // Empty array exported for backward compatibility with components that use it
 export const rentalsData: RentalItem[] = [];
+
