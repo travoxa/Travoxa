@@ -155,9 +155,9 @@ export default function TourFilterSearch({ onFilterChange }: TourFilterSearchPro
                                         <option value="Any Price">Any Price</option>
                                         <option value="Low to High">Price: Low to High</option>
                                         <option value="High to Low">Price: High to Low</option>
-                                        <option value="Under $1000">Under $1000</option>
-                                        <option value="$1000 - $2000">$1000 - $2000</option>
-                                        <option value="Above $2000">Above $2000</option>
+                                        <option value="Under ₹1000">Under ₹1000</option>
+                                        <option value="₹1000 - ₹2000">₹1000 - ₹2000</option>
+                                        <option value="Above ₹2000">Above ₹2000</option>
                                     </select>
                                     <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                                 </div>
@@ -257,9 +257,9 @@ export default function TourFilterSearch({ onFilterChange }: TourFilterSearchPro
                                     <option value="Any Price">Any Price</option>
                                     <option value="Low to High">Price: Low to High</option>
                                     <option value="High to Low">Price: High to Low</option>
-                                    <option value="Under $1000">Under $1000</option>
-                                    <option value="$1000 - $2000">$1000 - $2000</option>
-                                    <option value="Above $2000">Above $2000</option>
+                                    <option value="Under ₹1000">Under ₹1000</option>
+                                    <option value="₹1000 - ₹2000">₹1000 - ₹2000</option>
+                                    <option value="Above ₹2000">Above ₹2000</option>
                                 </select>
                                 <FiChevronDown className="absolute right-3 text-gray-400 text-xs pointer-events-none" />
                             </div>

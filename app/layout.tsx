@@ -18,6 +18,9 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "Travoxa - Explore India Like Never Before",
   description: "Discover the soul of India with Travoxa, your ultimate guide",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({

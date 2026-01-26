@@ -51,7 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmi
 
 
     return (
-        <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-[#F2F5F8] px-6 py-8 flex flex-col justify-between font-sans">
+        <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-[#F2F5F8] px-6 py-8 hidden md:flex flex-col justify-between font-sans">
             {/* Branding */}
             <div>
                 <div className="flex items-center gap-3 mb-10 pl-2 h-[50px]">
@@ -160,7 +160,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmi
                             />
                             <button
                                 onClick={() => setShowLogoutPopup(true)}
-                                className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group text-red-500 hover:bg-red-50 hover:text-red-600"
+                                className="w-full flex items-center justify-between px-4 py-3 rounded-full transition-all duration-200 group text-red-500 hover:bg-red-50 hover:text-red-600"
                             >
                                 <div className="flex items-center gap-3">
                                     <span><RiLogoutBoxLine size={20} /></span>
@@ -175,7 +175,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmi
             {/* User Profile - Only show if NOT admin */}
             {!isAdmin && (
                 <div className="flex flex-col items-center text-center mt-auto">
-                    <div className="w-12 h-12 mx-auto mb-3 rounded-full overflow-hidden border-2 border-white shadow-sm bg-gray-200">
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-full overflow-hidden border-2 border-white bg-gray-200">
                         {user?.image ? (
                             <img src={user.image} alt="User" className="w-full h-full object-cover" />
                         ) : (
@@ -193,7 +193,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmi
             {
                 showLogoutPopup && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-                        <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg relative text-center">
+                        <div className="bg-white p-8 rounded-xl w-full max-w-lg relative text-center">
                             <button
                                 onClick={() => setShowLogoutPopup(false)}
                                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"

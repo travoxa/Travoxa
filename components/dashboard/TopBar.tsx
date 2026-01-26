@@ -127,7 +127,7 @@ const TopBar = ({ onNavigate, isAdmin = false }: TopBarProps) => {
 
                 {/* Suggestions Dropdown */}
                 {isFocused && query.trim() !== '' && suggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50 py-2">
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-gray-100 overflow-hidden z-50 py-2">
                         {suggestions.map((item) => (
                             <button
                                 key={item.id}
@@ -144,7 +144,7 @@ const TopBar = ({ onNavigate, isAdmin = false }: TopBarProps) => {
                     </div>
                 )}
                 {isFocused && query.trim() !== '' && suggestions.length === 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50 py-4 text-center">
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-gray-100 overflow-hidden z-50 py-4 text-center">
                         <p className="text-sm text-gray-500">No results found.</p>
                     </div>
                 )}
@@ -155,7 +155,7 @@ const TopBar = ({ onNavigate, isAdmin = false }: TopBarProps) => {
                 {isAdmin ? (
                     <button
                         onClick={() => window.location.href = '/api/admin/logout'}
-                        className="flex items-center gap-2 px-6 py-3 bg-white hover:bg-red-50 border border-red-200 text-red-500 rounded-full text-sm font-bold transition-all shadow-sm group"
+                        className="flex items-center gap-2 px-6 py-3 bg-white hover:bg-red-50 border border-red-200 text-red-500 rounded-full text-sm font-bold transition-all group"
                     >
                         <RiLogoutBoxLine className="group-hover:translate-x-1 transition-transform" />
                         Logout
@@ -163,7 +163,7 @@ const TopBar = ({ onNavigate, isAdmin = false }: TopBarProps) => {
                 ) : (
                     <button
                         onClick={() => window.history.back()}
-                        className="flex items-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-full text-sm font-bold transition-all shadow-sm group"
+                        className="flex items-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-full text-sm font-bold transition-all group"
                     >
                         <RiArrowLeftLine className="group-hover:-translate-x-1 transition-transform" />
                         Back

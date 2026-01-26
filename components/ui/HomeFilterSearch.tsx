@@ -68,9 +68,9 @@ export default function HomeFilterSearch() {
                 className="bg-transparent border-none outline-none text-xs font-semibold text-gray-900 appearance-none cursor-pointer pr-4 focus:ring-0 w-full md:w-24"
               >
                 <option value="Any Price">Any Price</option>
-                <option value="Under $1000">Under $1000</option>
-                <option value="$1000 - $2000">$1000 - $2000</option>
-                <option value="Above $2000">Above $2000</option>
+                <option value="Under ₹1000">Under ₹1000</option>
+                <option value="₹1000 - ₹2000">₹1000 - ₹2000</option>
+                <option value="Above ₹2000">Above ₹2000</option>
               </select>
               <FiChevronDown className="absolute right-3 text-gray-400 text-xs pointer-events-none" />
             </div>

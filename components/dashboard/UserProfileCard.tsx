@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import { RiArrowDownSLine, RiArrowUpSLine, RiPencilLine } from 'react-icons/ri';
 import Loading from '@/components/ui/components/Loading';
 import { getFirebaseAuth } from '@/lib/firebaseAuth';
 import { signOut as firebaseSignOut } from "firebase/auth";
-
-
 
 interface UserFormData {
   name: string;
@@ -45,6 +44,7 @@ const UserProfileCard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const [formData, setFormData] = useState<UserFormData>({
     name: "",
@@ -252,7 +252,7 @@ const UserProfileCard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-white p-6 rounded-3xl shadow-md border border-gray-200 Mont relative">
+      <div className="bg-white p-4 rounded-3xl border border-gray-200 Mont relative">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
         <p className="text-center mt-4 text-gray-600">Loading profile...</p>
       </div>
@@ -261,7 +261,7 @@ const UserProfileCard: React.FC = () => {
 
   if (saving) {
     return (
-      <div className="bg-white p-6 rounded-3xl shadow-md border border-gray-200 Mont relative">
+      <div className="bg-white p-4 rounded-3xl shadow-md border border-gray-200 Mont relative">
         <Loading />
         <div className="text-center mt-4 text-gray-600">Saving profile...</div>
       </div>
@@ -269,7 +269,6 @@ const UserProfileCard: React.FC = () => {
   }
 
   return (
-
     <div className="Mont">
       {/* Success message - positioned at top but only shows when not editing to avoid overlay effect */}
       {!editing && success && (
@@ -279,148 +278,36 @@ const UserProfileCard: React.FC = () => {
       )}
 
       {/* Only show profile showcase when NOT editing */}
-      {/* Only show profile showcase when NOT editing */}
-      {!editing && (
+      {!editing ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {/* Box 1: Basic Info */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm md:col-span-1">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-light">User Profile</h2>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-gray-300 rounded-full overflow-hidden flex-shrink-0">
-                  {/* You might want to render user image here if available in formData or session */}
-                  {/* For now keeping the placeholder style */}
-                </div>
-                <div className="overflow-hidden">
-                  <p className="font-medium text-xl truncate">{formData.name}</p>
-                  <p className="text-sm text-gray-500 truncate" title={formData.email}>Email: {formData.email}</p>
-                  <p className="text-sm text-gray-500">Gender: {formData.gender}</p>
-                </div>
-              </div>
+          {/* MOBILE LAYOUT */}
+          <div className="md:hidden space-y-2.5">
+            {/* Layer 1: Greeting & Simple Actions */}
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold text-gray-900">
+                Hey {formData.name?.split(' ')[0] || 'Traveler'}!
+              </h1>
+
+              <button
+                onClick={() => setEditing(true)}
+                className="relative p-1.5 text-gray-500 hover:text-black transition-colors"
+              >
+                <RiPencilLine size={17} />
+                {/* Red Dot if profile incomplete */}
+                {(!formData.phone || !formData.city || !formData.dateOfBirth || !formData.travelExperience || !formData.bio) && (
+                  <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                )}
+              </button>
             </div>
 
-            {/* Box 2: Actions & Warning with Progress Circle */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm md:col-span-2 flex justify-between items-center">
-              <div className="flex flex-col items-start gap-4">
-                {!formData.phone || !formData.city || !formData.dateOfBirth || !formData.travelExperience || !formData.bio ? (
-                  <div className="flex items-center space-x-2 bg-yellow-50 p-3 rounded-lg border border-yellow-100">
-                    <div className="w-2 h-2 bg-yellow-400 rounded-full flex-shrink-0"></div>
-                    <span className="text-sm text-yellow-700">Some profile details are incomplete</span>
-                  </div>
-                ) : null}
-
-                <button
-                  onClick={() => setEditing(true)}
-                  className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
-                >
-                  Edit Profile
-                </button>
-              </div>
-
-              {/* Circular Progress Bar */}
-              <div className="relative w-24 h-24 flex-shrink-0 ml-4">
+            {/* Layer 2: Percentage Circle (Progress Box) - Moved from Layer 3 */}
+            <div className="bg-white p-3.5 rounded-xl border-none md:border md:border-gray-50 flex items-center gap-5 relative overflow-hidden shadow-sm">
+              <div className="relative w-16 h-16 flex-shrink-0">
                 <svg className="w-full h-full transform -rotate-90">
-                  {/* Background Circle */}
-                  <circle
-                    cx="48"
-                    cy="48"
-                    r="40"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="transparent"
-                    className="text-gray-200"
-                  />
-                  {/* Progress Circle */}
-                  <circle
-                    cx="48"
-                    cy="48"
-                    r="40"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="transparent"
-                    strokeDasharray={2 * Math.PI * 40}
-                    strokeDashoffset={2 * Math.PI * 40 * (1 - (() => {
-                      const totalFields = 20; // Approximate number of tracked fields
-                      let filledFields = 0;
-                      if (formData.name) filledFields++;
-                      if (formData.email) filledFields++;
-                      if (formData.phone) filledFields++;
-                      if (formData.gender) filledFields++;
-                      if (formData.dateOfBirth) filledFields++;
-                      if (formData.city) filledFields++;
-                      if (formData.bio) filledFields++;
-                      if (formData.travelExperience) filledFields++;
-                      if (formData.emergencyContactName) filledFields++;
-                      if (formData.emergencyContactPhone) filledFields++;
-                      if (formData.medicalConditions) filledFields++; // Optional but counts if filled? Or maybe strict required fields. 
-                      // Let's stick to the "incomplete" logic used for the warning + some major ones
-                      // Actually, let's make a comprehensive count based on the formData keys that are relevant
-                      if (formData.languages.length > 0) filledFields++;
-                      if (formData.comfortLevel.length > 0) filledFields++;
-                      if (formData.preferredTravelMode.length > 0) filledFields++;
-                      if (formData.activityInterests.length > 0) filledFields++;
-                      if (formData.interests.length > 0) filledFields++;
-                      if (formData.hasBike) {
-                        // If has bike, model should be filled, but we count hasBike itself as a field data point
-                        filledFields++;
-                        if (formData.bikeModel) filledFields++;
-                      } else {
-                        // If no bike, model doesn't matter, but "hasBike: false" is a valid state. 
-                        // However, usually we want to encourage filling things out.
-                        // For simplicity let's count explicitly potentially empty strings.
-                        filledFields++; // Counting the boolean choice
-                      }
-
-                      // Let's simplify and just use a quick inline calculation function for better readability or externalize it
-                      // Given I can't easily add a function outside easily in this replacement, I'll do a robust inline calculation 
-                      // based on the previous simple check:
-
-                      // Re-calculating properly:
-                      let filled = 0;
-                      let total = 0;
-
-                      const check = (val: any) => {
-                        total++;
-                        if (Array.isArray(val)) return val.length > 0;
-                        if (typeof val === 'string') return val.trim().length > 0;
-                        if (typeof val === 'boolean') return true; // Booleans are always "set" in this form
-                        return !!val;
-                      };
-
-                      if (check(formData.name)) filled++;
-                      if (check(formData.email)) filled++;
-                      if (check(formData.phone)) filled++;
-                      if (check(formData.gender)) filled++;
-                      if (check(formData.dateOfBirth)) filled++;
-                      if (check(formData.city)) filled++;
-                      if (check(formData.bio)) filled++;
-                      if (check(formData.travelExperience)) filled++;
-
-                      // Arrays
-                      if (check(formData.languages)) filled++;
-                      if (check(formData.comfortLevel)) filled++;
-                      if (check(formData.preferredTravelMode)) filled++;
-                      if (check(formData.activityInterests)) filled++;
-                      if (check(formData.interests)) filled++;
-
-                      // Emergency
-                      if (check(formData.emergencyContactName)) filled++;
-                      if (check(formData.emergencyContactPhone)) filled++;
-
-                      // Others (Preferences) - assuming these are strings that start empty
-                      if (check(formData.smokingPreference)) filled++;
-                      if (check(formData.drinkingPreference)) filled++;
-                      if (check(formData.foodPreference)) filled++;
-
-                      // Social
-                      check(formData.socialProfileLink); if (formData.socialProfileLink) filled++;
-
-                      // We can just define the raw percentage based on the exact same logic as the warning 
-                      // or just make a robust one.
-
-                      // Let's stick to a simpler known list to avoid "total" fluctuating weirdly
+                  <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="5" fill="transparent" className="text-gray-50" />
+                  <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="5" fill="transparent"
+                    strokeDasharray={2 * Math.PI * 28}
+                    strokeDashoffset={2 * Math.PI * 28 * (1 - (() => {
                       const fieldsToCheck = [
                         formData.name, formData.email, formData.phone, formData.gender,
                         formData.dateOfBirth, formData.city, formData.bio, formData.travelExperience,
@@ -432,157 +319,254 @@ const UserProfileCard: React.FC = () => {
                         formData.interests.length ? 'ok' : '',
                         formData.socialProfileLink
                       ];
-
                       const completed = fieldsToCheck.filter(f => f && f.toString().length > 0).length;
                       return completed / fieldsToCheck.length;
                     })())}
-                    className="text-black transition-all duration-1000 ease-out"
-                    strokeLinecap="round"
-                  />
+                    className="text-black transition-all duration-1000 ease-out" strokeLinecap="round" />
                 </svg>
-                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-800">
-                  {Math.round((() => {
-                    const fieldsToCheck = [
-                      formData.name, formData.email, formData.phone, formData.gender,
-                      formData.dateOfBirth, formData.city, formData.bio, formData.travelExperience,
-                      formData.emergencyContactName, formData.emergencyContactPhone,
-                      formData.languages.length ? 'ok' : '',
-                      formData.comfortLevel.length ? 'ok' : '',
-                      formData.preferredTravelMode.length ? 'ok' : '',
-                      formData.activityInterests.length ? 'ok' : '',
-                      formData.interests.length ? 'ok' : '',
-                      formData.socialProfileLink
-                    ];
-                    const completed = fieldsToCheck.filter(f => f && f.toString().length > 0).length;
-                    return (completed / fieldsToCheck.length) * 100;
-                  })())}%
+                <div className="absolute inset-0 flex items-center justify-center flex-col">
+                  <span className="text-sm font-bold">
+                    {Math.round((() => {
+                      const fieldsToCheck = [
+                        formData.name, formData.email, formData.phone, formData.gender,
+                        formData.dateOfBirth, formData.city, formData.bio, formData.travelExperience,
+                        formData.emergencyContactName, formData.emergencyContactPhone,
+                        formData.languages.length ? 'ok' : '',
+                        formData.comfortLevel.length ? 'ok' : '',
+                        formData.preferredTravelMode.length ? 'ok' : '',
+                        formData.activityInterests.length ? 'ok' : '',
+                        formData.interests.length ? 'ok' : '',
+                        formData.socialProfileLink
+                      ];
+                      const completed = fieldsToCheck.filter(f => f && f.toString().length > 0).length;
+                      return (completed / fieldsToCheck.length) * 100;
+                    })())}%
+                  </span>
                 </div>
               </div>
+
+              <div className="flex-1 flex flex-col justify-center min-w-0">
+                <h4 className={`font-bold text-sm truncate ${(!formData.phone || !formData.city || !formData.dateOfBirth || !formData.travelExperience || !formData.bio) ? 'text-gray-900' : 'text-green-600'}`}>
+                  {(!formData.phone || !formData.city || !formData.dateOfBirth || !formData.travelExperience || !formData.bio) ? 'Profile Incomplete' : 'Profile Active'}
+                </h4>
+                <p className="text-[10px] text-gray-500 mt-1 leading-tight">
+                  {(!formData.phone || !formData.city || !formData.dateOfBirth || !formData.travelExperience || !formData.bio)
+                    ? 'Fill details to unlock all features.'
+                    : 'Your identity is fully verified!'}
+                </p>
+
+                {(!formData.phone || !formData.city || !formData.dateOfBirth || !formData.travelExperience || !formData.bio) && (
+                  <div className="mt-3 flex justify-start">
+                    <button
+                      onClick={() => setEditing(true)}
+                      className="bg-black text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider active:scale-95 transition-all"
+                    >
+                      Complete Profile
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Layer 3: Accordion for Details (Detailed Information) - Moved from Layer 2 */}
+            <div className="bg-white rounded-xl overflow-hidden">
+              <button
+                onClick={() => setShowDetails(!showDetails)}
+                className="w-full flex items-center justify-between p-3 bg-white hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-bold text-[10px] text-gray-700 uppercase tracking-tight">Detailed Information</span>
+                <div className={`w-6 h-6 rounded-full bg-white border border-gray-50/50 md:border-gray-50 flex items-center justify-center transition-transform duration-300 ${showDetails ? 'rotate-180' : ''}`}>
+                  <RiArrowDownSLine size={14} />
+                </div>
+              </button>
+
+              {showDetails && (
+                <div className="px-4 py-4 pt-0 animate-fade-in-down">
+                  <div className="space-y-3">
+                    {[
+                      { label: 'Email', value: formData.email },
+                      { label: 'Phone', value: formData.phone },
+                      { label: 'City', value: formData.city },
+                      { label: 'Birth Date', value: formData.dateOfBirth },
+                      { label: 'Gender', value: formData.gender },
+                      { label: 'Experience', value: formData.travelExperience },
+                      { label: 'Bio', value: formData.bio },
+                      { label: 'Languages', value: formData.languages.join(", ") },
+                      { label: 'Interests', value: formData.interests.join(", ") },
+                      { label: 'Activities', value: formData.activityInterests.join(", ") },
+                      { label: 'Comfort', value: formData.comfortLevel.join(", ") },
+                      { label: 'Travel Mode', value: formData.preferredTravelMode.join(", ") },
+                      { label: 'Has Bike', value: formData.hasBike ? formData.bikeModel || "Yes" : "No" },
+                      { label: 'Smoking', value: formData.smokingPreference },
+                      { label: 'Drinking', value: formData.drinkingPreference },
+                      { label: 'Food', value: formData.foodPreference },
+                      { label: 'Social', value: formData.socialProfileLink },
+                      { label: 'Emergency', value: `${formData.emergencyContactName} (${formData.emergencyContactPhone})` },
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex flex-col gap-0.5">
+                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{item.label}</span>
+                        <span className="text-xs font-medium text-gray-800 break-words line-clamp-2">
+                          {item.value || <span className="text-gray-300 italic">Not set</span>}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Box 3: User Information in Key:Value Format */}
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-            <h3 className="text-lg font-light mb-6 border-b border-gray-100 pb-3">Detailed Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Column 1 */}
-              <div className="space-y-4">
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Phone:</span>
-                  <span className="text-sm text-gray-600">{formData.phone || 'undefined'}</span>
+          {/* DESKTOP LAYOUT */}
+          <div className="hidden md:block">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              {/* Box 1: Basic Info */}
+              <div className="bg-white p-4 rounded-xl border border-gray-200 md:col-span-1 shadow-sm">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-light">User Profile</h2>
                 </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">City:</span>
-                  <span className="text-sm text-gray-600">{formData.city || 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Date of Birth:</span>
-                  <span className="text-sm text-gray-600">{formData.dateOfBirth ? formData.dateOfBirth : 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Travel Experience:</span>
-                  <span className="text-sm text-gray-600">{formData.travelExperience || 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Languages:</span>
-                  <span className="text-sm text-gray-600">{formData.languages.length > 0 ? formData.languages.join(", ") : 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Interests:</span>
-                  <span className="text-sm text-gray-600">{formData.interests.length > 0 ? formData.interests.join(", ") : 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Activity Interests:</span>
-                  <span className="text-sm text-gray-600">{formData.activityInterests.length > 0 ? formData.activityInterests.join(", ") : 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Comfort Level:</span>
-                  <span className="text-sm text-gray-600">{formData.comfortLevel.length > 0 ? formData.comfortLevel.join(", ") : 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Preferred Travel Mode:</span>
-                  <span className="text-sm text-gray-600">{formData.preferredTravelMode.length > 0 ? formData.preferredTravelMode.join(", ") : 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Bike:</span>
-                  <span className="text-sm text-gray-600">{formData.hasBike ? (formData.bikeModel || "Yes") : 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">License:</span>
-                  <span className="text-sm text-gray-600">{formData.hasLicense ? 'Yes' : 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Helmet:</span>
-                  <span className="text-sm text-gray-600">{formData.hasHelmet ? 'Yes' : 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Shares Accommodation:</span>
-                  <span className="text-sm text-gray-600">{formData.shareAccommodation ? 'Yes' : 'undefined'}</span>
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full overflow-hidden flex-shrink-0 border border-gray-200">
+                    {session?.user?.image ? (
+                      <img src={session.user.image} alt="User" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold text-xl">
+                        {formData.name?.[0] || 'U'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="overflow-hidden min-w-0">
+                    <p className="font-medium text-lg truncate text-gray-900">{formData.name}</p>
+                    <p className="text-sm text-gray-500 truncate" title={formData.email}>{formData.email}</p>
+                    <p className="text-sm text-gray-500 uppercase text-[10px] font-bold tracking-wider mt-1">{formData.gender}</p>
+                  </div>
                 </div>
               </div>
 
-              {/* Column 2 */}
-              <div className="space-y-4">
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Smoking Preference:</span>
-                  <span className="text-sm text-gray-600">{formData.smokingPreference || 'undefined'}</span>
+              {/* Box 2: Actions & Warning with Progress Circle */}
+              <div className="bg-white p-4 rounded-xl border border-gray-200 md:col-span-2 flex justify-between items-center shadow-sm">
+                <div className="flex flex-col items-start gap-4">
+                  {!formData.phone || !formData.city || !formData.dateOfBirth || !formData.travelExperience || !formData.bio ? (
+                    <div className="flex items-center space-x-2 bg-yellow-50 p-3 rounded-lg border border-yellow-100">
+                      <div className="w-2 h-2 bg-yellow-400 rounded-full flex-shrink-0"></div>
+                      <span className="text-sm text-yellow-700">Detailed profile helps in better matching.</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2 bg-green-50 p-3 rounded-lg border border-green-100">
+                      <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></div>
+                      <span className="text-sm text-green-700">Your profile is looking great!</span>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => setEditing(true)}
+                    className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-semibold active:scale-95"
+                  >
+                    Edit Profile
+                  </button>
                 </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Drinking Preference:</span>
-                  <span className="text-sm text-gray-600">{formData.drinkingPreference || 'undefined'}</span>
+
+                {/* Circular Progress Bar */}
+                <div className="relative w-24 h-24 flex-shrink-0 ml-4">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-gray-100" />
+                    <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent"
+                      strokeDasharray={2 * Math.PI * 40}
+                      strokeDashoffset={2 * Math.PI * 40 * (1 - (() => {
+                        const fieldsToCheck = [
+                          formData.name, formData.email, formData.phone, formData.gender,
+                          formData.dateOfBirth, formData.city, formData.bio, formData.travelExperience,
+                          formData.emergencyContactName, formData.emergencyContactPhone,
+                          formData.languages.length ? 'ok' : '',
+                          formData.comfortLevel.length ? 'ok' : '',
+                          formData.preferredTravelMode.length ? 'ok' : '',
+                          formData.activityInterests.length ? 'ok' : '',
+                          formData.interests.length ? 'ok' : '',
+                          formData.socialProfileLink
+                        ];
+                        const completed = fieldsToCheck.filter(f => f && f.toString().length > 0).length;
+                        return completed / fieldsToCheck.length;
+                      })())}
+                      className="text-black transition-all duration-1000 ease-out" strokeLinecap="round" />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-800">
+                    {Math.round((() => {
+                      const fieldsToCheck = [
+                        formData.name, formData.email, formData.phone, formData.gender,
+                        formData.dateOfBirth, formData.city, formData.bio, formData.travelExperience,
+                        formData.emergencyContactName, formData.emergencyContactPhone,
+                        formData.languages.length ? 'ok' : '',
+                        formData.comfortLevel.length ? 'ok' : '',
+                        formData.preferredTravelMode.length ? 'ok' : '',
+                        formData.activityInterests.length ? 'ok' : '',
+                        formData.interests.length ? 'ok' : '',
+                        formData.socialProfileLink
+                      ];
+                      const completed = fieldsToCheck.filter(f => f && f.toString().length > 0).length;
+                      return (completed / fieldsToCheck.length) * 100;
+                    })())}%
+                  </div>
                 </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Food Preference:</span>
-                  <span className="text-sm text-gray-600">{formData.foodPreference || 'undefined'}</span>
+              </div>
+            </div>
+
+            {/* Box 3: Detailed Information Card */}
+            <div className="bg-white px-3 py-4 rounded-xl border border-gray-200 text-xs mb-6 shadow-sm">
+              <h3 className="text-sm font-bold mb-4 text-gray-800">Detailed Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+                {/* Column 1 */}
+                <div className="space-y-3">
+                  {[
+                    { label: 'Phone', value: formData.phone },
+                    { label: 'City', value: formData.city },
+                    { label: 'Date of Birth', value: formData.dateOfBirth },
+                    { label: 'Experience', value: formData.travelExperience },
+                    { label: 'Languages', value: formData.languages.join(", ") },
+                    { label: 'Interests', value: formData.interests.join(", ") },
+                    { label: 'Activities', value: formData.activityInterests.join(", ") },
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-center pb-1">
+                      <span className="font-semibold text-gray-600">{item.label}:</span>
+                      <span className="text-gray-800">{item.value || 'Not set'}</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Weekday Availability:</span>
-                  <span className="text-sm text-gray-600">{formData.weekdayAvailability ? 'Yes' : 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Weekend Availability:</span>
-                  <span className="text-sm text-gray-600">{formData.weekendAvailability ? 'Yes' : 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Short Notice Travel:</span>
-                  <span className="text-sm text-gray-600">{formData.shortNoticeTravel ? 'Yes' : 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Social Profile:</span>
-                  <span className="text-sm text-gray-600">{formData.socialProfileLink || 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Emergency Contact:</span>
-                  <span className="text-sm text-gray-600">{formData.emergencyContactName || 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Emergency Phone:</span>
-                  <span className="text-sm text-gray-600">{formData.emergencyContactPhone || 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Medical Conditions:</span>
-                  <span className="text-sm text-gray-600">{formData.medicalConditions || 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Allergies:</span>
-                  <span className="text-sm text-gray-600">{formData.allergies || 'undefined'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-50 pb-2">
-                  <span className="text-sm font-medium text-gray-700">Bio:</span>
-                  <span className="text-sm text-gray-600">{formData.bio || 'undefined'}</span>
+
+                {/* Column 2 */}
+                <div className="space-y-3">
+                  {[
+                    { label: 'Comfort Level', value: formData.comfortLevel.join(", ") },
+                    { label: 'Travel Mode', value: formData.preferredTravelMode.join(", ") },
+                    { label: 'Bike', value: formData.hasBike ? (formData.bikeModel || "Yes") : "No" },
+                    { label: 'Smoking', value: formData.smokingPreference },
+                    { label: 'Drinking', value: formData.drinkingPreference },
+                    { label: 'Food', value: formData.foodPreference },
+                    { label: 'Social Profile', value: formData.socialProfileLink },
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-center pb-1">
+                      <span className="font-semibold text-gray-600">{item.label}:</span>
+                      <span className="text-gray-800 truncate max-w-[200px]" title={item.value}>{item.value || 'Not set'}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
         </>
-      )}
-
-      {/* Edit Mode - Show only the edit form */}
-      {editing && (
-        <div className="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
-          <div className="text-center mb-4">
-            <h3 className="text-lg font-semibold text-black">Edit Your Profile</h3>
-            <p className="text-sm text-gray-600">Update your information and click Save Changes</p>
+      ) : (
+        /* EDIT MODE */
+        <div className="space-y-4 bg-gray-50 p-3 rounded-xl border border-gray-200">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h3 className="text-lg font-semibold text-black">Edit Your Profile</h3>
+              <p className="text-sm text-gray-600">Update your information</p>
+            </div>
+            <button
+              onClick={() => setEditing(false)}
+              disabled={saving}
+              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-black border border-gray-200 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
@@ -1089,44 +1073,23 @@ const UserProfileCard: React.FC = () => {
             />
           </div>
 
-          <div className="mt-6">
-            <label className="text-sm font-medium text-black/70">Social Profile Link</label>
-            <input
-              type="url"
-              className="w-full rounded-[8px] border border-black/20 bg-white px-4 py-3 text-black focus:border-black focus:outline-none focus:ring-2 focus:ring-black/40"
-              value={formData.socialProfileLink}
-              onChange={(e) => setFormData({ ...formData, socialProfileLink: e.target.value })}
-            />
-          </div>
-
           {error && (
             <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
               {error}
             </div>
           )}
 
-          <div className="mt-6 flex gap-4">
+          <div className="mt-8">
             <button
               onClick={handleSave}
               disabled={saving}
-              className={`px-6 py-3 rounded-lg transition-colors ${saving
+              className={`w-full px-6 py-4 rounded-xl font-bold transition-all ${saving
                 ? "bg-gray-400 text-white cursor-not-allowed"
-                : "bg-black text-white hover:bg-gray-800"
+                : "bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/10 active:scale-[0.98]"
                 }`}
             >
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? "Saving Changes..." : "Save Changes"}
             </button>
-            <button
-              onClick={() => setEditing(false)}
-              disabled={saving}
-              className={`px-6 py-3 rounded-lg transition-colors ${saving
-                ? "border-gray-300 text-gray-400 cursor-not-allowed"
-                : "border border-gray-300 text-black hover:bg-gray-50"
-                }`}
-            >
-              Cancel
-            </button>
-
           </div>
         </div>
       )}
