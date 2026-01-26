@@ -3,6 +3,12 @@
 import { useState } from 'react';
 import Sidebar from '@/components/dashboard/Sidebar';
 import TopBar from '@/components/dashboard/TopBar';
+import Image from 'next/image';
+import { RiNotification3Line, RiLogoutBoxLine } from 'react-icons/ri';
+import { signOut } from 'next-auth/react';
+import { getFirebaseAuth } from '@/lib/firebaseAuth';
+import { signOut as firebaseSignOut } from "firebase/auth";
+
 
 // Import actual content components
 import UserProfileCard from '@/components/dashboard/UserProfileCard';
@@ -12,6 +18,7 @@ import SafetyCard from '@/components/dashboard/SafetyCard';
 import ActivityFeedCard from '@/components/dashboard/ActivityFeedCard';
 import InsightsCard from '@/components/dashboard/InsightsCard';
 import Notification from '@/components/dashboard/Notification';
+import Footor from '@/components/ui/Footor';
 
 interface DashboardClientProps {
     user: {
@@ -24,8 +31,24 @@ interface DashboardClientProps {
 
 const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
     const [activeTab, setActiveTab] = useState('UserProfileCard');
+    const [showMobileNotifications, setShowMobileNotifications] = useState(false);
+
+
+    const handleSignOut = async () => {
+        try {
+            const firebaseAuth = getFirebaseAuth();
+            if (firebaseAuth) {
+                await firebaseSignOut(firebaseAuth);
+            }
+            await signOut({ callbackUrl: '/login' });
+        } catch (error) {
+            console.error("Error signing out:", error);
+            await signOut({ callbackUrl: '/login' });
+        }
+    };
 
     const renderContent = () => {
+
         switch (activeTab) {
             case 'UserProfileCard':
                 return <UserProfileCard />;
@@ -51,15 +74,80 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
             {/* Sidebar with state control */}
             <Sidebar user={user} activeTab={activeTab} setActiveTab={setActiveTab} />
 
+            {/* Mobile Header */}
+            <div className="md:hidden fixed top-0 left-0 right-0 bg-white z-50 px-6 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <button onClick={() => window.location.href = '/'} className="cursor-pointer">
+                        <Image
+                            src="/logo.png"
+                            alt="Travoxa"
+                            width={50}
+                            height={20}
+                            style={{ width: "auto", height: "16px" }}
+                            className="object-contain"
+                        />
+                    </button>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => setShowMobileNotifications(!showMobileNotifications)}
+                        className={`text-gray-600 hover:text-black transition-colors relative ${showMobileNotifications ? 'text-black' : ''}`}
+                    >
+                        <RiNotification3Line size={18} />
+                        {!showMobileNotifications && <span className="absolute top-0 right-0 w-1.5 h-1.5 bg-red-500 rounded-full border border-white"></span>}
+                    </button>
+
+                    <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-50 border border-gray-50/50 md:border-gray-50">
+                        {user.image ? (
+                            <img src={user.image} alt="User" className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-500 font-bold text-[10px]">
+                                {user.name?.[0] || 'U'}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
             {/* Main Content */}
-            <main className="flex-1 ml-64 p-8 lg:p-12 overflow-y-auto">
-                <div className="max-w-7xl mx-auto space-y-8">
-                    <TopBar onNavigate={setActiveTab} />
+            <main className="flex-1 w-full md:ml-64 p-2.5 pt-16 md:p-8 lg:p-12 overflow-y-auto">
+                <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
+                    <div className="hidden md:block">
+                        <TopBar onNavigate={setActiveTab} />
+                    </div>
 
                     {/* Dynamic Content Area */}
                     <div className="fade-in-up">
-                        {renderContent()}
+                        {/* Desktop: Tabbed Content */}
+                        <div className="hidden md:block">
+                            {renderContent()}
+                        </div>
+
+                        {/* Mobile: Stacked Content */}
+                        <div className="md:hidden space-y-2.5 pb-12">
+                            {showMobileNotifications && <Notification />}
+                            <UserProfileCard />
+                            <InsightsCard />
+                            <TripsCard />
+                            <PreferencesCard />
+                            <SafetyCard />
+                            <ActivityFeedCard />
+
+                            {/* Mobile Logout Button */}
+                            <button
+                                onClick={handleSignOut}
+                                className="w-full flex items-center gap-2 px-6 py-2.5 bg-white rounded-full text-[#FF4B4B] font-semibold shadow-sm active:scale-[0.98] transition-all border border-gray-50/50 md:border-gray-50"
+                            >
+                                <RiLogoutBoxLine size={18} />
+                                <span className="text-sm">Logout</span>
+                            </button>
+                        </div>
+
                     </div>
+
+                </div>
+                <div className="mt-12 md:hidden">
+                    <Footor />
                 </div>
             </main>
         </div>

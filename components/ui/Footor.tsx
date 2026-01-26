@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 const Footor = () => {
   return (
-    <div className='m-[24px] bg-black text-white rounded-[12px] pt-[24px] lg:pt-[48px] pb-[24px] lg:pb-[48px]' >
+    <div className='mx-[12px] my-[24px] lg:m-[24px] bg-black text-white rounded-[12px] pt-[24px] lg:pt-[48px] pb-[24px] lg:pb-[48px]' >
       <div className='px-[24px] lg:px-[48px]' >
         <p className='text-[18px] lg:text-[36px] ' >Let Travoxa be your guide to the soul of India. From peaceful escapes to breathtaking adventures, we craft journeys that touch the heart and stay with you forever.</p>
 

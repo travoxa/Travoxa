@@ -321,7 +321,7 @@ const Choose = () => {
           WHY CHOOSE US
         </p>
         <h2 className=" text-[56px] lg:text-[68px] Mont font-light leading-[1.1] mb-[20px] bg-gradient-to-r from-black to-gray-600 bg-clip-text text-transparent">
-          Features We Offer
+          What’s Coming Next.
         </h2>
         <p className="Mont text-[22px] text-gray-600 leading-[1.6] max-w-5xl mx-auto ">
           Every trip tells a story, and we help you write yours beautifully.
@@ -529,20 +529,36 @@ const Choose = () => {
                   {/* Background Icon */}
                   <feature.icon className="absolute -bottom-8 -right-8 text-[200px] text-[#4da528] opacity-10 pointer-events-none group-hover:scale-105 group-hover:opacity-15 transition-all duration-500" />
 
-                  {/* Title */}
-                  <h3 className={`font-medium Mont leading-[1.2] text-gray-900 relative z-10 ${isBig ? 'text-[26px]' : 'text-[20px]'
+                  {/* Masking Overlay */}
+                  <div className="absolute inset-0 bg-white/40 backdrop-blur-md z-20 flex flex-col items-center justify-center p-6 text-center">
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg mb-4">
+                      <span className="text-2xl">🔒</span>
+                    </div>
+                    <p className="text-black font-semibold Inter text-sm mb-1 uppercase tracking-wider">
+                      Coming Soon
+                    </p>
+                    <p className="text-gray-800 text-[11px] Inter font-medium max-w-[180px]">
+                      This feature will be unlocked after official launch.
+                    </p>
+                    <div className="mt-4 px-3 py-1 bg-black/5 rounded-full border border-black/10">
+                      <p className="text-[10px] text-gray-500 Inter italic">Currently under development</p>
+                    </div>
+                  </div>
+
+                  {/* Title - Blurred */}
+                  <h3 className={`font-medium Mont leading-[1.2] text-gray-900 relative z-10 blur-[4px] ${isBig ? 'text-[26px]' : 'text-[20px]'
                     }`}>
                     {feature.title}
                   </h3>
 
-                  {/* Description */}
-                  <p className={`text-gray-600 leading-[1.5] font-light mt-[6px] Inter relative z-10 ${isBig ? 'text-[15px]' : 'text-[13px]'
+                  {/* Description - Blurred */}
+                  <p className={`text-gray-600 leading-[1.5] font-light mt-[6px] Inter relative z-10 blur-[4px] ${isBig ? 'text-[15px]' : 'text-[13px]'
                     }`}>
                     {feature.description}
                   </p>
 
-                  {/* Feature Bullets - 2 columns with proper alignment */}
-                  <div className={`grid grid-cols-2 gap-x-[10px] gap-y-[6px] mt-[10px] relative z-10 ${isBig ? 'text-[13px]' : 'text-[11px]'
+                  {/* Feature Bullets - Blurred */}
+                  <div className={`grid grid-cols-2 gap-x-[10px] gap-y-[6px] mt-[10px] relative z-10 blur-[4px] ${isBig ? 'text-[13px]' : 'text-[11px]'
                     }`}>
                     {feature.bullets.slice(0, 4).map((bullet, bulletIndex) => (
                       <div key={bulletIndex} className="flex items-center gap-[5px]">
@@ -557,15 +573,15 @@ const Choose = () => {
 
                   {/* CTA Row - Compact */}
                   <div className="mt-auto pt-[12px] flex items-center justify-between border-t border-gray-100 relative z-10">
-                    <button className={`bg-black text-white font-bold Mont rounded-full hover:bg-[#4da528] hover:shadow-lg hover:shadow-[#4da528]/30 transition-all duration-300 transform group-hover:scale-[1.02] ${isBig ? 'text-[12px] px-[16px] py-[6px]' : 'text-[10px] px-[12px] py-[5px]'
+                    <button className={`bg-black text-white font-bold Mont rounded-full hover:shadow-lg transition-all duration-300 transform ${isBig ? 'text-[12px] px-[16px] py-[6px]' : 'text-[10px] px-[12px] py-[5px]'
                       }`}>
-                      SEE MORE
+                      Coming Soon 🚀
                     </button>
                     {/* Progress Line - Compact */}
-                    <div className="flex items-center gap-[4px] opacity-60 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className={`h-[2px] bg-[#4da528] rounded-full transform group-hover:w-[28px] transition-all duration-300 ${isBig ? 'w-[24px]' : 'w-[18px]'
+                    <div className="flex items-center gap-[4px] opacity-60">
+                      <div className={`h-[2px] bg-gray-300 rounded-full ${isBig ? 'w-[24px]' : 'w-[18px]'
                         }`}></div>
-                      <div className={`h-[2px] bg-gray-300 rounded-full ${isBig ? 'w-[8px]' : 'w-[6px]'
+                      <div className={`h-[2px] bg-gray-200 rounded-full ${isBig ? 'w-[8px]' : 'w-[6px]'
                         }`}></div>
                     </div>
                   </div>
@@ -583,23 +599,36 @@ const Choose = () => {
             key={index}
             className="bg-white rounded-[12px] p-4 border border-gray-100 shadow-md relative overflow-hidden group aspect-square flex flex-col justify-between"
           >
-            {/* Background Icon */}
-            <feature.icon className="absolute -bottom-4 -right-4 text-[80px] text-[#4da528] opacity-10 pointer-events-none" />
+            {/* Masking Overlay */}
+            <div className="absolute inset-0 bg-white/40 backdrop-blur-md z-20 flex flex-col items-center justify-center p-3 text-center">
+              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg mb-2">
+                <span className="text-lg">🔒</span>
+              </div>
+              <p className="text-black font-semibold Inter text-[10px] mb-0.5 uppercase tracking-wider">
+                Coming Soon
+              </p>
+              <p className="text-gray-800 text-[8px] Inter font-medium leading-tight">
+                Unlocked after launch
+              </p>
+            </div>
 
-            {/* Title only - no description on mobile */}
-            <h3 className="text-[14px] font-medium Mont leading-[1.2] relative z-10">
+            {/* Background Icon - Blurred */}
+            <feature.icon className="absolute -bottom-4 -right-4 text-[80px] text-[#4da528] opacity-10 pointer-events-none blur-[2px]" />
+
+            {/* Title only - Blurred */}
+            <h3 className="text-[14px] font-medium Mont leading-[1.2] relative z-10 blur-[3px]">
               {feature.title}
             </h3>
 
-            {/* Icon centered */}
-            <div className="flex-1 flex items-center justify-center relative z-10">
+            {/* Icon centered - Blurred */}
+            <div className="flex-1 flex items-center justify-center relative z-10 blur-[3px]">
               <feature.icon className="text-[36px] text-[#4da528] opacity-80" />
             </div>
 
-            {/* Small See More button */}
+            {/* Small See More button -> Coming Soon */}
             <div className="relative z-10">
-              <button className="bg-black text-white text-[9px] font-bold Mont px-[10px] py-[4px] rounded-full hover:bg-[#4da528] transition-colors duration-200">
-                SEE MORE
+              <button className="bg-black text-white text-[9px] font-bold Mont px-[10px] py-[4px] rounded-full">
+                Coming Soon 🚀
               </button>
             </div>
           </div>

@@ -203,7 +203,7 @@ export default function TeamPage() {
 
                                         {/* Image - Hidden initially, shown on hover (only if image exists) */}
                                         {item.image && (
-                                            <div className="max-h-0 opacity-0 group-hover:max-h-48 group-hover:opacity-100 transition-all duration-500 ease-in-out overflow-hidden rounded-[1rem] w-full mt-0 group-hover:mt-3">
+                                            <div className="max-h-0 opacity-0 group-hover:max-h-[350px] group-hover:opacity-100 transition-all duration-500 ease-in-out overflow-hidden rounded-[1rem] w-full mt-0 group-hover:mt-3">
                                                 <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                                             </div>
                                         )}

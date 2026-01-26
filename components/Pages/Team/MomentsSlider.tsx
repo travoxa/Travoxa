@@ -133,6 +133,7 @@ export default function MomentsSlider({ items }: MomentsSliderProps) {
             };
 
             const seamlessLoop = buildSeamlessLoop(cards, spacing, animateFunc);
+            seamlessLoop.timeScale(0.025); // Reduced speed significantly for very slow scroll
 
             // Playhead logic for scrubbing
             const playhead = { offset: 0 };
@@ -143,6 +144,12 @@ export default function MomentsSlider({ items }: MomentsSliderProps) {
                 offset: 0,
                 onUpdate() {
                     seamlessLoop.time(wrapTime(playhead.offset));
+                },
+                onComplete() {
+                    // Resume auto-scroll after snapping ONLY on small screens
+                    if (window.innerWidth < 1024) {
+                        seamlessLoop.play();
+                    }
                 },
                 duration: 0.5,
                 ease: "power3",
@@ -171,6 +178,12 @@ export default function MomentsSlider({ items }: MomentsSliderProps) {
                 type: "x",
                 trigger: galleryRef.current, // Drag anywhere in the gallery container
                 onPress() {
+                    // Stop auto-scroll and sync offsets
+                    seamlessLoop.pause();
+                    // Sync playhead/scrub to current visual time so we don't jump
+                    // @ts-ignore
+                    scrub.vars.offset = seamlessLoop.time();
+                    playhead.offset = seamlessLoop.time();
                     // @ts-ignore
                     this.startOffset = scrub.vars.offset;
                 },
@@ -184,6 +197,15 @@ export default function MomentsSlider({ items }: MomentsSliderProps) {
                     scrollToOffset(scrub.vars.offset!);
                 },
             })[0];
+
+            // Start auto-scroll only on small screens
+            let mm = gsap.matchMedia();
+            mm.add("(max-width: 1023px)", () => {
+                seamlessLoop.play();
+            });
+            mm.add("(min-width: 1024px)", () => {
+                seamlessLoop.pause();
+            });
         }, wrapperRef); // Scope to wrapper
 
         return () => ctx.revert(); // Cleanup on unmount/re-render
@@ -203,13 +225,13 @@ export default function MomentsSlider({ items }: MomentsSliderProps) {
             {/* Gallery */}
             <div
                 ref={galleryRef}
-                className="moments-gallery relative w-full h-[500px] overflow-hidden cursor-grab active:cursor-grabbing"
+                className="moments-gallery relative w-[calc(100%+3rem)] -ml-6 lg:w-full lg:ml-0 h-[300px] md:h-[500px] overflow-hidden cursor-grab active:cursor-grabbing"
             >
-                <ul ref={cardsRef} className="absolute w-80 h-96 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                <ul ref={cardsRef} className="absolute w-40 h-52 md:w-80 md:h-96 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
                     {renderItems.map((moment, index) => (
                         <li
                             key={index}
-                            className="moments-card list-none p-0 m-0 w-80 h-96 text-center leading-[24rem] text-2xl absolute top-0 left-0 rounded-2xl bg-cover bg-no-repeat bg-center shadow-2xl bg-zinc-200"
+                            className="moments-card list-none p-0 m-0 w-40 h-52 md:w-80 md:h-96 text-center leading-[13rem] md:leading-[24rem] text-2xl absolute top-0 left-0 rounded-2xl bg-cover bg-no-repeat bg-center shadow-2xl bg-zinc-200"
                             style={{ backgroundImage: `url(${moment.image})` }}
                         >
                             <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/50 to-transparent rounded-b-2xl">

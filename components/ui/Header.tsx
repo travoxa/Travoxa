@@ -170,11 +170,12 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
             <Image
               src="/logo.png"
               alt="Travoxa"
-              width={130}
+              width={500}
               height={1000}
-              className="h-[50px]"
+              className="h-[20px] lg:h-[25px]"
               style={{ width: "auto" }}
             />
+
           </button>
 
           {/* DESKTOP MENU */}

@@ -151,7 +151,7 @@ export default function NormalHeader({ backgroundColor = "bg-white" }: { backgro
                             alt="Travoxa"
                             width={130}
                             height={1000}
-                            className="h-[50px]"
+                            className="h-[40px] lg:h-[50px]"
                             style={{ width: "auto" }}
                         />
                     </button>
