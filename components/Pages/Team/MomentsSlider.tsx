@@ -9,107 +9,117 @@ gsap.registerPlugin(ScrollTrigger, Draggable);
 
 interface Moment {
     title: string;
-    img: string;
+    image: string;
+    desc: string;
 }
 
-const moments: Moment[] = [
-    { title: "Banaras Ganga Aarti", img: "https://via.placeholder.com/350x500" },
-    { title: "Darjeeling Sunrise", img: "https://via.placeholder.com/350x500" },
-    { title: "Gangtok Streets", img: "https://via.placeholder.com/350x500" },
-    { title: "Ayodhya Ram Mandir", img: "https://via.placeholder.com/350x500" },
-    { title: "Varanasi Ghats", img: "https://via.placeholder.com/350x500" },
-    { title: "Mayapur Temple", img: "https://via.placeholder.com/350x500" },
-    { title: "Delhi Streets", img: "https://via.placeholder.com/350x500" },
-];
+interface MomentsSliderProps {
+    items: Moment[];
+}
 
-export default function MomentsSlider() {
+export default function MomentsSlider({ items }: MomentsSliderProps) {
     const galleryRef = useRef<HTMLDivElement>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
     const cardsRef = useRef<HTMLUListElement>(null);
     const dragProxyRef = useRef<HTMLDivElement>(null);
-    const seamlessLoopRef = useRef<gsap.core.Timeline | null>(null);
-    const playheadRef = useRef({ offset: 0 });
-    const scrubRef = useRef<gsap.core.Tween | null>(null);
+    const [renderItems, setRenderItems] = useState<Moment[]>([]);
+
+    // Ensure we have enough items for a seamless loop by duplicating if necessary
+    useEffect(() => {
+        if (!items || items.length === 0) {
+            setRenderItems([]);
+            return;
+        }
+
+        // We typically need enough items to cover the visible area + buffer. 
+        // 10 is a safe number for this specific layout to ensure smoother infinite scrolling
+        let duplicated = [...items];
+        while (duplicated.length < 10) {
+            duplicated = [...duplicated, ...items];
+        }
+        setRenderItems(duplicated);
+    }, [items]);
 
     useEffect(() => {
-        if (!cardsRef.current || !galleryRef.current || !dragProxyRef.current) return;
+        if (renderItems.length === 0 || !cardsRef.current || !wrapperRef.current || !dragProxyRef.current) return;
 
-        const cards = gsap.utils.toArray<HTMLLIElement>(".moments-card");
+        const ctx = gsap.context(() => {
+            const cards = gsap.utils.toArray<HTMLLIElement>(".moments-card");
 
-        // Set initial state
-        gsap.set(cards, { xPercent: 400, opacity: 0, scale: 0 });
+            // Initial state: hide everything to avoid flash
+            gsap.set(cards, { xPercent: 400, opacity: 0, scale: 0 });
 
-        const spacing = 0.1;
-        const snapTime = gsap.utils.snap(spacing);
+            const spacing = 0.1; // Space between cards relative to timeline duration
+            const snapTime = gsap.utils.snap(spacing);
 
-        // Animation function for each card
-        const animateFunc = (element: HTMLLIElement) => {
-            const tl = gsap.timeline();
-            tl.fromTo(
-                element,
-                { scale: 0, opacity: 0 },
-                {
-                    scale: 1,
-                    opacity: 1,
-                    zIndex: 100,
-                    duration: 0.5,
-                    yoyo: true,
-                    repeat: 1,
-                    ease: "power1.in",
-                    immediateRender: false,
-                }
-            ).fromTo(
-                element,
-                { xPercent: 400 },
-                {
-                    xPercent: -400,
-                    duration: 1,
-                    ease: "none",
-                    immediateRender: false,
-                },
-                0
-            );
-            return tl;
-        };
-
-        // Build seamless loop
-        const buildSeamlessLoop = (
-            items: HTMLLIElement[],
-            spacing: number,
-            animateFunc: (element: HTMLLIElement) => gsap.core.Timeline
-        ) => {
-            const overlap = Math.ceil(1 / spacing);
-            const startTime = items.length * spacing + 0.5;
-            const loopTime = (items.length + overlap) * spacing + 1;
-            const rawSequence = gsap.timeline({ paused: true });
-            const seamlessLoop = gsap.timeline({
-                paused: true,
-                repeat: -1,
-                onRepeat() {
-                    if (this._time === this._dur) {
-                        this._tTime += this._dur - 0.01;
+            // Re-usable animation function for a single card's lifecycle
+            const animateFunc = (element: HTMLLIElement) => {
+                const tl = gsap.timeline();
+                tl.fromTo(
+                    element,
+                    { scale: 0, opacity: 0 },
+                    {
+                        scale: 1,
+                        opacity: 1,
+                        zIndex: 100,
+                        duration: 0.5,
+                        yoyo: true,
+                        repeat: 1,
+                        ease: "power1.in",
+                        immediateRender: false,
                     }
-                },
-            });
+                ).fromTo(
+                    element,
+                    { xPercent: 400 },
+                    {
+                        xPercent: -400,
+                        duration: 1,
+                        ease: "none",
+                        immediateRender: false,
+                    },
+                    0
+                );
+                return tl;
+            };
 
-            const l = items.length + overlap * 2;
+            // Build the seamless loop timeline
+            const buildSeamlessLoop = (
+                items: HTMLLIElement[],
+                spacing: number,
+                animateFunc: (element: HTMLLIElement) => gsap.core.Timeline
+            ) => {
+                let overlap = Math.ceil(1 / spacing);
+                let startTime = items.length * spacing + 0.5;
+                let loopTime = (items.length + overlap) * spacing + 1;
+                let rawSequence = gsap.timeline({ paused: true });
+                let seamlessLoop = gsap.timeline({
+                    paused: true,
+                    repeat: -1,
+                    onRepeat() {
+                        if (this._time === this._dur) {
+                            this._tTime += this._dur - 0.01;
+                        }
+                    },
+                });
 
-            for (let i = 0; i < l; i++) {
-                const index = i % items.length;
-                const time = i * spacing;
-                rawSequence.add(animateFunc(items[index]), time);
-                if (i <= items.length) {
-                    seamlessLoop.add("label" + i, time);
+                let l = items.length + overlap * 2;
+
+                for (let i = 0; i < l; i++) {
+                    let index = i % items.length;
+                    let item = items[index];
+                    let time = i * spacing;
+                    rawSequence.add(animateFunc(item), time);
+                    if (i <= items.length) {
+                        seamlessLoop.add("label" + i, time);
+                    }
                 }
-            }
 
-            rawSequence.time(startTime);
-            seamlessLoop
-                .to(rawSequence, {
+                rawSequence.time(startTime);
+                seamlessLoop.to(rawSequence, {
                     time: loopTime,
                     duration: loopTime - startTime,
                     ease: "none",
-                })
-                .fromTo(
+                }).fromTo(
                     rawSequence,
                     { time: overlap * spacing + 1 },
                     {
@@ -119,63 +129,70 @@ export default function MomentsSlider() {
                         ease: "none",
                     }
                 );
+                return seamlessLoop;
+            };
 
-            return seamlessLoop;
-        };
+            const seamlessLoop = buildSeamlessLoop(cards, spacing, animateFunc);
 
-        const seamlessLoop = buildSeamlessLoop(cards, spacing, animateFunc);
-        seamlessLoopRef.current = seamlessLoop;
+            // Playhead logic for scrubbing
+            const playhead = { offset: 0 };
+            const wrapTime = gsap.utils.wrap(0, seamlessLoop.duration());
 
-        const playhead = playheadRef.current;
-        const wrapTime = gsap.utils.wrap(0, seamlessLoop.duration());
+            // The scrub tween moves the playhead
+            const scrub = gsap.to(playhead, {
+                offset: 0,
+                onUpdate() {
+                    seamlessLoop.time(wrapTime(playhead.offset));
+                },
+                duration: 0.5,
+                ease: "power3",
+                paused: true,
+            });
 
-        // Scrub tween
-        const scrub = gsap.to(playhead, {
-            offset: 0,
-            onUpdate() {
-                seamlessLoop.time(wrapTime(playhead.offset));
-            },
-            duration: 0.5,
-            ease: "power3",
-            paused: true,
-        });
-        scrubRef.current = scrub;
+            const scrollToOffset = (offset: number) => {
+                let snappedTime = snapTime(offset);
+                // Handle wrapping for positive/negative values if needed, 
+                // but usually the draggable logic handles continuous dragging logic well enough 
+                // if we don't clamp explicitly.
+                // However, for infinite looping based on 'offset', we just pass it to the scrub.
 
-        // Scroll to offset function (for drag snapping)
-        const scrollToOffset = (offset: number) => {
-            const snappedTime = snapTime(offset);
-            scrub.vars.offset = snappedTime;
-            scrub.invalidate().restart();
-        };
+                // If the user drags really far, we want correct wrapping.
+                // But since 'wrapTime' handles the visual time, we just need to animate 
+                // the scrub to the 'snapped' target.
 
-        // Draggable
-        Draggable.create(dragProxyRef.current, {
-            type: "x",
-            trigger: cardsRef.current,
-            onPress() {
-                // @ts-ignore
-                this.startOffset = scrub.vars.offset;
-            },
-            onDrag() {
-                // @ts-ignore
-                scrub.vars.offset = this.startOffset + (this.startX - this.x) * 0.001;
+                let progress = snappedTime - scrub.vars.offset!;
+                // Using a simpler approach: just update the offset destination
+                scrub.vars.offset = snappedTime;
                 scrub.invalidate().restart();
-            },
-            onDragEnd() {
-                scrollToOffset(scrub.vars.offset);
-            },
-        });
+            };
 
-        // Cleanup
-        return () => {
-            scrub.kill();
-            seamlessLoop.kill();
-            Draggable.get(dragProxyRef.current!)?.kill();
-        };
-    }, []);
+            // Draggable setup
+            const drag = Draggable.create(dragProxyRef.current, {
+                type: "x",
+                trigger: galleryRef.current, // Drag anywhere in the gallery container
+                onPress() {
+                    // @ts-ignore
+                    this.startOffset = scrub.vars.offset;
+                },
+                onDrag() {
+                    // @ts-ignore
+                    scrub.vars.offset = this.startOffset + (this.startX - this.x) * 0.001;
+                    scrub.invalidate().restart();
+                },
+                onDragEnd() {
+                    // Snap to the closest card
+                    scrollToOffset(scrub.vars.offset!);
+                },
+            })[0];
+        }, wrapperRef); // Scope to wrapper
+
+        return () => ctx.revert(); // Cleanup on unmount/re-render
+    }, [renderItems]);
+
+    if (!items || items.length === 0) return null;
 
     return (
-        <section className="relative py-8">
+        <section ref={wrapperRef} className="relative py-8">
             {/* Heading */}
             <div className="mb-8 px-6 lg:px-24 text-center">
                 <h2 className="text-3xl md:text-4xl font-extralight text-black Mont">
@@ -186,18 +203,21 @@ export default function MomentsSlider() {
             {/* Gallery */}
             <div
                 ref={galleryRef}
-                className="moments-gallery relative w-full h-[500px] overflow-hidden"
+                className="moments-gallery relative w-full h-[500px] overflow-hidden cursor-grab active:cursor-grabbing"
             >
-                <ul ref={cardsRef} className="absolute w-80 h-96 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    {moments.map((moment, index) => (
+                <ul ref={cardsRef} className="absolute w-80 h-96 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                    {renderItems.map((moment, index) => (
                         <li
                             key={index}
                             className="moments-card list-none p-0 m-0 w-80 h-96 text-center leading-[24rem] text-2xl absolute top-0 left-0 rounded-2xl bg-cover bg-no-repeat bg-center shadow-2xl bg-zinc-200"
-                            style={{ backgroundImage: `url(${moment.img})` }}
+                            style={{ backgroundImage: `url(${moment.image})` }}
                         >
                             <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/50 to-transparent rounded-b-2xl">
-                                <p className="text-white font-semibold text-base leading-tight">
+                                <p className="text-white font-semibold text-lg leading-tight mb-1">
                                     {moment.title}
+                                </p>
+                                <p className="text-white/80 text-xs font-light line-clamp-3 leading-normal">
+                                    {moment.desc}
                                 </p>
                             </div>
                         </li>
@@ -205,8 +225,8 @@ export default function MomentsSlider() {
                 </ul>
             </div>
 
-            {/* Drag Proxy */}
-            <div ref={dragProxyRef} className="drag-proxy invisible absolute"></div>
+            {/* Drag Proxy (invisible) */}
+            <div ref={dragProxyRef} className="drag-proxy invisible absolute top-0 left-0 w-full h-full pointer-events-none"></div>
         </section>
     );
 }
