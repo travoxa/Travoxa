@@ -17,7 +17,7 @@ const LocalConnectPage = () => {
                 <div className="inline-block bg-orange-50 text-orange-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-6 border border-orange-100 Mont">
                     Authentic Travel Redefined
                 </div>
-                <h1 className="text-4xl lg:text-7xl font-black text-slate-900 leading-tight mb-6 Mont tracking-tight">
+                <h1 className="text-4xl lg:text-7xl font-bold text-slate-900 leading-tight mb-6 Mont tracking-tight">
                     Explore Cities Through<br />
                     <span className="text-emerald-500 italic font-medium font-serif">Locals, Not Tourists</span>
                 </h1>

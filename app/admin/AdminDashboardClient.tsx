@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import AddTourClient from '@/app/admin/tour/AddTourClient'
 import AddSightseeingClient from '@/app/admin/sightseeing/AddSightseeingClient'
 import AddRentalsClient from '@/app/admin/rentals/AddRentalsClient'
+import TeamManagementClient from '@/app/admin/team/TeamManagementClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -87,6 +88,9 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                         <AddRentalsClient showManagementBox={false} showListings={true} />
                     </div>
                 )
+
+            case 'Team':
+                return <TeamManagementClient />
 
             case 'Overview':
                 return (
