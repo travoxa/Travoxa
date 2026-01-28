@@ -51,17 +51,17 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmi
 
 
     return (
-        <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-[#F2F5F8] px-6 py-8 hidden md:flex flex-col justify-between font-sans">
+        <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-white px-6 py-8 hidden md:flex flex-col justify-between font-sans">
             {/* Branding */}
             <div>
-                <div className="flex items-center gap-3 mb-10 pl-2 h-[50px]">
+                <div className="flex items-center gap-3 mb-10 pl-2 h-[40px]">
                     <button onClick={() => window.location.href = '/'} className="cursor-pointer">
                         <Image
                             src="/logo.png"
                             alt="Travoxa"
                             width={130}
                             height={50}
-                            style={{ width: "auto", height: "40px" }}
+                            style={{ width: "auto", height: "32px" }}
                             className="object-contain"
                         />
                     </button>
@@ -160,7 +160,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmi
                             />
                             <button
                                 onClick={() => setShowLogoutPopup(true)}
-                                className="w-full flex items-center justify-between px-4 py-3 rounded-full transition-all duration-200 group text-red-500 hover:bg-red-50 hover:text-red-600"
+                                className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group text-red-500 border border-transparent hover:bg-red-50 hover:border-red-200 hover:text-red-600"
                             >
                                 <div className="flex items-center gap-3">
                                     <span><RiLogoutBoxLine size={20} /></span>
@@ -249,9 +249,9 @@ const NavItem = ({
     return (
         <button
             onClick={() => onClick(id)}
-            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${active
-                ? 'bg-white text-gray-900 font-semibold'
-                : 'text-gray-500 hover:bg-white hover:text-gray-900'
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group border ${active
+                ? 'bg-gray-50 border-gray-200 text-gray-900 font-semibold'
+                : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-200 hover:text-gray-900'
                 }`}
         >
             <div className="flex items-center gap-3">

@@ -2,8 +2,7 @@ import React from 'react';
 
 const SafetyCard: React.FC = () => {
   return (
-    <div className="bg-white p-4 rounded-xl shadow-none">
-      <h2 className="text-lg font-light mb-4">Safety</h2>
+    <div className="bg-white p-4 rounded-xl border border-gray-200">
       <div className="space-y-2">
         <p className="text-xs text-gray-600">Safety information and emergency contacts</p>
         <div className="space-y-3">
@@ -13,7 +12,7 @@ const SafetyCard: React.FC = () => {
             </label>
             <input
               type="text"
-              className="w-full p-2 border border-gray-50/50 md:border-gray-50 rounded text-xs"
+              className="w-full p-2 border border-gray-200 rounded text-xs"
               placeholder="Enter emergency contact name"
             />
           </div>
@@ -23,7 +22,7 @@ const SafetyCard: React.FC = () => {
             </label>
             <input
               type="tel"
-              className="w-full p-2 border border-gray-50/50 md:border-gray-50 rounded text-xs"
+              className="w-full p-2 border border-gray-200 rounded text-xs"
               placeholder="Enter emergency contact phone"
             />
           </div>
@@ -32,7 +31,7 @@ const SafetyCard: React.FC = () => {
               Medical Conditions
             </label>
             <textarea
-              className="w-full p-2 border border-gray-50/50 md:border-gray-50 rounded text-xs"
+              className="w-full p-2 border border-gray-200 rounded text-xs"
               placeholder="List any medical conditions"
               rows={3}
             />
