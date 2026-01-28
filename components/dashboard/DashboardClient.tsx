@@ -47,6 +47,16 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
         }
     };
 
+    const tabTitles: { [key: string]: string } = {
+        'UserProfileCard': 'Profile',
+        'Trips': 'Trips',
+        'PreferencesCard': 'Preferences',
+        'SafetyCard': 'Safety',
+        'ActivityFeedCard': 'Activity',
+        'InsightsCard': 'Insights',
+        'Notification': 'Notifications'
+    };
+
     const renderContent = () => {
 
         switch (activeTab) {
@@ -70,7 +80,7 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
     };
 
     return (
-        <div className="flex min-h-screen bg-[#F2F5F8] font-sans">
+        <div className="flex min-h-screen bg-white font-sans">
             {/* Sidebar with state control */}
             <Sidebar user={user} activeTab={activeTab} setActiveTab={setActiveTab} />
 
@@ -83,7 +93,7 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
                             alt="Travoxa"
                             width={50}
                             height={20}
-                            style={{ width: "auto", height: "16px" }}
+                            style={{ width: "auto", height: "12px" }}
                             className="object-contain"
                         />
                     </button>
@@ -110,8 +120,8 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
             </div>
 
             {/* Main Content */}
-            <main className="flex-1 w-full md:ml-64 p-2.5 pt-16 md:p-8 lg:p-12 overflow-y-auto">
-                <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
+            <main className="flex-1 w-full md:ml-64 p-2.5 pt-16 md:p-6 lg:p-8 overflow-y-auto">
+                <div className="max-w-7xl space-y-6 md:space-y-8">
                     <div className="hidden md:block">
                         <TopBar onNavigate={setActiveTab} />
                     </div>
@@ -120,17 +130,32 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
                     <div className="fade-in-up">
                         {/* Desktop: Tabbed Content */}
                         <div className="hidden md:block">
+                            <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">
+                                {tabTitles[activeTab] || 'Dashboard'}
+                            </h1>
                             {renderContent()}
                         </div>
 
                         {/* Mobile: Stacked Content */}
                         <div className="md:hidden space-y-2.5 pb-12">
                             {showMobileNotifications && <Notification />}
+
+                            <h2 className="text-lg font-bold text-gray-800 px-1 mt-4">Profile</h2>
                             <UserProfileCard />
+
+                            <h2 className="text-lg font-bold text-gray-800 px-1 mt-6">Insights</h2>
                             <InsightsCard />
+
+                            <h2 className="text-lg font-bold text-gray-800 px-1 mt-6">Trips</h2>
                             <TripsCard />
+
+                            <h2 className="text-lg font-bold text-gray-800 px-1 mt-6">Preferences</h2>
                             <PreferencesCard />
+
+                            <h2 className="text-lg font-bold text-gray-800 px-1 mt-6">Safety</h2>
                             <SafetyCard />
+
+                            <h2 className="text-lg font-bold text-gray-800 px-1 mt-6">Activity</h2>
                             <ActivityFeedCard />
 
                             {/* Mobile Logout Button */}

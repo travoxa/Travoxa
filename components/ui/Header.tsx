@@ -47,6 +47,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
         { label: "Mystery Trip", path: "/ai-trip-planner" },
         { label: "Nearby Explorer", path: "/ai-trip-planner" },
         { label: "Local Connect", path: "/ai-trip-planner" },
+        { label: "Khazana Map", path: "/ai-trip-planner" },
       ],
     },
     {

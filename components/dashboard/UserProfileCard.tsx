@@ -252,18 +252,17 @@ const UserProfileCard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-white p-4 rounded-3xl border border-gray-200 Mont relative">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
-        <p className="text-center mt-4 text-gray-600">Loading profile...</p>
+      <div className="flex items-center justify-center min-h-[200px] w-full">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-black"></div>
       </div>
     );
   }
 
   if (saving) {
     return (
-      <div className="bg-white p-4 rounded-3xl shadow-md border border-gray-200 Mont relative">
-        <Loading />
-        <div className="text-center mt-4 text-gray-600">Saving profile...</div>
+      <div className="flex flex-col items-center justify-center min-h-[200px] w-full">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-black"></div>
+        <div className="text-center mt-4 text-gray-600 font-medium italic">Saving...</div>
       </div>
     );
   }
@@ -301,7 +300,7 @@ const UserProfileCard: React.FC = () => {
             </div>
 
             {/* Layer 2: Percentage Circle (Progress Box) - Moved from Layer 3 */}
-            <div className="bg-white p-3.5 rounded-xl border-none md:border md:border-gray-50 flex items-center gap-5 relative overflow-hidden shadow-sm">
+            <div className="bg-white p-3.5 rounded-xl border border-gray-200 flex items-center gap-5 relative overflow-hidden">
               <div className="relative w-16 h-16 flex-shrink-0">
                 <svg className="w-full h-full transform -rotate-90">
                   <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="5" fill="transparent" className="text-gray-50" />
@@ -420,10 +419,7 @@ const UserProfileCard: React.FC = () => {
           <div className="hidden md:block">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               {/* Box 1: Basic Info */}
-              <div className="bg-white p-4 rounded-xl border border-gray-200 md:col-span-1 shadow-sm">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-light">User Profile</h2>
-                </div>
+              <div className="bg-white p-4 rounded-xl border border-gray-200 md:col-span-1 flex flex-col justify-center">
                 <div className="flex items-center space-x-4">
                   <div className="w-16 h-16 bg-gray-100 rounded-full overflow-hidden flex-shrink-0 border border-gray-200">
                     {session?.user?.image ? (
@@ -443,7 +439,7 @@ const UserProfileCard: React.FC = () => {
               </div>
 
               {/* Box 2: Actions & Warning with Progress Circle */}
-              <div className="bg-white p-4 rounded-xl border border-gray-200 md:col-span-2 flex justify-between items-center shadow-sm">
+              <div className="bg-white p-4 rounded-xl border border-gray-200 md:col-span-2 flex justify-between items-center">
                 <div className="flex flex-col items-start gap-4">
                   {!formData.phone || !formData.city || !formData.dateOfBirth || !formData.travelExperience || !formData.bio ? (
                     <div className="flex items-center space-x-2 bg-yellow-50 p-3 rounded-lg border border-yellow-100">
@@ -510,7 +506,7 @@ const UserProfileCard: React.FC = () => {
             </div>
 
             {/* Box 3: Detailed Information Card */}
-            <div className="bg-white px-3 py-4 rounded-xl border border-gray-200 text-xs mb-6 shadow-sm">
+            <div className="bg-white px-3 py-4 rounded-xl border border-gray-200 text-xs mb-6">
               <h3 className="text-sm font-bold mb-4 text-gray-800">Detailed Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
                 {/* Column 1 */}

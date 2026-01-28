@@ -19,10 +19,6 @@ const TeamManagementClient = () => {
     // Default View: Management Boxes
     return (
         <div className="space-y-8">
-            <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-medium text-gray-800 Inter">Team</h1>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Core Team Management Box */}
                 <div className="bg-white rounded-xl border border-gray-100 p-8">

@@ -90,7 +90,12 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                 )
 
             case 'Team':
-                return <TeamManagementClient />
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Team</h1>
+                        <TeamManagementClient />
+                    </div>
+                )
 
             case 'Overview':
                 return (
