@@ -108,7 +108,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                 return (
                     <div className="space-y-6">
                         <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">{activeTab}</h1>
-                        <div className="bg-white rounded-xl border border-gray-100 p-8">
+                        <div className="bg-white rounded-xl border border-gray-200 p-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">Coming Soon</h2>
                             <p className="text-gray-600">This section is under development.</p>
                         </div>
@@ -118,7 +118,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
     }
 
     return (
-        <div className="flex min-h-screen bg-[#F2F5F8] font-sans">
+        <div className="flex min-h-screen bg-white font-sans">
             {/* Sidebar */}
             <Sidebar user={adminUser} activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={true} />
 

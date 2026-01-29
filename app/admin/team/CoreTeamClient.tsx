@@ -132,7 +132,7 @@ export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
             </div>
 
             {showForm ? (
-                <div className="bg-white rounded-xl border border-gray-100 p-8 max-w-2xl relative">
+                <div className="bg-white rounded-xl border border-gray-200 p-8 max-w-2xl relative">
                     <button
                         onClick={resetForm}
                         className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
@@ -223,7 +223,7 @@ export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
                     </form>
                 </div>
             ) : (
-                <div className="bg-white rounded-xl border border-gray-100 p-6">
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
                     {loading ? (
                         <div className="flex items-center justify-center p-12">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>

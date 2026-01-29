@@ -104,7 +104,7 @@ export default function JourneyClient({ onBack }: JourneyClientProps) {
 
     if (showForm) {
         return (
-            <div className="bg-white rounded-xl border border-gray-100 p-8 max-w-2xl mx-auto">
+            <div className="bg-white rounded-xl border border-gray-200 p-8 max-w-2xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
                     <h2 className="text-xl font-bold text-gray-800">
                         {editingItem ? 'Edit Journey Item' : 'Add New Journey Item'}
@@ -221,7 +221,7 @@ export default function JourneyClient({ onBack }: JourneyClientProps) {
 
             <div className="grid grid-cols-1 gap-4">
                 {items.map((item) => (
-                    <div key={item._id} className="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between group">
+                    <div key={item._id} className="bg-white p-4 rounded-xl border border-gray-200 flex items-center justify-between group">
                         <div className="flex items-center gap-4">
                             <div className="w-16 h-16 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
                                 {item.image ? (

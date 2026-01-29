@@ -264,7 +264,7 @@ export default function AddRentalsClient({
                 <>
                     {/* Create Button - Top */}
                     {showManagementBox && (
-                        <div className="bg-white rounded-xl border border-gray-100 p-8">
+                        <div className="bg-white rounded-xl border border-gray-200 p-8">
                             <h2 className="text-lg font-medium text-gray-800 mb-4">Rentals Management</h2>
                             <button
                                 onClick={() => {
@@ -285,7 +285,7 @@ export default function AddRentalsClient({
                     {showListings && (
                         <>
                             {loadingRentals ? (
-                                <div className="bg-white rounded-xl border border-gray-100 p-6">
+                                <div className="bg-white rounded-xl border border-gray-200 p-6">
                                     <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Rentals</h2>
                                     <div className="space-y-4">
                                         {[1, 2, 3].map((i) => (
@@ -299,7 +299,7 @@ export default function AddRentalsClient({
                                     </div>
                                 </div>
                             ) : rentals.length > 0 ? (
-                                <div className="bg-white rounded-xl border border-gray-100 p-6">
+                                <div className="bg-white rounded-xl border border-gray-200 p-6">
                                     <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Rentals</h2>
 
                                     {/* Column Headers */}
@@ -364,7 +364,7 @@ export default function AddRentalsClient({
                                     </div>
                                 </div>
                             ) : (
-                                <div className="bg-white rounded-xl border border-gray-100 p-8 text-left">
+                                <div className="bg-white rounded-xl border border-gray-200 p-8 text-left">
                                     <h2 className="text-lg font-medium text-gray-800 mb-2">No Rentals Yet</h2>
                                     <p className="text-gray-600 text-sm">Create your first rental to get started.</p>
                                 </div>
@@ -373,7 +373,7 @@ export default function AddRentalsClient({
                     )}
                 </>
             ) : (
-                <div className="bg-white rounded-xl border border-gray-100 p-8 relative">
+                <div className="bg-white rounded-xl border border-gray-200 p-8 relative">
                     {/* Close Button */}
                     <button
                         onClick={() => {

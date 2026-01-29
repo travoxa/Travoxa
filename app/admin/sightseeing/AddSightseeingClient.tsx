@@ -373,7 +373,7 @@ export default function AddSightseeingClient({
                 <>
                     {/* Create Button - Top */}
                     {showManagementBox && (
-                        <div className="bg-white rounded-xl border border-gray-100 p-8">
+                        <div className="bg-white rounded-xl border border-gray-200 p-8">
                             <h2 className="text-lg font-medium text-gray-800 mb-4">Sightseeing Management</h2>
                             <button
                                 onClick={() => {
@@ -392,7 +392,7 @@ export default function AddSightseeingClient({
 
                     {/* Sightseeing Listing - Below */}
                     {showListings && (loadingSightseeing ? (
-                        <div className="bg-white rounded-xl border border-gray-100 p-6">
+                        <div className="bg-white rounded-xl border border-gray-200 p-6">
                             <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Sightseeing Packages</h2>
 
                             {/* Loading Skeleton */}
@@ -410,7 +410,7 @@ export default function AddSightseeingClient({
                             </div>
                         </div>
                     ) : sightseeing.length > 0 ? (
-                        <div className="bg-white rounded-xl border border-gray-100 p-6">
+                        <div className="bg-white rounded-xl border border-gray-200 p-6">
                             <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Sightseeing Packages</h2>
 
                             {/* Column Headers */}
@@ -475,14 +475,14 @@ export default function AddSightseeingClient({
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-white rounded-xl border border-gray-100 p-8 text-left">
+                        <div className="bg-white rounded-xl border border-gray-200 p-8 text-left">
                             <h2 className="text-lg font-medium text-gray-800 mb-2">No Sightseeing Packages Yet</h2>
                             <p className="text-gray-600 text-sm">Create your first sightseeing package to get started.</p>
                         </div>
                     ))}
                 </>
             ) : (
-                <div className="bg-white rounded-xl border border-gray-100 p-8 relative">
+                <div className="bg-white rounded-xl border border-gray-200 p-8 relative">
                     {/* Close Button */}
                     <button
                         onClick={() => {

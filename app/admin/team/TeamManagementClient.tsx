@@ -21,7 +21,7 @@ const TeamManagementClient = () => {
         <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Core Team Management Box */}
-                <div className="bg-white rounded-xl border border-gray-100 p-8">
+                <div className="bg-white rounded-xl border border-gray-200 p-8">
                     <h2 className="text-lg font-medium text-gray-800 mb-4">Core Team Management</h2>
                     <button
                         onClick={() => setActiveSection('core-team')}
@@ -32,7 +32,7 @@ const TeamManagementClient = () => {
                 </div>
 
                 {/* Journey Management Box */}
-                <div className="bg-white rounded-xl border border-gray-100 p-8">
+                <div className="bg-white rounded-xl border border-gray-200 p-8">
                     <h2 className="text-lg font-medium text-gray-800 mb-4">Journey Management</h2>
                     <button
                         onClick={() => setActiveSection('journey')}
