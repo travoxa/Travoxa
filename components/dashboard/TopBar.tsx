@@ -118,7 +118,7 @@ const TopBar = ({ onNavigate, isAdmin = false }: TopBarProps) => {
                 <RiSearchLine className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input
                     type="text"
-                    placeholder="Search dashboard or pages..."
+                    placeholder="Search dashboard or explore..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => setIsFocused(true)}

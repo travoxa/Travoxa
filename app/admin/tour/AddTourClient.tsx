@@ -250,7 +250,7 @@ export default function AddTourClient() {
             {!showForm ? (
                 <>
                     {/* Create Tour Button - Top */}
-                    <div className="bg-white rounded-xl border border-gray-100 p-8 w-[40%]">
+                    <div className="bg-white rounded-xl border border-gray-200 p-8 w-[40%]">
                         <h2 className="text-lg font-medium text-gray-800 mb-4">Tour Management</h2>
                         <button
                             onClick={() => setShowForm(true)}
@@ -262,7 +262,7 @@ export default function AddTourClient() {
 
                     {/* Tour Listing - Below */}
                     {loadingTours ? (
-                        <div className="bg-white rounded-xl border border-gray-100 p-6">
+                        <div className="bg-white rounded-xl border border-gray-200 p-6">
                             <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Tours</h2>
 
                             {/* Loading Skeleton */}
@@ -280,7 +280,7 @@ export default function AddTourClient() {
                             </div>
                         </div>
                     ) : tours.length > 0 && (
-                        <div className="bg-white rounded-xl border border-gray-100 p-6">
+                        <div className="bg-white rounded-xl border border-gray-200 p-6">
                             <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Tours</h2>
 
                             {/* Column Headers */}
@@ -347,7 +347,7 @@ export default function AddTourClient() {
                     )}
                 </>
             ) : (
-                <div className="bg-white rounded-xl border border-gray-100 p-8 relative">
+                <div className="bg-white rounded-xl border border-gray-200 p-8 relative">
                     {/* Close Button */}
                     <button
                         onClick={() => setShowForm(false)}

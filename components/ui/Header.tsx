@@ -75,7 +75,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
     },
 
     {
-      label: "Pages",
+      label: "Explore",
       path: "#",
       dropdown: [
         { label: "About Us", path: "/about" },

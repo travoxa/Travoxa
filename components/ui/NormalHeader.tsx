@@ -75,7 +75,7 @@ export default function NormalHeader({ backgroundColor = "bg-white" }: { backgro
         },
 
         {
-            label: "Pages",
+            label: "Explore",
             path: "#",
             dropdown: [
                 { label: "About Us", path: "/about" },

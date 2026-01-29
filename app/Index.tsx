@@ -22,7 +22,7 @@ const Index = () => {
     })
   }, [])
   return (
-    <div className='relative bg-white font-sans' >
+    <div className='relative bg-white font-sans w-screen overflow-hidden' >
       <Header forceWhite={true} />
       <Hero />
       <AboutUsQuote />
