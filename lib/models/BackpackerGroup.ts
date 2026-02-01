@@ -83,6 +83,7 @@ export interface IBackpackerGroup extends Document {
   approvalCriteria: IApprovalCriteria;
   plan: IPlan;
   tripType: "trek" | "bike" | "cultural" | "wellness" | string;
+  tripSource?: "community" | "hosted";
   bikerRequirements?: IBikerRequirements;
   documentsRequired: IDocumentsRequired;
   creatorId: string;
@@ -93,6 +94,7 @@ export interface IBackpackerGroup extends Document {
   badges: IBadge[];
   comments: IGroupComment[];
   requests: IJoinRequest[];
+  verified: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -101,10 +103,10 @@ const groupMemberSchema = new Schema<IGroupMember>({
   id: { type: String, required: true },
   name: { type: String, required: true, trim: true },
   avatarColor: { type: String, required: true },
-  role: { 
-    type: String, 
-    required: true, 
-    enum: ["host", "co-host", "member"] 
+  role: {
+    type: String,
+    required: true,
+    enum: ["host", "co-host", "member"]
   },
   expertise: { type: String, required: true, trim: true },
 });
@@ -121,15 +123,15 @@ const hostProfileSchema = new Schema<IHostProfile>({
 
 const approvalCriteriaSchema = new Schema<IApprovalCriteria>({
   minAge: { type: Number, required: true, min: 18, max: 80 },
-  genderPreference: { 
-    type: String, 
-    required: true, 
-    enum: ["any", "male", "female"] 
+  genderPreference: {
+    type: String,
+    required: true,
+    enum: ["any", "male", "female"]
   },
-  trekkingExperience: { 
-    type: String, 
-    required: true, 
-    enum: ["beginner", "intermediate", "advanced"] 
+  trekkingExperience: {
+    type: String,
+    required: true,
+    enum: ["beginner", "intermediate", "advanced"]
   },
   mandatoryRules: [{ type: String, trim: true }],
 });
@@ -183,11 +185,11 @@ const badgeSchema = new Schema<IBadge>({
 });
 
 const backpackerGroupSchema = new Schema<IBackpackerGroup>({
-  id: { 
-    type: String, 
-    required: true, 
+  id: {
+    type: String,
+    required: true,
     unique: true,
-    index: true 
+    index: true
   },
   groupName: {
     type: String,
@@ -252,6 +254,11 @@ const backpackerGroupSchema = new Schema<IBackpackerGroup>({
     required: true,
     enum: ["trek", "bike", "cultural", "wellness", "open"],
   },
+  tripSource: {
+    type: String,
+    enum: ["community", "hosted"],
+    default: "community",
+  },
   bikerRequirements: {
     type: bikerRequirementsSchema,
   },
@@ -297,6 +304,11 @@ const backpackerGroupSchema = new Schema<IBackpackerGroup>({
   requests: {
     type: [joinRequestSchema],
     default: [],
+  },
+  verified: {
+    type: Boolean,
+    default: false,
+    index: true,
   },
   createdAt: {
     type: Date,

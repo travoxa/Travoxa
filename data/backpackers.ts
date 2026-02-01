@@ -58,6 +58,7 @@ export interface BackpackerGroup {
     estimatedCosts: Record<string, number>;
   };
   tripType: "trek" | "bike" | "cultural" | "wellness" | string;
+  tripSource?: "community" | "hosted";
   bikerRequirements?: {
     licenseRequired: boolean;
     ridingGearRequired: boolean;
@@ -179,7 +180,7 @@ export async function getGroupDetail(id: string): Promise<GroupDetail | null> {
     }
 
     const { group } = await response.json();
-    
+
     if (!group) {
       return null;
     }
@@ -249,6 +250,7 @@ export interface CreateGroupPayload {
   activities: string[];
   estimatedCosts: Record<string, number>;
   tripType: string;
+  tripSource?: "community" | "hosted";
   creatorId?: string;
 }
 
@@ -264,16 +266,16 @@ export async function createBackpackerGroup(payload: CreateGroupPayload) {
     .concat("-", Date.now().toString(36));
 
   const creatorId = payload.creatorId ?? "user_host";
-  
+
   // Fetch actual user name from database instead of using email
   let actualUserName = creatorId;
   let userDisplayName = creatorId;
-  
+
   try {
     // Import the getUser function dynamically to avoid circular dependencies
     const { getUser } = await import('../lib/mongodbUtils');
     const user = await getUser(creatorId);
-    
+
     if (user && user.name) {
       actualUserName = user.name;
       userDisplayName = user.name;
@@ -288,7 +290,7 @@ export async function createBackpackerGroup(payload: CreateGroupPayload) {
     actualUserName = creatorId;
     userDisplayName = creatorId;
   }
-  
+
   const hostMember: GroupMember = {
     id: creatorId,
     name: actualUserName,
@@ -355,7 +357,7 @@ export async function createBackpackerGroup(payload: CreateGroupPayload) {
   // Note: MongoDB operations are now handled server-side via API routes
   // The createBackpackerGroup function should only be called from server-side contexts
   // For client-side usage, use the API route at /api/groups instead
-  
+
   // Add to memory for backward compatibility (client-side usage)
   backpackerGroups.push(newGroup);
   return newGroup;
@@ -393,15 +395,15 @@ export async function handleJoinApproval(requestId: string, status: Exclude<Join
     const group = backpackerGroups.find((g) => g.id === request.groupId);
     if (group && group.currentMembers < group.maxMembers) {
       group.currentMembers += 1;
-      
+
       // Fetch actual user name from database instead of using userId
       let actualUserName = request.userId;
-      
+
       try {
         // Import the getUser function dynamically to avoid circular dependencies
         const { getUser } = await import('../lib/mongodbUtils');
         const user = await getUser(request.userId);
-        
+
         if (user && user.name) {
           actualUserName = user.name;
         } else {
@@ -413,7 +415,7 @@ export async function handleJoinApproval(requestId: string, status: Exclude<Join
         // Fallback to using the userId as name
         actualUserName = request.userId;
       }
-      
+
       group.members.push({
         id: request.userId,
         name: actualUserName,
