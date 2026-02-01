@@ -101,6 +101,13 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmi
                             />
                             <NavItem
                                 icon={<RiGroupLine size={20} />}
+                                label="Backpackers"
+                                id="Backpackers"
+                                activeTab={activeTab}
+                                onClick={setActiveTab}
+                            />
+                            <NavItem
+                                icon={<RiGroupLine size={20} />}
                                 label="Team"
                                 id="Team"
                                 activeTab={activeTab}

@@ -26,10 +26,10 @@ const formatDateRange = (start: string, end: string) => {
 export default function GroupCardList({ groups }: GroupCardListProps) {
   if (groups.length === 0) {
     return (
-      <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-white/70">
-        <p className="text-lg font-medium">No groups match these filters (yet)</p>
+      <div className="mt-8 rounded-[12px] border-2 border-dashed border-gray-300 bg-white p-10 text-center text-gray-500">
+        <p className="text-lg font-medium">There are no packages available</p>
         <p className="mt-2 text-sm">
-          Try a wider date range or another destination. New backpacker crews drop every Friday.
+          Check back later for new trips.
         </p>
       </div>
     );

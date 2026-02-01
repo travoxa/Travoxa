@@ -33,6 +33,12 @@ export interface IUser extends Document {
   interests: string[];
   authProvider: string;
   profileComplete?: boolean;
+  notifications: {
+    senderId: string;
+    message: string;
+    seen: boolean;
+    createdAt: Date;
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -176,6 +182,12 @@ const userSchema = new Schema<IUser>({
     type: Date,
     default: Date.now,
   },
+  notifications: [{
+    senderId: { type: String, required: true },
+    message: { type: String, required: true },
+    seen: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now }
+  }],
 });
 
 // Update the updatedAt field before saving
@@ -184,7 +196,7 @@ userSchema.pre("save", function () {
 });
 
 // Compound index for efficient email lookups
-userSchema.index({ email: 1 });
+// userSchema.index({ email: 1 }); // Removed to avoid duplicate index warning as email has unique: true
 
 // Export the model
 const User = mongoose.models.User || mongoose.model<IUser>("User", userSchema);

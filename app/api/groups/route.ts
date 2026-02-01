@@ -14,9 +14,9 @@ async function createHostProfile(creatorId: string): Promise<any> {
     if (!user) {
       throw new Error(`User not found for creatorId: ${creatorId}`);
     }
-    
+
     const actualUserName = user?.name || creatorId;
-    
+
     return {
       id: creatorId,
       name: actualUserName,
@@ -44,14 +44,20 @@ async function createHostProfile(creatorId: string): Promise<any> {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     // Connect to MongoDB
     await connectDB();
-    
+
+    const { searchParams } = new URL(request.url);
+    const showAll = searchParams.get("admin") === "true";
+
+    // Build query
+    const query = showAll ? {} : { verified: true };
+
     // Fetch groups from MongoDB
-    const mongoGroups = await BackpackerGroup.find().sort({ createdAt: -1 });
-    
+    const mongoGroups = await BackpackerGroup.find(query).sort({ createdAt: -1 });
+
     // Convert MongoDB documents to the expected format
     const groups = await Promise.all(mongoGroups.map(async (group: any) => ({
       id: group._id.toString(),
@@ -74,6 +80,7 @@ export async function GET() {
         estimatedCosts: Object.fromEntries(group.plan.estimatedCosts),
       },
       tripType: group.tripType,
+      tripSource: group.tripSource,
       documentsRequired: group.documentsRequired,
       creatorId: group.creatorId,
       coverImage: group.coverImage,
@@ -91,8 +98,9 @@ export async function GET() {
         likes: comment.likes,
         roleLabel: comment.roleLabel || "Explorer",
       })),
+      verified: group.verified,
     })));
-    
+
     return NextResponse.json({ groups });
   } catch (error) {
     console.error("Failed to fetch groups", error);
@@ -145,7 +153,7 @@ export async function POST(request: Request) {
     // Create host member and profile using the helper function
     const creatorId = payload.creatorId;
     const hostProfile = await createHostProfile(creatorId);
-    
+
     const hostMember = {
       id: creatorId,
       name: hostProfile.name,
@@ -186,6 +194,7 @@ export async function POST(request: Request) {
         estimatedCosts: new Map(Object.entries(payload.estimatedCosts ?? { stay: 10000 })),
       },
       tripType: payload.tripType ?? "open",
+      tripSource: payload.tripSource ?? "community",
       documentsRequired: {
         aadhaar: true,
         passport: false,
@@ -197,6 +206,7 @@ export async function POST(request: Request) {
       hostProfile,
       badges: defaultBadges,
       comments: [],
+      verified: payload.tripSource === "hosted" ? true : false,
     });
 
     // Save to MongoDB
@@ -230,6 +240,7 @@ export async function POST(request: Request) {
       members: savedGroup.members,
       hostProfile: savedGroup.hostProfile,
       badges: savedGroup.badges,
+      verified: savedGroup.verified,
     };
 
     return NextResponse.json({

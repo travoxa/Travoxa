@@ -29,9 +29,25 @@ const budgetMatchers = {
 
 export default function BackpackersHome({ groups = [], initialFilters: presetFilters, onOpenLoginPopup }: BackpackersHomeProps) {
   const [filters, setFilters] = useState<GroupFiltersState>(presetFilters ?? initialFilters);
+  const [tripSource, setTripSource] = useState<'community' | 'hosted'>('community');
 
   const filteredGroups = useMemo(() => {
     return groups.filter((group) => {
+      // Filter by source: Prioritize the tripSource field if available.
+      // Fallback to creatorId based check for older data.
+      let isHosted = false;
+
+      if (group.tripSource) {
+        isHosted = group.tripSource === 'hosted';
+      } else {
+        // Legacy fallback
+        isHosted = group.creatorId.toLowerCase().includes('admin') ||
+          group.hostProfile?.verificationLevel === 'Official Host';
+      }
+
+      if (tripSource === 'hosted' && !isHosted) return false;
+      if (tripSource === 'community' && isHosted) return false;
+
       const matchesSearch = `${group.groupName} ${group.destination} ${group.creatorId}`
         .toLowerCase()
         .includes(filters.searchTerm.toLowerCase());
@@ -48,13 +64,16 @@ export default function BackpackersHome({ groups = [], initialFilters: presetFil
 
       return matchesSearch && matchesTripType && matchesBudget && matchesMonth;
     });
-  }, [filters, groups]);
-
-  
+  }, [filters, groups, tripSource]);
 
   return (
     <div className="space-y-8 Mont">
-      <GroupFilters filters={filters} onChange={setFilters} />
+      <GroupFilters
+        filters={filters}
+        onChange={setFilters}
+        tripSource={tripSource}
+        onChangeTripSource={setTripSource}
+      />
 
       <div className="flex flex-col gap-4 bg-green-500 rounded-[12px] border border-white/10  p-6 text-white backdrop-blur lg:flex-row lg:items-center lg:justify-between">
         <div>
@@ -62,7 +81,7 @@ export default function BackpackersHome({ groups = [], initialFilters: presetFil
           <h2 className="text-2xl font-semibold">Got an itinerary brewing?</h2>
           <p className="text-sm text-white/70">Use our guided form to open applications for your backpacker crew.</p>
         </div>
-        <CreateGroupButton onOpenLoginPopup={onOpenLoginPopup || (() => {})} />
+        <CreateGroupButton onOpenLoginPopup={onOpenLoginPopup || (() => { })} />
       </div>
 
       <GroupCardList groups={filteredGroups} />

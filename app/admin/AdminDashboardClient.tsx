@@ -7,10 +7,12 @@ import { useRouter } from 'next/navigation'
 
 // Admin-specific components
 // import AddLocationClient from '@/app/admin/add-locations/AddLocationClient'
+
 import AddTourClient from '@/app/admin/tour/AddTourClient'
 import AddSightseeingClient from '@/app/admin/sightseeing/AddSightseeingClient'
 import AddRentalsClient from '@/app/admin/rentals/AddRentalsClient'
 import TeamManagementClient from '@/app/admin/team/TeamManagementClient'
+import AddHostedBackpackerClient from '@/app/admin/backpackers/AddHostedBackpackerClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -89,6 +91,14 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                     </div>
                 )
 
+            case 'Backpackers':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Backpackers</h1>
+                        <AddHostedBackpackerClient />
+                    </div>
+                )
+
             case 'Team':
                 return (
                     <div className="space-y-6">
@@ -138,3 +148,4 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
 }
 
 export default AdminDashboardClient
+
