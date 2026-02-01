@@ -8,7 +8,6 @@ import {
     RiShieldCheckLine,
     RiFileListLine,
     RiBarChartLine,
-    RiNotification3Line,
     RiLogoutBoxLine,
     RiCloseLine,
     RiHomeLine,
@@ -158,13 +157,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmi
                                 activeTab={activeTab}
                                 onClick={setActiveTab}
                             />
-                            <NavItem
-                                icon={<RiNotification3Line size={20} />}
-                                label="Notifications"
-                                id="Notification"
-                                activeTab={activeTab}
-                                onClick={setActiveTab}
-                            />
+
                             <button
                                 onClick={() => setShowLogoutPopup(true)}
                                 className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group text-red-500 border border-transparent hover:bg-red-50 hover:border-red-200 hover:text-red-600"

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '@/components/dashboard/Sidebar';
 import TopBar from '@/components/dashboard/TopBar';
 import Image from 'next/image';
@@ -26,12 +26,16 @@ interface DashboardClientProps {
         email?: string | null;
         image?: string | null;
         id?: string;
+        notifications?: any[];
     };
+    createdGroups?: any[];
 }
 
-const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
+const DashboardClient: React.FC<DashboardClientProps> = ({ user, createdGroups = [] }) => {
     const [activeTab, setActiveTab] = useState('UserProfileCard');
     const [showMobileNotifications, setShowMobileNotifications] = useState(false);
+    // Local state for notifications to handle optimistic updates
+    const [notifications, setNotifications] = useState(user.notifications || []);
 
 
     const handleSignOut = async () => {
@@ -47,6 +51,19 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
         }
     };
 
+    const handleMarkAllSeen = async () => {
+        // Optimistic update
+        const updatedNotifications = notifications.map(n => ({ ...n, seen: true }));
+        setNotifications(updatedNotifications);
+
+        try {
+            await fetch('/api/users/notifications/mark-seen', { method: 'POST' });
+        } catch (error) {
+            console.error("Failed to mark notifications as seen", error);
+            // Revert if needed, but usually fine to leave as read in UI
+        }
+    };
+
     const tabTitles: { [key: string]: string } = {
         'UserProfileCard': 'Profile',
         'Trips': 'Trips',
@@ -54,7 +71,7 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
         'SafetyCard': 'Safety',
         'ActivityFeedCard': 'Activity',
         'InsightsCard': 'Insights',
-        'Notification': 'Notifications'
+        // 'Notification': 'Notifications' // Removed
     };
 
     const renderContent = () => {
@@ -63,7 +80,7 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
             case 'UserProfileCard':
                 return <UserProfileCard />;
             case 'Trips':
-                return <TripsCard />;
+                return <TripsCard createdGroups={createdGroups} />;
             case 'PreferencesCard':
                 return <PreferencesCard />;
             case 'SafetyCard':
@@ -72,8 +89,8 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
                 return <ActivityFeedCard />;
             case 'InsightsCard':
                 return <InsightsCard />;
-            case 'Notification':
-                return <Notification />;
+            // case 'Notification':
+            //     return <Notification />;
             default:
                 return <UserProfileCard />;
         }
@@ -100,11 +117,14 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
                 </div>
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={() => setShowMobileNotifications(!showMobileNotifications)}
+                        onClick={() => {
+                            setShowMobileNotifications(!showMobileNotifications);
+                            if (!showMobileNotifications) handleMarkAllSeen();
+                        }}
                         className={`text-gray-600 hover:text-black transition-colors relative ${showMobileNotifications ? 'text-black' : ''}`}
                     >
                         <RiNotification3Line size={18} />
-                        {!showMobileNotifications && <span className="absolute top-0 right-0 w-1.5 h-1.5 bg-red-500 rounded-full border border-white"></span>}
+                        {notifications.some(n => !n.seen) && <span className="absolute top-0 right-0 w-1.5 h-1.5 bg-red-500 rounded-full border border-white"></span>}
                     </button>
 
                     <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-50 border border-gray-50/50 md:border-gray-50">
@@ -123,7 +143,11 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
             <main className="flex-1 w-full md:ml-64 p-2.5 pt-16 md:p-6 lg:p-8 overflow-y-auto">
                 <div className="max-w-7xl space-y-6 md:space-y-8">
                     <div className="hidden md:block">
-                        <TopBar onNavigate={setActiveTab} />
+                        <TopBar
+                            onNavigate={setActiveTab}
+                            notifications={notifications}
+                            onMarkAllSeen={handleMarkAllSeen}
+                        />
                     </div>
 
                     {/* Dynamic Content Area */}
@@ -138,7 +162,7 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
 
                         {/* Mobile: Stacked Content */}
                         <div className="md:hidden space-y-2.5 pb-12">
-                            {showMobileNotifications && <Notification />}
+                            {showMobileNotifications && <Notification notifications={notifications} />}
 
                             <h2 className="text-lg font-bold text-gray-800 px-1 mt-4">Profile</h2>
                             <UserProfileCard />
@@ -147,7 +171,7 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user }) => {
                             <InsightsCard />
 
                             <h2 className="text-lg font-bold text-gray-800 px-1 mt-6">Trips</h2>
-                            <TripsCard />
+                            <TripsCard createdGroups={createdGroups} />
 
                             <h2 className="text-lg font-bold text-gray-800 px-1 mt-6">Preferences</h2>
                             <PreferencesCard />

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { RiSearchLine, RiArrowLeftLine, RiMapPinLine, RiUserLine, RiSettings4Line, RiShieldCheckLine, RiFileListLine, RiBarChartLine, RiNotification3Line, RiCompass3Line, RiHomeLine, RiRobotLine, RiLogoutBoxLine } from 'react-icons/ri';
+import Notification from '@/components/dashboard/Notification';
 
 interface SearchItem {
     id: string;
@@ -14,14 +15,18 @@ interface SearchItem {
 interface TopBarProps {
     onNavigate?: (tab: string) => void;
     isAdmin?: boolean;
+    notifications?: any[];
+    onMarkAllSeen?: () => Promise<void>;
 }
 
-const TopBar = ({ onNavigate, isAdmin = false }: TopBarProps) => {
+const TopBar = ({ onNavigate, isAdmin = false, notifications = [], onMarkAllSeen }: TopBarProps) => {
     const router = useRouter();
     const [query, setQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [suggestions, setSuggestions] = useState<SearchItem[]>([]);
+    const [showNotifications, setShowNotifications] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const notificationRef = useRef<HTMLDivElement>(null);
 
     const searchItems: SearchItem[] = [
         // Dashboard Tabs
@@ -31,7 +36,7 @@ const TopBar = ({ onNavigate, isAdmin = false }: TopBarProps) => {
         { id: 'safety', label: 'Safety Settings', type: 'tab', icon: <RiShieldCheckLine />, tabId: 'SafetyCard' },
         { id: 'activity', label: 'Activity Feed', type: 'tab', icon: <RiFileListLine />, tabId: 'ActivityFeedCard' },
         { id: 'insights', label: 'Travel Insights', type: 'tab', icon: <RiBarChartLine />, tabId: 'InsightsCard' },
-        { id: 'notifications', label: 'Notifications', type: 'tab', icon: <RiNotification3Line />, tabId: 'Notification' },
+        // { id: 'notifications', label: 'Notifications', type: 'tab', icon: <RiNotification3Line />, tabId: 'Notification' },
 
         // Detailed Profile Items
         { id: 'profile-name', label: 'Name (Profile)', type: 'tab', icon: <RiUserLine />, tabId: 'UserProfileCard' },
@@ -94,12 +99,26 @@ const TopBar = ({ onNavigate, isAdmin = false }: TopBarProps) => {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
                 setIsFocused(false);
             }
+            if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+                // Don't close immediately if clicking the bell itself, but bell click toggles so this is fine if we check target
+                // Actually easier to just not have a click outside for now or handle it carefully. 
+                // Standard logic:
+            }
         };
+
+        const handleNotificationClickOutside = (event: MouseEvent) => {
+            if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+                setShowNotifications(false);
+            }
+        };
+
         document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('mousedown', handleNotificationClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('mousedown', handleNotificationClickOutside);
         };
-    }, [wrapperRef]);
+    }, [wrapperRef, notificationRef]);
 
     const handleSelect = (item: SearchItem) => {
         if (item.type === 'tab' && item.tabId && onNavigate) {
@@ -111,8 +130,17 @@ const TopBar = ({ onNavigate, isAdmin = false }: TopBarProps) => {
         setIsFocused(false);
     };
 
+    const toggleNotifications = () => {
+        if (!showNotifications && onMarkAllSeen) {
+            onMarkAllSeen();
+        }
+        setShowNotifications(!showNotifications);
+    };
+
+    const hasUnread = notifications.some(n => !n.seen);
+
     return (
-        <div className="flex items-center justify-between mb-11 p-1 h-[50px] -mt-5">
+        <div className="flex items-center justify-between mb-11 p-1 h-[50px] ">
             {/* Search - Capsule border, aligned with content */}
             <div className="relative w-96" ref={wrapperRef}>
                 <RiSearchLine className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -127,7 +155,7 @@ const TopBar = ({ onNavigate, isAdmin = false }: TopBarProps) => {
 
                 {/* Suggestions Dropdown */}
                 {isFocused && query.trim() !== '' && suggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-gray-100 overflow-hidden z-50 py-2">
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-gray-100 overflow-hidden z-50 py-2 shadow-sm">
                         {suggestions.map((item) => (
                             <button
                                 key={item.id}
@@ -151,7 +179,30 @@ const TopBar = ({ onNavigate, isAdmin = false }: TopBarProps) => {
             </div>
 
             {/* Back Button or Logout Button - Capsule design */}
-            <div>
+            <div className="flex items-center gap-3">
+
+                {/* Notification Bell */}
+                {!isAdmin && (
+                    <div className="relative" ref={notificationRef}>
+                        <button
+                            onClick={toggleNotifications}
+                            className={`w-11 h-11 flex items-center justify-center rounded-full border transition-all ${showNotifications ? 'bg-gray-100 border-gray-300 text-black' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-black'}`}
+                        >
+                            <RiNotification3Line size={20} />
+                            {hasUnread && (
+                                <span className="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                            )}
+                        </button>
+
+                        {/* Notifications Dropdown */}
+                        {showNotifications && (
+                            <div className="absolute top-full right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden z-50">
+                                <Notification notifications={notifications} isInDropdown={true} />
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {isAdmin ? (
                     <button
                         onClick={() => window.location.href = '/api/admin/logout'}
