@@ -10,6 +10,7 @@ interface JoinRequestButtonProps {
 export default function JoinRequestButton({ groupId }: JoinRequestButtonProps) {
   const [note, setNote] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
   const { data: session, status: sessionStatus } = useSession();
 
   const submitRequest = async (event: FormEvent<HTMLFormElement>) => {
@@ -18,8 +19,9 @@ export default function JoinRequestButton({ groupId }: JoinRequestButtonProps) {
       signIn();
       return;
     }
-    
+
     setStatus('loading');
+    setErrorMessage('');
 
     try {
       const response = await fetch(`/api/backpackers/group/${groupId}/join`, {
@@ -36,8 +38,9 @@ export default function JoinRequestButton({ groupId }: JoinRequestButtonProps) {
       }
 
       setStatus('success');
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      setErrorMessage(error.message || 'Something glitched. Try again.');
       setStatus('error');
     }
   };
@@ -65,7 +68,7 @@ export default function JoinRequestButton({ groupId }: JoinRequestButtonProps) {
           <div className="mb-4 text-sm text-gray-600">
             Signed in as <span className="font-medium">{session.user?.name || session.user?.email}</span>
           </div>
-          
+
           <div className="md:col-span-2">
             <label className="text-sm text-gray-600">Why should the crew pick you?</label>
             <textarea
@@ -88,7 +91,7 @@ export default function JoinRequestButton({ groupId }: JoinRequestButtonProps) {
         )}
         {status === 'error' && (
           <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-            Something glitched. Try again.
+            {errorMessage || 'Something glitched. Try again.'}
           </p>
         )}
 

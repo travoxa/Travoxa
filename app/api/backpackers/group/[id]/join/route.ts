@@ -13,7 +13,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    
+
     // Validate ObjectId format
     if (!id || id.length !== 24) {
       return NextResponse.json(
@@ -44,6 +44,23 @@ export async function POST(
     await connectDB();
     console.log('✅ MongoDB connected');
 
+    // Resolve the correct User ID (MongoDB _id) to ensure consistency
+    let mongoUserId = user.id;
+    let mongoUserName = user.name;
+
+    try {
+      // Import dynamically to avoid circular deps if any
+      const { getUser } = await import("@/lib/mongodbUtils");
+      const dbUser = await getUser(user.email);
+      if (dbUser) {
+        mongoUserId = dbUser._id.toString();
+        mongoUserName = dbUser.name;
+        console.log('✅ Resolved MongoDB User ID:', mongoUserId);
+      }
+    } catch (e) {
+      console.warn('⚠️ Could not resolve MongoDB user, using token ID:', e);
+    }
+
     // Fetch the group
     const group = await BackpackerGroup.findById(id);
     if (!group) {
@@ -54,12 +71,9 @@ export async function POST(
       );
     }
 
-    console.log('✅ Group found:', { groupId: group._id, currentMembers: group.currentMembers, maxMembers: group.maxMembers });
-
     // Check if user is already a member
-    const isAlreadyMember = group.members.some((member: any) => member.id === user.id);
+    const isAlreadyMember = group.members.some((member: any) => member.id === mongoUserId);
     if (isAlreadyMember) {
-      console.log('⚠️ User already member:', user.id);
       return NextResponse.json(
         { error: "You are already a member of this group" },
         { status: 400 }
@@ -68,10 +82,9 @@ export async function POST(
 
     // Check if user already has a pending request
     const existingRequest = group.requests?.find(
-      (request: any) => request.userId === user.id && request.status === "pending"
+      (request: any) => request.userId === mongoUserId && request.status === "pending"
     );
     if (existingRequest) {
-      console.log('⚠️ Existing pending request:', existingRequest.id);
       return NextResponse.json(
         { error: "You have already requested to join this group" },
         { status: 400 }
@@ -80,7 +93,6 @@ export async function POST(
 
     // Check if group is full
     if (group.currentMembers >= group.maxMembers) {
-      console.log('⚠️ Group is full:', { current: group.currentMembers, max: group.maxMembers });
       return NextResponse.json(
         { error: "Group is full" },
         { status: 400 }
@@ -90,13 +102,11 @@ export async function POST(
     // Create new join request
     const newRequest = {
       id: `req_${Date.now().toString(36)}`,
-      userId: user.id,
+      userId: mongoUserId,
       status: "pending" as const,
       createdAt: new Date(),
       note: note || undefined,
     };
-
-    console.log('📝 Creating new request:', newRequest);
 
     // Use MongoDB's $push operator to add the request
     const updatedGroup = await BackpackerGroup.findByIdAndUpdate(
@@ -106,18 +116,11 @@ export async function POST(
     );
 
     if (!updatedGroup) {
-      console.error('❌ Failed to update group after adding join request:', id);
       return NextResponse.json(
         { error: "Failed to save join request to database" },
         { status: 500 }
       );
     }
-
-    console.log('✅ Join request saved successfully:', {
-      requestId: newRequest.id,
-      groupId: updatedGroup._id,
-      totalRequests: updatedGroup.requests?.length || 0
-    });
 
     return NextResponse.json({
       message: "Join request submitted successfully",
@@ -149,7 +152,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    
+
     // Validate ObjectId format
     if (!id || id.length !== 24) {
       return NextResponse.json(
@@ -170,6 +173,18 @@ export async function GET(
     // Connect to MongoDB
     await connectDB();
 
+    // Resolve MongoDB User ID for permission check
+    let mongoUserId = user.id;
+    try {
+      const { getUser } = await import("@/lib/mongodbUtils");
+      const dbUser = await getUser(user.email);
+      if (dbUser) {
+        mongoUserId = dbUser._id.toString();
+      }
+    } catch (e) {
+      console.warn('⚠️ Could not resolve MongoDB user in GET requests:', e);
+    }
+
     // Fetch the group
     const group = await BackpackerGroup.findById(id);
     if (!group) {
@@ -180,10 +195,11 @@ export async function GET(
     }
 
     // Check if user is the host or co-host
+    // We check against BOTH the token ID and the resolved Mongo ID to be safe
     const isHost = group.members.some(
-      (member: any) => member.id === user.id && (member.role === "host" || member.role === "co-host")
+      (member: any) => (member.id === user.id || member.id === mongoUserId) && (member.role === "host" || member.role === "co-host")
     );
-    
+
     if (!isHost) {
       return NextResponse.json(
         { error: "Access denied. Only hosts can view join requests" },

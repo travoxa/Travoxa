@@ -1,4 +1,8 @@
 import { notFound } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { connectDB } from "@/lib/mongodb";
+import User from "@/lib/models/User";
 
 import CommentSection from "@/components/backpackers/detail/CommentSection";
 import GroupHeroBanner from "@/components/backpackers/detail/GroupHeroBanner";
@@ -8,6 +12,7 @@ import SafetyAndRulesCard from "@/components/backpackers/detail/SafetyAndRulesCa
 import TripLogisticsGrid from "@/components/backpackers/detail/TripLogisticsGrid";
 import JoinRequestButton from "@/components/backpackers/JoinRequestButton";
 import MemberList from "@/components/backpackers/MemberList";
+import InboundRequestsList from "@/components/backpackers/detail/InboundRequestsList";
 import { getGroupDetail } from "@/data/backpackers";
 import Header from "@/components/ui/Header";
 import Footor from "@/components/ui/Footor";
@@ -18,14 +23,36 @@ interface BackpackerGroupDetailPageProps {
 
 export default async function BackpackerGroupDetailPage({ params }: BackpackerGroupDetailPageProps) {
   const { id } = await params;
-  
-  
+
+
   const group = await getGroupDetail(id);
-  
-  
+
+
   if (!group) {
-    
+
     notFound();
+  }
+
+  const session = await getServerSession(authOptions);
+  let isHost = false;
+
+  if (session?.user?.email && group) {
+    try {
+      await connectDB();
+      const dbUser = await User.findOne({ email: session.user.email }).lean();
+      if (dbUser) {
+        const userId = dbUser._id.toString();
+        // Check if current user is the host (comparing ID, fallback email, and session token ID)
+        // This handles cases where creatorId might be the MongoDB ID, the Email, or the Auth Provider ID
+        isHost = (
+          group.host.id === userId ||
+          group.host.id === dbUser.email ||
+          group.host.id === (session.user as any).id
+        );
+      }
+    } catch (error) {
+      console.error("Error checking host status:", error);
+    }
   }
 
   const comments = group.comments || [];
@@ -66,10 +93,17 @@ export default async function BackpackerGroupDetailPage({ params }: BackpackerGr
 
             <div className="space-y-6">
               <HostProfilePanel host={group.host} badges={group.badges} />
+
+              {isHost && (
+                <InboundRequestsList groupId={group.id} />
+              )}
+
               <MemberList members={group.members} />
-              <div id="join-request">
-                <JoinRequestButton groupId={group.id} />
-              </div>
+              {!isHost && (
+                <div id="join-request">
+                  <JoinRequestButton groupId={group.id} />
+                </div>
+              )}
             </div>
           </div>
         </div>
