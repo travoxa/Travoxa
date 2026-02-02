@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, SetStateAction } from 'react';
-import { RiDeleteBinLine, RiAddLine, RiMoreLine, RiCloseLine, RiEditLine } from 'react-icons/ri';
+import { RiDeleteBinLine, RiAddLine, RiMoreLine, RiCloseLine, RiEditLine, RiCheckLine } from 'react-icons/ri';
 import { CldUploadWidget } from 'next-cloudinary';
 
 const INCLUSION_OPTIONS = [
@@ -16,6 +16,26 @@ const INCLUSION_OPTIONS = [
     "Cruise tickets"
 ];
 
+const HIGHLIGHT_OPTIONS = [
+    "Meals",
+    "Hotel",
+    "Sightseeing",
+    "Transport",
+    "Bonfire",
+    "Trek",
+    "Adventure",
+    "Nature",
+    "Culture"
+];
+
+const DEFAULT_CANCELLATION_POLICY = [
+    "Cancel up to 30 days before trip start date and get full refund.",
+    "Cancel between 15-30 days before trip and get 50% refund.",
+    "Cancel less than 15 days before trip - no refund.",
+    "In case of unforeseen weather conditions or government restrictions, certain activities may be cancelled and in such cases the operator will try his best to provide an alternate feasible activity.",
+    "For any refunds, please contact the support team."
+];
+
 export default function AddTourClient() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState('');
@@ -26,19 +46,77 @@ export default function AddTourClient() {
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [loadingTours, setLoadingTours] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'tours' | 'requests'>('tours');
+    const [requests, setRequests] = useState<any[]>([]);
+    const [loadingRequests, setLoadingRequests] = useState(false);
 
-    const [formData, setFormData] = useState({
+    const EMPTY_FORM_DATA = {
         title: '',
         location: '',
         price: '',
-        duration: '',
-        availabilityDate: '',
+        duration: '', // Kept for backend compatibility, calculated from days/nights
+        durationDays: '',
+        durationNights: '',
+        availabilityDate: '', // Kept for backend compatibility
+        availabilityStart: '',
+        availabilityEnd: '',
+        minPeople: '',
         maxPeople: '',
         overview: '',
         inclusions: [] as string[],
-        itinerary: [] as { day: number; title: string; description: string }[],
-        images: [] as string[]
-    });
+        itinerary: [] as { day: number; title: string; description: string; stay: string; activity: string; meal: string; transfer: string }[],
+        images: [] as string[],
+        // New Fields
+        pickupLocation: '',
+        pickupMapLink: '',
+        dropLocation: '',
+        dropMapLink: '',
+        locationMapLink: '',
+        partners: [] as { name: string; isVerified: boolean }[],
+        highlights: [] as string[],
+        cancellationPolicy: DEFAULT_CANCELLATION_POLICY,
+        brochureUrl: '',
+        totalSlots: '',
+        bookingAmount: '',
+        earlyBirdDiscount: ''
+    };
+
+    const isDev = process.env.NODE_ENV === 'development';
+
+    const DUMMY_FORM_DATA = {
+        title: 'Test Tour Adventure',
+        location: 'Test Location, Earth',
+        price: '5000',
+        duration: '',
+        durationDays: '5',
+        durationNights: '4',
+        availabilityDate: '',
+        availabilityStart: new Date().toISOString().split('T')[0],
+        availabilityEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        minPeople: '2',
+        maxPeople: '10',
+        overview: 'This is a test overview for the tour. It contains dummy data for development purposes.',
+        inclusions: ["Daily breakfast", "Airport transfers"],
+        itinerary: [
+            { day: 1, title: 'Arrival', description: 'Arrive at the location.', stay: 'Hotel Test', activity: 'Rest', meal: 'Dinner', transfer: 'Airport Pickup' },
+            { day: 2, title: 'Exploration', description: ' explore the city.', stay: 'Hotel Test', activity: 'City Tour', meal: 'Breakfast, Lunch', transfer: 'Bus' }
+        ],
+        images: ['https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg'],
+        pickupLocation: 'Test Airport',
+        pickupMapLink: 'https://maps.google.com',
+        dropLocation: 'Test City Center',
+        dropMapLink: 'https://maps.google.com',
+        locationMapLink: 'https://maps.google.com',
+        partners: [{ name: 'Test Partner', isVerified: true }],
+        highlights: ["Adventure", "Nature"],
+        cancellationPolicy: DEFAULT_CANCELLATION_POLICY,
+        brochureUrl: 'https://example.com/brochure.pdf',
+        totalSlots: '20',
+        bookingAmount: '1000',
+        earlyBirdDiscount: '10'
+    };
+
+    const [formData, setFormData] = useState(isDev ? DUMMY_FORM_DATA : EMPTY_FORM_DATA);
 
     // Fetch tours
     const fetchTours = async () => {
@@ -56,9 +134,49 @@ export default function AddTourClient() {
         }
     };
 
+    const fetchRequests = async () => {
+        setLoadingRequests(true);
+        try {
+            const res = await fetch('/api/tours/request');
+            const data = await res.json();
+            if (data.success) {
+                setRequests(data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch requests:', error);
+        } finally {
+            setLoadingRequests(false);
+        }
+    };
+
     useEffect(() => {
         fetchTours();
+        fetchRequests();
     }, []);
+
+    const handleRequestAction = async (requestId: string, status: 'approved' | 'rejected') => {
+        try {
+            const res = await fetch('/api/tours/request', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ requestId, status })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                // Update local state
+                setRequests(prev => prev.map(req =>
+                    req._id === requestId ? { ...req, status } : req
+                ));
+                alert(`Request ${status} successfully`);
+            } else {
+                alert(data.error || 'Failed to update status');
+            }
+        } catch (error) {
+            console.error('Failed to update request:', error);
+            alert('An error occurred');
+        }
+    };
 
     // Delete tour
     const handleDelete = async (id: string) => {
@@ -106,7 +224,7 @@ export default function AddTourClient() {
             ...prev,
             itinerary: [
                 ...prev.itinerary,
-                { day: prev.itinerary.length + 1, title: '', description: '' }
+                { day: prev.itinerary.length + 1, title: '', description: '', stay: '', activity: '', meal: '', transfer: '' }
             ]
         }));
     };
@@ -122,6 +240,26 @@ export default function AddTourClient() {
         updated.splice(index, 1);
         const reindexed = updated.map((item, idx) => ({ ...item, day: idx + 1 }));
         setFormData(prev => ({ ...prev, itinerary: reindexed }));
+    };
+
+    // Partners Helper
+    const addPartner = () => {
+        setFormData(prev => ({
+            ...prev,
+            partners: [...prev.partners, { name: '', isVerified: false }]
+        }));
+    };
+
+    const updatePartner = (index: number, field: string, value: any) => {
+        const updated = [...formData.partners];
+        updated[index] = { ...updated[index], [field]: value };
+        setFormData(prev => ({ ...prev, partners: updated }));
+    };
+
+    const removePartner = (index: number) => {
+        const updated = [...formData.partners];
+        updated.splice(index, 1);
+        setFormData(prev => ({ ...prev, partners: updated }));
     };
 
     // Image Helper - Cloudinary will handle adding
@@ -143,6 +281,37 @@ export default function AddTourClient() {
         });
     };
 
+    const toggleHighlight = (item: string) => {
+        setFormData(prev => {
+            if (prev.highlights.includes(item)) {
+                return { ...prev, highlights: prev.highlights.filter(i => i !== item) };
+            } else {
+                return { ...prev, highlights: [...prev.highlights, item] };
+            }
+        });
+    };
+
+    // Cancellation Policy Helpers
+    const addCancellationPolicy = () => {
+        setFormData(prev => ({
+            ...prev,
+            cancellationPolicy: [...prev.cancellationPolicy, '']
+        }));
+    };
+
+    const updateCancellationPolicy = (index: number, value: string) => {
+        const updated = [...formData.cancellationPolicy];
+        updated[index] = value;
+        setFormData(prev => ({ ...prev, cancellationPolicy: updated }));
+    };
+
+    const removeCancellationPolicy = (index: number) => {
+        const updated = [...formData.cancellationPolicy];
+        updated.splice(index, 1);
+        setFormData(prev => ({ ...prev, cancellationPolicy: updated }));
+    };
+
+
     // Handle edit
     const handleEdit = (tour: any) => {
         setEditingId(tour.id);
@@ -151,13 +320,61 @@ export default function AddTourClient() {
             location: tour.location,
             price: tour.price.toString(),
             duration: tour.duration,
+            durationDays: '',
+            durationNights: '',
             availabilityDate: tour.availabilityDate || '',
+            availabilityStart: '',
+            availabilityEnd: '',
+            minPeople: tour.minPeople || '',
             maxPeople: tour.maxPeople || '',
             overview: tour.overview || '',
             inclusions: tour.inclusions || [],
             itinerary: tour.itinerary || [],
-            images: tour.images || []
+            images: tour.images || [],
+            // Populating new fields
+            pickupLocation: tour.pickupLocation || '',
+            pickupMapLink: tour.pickupMapLink || '',
+            dropLocation: tour.dropLocation || '',
+            dropMapLink: tour.dropMapLink || '',
+            locationMapLink: tour.locationMapLink || '',
+            partners: tour.partners || [],
+            highlights: tour.highlights || [],
+            cancellationPolicy: tour.cancellationPolicy && tour.cancellationPolicy.length > 0 ? tour.cancellationPolicy : DEFAULT_CANCELLATION_POLICY,
+            brochureUrl: tour.brochureUrl || '',
+            totalSlots: tour.totalSlots ? tour.totalSlots.toString() : '',
+            bookingAmount: tour.bookingAmount ? tour.bookingAmount.toString() : '',
+            earlyBirdDiscount: tour.earlyBirdDiscount ? tour.earlyBirdDiscount.toString() : ''
         });
+
+        // Parse duration if exists
+        if (tour.duration) {
+            const daysMatch = tour.duration.match(/(\d+)\s*Days?/i);
+            const nightsMatch = tour.duration.match(/(\d+)\s*Nights?/i);
+            setFormData(prev => ({
+                ...prev,
+                durationDays: daysMatch ? daysMatch[1] : '',
+                durationNights: nightsMatch ? nightsMatch[1] : ''
+            }));
+        }
+
+        // Parse availability date if exists "YYYY-MM-DD to YYYY-MM-DD"
+        if (tour.availabilityDate && tour.availabilityDate.includes(' to ')) {
+            const [start, end] = tour.availabilityDate.split(' to ');
+            setFormData(prev => ({
+                ...prev,
+                availabilityStart: start ? start.trim() : '',
+                availabilityEnd: end ? end.trim() : ''
+            }));
+        }
+
+        // Fix: Map backend 'image' field to frontend 'images'
+        if (tour.image && Array.isArray(tour.image)) {
+            setFormData(prev => ({
+                ...prev,
+                images: tour.image
+            }));
+        }
+
         setShowForm(true);
         setOpenMenuId(null);
     };
@@ -173,14 +390,34 @@ export default function AddTourClient() {
             title: formData.title,
             location: formData.location,
             price: Number(formData.price),
-            duration: formData.duration,
-            availabilityDate: formData.availabilityDate,
-            maxPeople: formData.maxPeople,
+            duration: `${formData.durationDays} Days / ${formData.durationNights} Nights`,
+            availabilityDate: `${formData.availabilityStart} to ${formData.availabilityEnd}`,
+            minPeople: Number(formData.minPeople),
+            maxPeople: Number(formData.maxPeople),
             overview: formData.overview,
             inclusions: formData.inclusions,
             itinerary: formData.itinerary,
-            images: formData.images,
+            image: formData.images, // Fix: Changed from 'images' to 'image' to match Schema
+            // New Payload fields
+            pickupLocation: formData.pickupLocation,
+            pickupMapLink: formData.pickupMapLink,
+            dropLocation: formData.dropLocation,
+            dropMapLink: formData.dropMapLink,
+            locationMapLink: formData.locationMapLink,
+            partners: formData.partners,
+            highlights: formData.highlights,
+            cancellationPolicy: formData.cancellationPolicy.filter(p => p.trim() !== ''), // Filter clear empty ones
+            brochureUrl: formData.brochureUrl,
+            totalSlots: Number(formData.totalSlots) || 0,
+            bookingAmount: Number(formData.bookingAmount) || 0,
+            earlyBirdDiscount: Number(formData.earlyBirdDiscount) || 0,
         };
+
+        if (payload.minPeople > payload.maxPeople) {
+            setError('Minimum people cannot be greater than Maximum people');
+            setLoading(false);
+            return;
+        }
 
         console.log('[FORM] Sending payload to /api/tours:', payload);
 
@@ -205,18 +442,7 @@ export default function AddTourClient() {
             console.log(`[FORM] Tour ${editingId ? 'updated' : 'created'} successfully!`);
             setSuccess(`Tour ${editingId ? 'updated' : 'created'} successfully!`);
             // Reset form
-            setFormData({
-                title: '',
-                location: '',
-                price: '',
-                duration: '',
-                availabilityDate: '',
-                maxPeople: '',
-                overview: '',
-                inclusions: [],
-                itinerary: [],
-                images: []
-            });
+            setFormData(isDev ? DUMMY_FORM_DATA : EMPTY_FORM_DATA);
             setEditingId(null);
 
             // Refresh tour list
@@ -249,101 +475,166 @@ export default function AddTourClient() {
 
             {!showForm ? (
                 <>
-                    {/* Create Tour Button - Top */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-8 w-[40%]">
-                        <h2 className="text-lg font-medium text-gray-800 mb-4">Tour Management</h2>
-                        <button
-                            onClick={() => setShowForm(true)}
-                            className="px-6 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all"
-                        >
-                            Create New Tour
-                        </button>
+                    {/* Create Tour Button & Tabs - Top */}
+                    <div className="bg-white rounded-xl border border-gray-200 p-8 w-full mb-6">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-lg font-medium text-gray-800">Tour Management</h2>
+                            <div className="flex bg-gray-100 p-1 rounded-lg">
+                                <button
+                                    onClick={() => setActiveTab('tours')}
+                                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'tours' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                                >
+                                    All Tours
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('requests')}
+                                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'requests' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                                >
+                                    Enquiry Requests
+                                </button>
+                            </div>
+                        </div>
+
+                        {activeTab === 'tours' && (
+                            <button
+                                onClick={() => setShowForm(true)}
+                                className="px-6 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all"
+                            >
+                                Create New Tour
+                            </button>
+                        )}
                     </div>
 
-                    {/* Tour Listing - Below */}
-                    {loadingTours ? (
+                    {activeTab === 'requests' ? (
                         <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Tours</h2>
+                            <h2 className="text-lg font-medium text-gray-800 mb-6">Tour Enquiries</h2>
+                            {loadingRequests ? (
+                                <p className="text-gray-500">Loading requests...</p>
+                            ) : requests.length === 0 ? (
+                                <p className="text-gray-500">No requests found.</p>
+                            ) : (
+                                <div className="divide-y divide-gray-200">
+                                    {requests.map((req) => (
+                                        <div key={req._id} className="py-4 flex items-center justify-between">
+                                            <div>
+                                                <p className="font-medium text-gray-900">{req.title}</p>
+                                                <p className="text-sm text-gray-500">{req.userDetails?.name} • {req.members} Members • {req.date}</p>
+                                                <p className="text-xs text-gray-400 mt-1">{req.userDetails?.email} • {req.userDetails?.phone}</p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`px-2 py-1 rounded text-xs font-medium capitalize ${req.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                                    req.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                        'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                    {req.status}
+                                                </span>
 
-                            {/* Loading Skeleton */}
-                            <div className="space-y-3">
-                                {[1, 2, 3].map((i) => (
-                                    <div key={i} className="flex items-center justify-between py-3 animate-pulse">
-                                        <div className="flex-1 grid grid-cols-3 gap-4">
-                                            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                                                {req.status === 'pending' && (
+                                                    <div className="flex items-center gap-1 ml-2">
+                                                        <button
+                                                            onClick={() => handleRequestAction(req._id, 'approved')}
+                                                            className="p-1.5 bg-green-50 text-green-600 rounded hover:bg-green-100 transition-colors"
+                                                            title="Approve"
+                                                        >
+                                                            <RiCheckLine size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleRequestAction(req._id, 'rejected')}
+                                                            className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
+                                                            title="Reject"
+                                                        >
+                                                            <RiCloseLine size={16} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="w-10 h-4 bg-gray-200 rounded"></div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ) : tours.length > 0 && (
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Tours</h2>
-
-                            {/* Column Headers */}
-                            <div className="flex items-center justify-between pb-2 mb-2  border-gray-200">
-                                <div className="flex-1 grid grid-cols-3 gap-4">
-                                    <p className="text-xs font-semibold text-gray-600 uppercase">Tour Name</p>
-                                    <p className="text-xs font-semibold text-gray-600 uppercase">Price</p>
-                                    <p className="text-xs font-semibold text-gray-600 uppercase">Max People</p>
+                                    ))}
                                 </div>
-                                <div className="w-10"></div> {/* Spacer for menu button */}
-                            </div>
-
-                            {/* Tour Items */}
-                            <div className="divide-y divide-gray-200">
-                                {tours.map((tour) => (
-                                    <div
-                                        key={tour.id}
-                                        className="flex items-center justify-between py-1 hover:bg-gray-50 transition-colors"
-                                    >
-                                        <div className="flex-1 grid grid-cols-3 gap-4">
-                                            <p className="text-sm text-gray-900">{tour.title}</p>
-                                            <p className="text-sm text-gray-900">₹{tour.price}</p>
-                                            <p className="text-sm text-gray-900">{tour.maxPeople || 'N/A'}</p>
-                                        </div>
-
-                                        {/* 3-dot menu */}
-                                        <div className="relative">
-                                            <button
-                                                onClick={() => setOpenMenuId(openMenuId === tour.id ? null : tour.id)}
-                                                className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-                                            >
-                                                <RiMoreLine className="text-gray-600" size={20} />
-                                            </button>
-
-                                            {openMenuId === tour.id && (
-                                                <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                                    <button
-                                                        onClick={() => {
-                                                            setOpenMenuId(null);
-                                                            handleEdit(tour);
-                                                        }}
-                                                        className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center gap-2 text-sm"
-                                                    >
-                                                        <RiEditLine size={16} />
-                                                        Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setOpenMenuId(null);
-                                                            handleDelete(tour.id);
-                                                        }}
-                                                        className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2 text-sm"
-                                                    >
-                                                        <RiDeleteBinLine size={16} />
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            )}
                         </div>
+                    ) : (
+                        loadingTours ? (
+                            <div className="bg-white rounded-xl border border-gray-200 p-6">
+                                <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Tours</h2>
+
+                                {/* Loading Skeleton */}
+                                <div className="space-y-3">
+                                    {[1, 2, 3].map((i) => (
+                                        <div key={i} className="flex items-center justify-between py-3 animate-pulse">
+                                            <div className="flex-1 grid grid-cols-3 gap-4">
+                                                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                                                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                                                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                                            </div>
+                                            <div className="w-10 h-4 bg-gray-200 rounded"></div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : tours.length > 0 ? (
+                            <div className="bg-white rounded-xl border border-gray-200 p-6">
+                                <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Tours</h2>
+
+                                <div className="flex items-center justify-between pb-2 mb-2  border-gray-200">
+                                    <div className="flex-1 grid grid-cols-3 gap-4">
+                                        <p className="text-xs font-semibold text-gray-600 uppercase">Tour Name</p>
+                                        <p className="text-xs font-semibold text-gray-600 uppercase">Price</p>
+                                        <p className="text-xs font-semibold text-gray-600 uppercase">Group Size</p>
+                                    </div>
+                                    <div className="w-10"></div>
+                                </div>
+
+                                <div className="divide-y divide-gray-200">
+                                    {tours.map((tour) => (
+                                        <div
+                                            key={tour.id}
+                                            className="flex items-center justify-between py-1 hover:bg-gray-50 transition-colors"
+                                        >
+                                            <div className="flex-1 grid grid-cols-3 gap-4">
+                                                <p className="text-sm text-gray-900">{tour.title}</p>
+                                                <p className="text-sm text-gray-900">₹{tour.price}</p>
+                                                <p className="text-sm text-gray-900">{tour.minPeople && tour.maxPeople ? `${tour.minPeople} - ${tour.maxPeople}` : (tour.maxPeople || 'N/A')}</p>
+                                            </div>
+
+                                            <div className="relative">
+                                                <button
+                                                    onClick={() => setOpenMenuId(openMenuId === tour.id ? null : tour.id)}
+                                                    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                                                >
+                                                    <RiMoreLine className="text-gray-600" size={20} />
+                                                </button>
+
+                                                {openMenuId === tour.id && (
+                                                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                                                        <button
+                                                            onClick={() => {
+                                                                setOpenMenuId(null);
+                                                                handleEdit(tour);
+                                                            }}
+                                                            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center gap-2 text-sm"
+                                                        >
+                                                            <RiEditLine size={16} />
+                                                            Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                setOpenMenuId(null);
+                                                                handleDelete(tour.id);
+                                                            }}
+                                                            className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2 text-sm"
+                                                        >
+                                                            <RiDeleteBinLine size={16} />
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null
                     )}
                 </>
             ) : (
@@ -385,16 +676,28 @@ export default function AddTourClient() {
                                     placeholder="e.g. Majestic Maldives"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.location}
-                                    onChange={e => setFormData({ ...formData, location: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. Male, Maldives"
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.location}
+                                        onChange={e => setFormData({ ...formData, location: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="e.g. Male, Maldives"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Location Map Link (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={formData.locationMapLink}
+                                        onChange={e => setFormData({ ...formData, locationMapLink: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="Google Maps URL"
+                                    />
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
@@ -409,36 +712,202 @@ export default function AddTourClient() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.duration}
-                                    onChange={e => setFormData({ ...formData, duration: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. 5 Days / 4 Nights"
-                                />
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="flex items-center gap-2 border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-green-500 bg-white">
+                                        <input
+                                            type="number"
+                                            required
+                                            value={formData.durationDays}
+                                            onChange={e => setFormData({ ...formData, durationDays: e.target.value })}
+                                            className="w-full text-gray-900 placeholder:text-gray-400 outline-none min-w-0"
+                                            placeholder="5"
+                                        />
+                                        <span className="text-gray-400 text-sm whitespace-nowrap">Days</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-green-500 bg-white">
+                                        <input
+                                            type="number"
+                                            required
+                                            value={formData.durationNights}
+                                            onChange={e => setFormData({ ...formData, durationNights: e.target.value })}
+                                            className="w-full text-gray-900 placeholder:text-gray-400 outline-none min-w-0"
+                                            placeholder="4"
+                                        />
+                                        <span className="text-gray-400 text-sm whitespace-nowrap">Nights</span>
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Availability Date</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="flex flex-col">
+                                        <label className="text-xs text-gray-500 mb-1">Start Date</label>
+                                        <input
+                                            type="date"
+                                            required
+                                            value={formData.availabilityStart}
+                                            onChange={e => setFormData({ ...formData, availabilityStart: e.target.value })}
+                                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-gray-700"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <label className="text-xs text-gray-500 mb-1">End Date</label>
+                                        <input
+                                            type="date"
+                                            required
+                                            value={formData.availabilityEnd}
+                                            onChange={e => setFormData({ ...formData, availabilityEnd: e.target.value })}
+                                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-gray-700"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Min People</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        required
+                                        value={formData.minPeople}
+                                        onChange={e => setFormData({ ...formData, minPeople: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="e.g. 5"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Max People</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        required
+                                        value={formData.maxPeople}
+                                        onChange={e => setFormData({ ...formData, maxPeople: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="e.g. 20"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* New Fields Row 1 */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Pickup Location</label>
+                                    <input
+                                        type="text"
+                                        value={formData.pickupLocation}
+                                        onChange={e => setFormData({ ...formData, pickupLocation: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="e.g. Airport, Railway Station"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Pickup Map Link (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={formData.pickupMapLink}
+                                        onChange={e => setFormData({ ...formData, pickupMapLink: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="Google Maps URL"
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Drop Location</label>
+                                    <input
+                                        type="text"
+                                        value={formData.dropLocation}
+                                        onChange={e => setFormData({ ...formData, dropLocation: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="e.g. Airport, City Center"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Drop Map Link (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={formData.dropMapLink}
+                                        onChange={e => setFormData({ ...formData, dropMapLink: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="Google Maps URL"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* New Fields Row 2 */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Total Slots (Number)</label>
                                 <input
-                                    type="text"
-                                    required
-                                    value={formData.availabilityDate}
-                                    onChange={e => setFormData({ ...formData, availabilityDate: e.target.value })}
+                                    type="number"
+                                    value={formData.totalSlots}
+                                    onChange={e => setFormData({ ...formData, totalSlots: e.target.value })}
                                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. Flexible, Year-round, Summer 2024"
+                                    placeholder="e.g. 20"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Max People / Group Size</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Partial Payment / Booking Amount (₹)</label>
                                 <input
-                                    type="text"
-                                    required
-                                    value={formData.maxPeople}
-                                    onChange={e => setFormData({ ...formData, maxPeople: e.target.value })}
+                                    type="number"
+                                    value={formData.bookingAmount}
+                                    onChange={e => setFormData({ ...formData, bookingAmount: e.target.value })}
                                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. 1-2, 10, Flexible"
+                                    placeholder="e.g. 5000"
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Early Bird Discount (%)</label>
+                                <input
+                                    type="number"
+                                    value={formData.earlyBirdDiscount}
+                                    onChange={e => setFormData({ ...formData, earlyBirdDiscount: e.target.value })}
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    placeholder="e.g. 10"
+                                />
+                            </div>
+                            <div className="pt-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-sm font-medium text-gray-700">Tour Partners</label>
+                                    <button
+                                        type="button"
+                                        onClick={addPartner}
+                                        className="text-sm text-green-600 font-bold hover:text-green-700 flex items-center gap-1"
+                                    >
+                                        <RiAddLine /> Add Partner
+                                    </button>
+                                </div>
+                                <div className="space-y-3">
+                                    {formData.partners.map((partner, idx) => (
+                                        <div key={idx} className="flex flex-col gap-2 p-3 bg-gray-50 rounded border border-gray-100 relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => removePartner(idx)}
+                                                className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+                                            >
+                                                <RiDeleteBinLine />
+                                            </button>
+                                            <div className="grid grid-cols-1 gap-3">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Partner Name"
+                                                    value={partner.name}
+                                                    onChange={e => updatePartner(idx, 'name', e.target.value)}
+                                                    className="w-full px-3 py-2 border rounded text-sm outline-none focus:ring-1 focus:ring-green-500"
+                                                />
+                                            </div>
+                                            <label className="flex items-center gap-2 cursor-pointer mt-1">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={partner.isVerified}
+                                                    onChange={e => updatePartner(idx, 'isVerified', e.target.checked)}
+                                                    className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                                                />
+                                                <span className="text-sm text-gray-600 font-medium">Verified Partner Tag</span>
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
 
@@ -464,6 +933,24 @@ export default function AddTourClient() {
                                             type="checkbox"
                                             checked={formData.inclusions.includes(option)}
                                             onChange={() => toggleInclusion(option)}
+                                            className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                                        />
+                                        <span className="text-sm text-gray-600">{option}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Highlights (Icon Based) */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-3">Highlights (Icons will be shown)</label>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                {HIGHLIGHT_OPTIONS.map(option => (
+                                    <label key={option} className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.highlights.includes(option)}
+                                            onChange={() => toggleHighlight(option)}
                                             className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
                                         />
                                         <span className="text-sm text-gray-600">{option}</span>
@@ -514,10 +1001,22 @@ export default function AddTourClient() {
                             </div>
                         </div>
 
+                        {/* Brochure URL */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Brochure URL (PDF Link) - Optional</label>
+                            <input
+                                type="text"
+                                value={formData.brochureUrl}
+                                onChange={e => setFormData({ ...formData, brochureUrl: e.target.value })}
+                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                placeholder="https://..."
+                            />
+                        </div>
+
                         {/* Dynamic Itinerary */}
                         <div>
-                            <div className="flex items-center justify-between mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Itinerary</label>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Day-wise Itinerary</label>
                                 <button
                                     type="button"
                                     onClick={addItineraryDay}
@@ -547,13 +1046,77 @@ export default function AddTourClient() {
                                                 className="w-full px-3 py-2 border rounded bg-white focus:ring-1 focus:ring-green-500 outline-none"
                                             />
                                             <textarea
-                                                placeholder="Description"
+                                                placeholder="Description / Activities for the day..."
                                                 rows={2}
                                                 value={day.description}
                                                 onChange={e => updateItinerary(idx, 'description', e.target.value)}
                                                 className="w-full px-3 py-2 border rounded bg-white focus:ring-1 focus:ring-green-500 outline-none"
                                             />
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Stay (e.g. Hotel Paradise)"
+                                                    value={day.stay || ''}
+                                                    onChange={e => updateItinerary(idx, 'stay', e.target.value)}
+                                                    className="w-full px-3 py-2 border rounded bg-white focus:ring-1 focus:ring-green-500 outline-none text-sm"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Activity (e.g. Island Hopping)"
+                                                    value={day.activity || ''}
+                                                    onChange={e => updateItinerary(idx, 'activity', e.target.value)}
+                                                    className="w-full px-3 py-2 border rounded bg-white focus:ring-1 focus:ring-green-500 outline-none text-sm"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Meal (e.g. Breakfast & Dinner)"
+                                                    value={day.meal || ''}
+                                                    onChange={e => updateItinerary(idx, 'meal', e.target.value)}
+                                                    className="w-full px-3 py-2 border rounded bg-white focus:ring-1 focus:ring-green-500 outline-none text-sm"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Transfer (e.g. Speedboat)"
+                                                    value={day.transfer || ''}
+                                                    onChange={e => updateItinerary(idx, 'transfer', e.target.value)}
+                                                    className="w-full px-3 py-2 border rounded bg-white focus:ring-1 focus:ring-green-500 outline-none text-sm"
+                                                />
+                                            </div>
                                         </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Cancellation Policy */}
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <label className="block text-sm font-medium text-gray-700">Cancellation Policy</label>
+                                <button
+                                    type="button"
+                                    onClick={addCancellationPolicy}
+                                    className="text-sm text-green-600 font-bold hover:text-green-700 flex items-center gap-1"
+                                >
+                                    <RiAddLine /> Add Policy
+                                </button>
+                            </div>
+                            <div className="space-y-2">
+                                {formData.cancellationPolicy.map((policy, idx) => (
+                                    <div key={idx} className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={policy}
+                                            onChange={e => updateCancellationPolicy(idx, e.target.value)}
+                                            className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm"
+                                            placeholder="Policy detail..."
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeCancellationPolicy(idx)}
+                                            className="p-2 text-gray-400 hover:text-red-500"
+                                        >
+                                            <RiDeleteBinLine />
+                                        </button>
                                     </div>
                                 ))}
                             </div>
@@ -578,7 +1141,8 @@ export default function AddTourClient() {
 
                     </form>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }

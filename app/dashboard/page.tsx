@@ -6,6 +6,7 @@ import DashboardClient from '@/components/dashboard/DashboardClient';
 import { connectDB } from '@/lib/mongodb';
 import User from '@/lib/models/User';
 import BackpackerGroup from '@/lib/models/BackpackerGroup';
+import TourRequest from '@/models/TourRequest';
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -141,5 +142,18 @@ export default async function DashboardPage() {
     })) : []
   };
 
-  return <DashboardClient user={user} createdGroups={createdGroups} />;
+  // Fetch user's tour requests
+  const tourRequests = await TourRequest.find({ userId: userId }).sort({ createdAt: -1 }).lean();
+
+  const serializedRequests = tourRequests.map((req: any) => ({
+    id: req._id.toString(),
+    tourId: req.tourId.toString(),
+    title: req.title,
+    status: req.status,
+    members: req.members,
+    date: req.date,
+    createdAt: req.createdAt.toISOString()
+  }));
+
+  return <DashboardClient user={user} createdGroups={createdGroups} tourRequests={serializedRequests} />;
 }

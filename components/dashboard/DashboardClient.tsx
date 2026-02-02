@@ -29,9 +29,10 @@ interface DashboardClientProps {
         notifications?: any[];
     };
     createdGroups?: any[];
+    tourRequests?: any[];
 }
 
-const DashboardClient: React.FC<DashboardClientProps> = ({ user, createdGroups = [] }) => {
+const DashboardClient: React.FC<DashboardClientProps> = ({ user, createdGroups = [], tourRequests = [] }) => {
     const [activeTab, setActiveTab] = useState('UserProfileCard');
     const [showMobileNotifications, setShowMobileNotifications] = useState(false);
     // Local state for notifications to handle optimistic updates
@@ -80,7 +81,7 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user, createdGroups =
             case 'UserProfileCard':
                 return <UserProfileCard />;
             case 'Trips':
-                return <TripsCard createdGroups={createdGroups} />;
+                return <TripsCard createdGroups={createdGroups} tourRequests={tourRequests} />;
             case 'PreferencesCard':
                 return <PreferencesCard />;
             case 'SafetyCard':
