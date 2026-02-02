@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import Tour from '@/models/Tour';
+import TourRequest from '@/models/TourRequest';
+import User from '@/lib/models/User';
 
 // Helper to connect to DB
 const connectDB = async () => {
@@ -89,6 +91,35 @@ export async function DELETE(
         }
 
         console.log('[API/DELETE] Attempting to delete tour with id:', id);
+
+        // 1. Find all PENDING requests for this tour
+        const pendingRequests = await TourRequest.find({
+            tourId: id,
+            status: 'pending'
+        });
+
+        // 2. Reject them and notify users
+        const cancellationMessage = `Your tour request has been rejected because the tour package was cancelled/deleted by the admin.`;
+
+        for (const req of pendingRequests) {
+            // Update request status
+            await TourRequest.findByIdAndUpdate(req._id, {
+                status: 'rejected'
+            });
+
+            // Send notification to user
+            await User.findByIdAndUpdate(req.userId, {
+                $push: {
+                    notifications: {
+                        senderId: 'admin',
+                        message: cancellationMessage,
+                        seen: false,
+                        createdAt: new Date()
+                    }
+                }
+            });
+        }
+
         const result = await Tour.findByIdAndDelete(id);
 
         if (!result) {
@@ -100,7 +131,7 @@ export async function DELETE(
         }
 
         console.log('[API/DELETE] ✓ Tour deleted successfully:', id);
-        return NextResponse.json({ success: true, message: 'Tour deleted successfully' });
+        return NextResponse.json({ success: true, message: 'Tour deleted successfully. Users notified.' });
     } catch (error: any) {
         console.error('[API/DELETE] ✗ Error deleting tour:', error);
         return NextResponse.json({

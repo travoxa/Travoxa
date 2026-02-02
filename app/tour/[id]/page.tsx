@@ -100,7 +100,7 @@ export default async function TourDetailPage({ params }: PageProps) {
 
     return (
         <main className="min-h-screen bg-white">
-            <NormalHeader />
+            <NormalHeader logoHeight="h-[22px] lg:h-[28px]" />
 
 
             {/* Hero Section with Carousel */}
