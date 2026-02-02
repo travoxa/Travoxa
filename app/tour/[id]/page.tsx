@@ -3,8 +3,35 @@ import NormalHeader from "@/components/ui/NormalHeader";
 import Footer from "@/components/ui/Footor";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { HiCheck, HiX, HiCalendar } from "react-icons/hi";
+import { HiCheck, HiX, HiCalendar, HiLocationMarker, HiDownload, HiUserGroup, HiCurrencyRupee, HiChevronDown, HiChevronUp, HiBadgeCheck } from "react-icons/hi";
+import { MdRestaurant, MdHotel, MdCameraAlt, MdDirectionsBus, MdLocalFireDepartment, MdHiking, MdParagliding, MdLandscape, MdTempleHindu } from "react-icons/md";
 import HeroCarousel from "@/components/tour/HeroCarousel";
+import BookingWidget from "@/components/tour/BookingWidget";
+
+
+// Helper for Highlight Icons
+const getHighlightIcon = (highlight: string) => {
+    switch (highlight.toLowerCase()) {
+        case 'meals': return <MdRestaurant />;
+        case 'hotel': return <MdHotel />;
+        case 'sightseeing': return <MdCameraAlt />;
+        case 'transport': return <MdDirectionsBus />;
+        case 'bonfire': return <MdLocalFireDepartment />;
+        case 'trek': return <MdHiking />;
+        case 'adventure': return <MdParagliding />;
+        case 'nature': return <MdLandscape />;
+        case 'culture': return <MdTempleHindu />;
+        default: return <HiCheck />;
+    }
+};
+
+// Client Component wrapper for Accordion (since this is an async server component, we need a small client component or just make this part interactive. 
+// Actually, it's better to make a separate Client Component for the Itinerary if we want interaction. 
+// However, I can't easily split files right now without creating new ones. 
+// I will instead mark this page as 'use client' if I can? No, it has async data fetching.
+// I will create a small inner component for the Accordion or just use <details> for native accordion which requires no JS state!)
+// <details> is the best solution here to avoid refactoring to Client Component.
+
 
 // Fetch tour from API (MongoDB) or static data
 async function getTourById(id: string) {
@@ -43,6 +70,11 @@ interface PageProps {
     }>;
 }
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import User from "@/lib/models/User";
+import { connectDB } from "@/lib/mongodb";
+
 export default async function TourDetailPage({ params }: PageProps) {
     const { id } = await params;
     const pkg = await getTourById(id);
@@ -50,6 +82,17 @@ export default async function TourDetailPage({ params }: PageProps) {
     if (!pkg) {
         console.error('[DETAIL PAGE] Tour not found for id:', id);
         notFound();
+    }
+
+    // specific logic for phone number
+    let userPhone = '';
+    const session = await getServerSession(authOptions);
+    if (session?.user?.email) {
+        await connectDB();
+        const user = await User.findOne({ email: session.user.email });
+        if (user && user.phone) {
+            userPhone = user.phone;
+        }
     }
 
     // Normalize images to always be an array
@@ -74,6 +117,23 @@ export default async function TourDetailPage({ params }: PageProps) {
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-12">
 
+                    {/* Partners Info */}
+                    {pkg.partners && pkg.partners.length > 0 && (
+                        <div className="flex flex-wrap gap-4">
+                            {pkg.partners.map((partner: any, idx: number) => (
+                                <div key={idx} className="inline-flex items-center gap-3 bg-white border border-gray-200 px-4 py-2 rounded-full shadow-sm">
+                                    {partner.logo && (
+                                        <img src={partner.logo} alt={partner.name} className="w-6 h-6 object-contain rounded-full" />
+                                    )}
+                                    <span className="font-semibold text-gray-800 text-sm">{partner.name}</span>
+                                    {partner.isVerified && (
+                                        <HiBadgeCheck className="text-blue-500 text-lg" title="Verified Partner" />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
                     {/* Overview */}
                     <section>
                         <h2 className="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
@@ -82,28 +142,142 @@ export default async function TourDetailPage({ params }: PageProps) {
                         </p>
                     </section>
 
-                    {/* Itinerary */}
-                    {pkg.itinerary && pkg.itinerary.length > 0 && (
-                        <section>
-                            <h2 className="text-2xl font-bold text-gray-900 mb-8">Itinerary</h2>
-                            <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
-                                {pkg.itinerary.map((item: any, index: number) => (
-                                    <div key={index} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                                        {/* Icon/Dot */}
-                                        <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-green-500 text-slate-50 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 font-bold z-10">
-                                            {item.day}
-                                        </div>
+                    {/* Location Details */}
+                    {(pkg.location || pkg.pickupLocation || pkg.dropLocation) && (
+                        <section className="bg-gray-50 p-6 rounded-2xl border border-gray-100 flex flex-col gap-6">
+                            {/* Main Destination */}
+                            {pkg.location && (
+                                <div className="flex items-start gap-4 pb-6 border-b border-gray-200">
+                                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-blue-600 shadow-sm shrink-0">
+                                        <HiLocationMarker size={20} />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-400 font-bold uppercase mb-1">Destination</p>
+                                        <p className="font-semibold text-gray-900 text-lg">{pkg.location}</p>
+                                        {pkg.locationMapLink && (
+                                            <a href={pkg.locationMapLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-xs font-semibold hover:underline mt-1 inline-block">
+                                                View on Map
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
 
-                                        {/* Card */}
-                                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                            <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
-                                            <p className="text-gray-500 text-sm leading-relaxed">{item.description}</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {pkg.pickupLocation && (
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-green-600 shadow-sm shrink-0">
+                                            <HiLocationMarker size={20} />
                                         </div>
+                                        <div>
+                                            <p className="text-xs text-gray-400 font-bold uppercase mb-1">Pickup Location</p>
+                                            <p className="font-semibold text-gray-900">{pkg.pickupLocation}</p>
+                                            {pkg.pickupMapLink && (
+                                                <a href={pkg.pickupMapLink} target="_blank" rel="noopener noreferrer" className="text-green-600 text-xs font-semibold hover:underline mt-1 inline-block">
+                                                    View on Map
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                                {pkg.dropLocation && (
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-red-500 shadow-sm shrink-0">
+                                            <HiLocationMarker size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-400 font-bold uppercase mb-1">Drop Location</p>
+                                            <p className="font-semibold text-gray-900">{pkg.dropLocation}</p>
+                                            {pkg.dropMapLink && (
+                                                <a href={pkg.dropMapLink} target="_blank" rel="noopener noreferrer" className="text-red-500 text-xs font-semibold hover:underline mt-1 inline-block">
+                                                    View on Map
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Highlights */}
+                    {pkg.highlights && pkg.highlights.length > 0 && (
+                        <section>
+                            <h2 className="text-xl font-bold text-gray-900 mb-4">Trip Highlights</h2>
+                            <div className="flex flex-wrap gap-4">
+                                {pkg.highlights.map((h: string, i: number) => (
+                                    <div key={i} className="flex flex-col items-center justify-center gap-2 bg-gray-50 border border-gray-100 p-4 rounded-xl min-w-[80px]">
+                                        <div className="text-2xl text-green-600">
+                                            {getHighlightIcon(h)}
+                                        </div>
+                                        <span className="text-xs font-medium text-gray-700 uppercase tracking-wide">{h}</span>
                                     </div>
                                 ))}
                             </div>
                         </section>
                     )}
+
+
+
+
+
+                    {/* Itinerary */}
+                    {pkg.itinerary && pkg.itinerary.length > 0 && (
+                        <section>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-8">Itinerary</h2>
+                            <div className="space-y-4">
+                                {pkg.itinerary.map((item: any, index: number) => (
+                                    <details key={index} open className="group bg-white border border-gray-200 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden">
+                                        <summary className="flex cursor-pointer items-center justify-between p-6 text-gray-900 font-medium">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold text-sm">
+                                                    D{item.day}
+                                                </div>
+                                                <h3 className="text-lg font-bold">{item.title}</h3>
+                                            </div>
+                                            <span className="shrink-0 transition duration-300 group-open:-rotate-180">
+                                                <HiChevronDown size={20} className="text-gray-400" />
+                                            </span>
+                                        </summary>
+
+                                        <div className="p-6 pt-0 border-t border-gray-100 bg-gray-50/50">
+                                            <p className="text-gray-600 leading-relaxed mb-6">{item.description}</p>
+
+                                            {/* Day Details Grid */}
+                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                                {item.stay && (
+                                                    <div className="p-3 bg-white rounded-xl border border-gray-200">
+                                                        <p className="text-xs text-gray-400 uppercase font-bold mb-1">Stay</p>
+                                                        <p className="text-sm font-semibold text-gray-800">{item.stay}</p>
+                                                    </div>
+                                                )}
+                                                {item.activity && (
+                                                    <div className="p-3 bg-white rounded-xl border border-gray-200">
+                                                        <p className="text-xs text-gray-400 uppercase font-bold mb-1">Activity</p>
+                                                        <p className="text-sm font-semibold text-gray-800">{item.activity}</p>
+                                                    </div>
+                                                )}
+                                                {item.meal && (
+                                                    <div className="p-3 bg-white rounded-xl border border-gray-200">
+                                                        <p className="text-xs text-gray-400 uppercase font-bold mb-1">Meals</p>
+                                                        <p className="text-sm font-semibold text-gray-800">{item.meal}</p>
+                                                    </div>
+                                                )}
+                                                {item.transfer && (
+                                                    <div className="p-3 bg-white rounded-xl border border-gray-200">
+                                                        <p className="text-xs text-gray-400 uppercase font-bold mb-1">Transfer</p>
+                                                        <p className="text-sm font-semibold text-gray-800">{item.transfer}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </details>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
+
 
                     {/* Inclusions & Exclusions */}
                     <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -135,63 +309,41 @@ export default async function TourDetailPage({ params }: PageProps) {
                             </ul>
                         </div>
                     </section>
+
+                    {/* Cancellation Policy */}
+                    {pkg.cancellationPolicy && pkg.cancellationPolicy.length > 0 && (
+                        <section className="bg-orange-50/50 border border-orange-100 rounded-3xl p-8">
+                            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                <span className="w-2 h-8 bg-orange-500 rounded-full"></span>
+                                Cancellation Policy
+                            </h2>
+                            <ul className="space-y-3">
+                                {pkg.cancellationPolicy.map((policy: string, i: number) => (
+                                    <li key={i} className="flex gap-3 text-gray-700">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-2.5 shrink-0" />
+                                        <span className="leading-relaxed">{policy}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
                 </div>
 
                 {/* Sidebar Booking Widget */}
                 <div className="lg:col-span-1">
-                    <div className="sticky top-28 bg-white rounded-3xl border border-gray-200 shadow-xl p-6 overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-5">
-                            <Image src="/logo.png" alt="logo" width={100} height={100} />
-                        </div>
+                    <BookingWidget
+                        price={pkg.price}
+                        tourId={pkg._id ? pkg._id.toString() : pkg.id}
+                        tourTitle={pkg.title}
+                        earlyBirdDiscount={pkg.earlyBirdDiscount}
+                        availabilityDate={pkg.availabilityDate}
+                        totalSlots={pkg.totalSlots}
 
-                        <div className="mb-6">
-                            <p className="text-gray-500 text-sm mb-1">Starting from</p>
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-3xl font-bold text-gray-900">₹{pkg.price}</span>
-                                <span className="text-gray-400">/ person</span>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 mb-6">
-                            <div className="border border-gray-200 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-green-500 transition-colors">
-                                <HiCalendar className="text-gray-400 text-xl" />
-                                <div>
-                                    <p className="text-xs text-gray-400 font-medium">Select Date</p>
-                                    <p className="text-sm font-semibold text-gray-900">
-                                        {pkg.availabilityDate || 'Choose Availability'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="border border-gray-200 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-green-500 transition-colors">
-                                <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-bold text-gray-400">
-                                    2
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-400 font-medium">Guests</p>
-                                    <p className="text-sm font-semibold text-gray-900">
-                                        {pkg.maxPeople || '2 Adults'}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-4 mb-8">
-                            <button className="flex-1 bg-black text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition-all active:scale-95">
-                                Book Now
-                            </button>
-                        </div>
-
-                        <div className="text-center">
-                            <p className="text-xs text-gray-400 mb-2">Free cancellation up to 7 days before trip</p>
-                            <div className="flex justify-center gap-4 text-gray-300">
-                                {/* Trust Badges Mock */}
-                                <div className="w-8 h-8 rounded bg-gray-100" />
-                                <div className="w-8 h-8 rounded bg-gray-100" />
-                                <div className="w-8 h-8 rounded bg-gray-100" />
-                            </div>
-                        </div>
-                    </div>
+                        bookedSlots={pkg.bookedSlots}
+                        bookingAmount={pkg.bookingAmount}
+                        brochureUrl={pkg.brochureUrl}
+                        userPhone={userPhone}
+                    />
                 </div>
 
             </div>

@@ -22,9 +22,13 @@ const TourSchema = new mongoose.Schema({
         type: String, // Can be "Flexible" or specific date range
         required: [true, 'Please provide availability dates'],
     },
+    minPeople: {
+        type: Number,
+        required: [true, 'Please provide min people'],
+    },
     maxPeople: {
-        type: String, // Can be number "10" or "Flexible"
-        required: [true, 'Please provide max people or group size'],
+        type: Number,
+        required: [true, 'Please provide max people'],
     },
     rating: {
         type: Number,
@@ -46,7 +50,51 @@ const TourSchema = new mongoose.Schema({
         day: Number,
         title: String,
         description: String,
+        stay: String,
+        activity: String,
+        meal: String,
+        transfer: String,
     }],
+    locationMapLink: {
+        type: String,
+    },
+    pickupLocation: {
+        type: String,
+    },
+    pickupMapLink: {
+        type: String,
+    },
+    dropLocation: {
+        type: String,
+    },
+    dropMapLink: {
+        type: String,
+    },
+    partners: [{
+        name: String,
+        isVerified: {
+            type: Boolean,
+            default: false
+        }
+    }],
+    highlights: [String],
+    cancellationPolicy: [String],
+    brochureUrl: {
+        type: String,
+    },
+    totalSlots: {
+        type: Number,
+    },
+    bookedSlots: {
+        type: Number,
+        default: 0,
+    },
+    bookingAmount: {
+        type: Number, // Partial payment amount
+    },
+    earlyBirdDiscount: {
+        type: Number, // Percentage
+    },
     inclusions: [String],
     exclusions: [String],
     createdAt: {
