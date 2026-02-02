@@ -9,7 +9,7 @@ import { signOut as firebaseSignOut } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseAuth";
 import LoginRequiredPopup from "./LoginRequiredPopup";
 
-export default function NormalHeader({ backgroundColor = "bg-white" }: { backgroundColor?: string }) {
+export default function NormalHeader({ backgroundColor = "bg-white", logoHeight = "h-[40px] lg:h-[50px]" }: { backgroundColor?: string, logoHeight?: string }) {
 
     const { data: session } = useSession()
 
@@ -152,7 +152,7 @@ export default function NormalHeader({ backgroundColor = "bg-white" }: { backgro
                             alt="Travoxa"
                             width={130}
                             height={1000}
-                            className="h-[40px] lg:h-[50px]"
+                            className={`${logoHeight}`}
                             style={{ width: "auto" }}
                         />
                     </button>
