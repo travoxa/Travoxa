@@ -9,6 +9,9 @@ import HeroCarousel from "@/components/tour/HeroCarousel";
 import BookingWidget from "@/components/tour/BookingWidget";
 
 
+import Tour from "@/models/Tour";
+import { connectDB } from "@/lib/mongodb";
+
 // Helper for Highlight Icons
 const getHighlightIcon = (highlight: string) => {
     switch (highlight.toLowerCase()) {
@@ -34,26 +37,26 @@ const getHighlightIcon = (highlight: string) => {
 
 
 // Fetch tour from API (MongoDB) or static data
+// Fetch tour from API (MongoDB) or static data
 async function getTourById(id: string) {
-    // First try to fetch from MongoDB
+    // First try to fetch from MongoDB directly
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/tours`, {
-            cache: 'no-store'
-        });
+        await connectDB();
+        const tour = await Tour.findById(id).lean();
 
-        if (res.ok) {
-            const data = await res.json();
-            console.log('[DETAIL PAGE] Fetched tours from API:', data.data?.length);
-            if (data.success && data.data) {
-                const tour = data.data.find((t: any) => t.id === id || t._id === id);
-                if (tour) {
-                    console.log('[DETAIL PAGE] Found MongoDB tour with id:', id);
-                    return tour;
-                }
-            }
+        if (tour) {
+            console.log('[DETAIL PAGE] Found MongoDB tour with id:', id);
+            // Serialize _id and dates to simple strings to pass to components
+            return {
+                ...tour,
+                _id: tour._id.toString(),
+                id: tour._id.toString(),
+                createdAt: tour.createdAt ? new Date(tour.createdAt).toISOString() : undefined,
+                updatedAt: tour.updatedAt ? new Date(tour.updatedAt).toISOString() : undefined,
+            };
         }
     } catch (error) {
-        console.error('[DETAIL PAGE] Error fetching from API:', error);
+        console.error('[DETAIL PAGE] Error fetching from DB:', error);
     }
 
     // Fallback to static data
@@ -73,7 +76,6 @@ interface PageProps {
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import User from "@/lib/models/User";
-import { connectDB } from "@/lib/mongodb";
 
 export default async function TourDetailPage({ params }: PageProps) {
     const { id } = await params;
