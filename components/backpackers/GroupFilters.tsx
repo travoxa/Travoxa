@@ -41,7 +41,7 @@ const months = [
 const inputClass =
   'w-full rounded-[8px] border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/60 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/40 backdrop-blur';
 
-export default function GroupFilters({ filters, onChange, tripSource, onChangeTripSource }: GroupFiltersProps & { tripSource: 'community' | 'hosted'; onChangeTripSource: (source: 'community' | 'hosted') => void }) {
+export default function GroupFilters({ filters, onChange }: GroupFiltersProps) {
   const handleFieldChange = (
     field: keyof GroupFiltersState,
     event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -59,41 +59,6 @@ export default function GroupFilters({ filters, onChange, tripSource, onChangeTr
         <p className="text-[12px] text-white/70">
           Filter by destination vibe, budget comfort and departure month to discover matching crews.
         </p>
-      </div>
-
-      {/* Navigation Bar */}
-      <div className="flex flex-col gap-4 border-y border-white/10 py-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex gap-4">
-          <button
-            onClick={() => onChangeTripSource('community')}
-            className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${tripSource === 'community'
-              ? 'bg-white text-black'
-              : 'bg-white/10 text-white hover:bg-white/20'
-              }`}
-          >
-            Travel Crews
-          </button>
-          <button
-            onClick={() => onChangeTripSource('hosted')}
-            className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 border-2 border-violet-500 ${tripSource === 'hosted'
-                ? 'bg-white text-black'
-                : 'bg-white/10 text-white hover:bg-white/20'
-              }`}
-          >
-            Hosted Trips
-          </button>
-        </div>
-
-        <div className="text-right">
-          <p className="text-sm font-medium text-white">
-            {tripSource === 'community' ? 'Community • Casual • Flexible Design' : 'Professional • Structured • Premium Design'}
-          </p>
-          <p className="text-xs text-white/60 mt-1">
-            {tripSource === 'community'
-              ? 'Join open groups created by fellow travelers'
-              : 'Curated experiences hosted by verified admins'}
-          </p>
-        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

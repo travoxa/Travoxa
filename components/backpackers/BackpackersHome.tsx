@@ -29,7 +29,7 @@ const budgetMatchers = {
 
 export default function BackpackersHome({ groups = [], initialFilters: presetFilters, onOpenLoginPopup }: BackpackersHomeProps) {
   const [filters, setFilters] = useState<GroupFiltersState>(presetFilters ?? initialFilters);
-  const [tripSource, setTripSource] = useState<'community' | 'hosted'>('community');
+  const [tripSource, setTripSource] = useState<'community' | 'hosted' | 'all'>('community');
 
   const filteredGroups = useMemo(() => {
     return groups.filter((group) => {
@@ -47,6 +47,7 @@ export default function BackpackersHome({ groups = [], initialFilters: presetFil
 
       if (tripSource === 'hosted' && !isHosted) return false;
       if (tripSource === 'community' && isHosted) return false;
+      // if tripSource is 'all', we don't return false based on source, efficiently showing both.
 
       const matchesSearch = `${group.groupName} ${group.destination} ${group.creatorId}`
         .toLowerCase()
@@ -71,8 +72,6 @@ export default function BackpackersHome({ groups = [], initialFilters: presetFil
       <GroupFilters
         filters={filters}
         onChange={setFilters}
-        tripSource={tripSource}
-        onChangeTripSource={setTripSource}
       />
 
       <div className="flex flex-col gap-4 bg-green-500 rounded-[12px] border border-white/10  p-6 text-white backdrop-blur lg:flex-row lg:items-center lg:justify-between">
@@ -84,7 +83,46 @@ export default function BackpackersHome({ groups = [], initialFilters: presetFil
         <CreateGroupButton onOpenLoginPopup={onOpenLoginPopup || (() => { })} />
       </div>
 
-      <GroupCardList groups={filteredGroups} />
+      {/* Trip Source Selection Tabs */}
+      <div className="border-b border-black/10 text-sm font-medium text-black/60 dark:border-white/10 dark:text-white/60">
+        <ul className="flex flex-wrap -mb-px gap-6 justify-center">
+          <li>
+            <button
+              onClick={() => setTripSource('community')}
+              className={`inline-block p-4 border-b-2 rounded-t-lg transition-colors duration-200 ${tripSource === 'community'
+                ? 'text-black border-black font-semibold'
+                : 'border-transparent text-gray-600 hover:text-black hover:border-black/30'
+                }`}
+            >
+              Travel Crews
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => setTripSource('hosted')}
+              className={`inline-block p-4 border-b-2 rounded-t-lg transition-colors duration-200 ${tripSource === 'hosted'
+                ? 'text-violet-600 border-violet-600 font-semibold'
+                : 'border-transparent text-gray-600 hover:text-violet-600 hover:border-violet-600/30'
+                }`}
+            >
+              Hosted Trips
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => setTripSource('all')}
+              className={`inline-block p-4 border-b-2 rounded-t-lg transition-colors duration-200 ${tripSource === 'all'
+                ? 'text-emerald-600 border-emerald-600 font-semibold'
+                : 'border-transparent text-gray-600 hover:text-emerald-600 hover:border-emerald-600/30'
+                }`}
+            >
+              Mixed View
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <GroupCardList groups={filteredGroups} viewMode={tripSource} />
     </div>
   );
 }
