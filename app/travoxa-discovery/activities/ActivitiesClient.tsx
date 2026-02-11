@@ -32,6 +32,13 @@ export interface ActivityPackage {
     season?: string[];
     bestMonths?: { start: string; end: string };
     groupSize?: { min: number; max: number };
+    ageLimit?: { min: number; max?: number };
+    inclusions?: string[];
+    exclusions?: string[];
+    safetyLevel?: string;
+    photographyAllowed?: boolean;
+    parkingAvailable?: boolean;
+    medicalRestrictions?: { exists: boolean; details: string };
 }
 
 interface ActivitiesClientProps {

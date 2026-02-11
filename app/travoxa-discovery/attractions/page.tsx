@@ -4,6 +4,7 @@ import Attraction from '@/models/Attraction';
 import AttractionsClient from './AttractionsClient';
 
 // Helper to serialize Mongoose documents
+export const dynamic = 'force-dynamic';
 const serializeConfig = (doc: any) => {
     return {
         ...doc,

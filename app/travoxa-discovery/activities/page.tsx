@@ -4,6 +4,7 @@ import Activity from '@/models/Activity'; // Check if this model name is correct
 import ActivitiesClient from './ActivitiesClient';
 
 // Helper to serialize Mongoose documents
+export const dynamic = 'force-dynamic';
 const serializeConfig = (doc: any) => {
     return {
         ...doc,

@@ -3,6 +3,7 @@ import { connectDB } from '@/lib/mongodb';
 import Food from '@/models/Food';
 import FoodClient from './FoodClient';
 
+export const dynamic = 'force-dynamic';
 const serializeConfig = (doc: any) => {
     return {
         ...doc,
