@@ -2,13 +2,16 @@
 import React from 'react';
 import Image from 'next/image';
 import { FaMapMarkerAlt, FaStar, FaUtensils, FaChevronRight } from 'react-icons/fa';
-import { FoodPackage } from '@/data/foodData';
+import { FoodPackage } from '@/app/travoxa-discovery/food-and-cafes/FoodClient';
 
 interface FoodCardProps {
     pkg: FoodPackage;
 }
 
 const FoodCard: React.FC<FoodCardProps> = ({ pkg }) => {
+    const cuisineDisplay = Array.isArray(pkg.cuisine) ? pkg.cuisine.join(', ') : pkg.cuisine;
+    // Construct location if missing
+    const displayLocation = pkg.location || `${pkg.city}, ${pkg.state}`;
     return (
         <div className="group bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-xl hover:shadow-yellow-500/5 transition-all duration-300 h-full flex flex-col">
             {/* Image Container */}
@@ -29,7 +32,7 @@ const FoodCard: React.FC<FoodCardProps> = ({ pkg }) => {
 
                 {/* Cuisine Badge */}
                 <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-full text-[10px] font-bold text-yellow-600 uppercase tracking-wider shadow-sm">
-                    {pkg.cuisine}
+                    {cuisineDisplay}
                 </div>
             </div>
 
@@ -39,7 +42,7 @@ const FoodCard: React.FC<FoodCardProps> = ({ pkg }) => {
                 <div className="flex items-center gap-1 mb-2">
                     <FaMapMarkerAlt className="text-yellow-400 text-[10px] shrink-0" />
                     <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wide truncate">
-                        {pkg.city}, {pkg.state}
+                        {displayLocation}
                     </span>
                 </div>
 

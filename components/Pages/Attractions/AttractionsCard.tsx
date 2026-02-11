@@ -2,7 +2,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { FaMapMarkerAlt, FaStar, FaLandmark, FaChevronRight } from 'react-icons/fa';
-import { AttractionPackage } from '@/data/attractionsData';
+import { AttractionPackage } from '@/app/travoxa-discovery/attractions/AttractionsClient';
 
 interface AttractionsCardProps {
     pkg: AttractionPackage;

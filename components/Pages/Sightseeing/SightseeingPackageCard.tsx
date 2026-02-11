@@ -9,9 +9,10 @@ import { MdLocationOn } from "react-icons/md";
 
 interface SightseeingPackageCardProps {
     pkg: SightseeingPackage;
+    activeTab?: 'sharing' | 'private';
 }
 
-export default function SightseeingPackageCard({ pkg }: SightseeingPackageCardProps) {
+export default function SightseeingPackageCard({ pkg, activeTab = 'sharing' }: SightseeingPackageCardProps) {
     const router = useRouter();
 
     const handleBookNow = (e: React.MouseEvent) => {
@@ -43,6 +44,11 @@ export default function SightseeingPackageCard({ pkg }: SightseeingPackageCardPr
                 <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
                     <FaStar className="text-orange-400 text-[12px]" />
                     <span className="text-[12px] font-medium text-slate-900">{pkg.rating}</span>
+                </div>
+
+                {/* Type Badge */}
+                <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-sm text-white px-2 py-1 rounded text-[10px] font-medium uppercase tracking-wide">
+                    {pkg.isPrivate && pkg.isSharing ? 'Private & Shared' : pkg.isPrivate ? 'Private Tour' : 'Shared Tour'}
                 </div>
 
                 {/* Duration Badge */}
@@ -97,9 +103,13 @@ export default function SightseeingPackageCard({ pkg }: SightseeingPackageCardPr
                     <div>
                         <p className="text-[10px] text-slate-400 font-medium mb-0.5">Starting from</p>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-lg font-medium text-slate-900">₹{pkg.price.toLocaleString()}</span>
+                            <span className="text-lg font-medium text-slate-900">
+                                ₹{activeTab === 'private'
+                                    ? (pkg.pricePrivate || pkg.price).toLocaleString()
+                                    : (pkg.priceSharing || pkg.price).toLocaleString()}
+                            </span>
                             <span className="text-[10px] text-slate-500 font-medium">
-                                / {pkg.priceType === 'per_vehicle' ? 'vehicle' : 'person'}
+                                / {activeTab === 'private' ? 'vehicle' : 'person'}
                             </span>
                         </div>
                     </div>

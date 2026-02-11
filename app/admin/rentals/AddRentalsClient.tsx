@@ -49,7 +49,29 @@ export default function AddRentalsClient({
     const [availableCities, setAvailableCities] = useState<string[]>([]);
     const [showMapInput, setShowMapInput] = useState(false);
 
-    const [formData, setFormData] = useState({
+    const DUMMY_FORM_DATA = {
+        name: 'Royal Enfield Classic 350',
+        type: 'Bike',
+        model: '2023',
+        rating: '4.8',
+        reviews: '124',
+        mileage: '35',
+        seats: '2',
+        fuel: 'Petrol',
+        helmet: 'Helmet Included',
+        price: '1200',
+        image: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg',
+        verified: true,
+        state: 'Himachal Pradesh',
+        city: 'Manali',
+        whatsapp: '9876543210',
+        mapLocation: { lat: '32.2396', lng: '77.1887' },
+        rentalServiceName: 'Himalayan Riders'
+    };
+
+    const isDev = process.env.NODE_ENV === 'development';
+
+    const [formData, setFormData] = useState(isDev ? DUMMY_FORM_DATA : {
         name: '',
         type: 'Scooter',
         model: YEAR_OPTIONS[0].toString(),
@@ -265,7 +287,7 @@ export default function AddRentalsClient({
                     {/* Create Button - Top */}
                     {showManagementBox && (
                         <div className="bg-white rounded-xl border border-gray-200 p-8">
-                            <h2 className="text-lg font-medium text-gray-800 mb-4">Rentals Management</h2>
+                            <h2 className="text-lg font-light text-gray-800 mb-4">Rentals</h2>
                             <button
                                 onClick={() => {
                                     if (onFormOpen) {
@@ -276,7 +298,7 @@ export default function AddRentalsClient({
                                 }}
                                 className="px-6 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all"
                             >
-                                Create New Rental
+                                Create
                             </button>
                         </div>
                     )}
