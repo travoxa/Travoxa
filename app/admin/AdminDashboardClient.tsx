@@ -14,6 +14,10 @@ import AddRentalsClient from '@/app/admin/rentals/AddRentalsClient'
 import TeamManagementClient from '@/app/admin/team/TeamManagementClient'
 import AddHostedBackpackerClient from '@/app/admin/backpackers/AddHostedBackpackerClient'
 
+import AddActivitiesClient from '@/app/admin/activities/AddActivitiesClient'
+import AddAttractionsClient from '@/app/admin/attractions/AddAttractionsClient'
+import AddFoodClient from '@/app/admin/food/AddFoodClient'
+
 interface AdminDashboardClientProps {
     adminUser: {
         name: string
@@ -23,7 +27,7 @@ interface AdminDashboardClientProps {
 
 const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }) => {
     const [activeTab, setActiveTab] = useState('Overview')
-    const [activeDiscoveryForm, setActiveDiscoveryForm] = useState<'sightseeing' | 'rentals' | null>(null)
+    const [activeDiscoveryForm, setActiveDiscoveryForm] = useState<'sightseeing' | 'rentals' | 'activities' | 'attractions' | 'food' | null>(null)
     const router = useRouter()
 
     const renderContent = () => {
@@ -67,9 +71,36 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                             />
                         )}
 
+                        {activeDiscoveryForm === 'activities' && (
+                            <AddActivitiesClient
+                                showManagementBox={false}
+                                showListings={false}
+                                showFormDirectly={true}
+                                onFormClose={() => setActiveDiscoveryForm(null)}
+                            />
+                        )}
+
+                        {activeDiscoveryForm === 'attractions' && (
+                            <AddAttractionsClient
+                                showManagementBox={false}
+                                showListings={false}
+                                showFormDirectly={true}
+                                onFormClose={() => setActiveDiscoveryForm(null)}
+                            />
+                        )}
+
+                        {activeDiscoveryForm === 'food' && (
+                            <AddFoodClient
+                                showManagementBox={false}
+                                showListings={false}
+                                showFormDirectly={true}
+                                onFormClose={() => setActiveDiscoveryForm(null)}
+                            />
+                        )}
+
                         {/* Row 1: Management Boxes - Side by Side (hidden when form is open) */}
                         {!activeDiscoveryForm && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                                 <AddSightseeingClient
                                     showManagementBox={true}
                                     showListings={false}
@@ -80,14 +111,30 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                                     showListings={false}
                                     onFormOpen={() => setActiveDiscoveryForm('rentals')}
                                 />
+                                <AddActivitiesClient
+                                    showManagementBox={true}
+                                    showListings={false}
+                                    onFormOpen={() => setActiveDiscoveryForm('activities')}
+                                />
+                                <AddAttractionsClient
+                                    showManagementBox={true}
+                                    showListings={false}
+                                    onFormOpen={() => setActiveDiscoveryForm('attractions')}
+                                />
+                                <AddFoodClient
+                                    showManagementBox={true}
+                                    showListings={false}
+                                    onFormOpen={() => setActiveDiscoveryForm('food')}
+                                />
                             </div>
                         )}
 
-                        {/* Row 2: Sightseeing Listings */}
+                        {/* Row 2: Listings */}
                         <AddSightseeingClient showManagementBox={false} showListings={true} />
-
-                        {/* Row 3: Rentals Listings */}
                         <AddRentalsClient showManagementBox={false} showListings={true} />
+                        <AddActivitiesClient showManagementBox={false} showListings={true} />
+                        <AddAttractionsClient showManagementBox={false} showListings={true} />
+                        <AddFoodClient showManagementBox={false} showListings={true} />
                     </div>
                 )
 

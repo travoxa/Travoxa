@@ -39,6 +39,12 @@ const SightseeingSchema = new mongoose.Schema({
         type: Number,
         required: [true, 'Please provide a price'],
     },
+    pricePrivate: {
+        type: Number,
+    },
+    priceSharing: {
+        type: Number,
+    },
     priceType: {
         type: String,
         enum: ['per_vehicle', 'per_person'],
@@ -76,6 +82,26 @@ const SightseeingSchema = new mongoose.Schema({
     isPrivate: {
         type: Boolean,
         default: true,
+    },
+    isSharing: {
+        type: Boolean,
+        default: false,
+    },
+    pickupPoints: {
+        type: [String],
+        default: [],
+    },
+    fuelIncluded: {
+        type: Boolean,
+        default: true,
+    },
+    driverIncluded: {
+        type: Boolean,
+        default: true,
+    },
+    customizablePickup: {
+        type: Boolean,
+        default: false,
     },
     createdAt: {
         type: Date,

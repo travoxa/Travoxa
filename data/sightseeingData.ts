@@ -10,6 +10,8 @@ export interface SightseeingPackage {
     highlights: string[];
     placesCovered: string[];
     price: number;
+    pricePrivate?: number;
+    priceSharing?: number;
     priceType: "per_vehicle" | "per_person";
     overview: string;
     itinerary: {
@@ -23,6 +25,11 @@ export interface SightseeingPackage {
     rating: number;
     reviews: number;
     isPrivate: boolean;
+    isSharing?: boolean;
+    pickupPoints?: string[];
+    fuelIncluded?: boolean;
+    driverIncluded?: boolean;
+    customizablePickup?: boolean;
 }
 
 // All sightseeing packages are now managed through the admin panel

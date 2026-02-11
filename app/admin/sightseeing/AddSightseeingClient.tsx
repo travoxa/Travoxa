@@ -75,7 +75,41 @@ export default function AddSightseeingClient({
     const [loadingSightseeing, setLoadingSightseeing] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
 
-    const [formData, setFormData] = useState({
+    const DUMMY_FORM_DATA = {
+        title: 'Jaipur Heritage Full Day Tour',
+        city: 'Jaipur',
+        state: 'Rajasthan',
+        durationDays: '1',
+        durationNights: '0',
+        maxPeople: '4',
+        vehicleType: 'Sedan',
+        highlights: ['Amber Fort', 'Hawa Mahal', 'City Palace', 'Jantar Mantar'],
+        placesCovered: ['Amber Fort', 'Jal Mahal', 'Hawa Mahal', 'City Palace', 'Jantar Mantar', 'Albert Hall Museum'],
+        price: '3500',
+        pricePrivate: '3500',
+        priceSharing: '500',
+        priceType: 'per_vehicle',
+        overview: 'Experience the royal heritage of the Pink City with this comprehensive full-day tour. Visit the majestic Amber Fort, marvel at the intricate lattice work of Hawa Mahal, and explore the royal residence at City Palace.',
+        itinerary: [
+            { time: '9:00 AM', title: 'Pickup', description: 'Pickup from hotel/airport' },
+            { time: '10:00 AM', title: 'Amber Fort', description: 'Visit the magnificent Amber Fort' },
+            { time: '1:00 PM', title: 'Lunch', description: 'Traditional Rajasthani lunch' },
+            { time: '2:30 PM', title: 'City Palace', description: 'Explore the royal complex' }
+        ],
+        inclusions: ['AC Vehicle', 'Driver Allowance', 'Parking', 'Fuel'],
+        exclusions: ['Entry Tickets', 'Meals', 'Guide'],
+        image: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg',
+        isPrivate: true,
+        isSharing: false,
+        pickupPoints: [] as string[],
+        fuelIncluded: true,
+        driverIncluded: true,
+        customizablePickup: true
+    };
+
+    const isDev = process.env.NODE_ENV === 'development';
+
+    const [formData, setFormData] = useState(isDev ? DUMMY_FORM_DATA : {
         title: '',
         city: '',
         state: '',
@@ -86,13 +120,20 @@ export default function AddSightseeingClient({
         highlights: [] as string[],
         placesCovered: [] as string[],
         price: '',
+        pricePrivate: '',
+        priceSharing: '',
         priceType: 'per_vehicle',
         overview: '',
         itinerary: [] as { time?: string; title: string; description: string }[],
         inclusions: [] as string[],
         exclusions: [] as string[],
         image: '',
-        isPrivate: true
+        isPrivate: true,
+        isSharing: false,
+        pickupPoints: [] as string[],
+        fuelIncluded: true,
+        driverIncluded: true,
+        customizablePickup: true
     });
 
     // Temporary input states for dynamic fields
@@ -100,6 +141,7 @@ export default function AddSightseeingClient({
     const [placeInput, setPlaceInput] = useState('');
     const [inclusionInput, setInclusionInput] = useState('');
     const [exclusionInput, setExclusionInput] = useState('');
+    const [pickupPointInput, setPickupPointInput] = useState('');
 
     // Fetch sightseeing packages
     const fetchSightseeing = async () => {
@@ -267,13 +309,20 @@ export default function AddSightseeingClient({
             highlights: pkg.highlights || [],
             placesCovered: pkg.placesCovered || [],
             price: pkg.price.toString(),
+            pricePrivate: pkg.pricePrivate ? pkg.pricePrivate.toString() : pkg.price.toString(),
+            priceSharing: pkg.priceSharing ? pkg.priceSharing.toString() : '',
             priceType: pkg.priceType,
             overview: pkg.overview,
             itinerary: pkg.itinerary || [],
             inclusions: pkg.inclusions || [],
             exclusions: pkg.exclusions || [],
             image: pkg.image,
-            isPrivate: pkg.isPrivate
+            isPrivate: pkg.isPrivate,
+            isSharing: pkg.isSharing || false,
+            pickupPoints: pkg.pickupPoints || [],
+            fuelIncluded: pkg.fuelIncluded ?? true,
+            driverIncluded: pkg.driverIncluded ?? true,
+            customizablePickup: pkg.customizablePickup ?? false
         });
         setShowFormInternal(true);
         setOpenMenuId(null);
@@ -291,12 +340,18 @@ export default function AddSightseeingClient({
         if (formData.durationNights) durationParts.push(`${formData.durationNights} Night${Number(formData.durationNights) > 1 ? 's' : ''}`);
         const duration = durationParts.join(' / ') || 'Full Day';
 
+
+        // Determine main price (fallback)
+        const mainPrice = formData.isPrivate ? Number(formData.pricePrivate) : Number(formData.priceSharing);
+
         const { durationDays, durationNights, ...restFormData } = formData;
         const payload = {
             ...restFormData,
             duration,
             maxPeople: Number(formData.maxPeople),
-            price: Number(formData.price),
+            price: mainPrice, // existing field as fallback
+            pricePrivate: formData.isPrivate ? Number(formData.pricePrivate) : undefined,
+            priceSharing: formData.isSharing ? Number(formData.priceSharing) : undefined,
         };
 
         try {
@@ -328,13 +383,20 @@ export default function AddSightseeingClient({
                 highlights: [],
                 placesCovered: [],
                 price: '',
+                pricePrivate: '',
+                priceSharing: '',
                 priceType: 'per_vehicle',
                 overview: '',
                 itinerary: [],
                 inclusions: [],
                 exclusions: [],
                 image: '',
-                isPrivate: true
+                isPrivate: true,
+                isSharing: false,
+                pickupPoints: [],
+                fuelIncluded: true,
+                driverIncluded: true,
+                customizablePickup: true
             });
             setEditingId(null);
 
@@ -374,7 +436,7 @@ export default function AddSightseeingClient({
                     {/* Create Button - Top */}
                     {showManagementBox && (
                         <div className="bg-white rounded-xl border border-gray-200 p-8">
-                            <h2 className="text-lg font-medium text-gray-800 mb-4">Sightseeing Management</h2>
+                            <h2 className="text-lg font-light text-gray-800 mb-4">Sightseeing</h2>
                             <button
                                 onClick={() => {
                                     if (onFormOpen) {
@@ -385,7 +447,7 @@ export default function AddSightseeingClient({
                                 }}
                                 className="px-6 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all"
                             >
-                                Create New Sightseeing Package
+                                Create
                             </button>
                         </div>
                     )}
@@ -476,7 +538,7 @@ export default function AddSightseeingClient({
                         </div>
                     ) : (
                         <div className="bg-white rounded-xl border border-gray-200 p-8 text-left">
-                            <h2 className="text-lg font-medium text-gray-800 mb-2">No Sightseeing Packages Yet</h2>
+                            <h2 className="text-lg font-light text-gray-800 mb-2">No Sightseeing Packages Yet</h2>
                             <p className="text-gray-600 text-sm">Create your first sightseeing package to get started.</p>
                         </div>
                     ))}
@@ -512,6 +574,31 @@ export default function AddSightseeingClient({
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-8">
+                        {/* Package Type Selection */}
+                        <div className="bg-slate-50 p-4 rounded-lg flex flex-col gap-2">
+                            <label className="block text-sm font-medium text-gray-700">Package Type (Select at least one)</label>
+                            <div className="flex gap-6">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.isSharing}
+                                        onChange={e => setFormData({ ...formData, isSharing: e.target.checked })}
+                                        className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                                    />
+                                    <span className="text-gray-700">Sharing Sightseeing</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.isPrivate}
+                                        onChange={e => setFormData({ ...formData, isPrivate: e.target.checked })}
+                                        className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                                    />
+                                    <span className="text-gray-700">Private Car Sightseeing</span>
+                                </label>
+                            </div>
+                        </div>
+
                         {/* Basic Info */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
@@ -609,31 +696,10 @@ export default function AddSightseeingClient({
                                     ))}
                                 </select>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-                                <input
-                                    type="number"
-                                    required
-                                    value={formData.price}
-                                    onChange={e => setFormData({ ...formData, price: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="2500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Price Type</label>
-                                <select
-                                    required
-                                    value={formData.priceType}
-                                    onChange={e => setFormData({ ...formData, priceType: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                >
-                                    {PRICE_TYPE_OPTIONS.map(type => (
-                                        <option key={type} value={type}>{type === 'per_vehicle' ? 'Per Vehicle' : 'Per Person'}</option>
-                                    ))}
-                                </select>
-                            </div>
                         </div>
+
+
+                        {/* Note: Price fields are now moved into Conditional Fields based on type */}
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Overview</label>
@@ -709,6 +775,120 @@ export default function AddSightseeingClient({
                                 ))}
                             </div>
                         </div>
+
+                        {/* Conditional Fields based on Type */}
+                        {(formData.isSharing || formData.isPrivate) && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-4 rounded-lg">
+                                {/* Sharing Specific */}
+                                {formData.isSharing && (
+                                    <div className="md:col-span-2 space-y-3">
+                                        <h3 className="font-medium text-gray-900 border-b pb-2">Sharing Package Details</h3>
+
+                                        <div className="bg-white p-4 rounded-lg border border-emerald-100 mb-4">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Sharing Price (Per Person) ₹</label>
+                                            <input
+                                                type="number"
+                                                required={formData.isSharing}
+                                                value={formData.priceSharing}
+                                                onChange={e => setFormData({ ...formData, priceSharing: e.target.value })}
+                                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                placeholder="e.g. 500"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Pickup Points</label>
+                                            <div className="flex gap-2 mb-2">
+                                                <input
+                                                    type="text"
+                                                    value={pickupPointInput}
+                                                    onChange={e => setPickupPointInput(e.target.value)}
+                                                    onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), (() => {
+                                                        if (pickupPointInput.trim()) {
+                                                            setFormData(prev => ({ ...prev, pickupPoints: [...prev.pickupPoints, pickupPointInput.trim()] }));
+                                                            setPickupPointInput('');
+                                                        }
+                                                    })())}
+                                                    className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="e.g. Airport Gate 1"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (pickupPointInput.trim()) {
+                                                            setFormData(prev => ({ ...prev, pickupPoints: [...prev.pickupPoints, pickupPointInput.trim()] }));
+                                                            setPickupPointInput('');
+                                                        }
+                                                    }}
+                                                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs"
+                                                >
+                                                    + Add
+                                                </button>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {formData.pickupPoints.map((point, idx) => (
+                                                    <div key={idx} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm flex items-center gap-2">
+                                                        {point}
+                                                        <button type="button" onClick={() => setFormData(prev => ({ ...prev, pickupPoints: prev.pickupPoints.filter((_, i) => i !== idx) }))}>
+                                                            <RiCloseLine size={16} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Private Specific */}
+                                {formData.isPrivate && (
+                                    <div className="md:col-span-2 space-y-3">
+                                        <h3 className="font-medium text-gray-900 border-b pb-2">Private Package Details</h3>
+
+                                        <div className="bg-white p-4 rounded-lg border border-emerald-100 mb-4">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Private Tour Price (Total / Per Vehicle) ₹</label>
+                                            <input
+                                                type="number"
+                                                required={formData.isPrivate}
+                                                value={formData.pricePrivate}
+                                                onChange={e => setFormData({ ...formData, pricePrivate: e.target.value })}
+                                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                placeholder="e.g. 3500"
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                            <label className="flex items-center gap-2 cursor-pointer bg-white p-3 rounded border border-gray-200">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.fuelIncluded}
+                                                    onChange={e => setFormData({ ...formData, fuelIncluded: e.target.checked })}
+                                                    className="w-4 h-4 text-emerald-600 rounded"
+                                                />
+                                                <span className="text-sm text-gray-700">Fuel Included</span>
+                                            </label>
+                                            <label className="flex items-center gap-2 cursor-pointer bg-white p-3 rounded border border-gray-200">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.driverIncluded}
+                                                    onChange={e => setFormData({ ...formData, driverIncluded: e.target.checked })}
+                                                    className="w-4 h-4 text-emerald-600 rounded"
+                                                />
+                                                <span className="text-sm text-gray-700">Driver Included</span>
+                                            </label>
+                                            <label className="flex items-center gap-2 cursor-pointer bg-white p-3 rounded border border-gray-200">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.customizablePickup}
+                                                    onChange={e => setFormData({ ...formData, customizablePickup: e.target.checked })}
+                                                    className="w-4 h-4 text-emerald-600 rounded"
+                                                />
+                                                <span className="text-sm text-gray-700">Customizable Pickup</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Image Upload (Cloudinary) */}
                         <div>
@@ -801,79 +981,104 @@ export default function AddSightseeingClient({
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-3">Inclusions</label>
-                            <div className="flex gap-2 mb-3">
-                                <input
-                                    type="text"
-                                    value={inclusionInput}
-                                    onChange={e => setInclusionInput(e.target.value)}
-                                    onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addInclusion())}
-                                    className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. Private AC Sedan"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={addInclusion}
-                                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs"
-                                >
-                                    + Add
-                                </button>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {formData.inclusions.map((inclusion, idx) => (
-                                    <div key={idx} className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm flex items-center gap-2">
-                                        {inclusion}
-                                        <button type="button" onClick={() => removeInclusion(idx)}>
-                                            <RiCloseLine size={16} />
+                        {/* Inclusions & Exclusions with Quick Add */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-3">Inclusions</label>
+                                <div className="flex gap-2 mb-2 flex-wrap">
+                                    {['AC Vehicle', 'Driver', 'Parking', 'Fuel'].map(item => (
+                                        <button
+                                            key={item}
+                                            type="button"
+                                            onClick={() => {
+                                                if (!formData.inclusions.includes(item)) {
+                                                    setFormData(prev => ({ ...prev, inclusions: [...prev.inclusions, item] }));
+                                                }
+                                            }}
+                                            className="px-2 py-1 bg-green-50 text-green-700 text-xs rounded border border-green-200 hover:bg-green-100"
+                                        >
+                                            + {item}
                                         </button>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
+                                <div className="flex gap-2 mb-3">
+                                    <input
+                                        type="text"
+                                        value={inclusionInput}
+                                        onChange={e => setInclusionInput(e.target.value)}
+                                        onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addInclusion())}
+                                        className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="Add inclusion..."
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={addInclusion}
+                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs"
+                                    >
+                                        + Add
+                                    </button>
+                                </div>
+                                <ul className="space-y-2">
+                                    {formData.inclusions.map((item, idx) => (
+                                        <li key={idx} className="flex items-center justify-between bg-green-50 px-3 py-2 rounded text-sm text-green-800">
+                                            <span>{item}</span>
+                                            <button type="button" onClick={() => removeInclusion(idx)} className="text-red-500 hover:text-red-700">
+                                                <RiDeleteBinLine size={14} />
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-3">Exclusions</label>
+                                <div className="flex gap-2 mb-2 flex-wrap">
+                                    {['Entry Tickets', 'Meals', 'Guide'].map(item => (
+                                        <button
+                                            key={item}
+                                            type="button"
+                                            onClick={() => {
+                                                if (!formData.exclusions.includes(item)) {
+                                                    setFormData(prev => ({ ...prev, exclusions: [...prev.exclusions, item] }));
+                                                }
+                                            }}
+                                            className="px-2 py-1 bg-red-50 text-red-700 text-xs rounded border border-red-200 hover:bg-red-100"
+                                        >
+                                            + {item}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="flex gap-2 mb-3">
+                                    <input
+                                        type="text"
+                                        value={exclusionInput}
+                                        onChange={e => setExclusionInput(e.target.value)}
+                                        onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addExclusion())}
+                                        className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="Add exclusion..."
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={addExclusion}
+                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs"
+                                    >
+                                        + Add
+                                    </button>
+                                </div>
+                                <ul className="space-y-2">
+                                    {formData.exclusions.map((item, idx) => (
+                                        <li key={idx} className="flex items-center justify-between bg-red-50 px-3 py-2 rounded text-sm text-red-800">
+                                            <span>{item}</span>
+                                            <button type="button" onClick={() => removeExclusion(idx)} className="text-red-500 hover:text-red-700">
+                                                <RiDeleteBinLine size={14} />
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-3">Exclusions</label>
-                            <div className="flex gap-2 mb-3">
-                                <input
-                                    type="text"
-                                    value={exclusionInput}
-                                    onChange={e => setExclusionInput(e.target.value)}
-                                    onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addExclusion())}
-                                    className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. Monument Entry Fees"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={addExclusion}
-                                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs"
-                                >
-                                    + Add
-                                </button>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {formData.exclusions.map((exclusion, idx) => (
-                                    <div key={idx} className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm flex items-center gap-2">
-                                        {exclusion}
-                                        <button type="button" onClick={() => removeExclusion(idx)}>
-                                            <RiCloseLine size={16} />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
 
-                        <div>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.isPrivate}
-                                    onChange={e => setFormData({ ...formData, isPrivate: e.target.checked })}
-                                    className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
-                                />
-                                <span className="text-sm text-gray-700">Private Tour</span>
-                            </label>
-                        </div>
 
                         <div className="pt-4 flex gap-4">
                             <button
@@ -899,7 +1104,7 @@ export default function AddSightseeingClient({
                         </div>
 
                     </form>
-                </div>
+                </div >
             )
             }
         </div >

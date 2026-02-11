@@ -23,6 +23,7 @@ const SightseeingPage = () => {
     const [sightseeingPackages, setSightseeingPackages] = useState<SightseeingPackage[]>([]);
     const [filteredPackages, setFilteredPackages] = useState<SightseeingPackage[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<'sharing' | 'private'>('sharing');
     const [searchQuery, setSearchQuery] = useState({ state: "", city: "", members: "" });
     const [filters, setFilters] = useState({
         duration: [] as string[],
@@ -54,7 +55,7 @@ const SightseeingPage = () => {
     // Handle Search from Hero
     const handleSearch = (query: { state: string; city: string; members: string }) => {
         setSearchQuery(query);
-        applyFilters(query, filters);
+        applyFilters(query, filters, activeTab);
     };
 
     // Handle Filters from Sidebar
@@ -78,18 +79,31 @@ const SightseeingPage = () => {
         }
 
         setFilters(newFilters);
-        applyFilters(searchQuery, newFilters);
+        applyFilters(searchQuery, newFilters, activeTab);
     };
 
     const handleResetFilters = () => {
         const resetFilters = { duration: [], vehicleType: [], priceRange: "" };
         setFilters(resetFilters);
-        applyFilters(searchQuery, resetFilters);
+        applyFilters(searchQuery, resetFilters, activeTab);
+    };
+
+    // Handle Tab Change
+    const handleTabChange = (tab: 'sharing' | 'private') => {
+        setActiveTab(tab);
+        applyFilters(searchQuery, filters, tab);
     };
 
     // Apply Logic
-    const applyFilters = (query: typeof searchQuery, currentFilters: typeof filters) => {
+    const applyFilters = (query: typeof searchQuery, currentFilters: typeof filters, tab: 'sharing' | 'private') => {
         let results = sightseeingPackages;
+
+        // 0. Tab Filter
+        if (tab === 'sharing') {
+            results = results.filter(pkg => pkg.isSharing);
+        } else {
+            results = results.filter(pkg => pkg.isPrivate);
+        }
 
         // 1. Search Query Filters
         if (query.state) {
@@ -141,6 +155,8 @@ const SightseeingPage = () => {
             {/* HERO WITH SEARCH */}
             <SightseeingHero onSearch={handleSearch} packages={sightseeingPackages} />
 
+
+
             {/* MAIN CONTENT */}
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col lg:flex-row gap-8">
 
@@ -157,18 +173,36 @@ const SightseeingPage = () => {
 
                 {/* GRID (75%) */}
                 <div className="lg:w-3/4">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-xl font-bold text-slate-900 Mont">
-                            {searchQuery.city ? `Packages in ${searchQuery.city}` : 'Top Sightseeing Packages'}
-                            <span className="text-sm font-normal text-slate-500 ml-2 Inter">({filteredPackages.length} found)</span>
-                        </h2>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-900 Mont">
+                                {searchQuery.city ? `Packages in ${searchQuery.city}` : 'Top Sightseeing Packages'}
+                            </h2>
+                            <p className="text-sm text-slate-500 Inter">{filteredPackages.length} packages found</p>
+                        </div>
+
+                        {/* Tabs moved here */}
+                        <div className="flex bg-slate-100 p-1 rounded-lg">
+                            <button
+                                onClick={() => handleTabChange('sharing')}
+                                className={`px-4 py-2 text-xs font-bold uppercase tracking-wide rounded-md transition-all ${activeTab === 'sharing' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                Sharing
+                            </button>
+                            <button
+                                onClick={() => handleTabChange('private')}
+                                className={`px-4 py-2 text-xs font-bold uppercase tracking-wide rounded-md transition-all ${activeTab === 'private' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                Private
+                            </button>
+                        </div>
                     </div>
 
                     {filteredPackages.length > 0 ? (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredPackages.map((pkg, index) => (
                                 <div key={pkg.id} data-aos="fade-up" data-aos-delay={index * 50}>
-                                    <SightseeingPackageCard pkg={pkg} />
+                                    <SightseeingPackageCard pkg={pkg} activeTab={activeTab} />
                                 </div>
                             ))}
                         </div>

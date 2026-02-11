@@ -8,6 +8,7 @@ import NormalHeader from "@/components/ui/NormalHeader";
 import Footor from "@/components/ui/Footor";
 import { FaClock, FaCar, FaUserFriends, FaMapMarkerAlt, FaCheckCircle, FaTimesCircle, FaWhatsapp, FaArrowLeft } from "react-icons/fa";
 import { useState, useEffect } from "react";
+import ReviewSection from "@/components/sightseeing/ReviewSection";
 
 export default function SightseeingDetailPage() {
     const params = useParams();
@@ -21,6 +22,7 @@ export default function SightseeingDetailPage() {
     const [isBookingOpen, setIsBookingOpen] = useState(false);
     const [bookingDate, setBookingDate] = useState("");
     const [name, setName] = useState("");
+    const [bookingType, setBookingType] = useState<'private' | 'sharing'>('sharing');
 
     // Fetch package from API
     useEffect(() => {
@@ -31,7 +33,15 @@ export default function SightseeingDetailPage() {
                 const data = await res.json();
                 if (data.success) {
                     const foundPackage = data.data.find((p: SightseeingPackage) => p.id === id);
-                    setPkg(foundPackage || null);
+                    if (foundPackage) {
+                        setPkg(foundPackage);
+                        // Set default booking type
+                        if (foundPackage.isPrivate && !foundPackage.isSharing) {
+                            setBookingType('private');
+                        } else {
+                            setBookingType('sharing');
+                        }
+                    }
                 }
             } catch (error) {
                 console.error('Failed to fetch sightseeing package:', error);
@@ -74,7 +84,7 @@ export default function SightseeingDetailPage() {
 
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        alert(`Thank you ${name}! Your request for ${pkg.title} on ${bookingDate} has been received. Our team will contact you shortly.`);
+        alert(`Thank you ${name}! Your request for ${pkg.title} (${bookingType === 'private' ? 'Private' : 'Shared'}) on ${bookingDate} has been received. Our team will contact you shortly.`);
         setIsBookingOpen(false);
     };
 
@@ -125,27 +135,7 @@ export default function SightseeingDetailPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl min-w-[280px]">
-                                <p className="text-sm text-white/80 mb-1">Starting from</p>
-                                <div className="flex items-baseline gap-1 mb-4">
-                                    <span className="text-3xl font-bold">₹{pkg.price.toLocaleString()}</span>
-                                    <span className="text-sm">/ {pkg.priceType === 'per_vehicle' ? 'vehicle' : 'person'}</span>
-                                </div>
-                                <div className="flex flex-col gap-3">
-                                    <button
-                                        onClick={() => setIsBookingOpen(true)}
-                                        className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-emerald-500/30"
-                                    >
-                                        Book Now
-                                    </button>
-                                    <button
-                                        onClick={handleWhatsApp}
-                                        className="w-full bg-white text-emerald-600 font-bold py-3 rounded-xl transition-colors hover:bg-emerald-50 flex items-center justify-center gap-2"
-                                    >
-                                        <FaWhatsapp size={18} /> Contact on WhatsApp
-                                    </button>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -170,6 +160,19 @@ export default function SightseeingDetailPage() {
                         </div>
                     </section>
 
+                    {/* Places Covered */}
+                    <section>
+                        <h2 className="text-2xl font-bold text-slate-900 mb-6 Mont">Places Covered</h2>
+                        <div className="flex flex-wrap gap-3">
+                            {pkg.placesCovered.map((place, i) => (
+                                <div key={i} className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-3 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                                    <FaMapMarkerAlt className="text-emerald-500" />
+                                    <span className="font-medium text-slate-700">{place}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
                     {/* Itinerary */}
                     <section>
                         <h2 className="text-2xl font-bold text-slate-900 mb-6 Mont">Itinerary</h2>
@@ -187,49 +190,133 @@ export default function SightseeingDetailPage() {
                         </div>
                     </section>
 
-                    {/* Places Covered */}
-                    <section>
-                        <h2 className="text-2xl font-bold text-slate-900 mb-6 Mont">Places Covered</h2>
-                        <div className="flex flex-wrap gap-3">
-                            {pkg.placesCovered.map((place, i) => (
-                                <div key={i} className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-3 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                                    <FaMapMarkerAlt className="text-emerald-500" />
-                                    <span className="font-medium text-slate-700">{place}</span>
-                                </div>
-                            ))}
+                    <div className="grid md:grid-cols-2 gap-8">
+                        {/* Inclusions Card */}
+                        <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 h-full">
+                            <h3 className="text-lg font-bold text-slate-900 mb-4">What's Included</h3>
+                            <ul className="space-y-3">
+                                {pkg.inclusions.map((item, i) => (
+                                    <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
+                                        <FaCheckCircle className="text-emerald-500 mt-0.5 shrink-0" />
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
-                    </section>
 
+                        {/* Exclusions Card */}
+                        <div className="bg-white rounded-2xl p-6 border border-slate-200 h-full">
+                            <h3 className="text-lg font-bold text-slate-900 mb-4">What's Excluded</h3>
+                            <ul className="space-y-3">
+                                {pkg.exclusions.map((item, i) => (
+                                    <li key={i} className="flex items-start gap-3 text-sm text-slate-500">
+                                        <FaTimesCircle className="text-red-400 mt-0.5 shrink-0" />
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <ReviewSection packageId={id} />
                 </div>
 
                 {/* RIGHT SIDEBAR */}
                 <div className="space-y-8">
 
-                    {/* Inclusions Card */}
-                    <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                        <h3 className="text-lg font-bold text-slate-900 mb-4">What's Included</h3>
-                        <ul className="space-y-3">
-                            {pkg.inclusions.map((item, i) => (
-                                <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
-                                    <FaCheckCircle className="text-emerald-500 mt-0.5 shrink-0" />
-                                    {item}
-                                </li>
-                            ))}
-                        </ul>
+                    {/* PRICE & BOOKING CARD (Sticky) */}
+                    <div className="sticky top-24 z-10">
+                        <div className="bg-white border border-slate-200 shadow-xl rounded-2xl p-6">
+
+                            {/* Previous Booking Logic moved here with updated styling */}
+                            {pkg.isPrivate && pkg.isSharing && (
+                                <div className="flex bg-slate-100 rounded-lg p-1 mb-6">
+                                    <button
+                                        onClick={() => setBookingType('sharing')}
+                                        className={`flex-1 text-sm font-bold py-2.5 rounded-md transition-all ${bookingType === 'sharing' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        SHARED
+                                    </button>
+                                    <button
+                                        onClick={() => setBookingType('private')}
+                                        className={`flex-1 text-sm font-bold py-2.5 rounded-md transition-all ${bookingType === 'private' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        PRIVATE
+                                    </button>
+                                </div>
+                            )}
+
+                            <div>
+                                <p className="text-sm text-slate-500 font-medium mb-1">
+                                    {bookingType === 'private' ? 'Total Package Price' : 'Price per Person'}
+                                </p>
+                                <div className="flex items-baseline gap-1 mb-6">
+                                    <span className="text-4xl font-bold text-slate-900">
+                                        ₹{(bookingType === 'private' ? (pkg.pricePrivate || pkg.price) : (pkg.priceSharing || pkg.price)).toLocaleString()}
+                                    </span>
+                                    <span className="text-sm font-medium text-slate-500">
+                                        / {bookingType === 'private' ? 'vehicle' : 'person'}
+                                    </span>
+                                </div>
+
+                                <div className="flex flex-col gap-3">
+                                    <button
+                                        onClick={() => setIsBookingOpen(true)}
+                                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-emerald-600/20 active:scale-[0.98]"
+                                    >
+                                        Book {bookingType === 'private' ? 'Private Tour' : 'Shared Tour'}
+                                    </button>
+                                    <button
+                                        onClick={handleWhatsApp}
+                                        className="w-full bg-white border-2 border-emerald-50 text-emerald-600 font-bold py-3.5 rounded-xl transition-colors hover:bg-emerald-50 flex items-center justify-center gap-2"
+                                    >
+                                        <FaWhatsapp size={20} /> Contact / Customize
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Exclusions Card */}
-                    <div className="bg-white rounded-2xl p-6 border border-slate-200">
-                        <h3 className="text-lg font-bold text-slate-900 mb-4">What's Excluded</h3>
-                        <ul className="space-y-3">
-                            {pkg.exclusions.map((item, i) => (
-                                <li key={i} className="flex items-start gap-3 text-sm text-slate-500">
-                                    <FaTimesCircle className="text-red-400 mt-0.5 shrink-0" />
-                                    {item}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    {/* Private/Sharing Specifics */}
+                    {(pkg.isSharing || pkg.isPrivate) && (
+                        <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-100">
+                            <h3 className="text-lg font-bold text-emerald-900 mb-4">Package Details</h3>
+                            <div className="space-y-4">
+                                {pkg.isSharing && pkg.pickupPoints && pkg.pickupPoints.length > 0 && (
+                                    <div>
+                                        <h4 className="text-sm font-bold text-emerald-800 mb-2">Pickup Points</h4>
+                                        <ul className="space-y-1">
+                                            {pkg.pickupPoints.map((point, i) => (
+                                                <li key={i} className="flex items-start gap-2 text-sm text-emerald-700">
+                                                    <FaMapMarkerAlt className="mt-1 shrink-0" size={12} />
+                                                    {point}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {pkg.isPrivate && (
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2 text-sm text-emerald-800">
+                                            {pkg.fuelIncluded ? <FaCheckCircle className="text-emerald-500" /> : <FaTimesCircle className="text-red-400" />}
+                                            <span>Fuel Charge {pkg.fuelIncluded ? 'Included' : 'Extra'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-emerald-800">
+                                            {pkg.driverIncluded ? <FaCheckCircle className="text-emerald-500" /> : <FaTimesCircle className="text-red-400" />}
+                                            <span>Driver Allowance {pkg.driverIncluded ? 'Included' : 'Extra'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-emerald-800">
+                                            {pkg.customizablePickup ? <FaCheckCircle className="text-emerald-500" /> : <FaTimesCircle className="text-red-400" />}
+                                            <span>{pkg.customizablePickup ? 'Customizable Pickup & Drop' : 'Fixed Pickup & Drop'}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+
 
                     <div className="bg-emerald-600 rounded-2xl p-8 text-white text-center">
                         <h3 className="text-xl font-bold mb-2">Need Help?</h3>
@@ -304,6 +391,6 @@ export default function SightseeingDetailPage() {
                     </div>
                 </div>
             )}
-        </div>
+        </div >
     );
 }
