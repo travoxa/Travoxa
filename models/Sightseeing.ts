@@ -24,7 +24,7 @@ const SightseeingSchema = new mongoose.Schema({
     },
     vehicleType: {
         type: String,
-        enum: ['Sedan', 'SUV', 'Tempo Traveller', 'Mini Bus'],
+        enum: ['4 Seater (Sedan)', '6 Seater (SUV)', '12 Seater (Tempo Traveller)', '20 Seater (Mini Bus)'],
         required: [true, 'Please provide a vehicle type'],
     },
     highlights: {

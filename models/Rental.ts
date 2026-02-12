@@ -8,7 +8,7 @@ const RentalSchema = new mongoose.Schema({
     type: {
         type: String,
         required: [true, 'Please provide a type'],
-        enum: ['Scooter', 'Bike', 'Car', 'SUV', 'Tempo Traveller']
+        enum: ['2 Seater (Scooter)', '2 Seater (Bike)', '4 Seater (Car)', '5 Seater (Car)', '7 Seater (SUV)', '12 Seater (Tempo Traveller)'],
     },
     model: {
         type: String,

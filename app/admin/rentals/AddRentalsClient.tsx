@@ -5,7 +5,7 @@ import { RiDeleteBinLine, RiAddLine, RiCloseLine, RiMoreLine, RiEditLine, RiMapP
 import { CldUploadWidget } from 'next-cloudinary';
 import { INDIA_STATES, getCitiesForState, YEAR_OPTIONS } from '@/data/indiaStatesAndCities';
 
-const TYPE_OPTIONS = ["Scooter", "Bike", "Car", "SUV", "Tempo Traveller"];
+const TYPE_OPTIONS = ["2 Seater (Scooter)", "2 Seater (Bike)", '4 Seater (Car)', '5 Seater (Car)', "7 Seater (SUV)", "12 Seater (Tempo Traveller)"];
 const FUEL_OPTIONS = ["Petrol", "Diesel", "Electric", "CNG"];
 
 interface AddRentalsClientProps {
