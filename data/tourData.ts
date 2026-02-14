@@ -18,6 +18,8 @@ export interface TourPackage {
     exclusions: string[];
     availabilityDate?: string; // New field for MongoDB tours
     maxPeople?: string; // New field for MongoDB tours
+    earlyBirdDiscount?: number; // New field for MongoDB tours
+    meals?: string[]; // New field for MongoDB tours
 }
 
 // No static tour data - all tours come from MongoDB

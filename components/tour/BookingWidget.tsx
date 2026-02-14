@@ -13,6 +13,7 @@ interface BookingWidgetProps {
     bookedSlots?: number;
     bookingAmount?: number;
     brochureUrl?: string;
+    availabilityBatches?: { startDate: string; endDate: string; active: boolean }[];
     tourId: string;
     tourTitle: string;
     userPhone?: string;
@@ -22,6 +23,7 @@ export default function BookingWidget({
     price,
     earlyBirdDiscount,
     availabilityDate,
+    availabilityBatches,
     totalSlots,
     bookedSlots,
     bookingAmount,
@@ -31,6 +33,18 @@ export default function BookingWidget({
     userPhone
 }: BookingWidgetProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedBatch, setSelectedBatch] = useState<string>('');
+
+    // Determine what to show
+    const showBatches = availabilityBatches && availabilityBatches.length > 0;
+
+    // Auto-select first batch
+    React.useEffect(() => {
+        if (showBatches && availabilityBatches && availabilityBatches.length > 0) {
+            const firstBatch = availabilityBatches[0];
+            setSelectedBatch(`${firstBatch.startDate} to ${firstBatch.endDate}`);
+        }
+    }, [showBatches, availabilityBatches]);
 
     return (
         <>
@@ -41,25 +55,51 @@ export default function BookingWidget({
 
                 <div className="mb-6">
                     <p className="text-gray-500 text-sm mb-1">Starting from</p>
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-bold text-gray-900">₹{price}</span>
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                        {earlyBirdDiscount && earlyBirdDiscount > 0 ? (
+                            <>
+                                <span className="text-3xl font-bold text-gray-900">
+                                    ₹{Math.round(price * (1 - earlyBirdDiscount / 100))}
+                                </span>
+                                <span className="text-lg text-gray-400 line-through decoration-red-500">₹{price}</span>
+                            </>
+                        ) : (
+                            <span className="text-3xl font-bold text-gray-900">₹{price}</span>
+                        )}
                         <span className="text-gray-400 text-sm">/ person</span>
                     </div>
                     {earlyBirdDiscount && earlyBirdDiscount > 0 ? (
-                        <div className="inline-block bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded mt-2">
+                        <div className="inline-block bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-full mt-2 shadow-md">
                             {earlyBirdDiscount}% Early Bird Discount
                         </div>
                     ) : null}
                 </div>
 
                 <div className="space-y-4 mb-6">
-                    <div className="border border-gray-200 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-green-500 transition-colors">
-                        <HiCalendar className="text-gray-400 text-xl" />
-                        <div>
-                            <p className="text-xs text-gray-400 font-medium">Available Batch</p>
-                            <p className="text-sm font-semibold text-gray-900">
-                                {availabilityDate || 'Choose Availability'}
-                            </p>
+                    <div className="border border-gray-200 rounded-xl p-3 flex items-start gap-3 hover:border-green-500 transition-colors">
+                        <HiCalendar className="text-gray-400 text-xl mt-1" />
+                        <div className="w-full">
+                            <p className="text-xs text-gray-400 font-medium mb-1">Available Batches</p>
+                            {showBatches ? (
+                                <div className="space-y-2">
+                                    <select
+                                        className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium outline-none focus:ring-2 focus:ring-green-500"
+                                        value={selectedBatch}
+                                        onChange={(e) => setSelectedBatch(e.target.value)}
+                                    >
+                                        <option value="">Select a Batch</option>
+                                        {availabilityBatches.map((batch, idx) => (
+                                            <option key={idx} value={`${batch.startDate} to ${batch.endDate}`}>
+                                                {batch.startDate} - {batch.endDate}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : (
+                                <p className="text-sm font-semibold text-gray-900">
+                                    {availabilityDate || 'Choose Availability'}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -136,7 +176,7 @@ export default function BookingWidget({
                 onClose={() => setIsModalOpen(false)}
                 tourId={tourId}
                 tourTitle={tourTitle}
-                availabilityDate={availabilityDate}
+                availabilityDate={selectedBatch || availabilityDate}
                 userPhone={userPhone}
             />
         </>

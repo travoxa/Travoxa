@@ -40,8 +40,22 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 
                 {/* Price Tag */}
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg">
-                    <span className="text-sm font-bold text-gray-900">₹{pkg.price}</span>
+                <div className={`absolute top-4 right-4 backdrop-blur-md px-4 py-2 rounded-full shadow-lg flex items-center gap-2
+                    ${pkg.earlyBirdDiscount && pkg.earlyBirdDiscount > 0
+                        ? 'bg-green-600/90 text-white'
+                        : 'bg-white/90 text-gray-900'
+                    }
+                `}>
+                    {pkg.earlyBirdDiscount && pkg.earlyBirdDiscount > 0 ? (
+                        <>
+                            <span className="text-sm font-bold">
+                                ₹{Math.round(pkg.price * (1 - pkg.earlyBirdDiscount / 100))}
+                            </span>
+                            <span className="text-[10px] text-green-100 line-through decoration-green-200/50">₹{pkg.price}</span>
+                        </>
+                    ) : (
+                        <span className="text-sm font-bold">₹{pkg.price}</span>
+                    )}
                 </div>
 
                 {/* Rating */}
@@ -69,6 +83,21 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
                     {pkg.overview}
                 </p>
 
+                {/* Meal Options */}
+                {/* Meal Options */}
+                {pkg.meals && pkg.meals.length > 0 && (
+                    <div className="mb-4">
+                        <span className="text-xs font-semibold text-gray-700 block mb-1">Meals:</span>
+                        <div className="flex flex-wrap gap-2">
+                            {pkg.meals.map((meal, index) => (
+                                <span key={index} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-md border border-gray-200">
+                                    {meal}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-auto">
                     <div className="flex items-center gap-1.5 text-gray-500 text-xs font-medium bg-gray-50 px-3 py-1.5 rounded-lg">
                         <HiClock className="text-gray-400" />
@@ -81,6 +110,6 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
