@@ -46,7 +46,15 @@ async function verifyMeals() {
         console.log('Tour created with ID:', tour._id);
 
         // Fetch back
-        const fetchedTour = await Tour.findById(tour._id);
+        // Fetch back
+        const fetchedTour = await Tour.findById(tour._id as unknown as mongoose.Types.ObjectId);
+
+        if (!fetchedTour) {
+            console.error('FAILURE: Could not fetch tour back from database');
+            await Tour.findByIdAndDelete(tour._id);
+            return;
+        }
+
         console.log('Fetched tour meals:', fetchedTour.meals);
 
         if (fetchedTour.meals && fetchedTour.meals.length === 3 && fetchedTour.meals.includes('Breakfast')) {
