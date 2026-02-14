@@ -34,6 +34,8 @@ export async function PUT(
         }
 
         const body = await req.json();
+        console.log('[API/PUT] Received update data for tour:', id);
+        console.log('[API/PUT] Meals data:', body.meals);
 
         // Validate required fields
         if (!body.title || !body.location || !body.price) {

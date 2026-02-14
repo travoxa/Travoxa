@@ -48,6 +48,7 @@ export async function POST(req: Request) {
 
         console.log('[API/POST] Received tour data:');
         console.log(JSON.stringify(body, null, 2));
+        console.log('[API/POST] Meals data:', body.meals);
 
         // Validate required fields
         if (!body.title || !body.location || !body.price) {

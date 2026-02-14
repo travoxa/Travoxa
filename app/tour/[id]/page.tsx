@@ -28,6 +28,11 @@ const getHighlightIcon = (highlight: string) => {
     }
 };
 
+const ensureProtocol = (url: string) => {
+    if (!url) return '';
+    return url.startsWith('http') ? url : `https://${url}`;
+};
+
 // Client Component wrapper for Accordion (since this is an async server component, we need a small client component or just make this part interactive. 
 // Actually, it's better to make a separate Client Component for the Itinerary if we want interaction. 
 // However, I can't easily split files right now without creating new ones. 
@@ -53,6 +58,10 @@ async function getTourById(id: string) {
                 id: tour._id.toString(),
                 createdAt: tour.createdAt ? new Date(tour.createdAt).toISOString() : undefined,
                 updatedAt: tour.updatedAt ? new Date(tour.updatedAt).toISOString() : undefined,
+                availabilityBatches: tour.availabilityBatches ? tour.availabilityBatches.map((batch: any) => ({
+                    ...batch,
+                    _id: batch._id ? batch._id.toString() : undefined,
+                })) : [],
             };
         }
     } catch (error) {
@@ -157,7 +166,7 @@ export default async function TourDetailPage({ params }: PageProps) {
                                         <p className="text-xs text-gray-400 font-bold uppercase mb-1">Destination</p>
                                         <p className="font-semibold text-gray-900 text-lg">{pkg.location}</p>
                                         {pkg.locationMapLink && (
-                                            <a href={pkg.locationMapLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-xs font-semibold hover:underline mt-1 inline-block">
+                                            <a href={ensureProtocol(pkg.locationMapLink)} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-xs font-semibold hover:underline mt-1 inline-block">
                                                 View on Map
                                             </a>
                                         )}
@@ -175,7 +184,7 @@ export default async function TourDetailPage({ params }: PageProps) {
                                             <p className="text-xs text-gray-400 font-bold uppercase mb-1">Pickup Location</p>
                                             <p className="font-semibold text-gray-900">{pkg.pickupLocation}</p>
                                             {pkg.pickupMapLink && (
-                                                <a href={pkg.pickupMapLink} target="_blank" rel="noopener noreferrer" className="text-green-600 text-xs font-semibold hover:underline mt-1 inline-block">
+                                                <a href={ensureProtocol(pkg.pickupMapLink)} target="_blank" rel="noopener noreferrer" className="text-green-600 text-xs font-semibold hover:underline mt-1 inline-block">
                                                     View on Map
                                                 </a>
                                             )}
@@ -191,7 +200,7 @@ export default async function TourDetailPage({ params }: PageProps) {
                                             <p className="text-xs text-gray-400 font-bold uppercase mb-1">Drop Location</p>
                                             <p className="font-semibold text-gray-900">{pkg.dropLocation}</p>
                                             {pkg.dropMapLink && (
-                                                <a href={pkg.dropMapLink} target="_blank" rel="noopener noreferrer" className="text-red-500 text-xs font-semibold hover:underline mt-1 inline-block">
+                                                <a href={ensureProtocol(pkg.dropMapLink)} target="_blank" rel="noopener noreferrer" className="text-red-500 text-xs font-semibold hover:underline mt-1 inline-block">
                                                     View on Map
                                                 </a>
                                             )}
@@ -222,6 +231,21 @@ export default async function TourDetailPage({ params }: PageProps) {
 
 
 
+
+
+                    {/* Meal Options */}
+                    {pkg.meals && pkg.meals.length > 0 && (
+                        <section>
+                            <h2 className="text-xl font-bold text-gray-900 mb-4">Meal Options</h2>
+                            <div className="flex flex-wrap gap-3">
+                                {pkg.meals.map((meal: string, i: number) => (
+                                    <div key={i} className="bg-gray-50 border border-gray-100 px-4 py-3 rounded-xl shadow-sm min-w-[80px] text-center">
+                                        <span className="text-sm font-medium text-gray-700">{meal}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
 
                     {/* Itinerary */}
                     {pkg.itinerary && pkg.itinerary.length > 0 && (
@@ -339,6 +363,7 @@ export default async function TourDetailPage({ params }: PageProps) {
                         tourTitle={pkg.title}
                         earlyBirdDiscount={pkg.earlyBirdDiscount}
                         availabilityDate={pkg.availabilityDate}
+                        availabilityBatches={pkg.availabilityBatches}
                         totalSlots={pkg.totalSlots}
 
                         bookedSlots={pkg.bookedSlots}

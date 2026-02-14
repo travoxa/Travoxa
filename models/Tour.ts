@@ -19,8 +19,15 @@ const TourSchema = new mongoose.Schema({
         required: [true, 'Please provide a duration'],
     },
     availabilityDate: {
-        type: String, // Can be "Flexible" or specific date range
-        required: [true, 'Please provide availability dates'],
+        type: String, // Can be "Flexible" or specific date range - KEEPING FOR BACKWARD COMPATIBILITY
+    },
+    availabilityBatches: {
+        type: [{
+            startDate: String,
+            endDate: String,
+            active: { type: Boolean, default: true }
+        }],
+        default: []
     },
     minPeople: {
         type: Number,
@@ -97,10 +104,22 @@ const TourSchema = new mongoose.Schema({
     },
     inclusions: [String],
     exclusions: [String],
+    meals: {
+        type: [String],
+        default: []
+    },
     createdAt: {
         type: Date,
         default: Date.now,
     },
 });
 
-export default mongoose.models.Tour || mongoose.model('Tour', TourSchema);
+// Prevent mongoose from creating a new model if it already exists
+// This is needed because in development we don't want to restart the server for every change
+if (mongoose.models.Tour) {
+    delete mongoose.models.Tour;
+}
+
+const Tour = mongoose.models.Tour || mongoose.model('Tour', TourSchema);
+
+export default Tour;

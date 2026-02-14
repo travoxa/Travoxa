@@ -60,6 +60,7 @@ export default function AddTourClient() {
         availabilityDate: '', // Kept for backend compatibility
         availabilityStart: '',
         availabilityEnd: '',
+        availabilityBatches: [] as { startDate: string; endDate: string; active: boolean }[],
         minPeople: '',
         maxPeople: '',
         overview: '',
@@ -78,7 +79,8 @@ export default function AddTourClient() {
         brochureUrl: '',
         totalSlots: '',
         bookingAmount: '',
-        earlyBirdDiscount: ''
+        earlyBirdDiscount: '',
+        meals: [] as string[]
     };
 
     const isDev = process.env.NODE_ENV === 'development';
@@ -93,6 +95,10 @@ export default function AddTourClient() {
         availabilityDate: '',
         availabilityStart: new Date().toISOString().split('T')[0],
         availabilityEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        availabilityBatches: [
+            { startDate: new Date().toISOString().split('T')[0], endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], active: true },
+            { startDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], endDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], active: true }
+        ],
         minPeople: '2',
         maxPeople: '10',
         overview: 'This is a test overview for the tour. It contains dummy data for development purposes.',
@@ -113,7 +119,8 @@ export default function AddTourClient() {
         brochureUrl: 'https://example.com/brochure.pdf',
         totalSlots: '20',
         bookingAmount: '1000',
-        earlyBirdDiscount: '10'
+        earlyBirdDiscount: '10',
+        meals: ['English Breakfast', 'Chicken Biryani', 'Seafood BBQ']
     };
 
     const [formData, setFormData] = useState(isDev ? DUMMY_FORM_DATA : EMPTY_FORM_DATA);
@@ -311,6 +318,51 @@ export default function AddTourClient() {
         setFormData(prev => ({ ...prev, cancellationPolicy: updated }));
     };
 
+    // Meals Helpers
+    const addMeal = () => {
+        setFormData(prev => ({
+            ...prev,
+            meals: [...prev.meals, '']
+        }));
+    };
+
+    const updateMeal = (index: number, value: string) => {
+        const updated = [...formData.meals];
+        updated[index] = value;
+        setFormData(prev => ({ ...prev, meals: updated }));
+    };
+
+    const removeMeal = (index: number) => {
+        const updated = [...formData.meals];
+        updated.splice(index, 1);
+        setFormData(prev => ({ ...prev, meals: updated }));
+    };
+
+    // Availability Batches Helper
+    const addBatch = () => {
+        if (!formData.availabilityStart || !formData.availabilityEnd) {
+            alert('Please select both start and end dates before adding a batch.');
+            return;
+        }
+        setFormData(prev => ({
+            ...prev,
+            availabilityBatches: [
+                ...prev.availabilityBatches,
+                { startDate: formData.availabilityStart, endDate: formData.availabilityEnd, active: true }
+            ],
+            availabilityStart: '',
+            availabilityEnd: ''
+        }));
+    };
+
+    const removeBatch = (index: number) => {
+        const updated = [...formData.availabilityBatches];
+        updated.splice(index, 1);
+        setFormData(prev => ({ ...prev, availabilityBatches: updated }));
+    };
+
+
+
 
     // Handle edit
     const handleEdit = (tour: any) => {
@@ -325,6 +377,7 @@ export default function AddTourClient() {
             availabilityDate: tour.availabilityDate || '',
             availabilityStart: '',
             availabilityEnd: '',
+            availabilityBatches: tour.availabilityBatches || [],
             minPeople: tour.minPeople || '',
             maxPeople: tour.maxPeople || '',
             overview: tour.overview || '',
@@ -343,7 +396,8 @@ export default function AddTourClient() {
             brochureUrl: tour.brochureUrl || '',
             totalSlots: tour.totalSlots ? tour.totalSlots.toString() : '',
             bookingAmount: tour.bookingAmount ? tour.bookingAmount.toString() : '',
-            earlyBirdDiscount: tour.earlyBirdDiscount ? tour.earlyBirdDiscount.toString() : ''
+            earlyBirdDiscount: tour.earlyBirdDiscount ? tour.earlyBirdDiscount.toString() : '',
+            meals: tour.meals || []
         });
 
         // Parse duration if exists
@@ -411,6 +465,8 @@ export default function AddTourClient() {
             totalSlots: Number(formData.totalSlots) || 0,
             bookingAmount: Number(formData.bookingAmount) || 0,
             earlyBirdDiscount: Number(formData.earlyBirdDiscount) || 0,
+            meals: formData.meals,
+            availabilityBatches: formData.availabilityBatches,
         };
 
         if (payload.minPeople > payload.maxPeople) {
@@ -420,6 +476,7 @@ export default function AddTourClient() {
         }
 
         console.log('[FORM] Sending payload to /api/tours:', payload);
+        console.log('[FORM] Meals payload:', payload.meals);
 
         try {
             const method = editingId ? 'PUT' : 'POST';
@@ -738,28 +795,56 @@ export default function AddTourClient() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Availability Date</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div className="flex flex-col">
-                                        <label className="text-xs text-gray-500 mb-1">Start Date</label>
-                                        <input
-                                            type="date"
-                                            required
-                                            value={formData.availabilityStart}
-                                            onChange={e => setFormData({ ...formData, availabilityStart: e.target.value })}
-                                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-gray-700"
-                                        />
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Availability Batches</label>
+                                <div className="space-y-3">
+                                    <div className="grid grid-cols-2 gap-2 items-end">
+                                        <div>
+                                            <label className="text-xs text-gray-500 mb-1">Start Date</label>
+                                            <input
+                                                type="date"
+                                                value={formData.availabilityStart}
+                                                onChange={e => setFormData({ ...formData, availabilityStart: e.target.value })}
+                                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-gray-700"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-gray-500 mb-1">End Date</label>
+                                            <input
+                                                type="date"
+                                                value={formData.availabilityEnd}
+                                                onChange={e => setFormData({ ...formData, availabilityEnd: e.target.value })}
+                                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-gray-700"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col">
-                                        <label className="text-xs text-gray-500 mb-1">End Date</label>
-                                        <input
-                                            type="date"
-                                            required
-                                            value={formData.availabilityEnd}
-                                            onChange={e => setFormData({ ...formData, availabilityEnd: e.target.value })}
-                                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-gray-700"
-                                        />
-                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={addBatch}
+                                        className="w-full py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <RiAddLine /> Add Batch
+                                    </button>
+
+                                    {/* Batches List */}
+                                    {formData.availabilityBatches.length > 0 && (
+                                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 space-y-2 max-h-40 overflow-y-auto">
+                                            {formData.availabilityBatches.map((batch, index) => (
+                                                <div key={index} className="flex items-center justify-between bg-white p-2 rounded border border-gray-200 text-sm">
+                                                    <span className="text-gray-700">
+                                                        {batch.startDate} <span className="text-gray-400 mx-1">to</span> {batch.endDate}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeBatch(index)}
+                                                        className="text-red-500 hover:text-red-700"
+                                                        title="Remove Batch"
+                                                    >
+                                                        <RiCloseLine size={16} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -865,6 +950,46 @@ export default function AddTourClient() {
                                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
                                     placeholder="e.g. 10"
                                 />
+                            </div>
+
+                            {/* Meal Options Section */}
+                            <div>
+                                <h3 className="text-md font-medium text-gray-800 mb-3 block">Meal Options</h3>
+                                <div className="bg-gray-50 p-4 rounded-lg">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="text-sm font-medium text-gray-700">Available Meals</label>
+                                        <button
+                                            type="button"
+                                            onClick={addMeal}
+                                            className="text-green-600 hover:text-green-700 text-sm flex items-center gap-1"
+                                        >
+                                            <RiAddLine /> Add Meal
+                                        </button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {formData.meals.map((meal, index) => (
+                                            <div key={index} className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={meal}
+                                                    onChange={(e) => updateMeal(index, e.target.value)}
+                                                    className="flex-1 px-3 py-1.5 border rounded text-sm outline-none focus:ring-1 focus:ring-green-500"
+                                                    placeholder="e.g. English Breakfast"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeMeal(index)}
+                                                    className="text-red-500 hover:text-red-700"
+                                                >
+                                                    <RiDeleteBinLine />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {formData.meals.length === 0 && (
+                                            <p className="text-xs text-gray-400 italic">No meals added.</p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                             <div className="pt-6">
                                 <div className="flex items-center justify-between mb-2">
@@ -1089,7 +1214,7 @@ export default function AddTourClient() {
                         </div>
 
                         {/* Cancellation Policy */}
-                        <div>
+                        < div >
                             <div className="flex items-center justify-between mb-4">
                                 <label className="block text-sm font-medium text-gray-700">Cancellation Policy</label>
                                 <button
@@ -1120,7 +1245,7 @@ export default function AddTourClient() {
                                     </div>
                                 ))}
                             </div>
-                        </div>
+                        </div >
 
                         <div className="pt-4 flex gap-4">
                             <button
@@ -1139,8 +1264,8 @@ export default function AddTourClient() {
                             </button>
                         </div>
 
-                    </form>
-                </div>
+                    </form >
+                </div >
             )
             }
         </div >
