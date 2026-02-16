@@ -104,10 +104,14 @@ const TourSchema = new mongoose.Schema({
     },
     inclusions: [String],
     exclusions: [String],
-    meals: {
-        type: [String],
-        default: []
-    },
+    meals: [{
+        day: Number,
+        breakfast: [String],
+        lunch: [String],
+        dinner: [String],
+        snacks: [String],
+        custom: [String]
+    }],
     createdAt: {
         type: Date,
         default: Date.now,

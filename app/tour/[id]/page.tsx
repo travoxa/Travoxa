@@ -233,73 +233,176 @@ export default async function TourDetailPage({ params }: PageProps) {
 
 
 
-                    {/* Meal Options */}
-                    {pkg.meals && pkg.meals.length > 0 && (
+                    {/* Itinerary */}
+                    {pkg.itinerary && pkg.itinerary.length > 0 && (
                         <section>
-                            <h2 className="text-xl font-bold text-gray-900 mb-4">Meal Options</h2>
-                            <div className="flex flex-wrap gap-3">
-                                {pkg.meals.map((meal: string, i: number) => (
-                                    <div key={i} className="bg-gray-50 border border-gray-100 px-4 py-3 rounded-xl shadow-sm min-w-[80px] text-center">
-                                        <span className="text-sm font-medium text-gray-700">{meal}</span>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-8">Itinerary</h2>
+                            <div className="relative space-y-8 pb-12 overflow-hidden">
+                                {/* Global Solid Line - Bolder */}
+                                <div className="absolute left-11 top-0 bottom-0 w-2 bg-green-200" />
+
+                                {pkg.itinerary.map((item: any, index: number) => (
+                                    <div key={index} className="relative pl-28">
+                                        {/* Mask for Line (First Item - Top Half) */}
+                                        {index === 0 && (
+                                            <div className="absolute left-0 top-0 bottom-1/2 w-24 bg-white z-10" />
+                                        )}
+
+                                        {/* Mask for Line (Last Item - Bottom Half + Infinite) */}
+                                        {index === pkg.itinerary.length - 1 && (
+                                            <div className="absolute left-0 top-1/2 h-[9999px] w-24 bg-white z-10" />
+                                        )}
+
+                                        {/* Gradient Tail (Last Item) - Bolder */}
+                                        {index === pkg.itinerary.length - 1 && (
+                                            <div className="absolute left-11 top-1/2 h-40 w-2 bg-gradient-to-b from-green-200 to-transparent z-10" />
+                                        )}
+
+                                        {/* Timeline Dot/Badge - Larger & Centered */}
+                                        <div className="absolute left-6 top-1/2 -translate-y-1/2 bg-white py-2 z-20">
+                                            <div className="w-12 h-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold text-lg border-4 border-green-50 shadow-sm">
+                                                D{item.day}
+                                            </div>
+                                        </div>
+
+                                        <details open className="group bg-white border border-gray-200 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden relative z-20">
+                                            <summary className="flex cursor-pointer items-center justify-between p-6 text-gray-900 font-medium">
+                                                <h3 className="text-lg font-bold">{item.title}</h3>
+                                                <span className="shrink-0 transition duration-300 group-open:-rotate-180">
+                                                    <HiChevronDown size={20} className="text-gray-400" />
+                                                </span>
+                                            </summary>
+
+                                            <div className="p-6 pt-0 border-t border-gray-100 bg-gray-50/50">
+                                                <p className="text-gray-600 leading-relaxed mb-6">{item.description}</p>
+
+                                                {/* Day Details Grid */}
+                                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                                    {item.stay && (
+                                                        <div className="p-3 bg-white rounded-xl border border-gray-200">
+                                                            <p className="text-xs text-gray-400 uppercase font-bold mb-1">Stay</p>
+                                                            <p className="text-sm font-semibold text-gray-800">{item.stay}</p>
+                                                        </div>
+                                                    )}
+                                                    {item.activity && (
+                                                        <div className="p-3 bg-white rounded-xl border border-gray-200">
+                                                            <p className="text-xs text-gray-400 uppercase font-bold mb-1">Activity</p>
+                                                            <p className="text-sm font-semibold text-gray-800">{item.activity}</p>
+                                                        </div>
+                                                    )}
+                                                    {item.meal && (
+                                                        <div className="p-3 bg-white rounded-xl border border-gray-200">
+                                                            <p className="text-xs text-gray-400 uppercase font-bold mb-1">Meals</p>
+                                                            <p className="text-sm font-semibold text-gray-800">{item.meal}</p>
+                                                        </div>
+                                                    )}
+                                                    {item.transfer && (
+                                                        <div className="p-3 bg-white rounded-xl border border-gray-200">
+                                                            <p className="text-xs text-gray-400 uppercase font-bold mb-1">Transfer</p>
+                                                            <p className="text-sm font-semibold text-gray-800">{item.transfer}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </details>
                                     </div>
                                 ))}
                             </div>
                         </section>
                     )}
 
-                    {/* Itinerary */}
-                    {pkg.itinerary && pkg.itinerary.length > 0 && (
+                    {/* Meal Options */}
+                    {pkg.meals && pkg.meals.length > 0 && (
                         <section>
-                            <h2 className="text-2xl font-bold text-gray-900 mb-8">Itinerary</h2>
-                            <div className="space-y-4">
-                                {pkg.itinerary.map((item: any, index: number) => (
-                                    <details key={index} open className="group bg-white border border-gray-200 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden">
-                                        <summary className="flex cursor-pointer items-center justify-between p-6 text-gray-900 font-medium">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold text-sm">
-                                                    D{item.day}
-                                                </div>
-                                                <h3 className="text-lg font-bold">{item.title}</h3>
+                            <h2 className="text-xl font-bold text-gray-900 mb-4">Meal Plan</h2>
+
+                            {/* Check if legacy simple array or new day-wise structure */}
+                            {typeof pkg.meals[0] === 'string' ? (
+                                <div className="flex flex-wrap gap-3">
+                                    {pkg.meals.map((meal: string, i: number) => (
+                                        <div key={i} className="bg-gray-50 border border-gray-100 px-4 py-3 rounded-xl shadow-sm min-w-[80px] text-center">
+                                            <span className="text-sm font-medium text-gray-700">{meal}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {pkg.meals.map((dayMeal: any, i: number) => (
+                                        <div key={i} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+                                            <div className="bg-gray-50 px-6 py-3 border-b border-gray-100">
+                                                <span className="font-bold text-gray-800">Day {dayMeal.day}</span>
                                             </div>
-                                            <span className="shrink-0 transition duration-300 group-open:-rotate-180">
-                                                <HiChevronDown size={20} className="text-gray-400" />
-                                            </span>
-                                        </summary>
-
-                                        <div className="p-6 pt-0 border-t border-gray-100 bg-gray-50/50">
-                                            <p className="text-gray-600 leading-relaxed mb-6">{item.description}</p>
-
-                                            {/* Day Details Grid */}
-                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                                                {item.stay && (
-                                                    <div className="p-3 bg-white rounded-xl border border-gray-200">
-                                                        <p className="text-xs text-gray-400 uppercase font-bold mb-1">Stay</p>
-                                                        <p className="text-sm font-semibold text-gray-800">{item.stay}</p>
+                                            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                                {dayMeal.breakfast && dayMeal.breakfast.length > 0 && (
+                                                    <div>
+                                                        <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Breakfast</h4>
+                                                        <ul className="space-y-1">
+                                                            {dayMeal.breakfast.map((item: string, idx: number) => (
+                                                                <li key={idx} className="text-sm text-gray-700 flex items-center gap-2">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 shrink-0"></div>
+                                                                    {item}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
                                                     </div>
                                                 )}
-                                                {item.activity && (
-                                                    <div className="p-3 bg-white rounded-xl border border-gray-200">
-                                                        <p className="text-xs text-gray-400 uppercase font-bold mb-1">Activity</p>
-                                                        <p className="text-sm font-semibold text-gray-800">{item.activity}</p>
+                                                {dayMeal.lunch && dayMeal.lunch.length > 0 && (
+                                                    <div>
+                                                        <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Lunch</h4>
+                                                        <ul className="space-y-1">
+                                                            {dayMeal.lunch.map((item: string, idx: number) => (
+                                                                <li key={idx} className="text-sm text-gray-700 flex items-center gap-2">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0"></div>
+                                                                    {item}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
                                                     </div>
                                                 )}
-                                                {item.meal && (
-                                                    <div className="p-3 bg-white rounded-xl border border-gray-200">
-                                                        <p className="text-xs text-gray-400 uppercase font-bold mb-1">Meals</p>
-                                                        <p className="text-sm font-semibold text-gray-800">{item.meal}</p>
+                                                {dayMeal.dinner && dayMeal.dinner.length > 0 && (
+                                                    <div>
+                                                        <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Dinner</h4>
+                                                        <ul className="space-y-1">
+                                                            {dayMeal.dinner.map((item: string, idx: number) => (
+                                                                <li key={idx} className="text-sm text-gray-700 flex items-center gap-2">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0"></div>
+                                                                    {item}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
                                                     </div>
                                                 )}
-                                                {item.transfer && (
-                                                    <div className="p-3 bg-white rounded-xl border border-gray-200">
-                                                        <p className="text-xs text-gray-400 uppercase font-bold mb-1">Transfer</p>
-                                                        <p className="text-sm font-semibold text-gray-800">{item.transfer}</p>
+                                                {dayMeal.snacks && dayMeal.snacks.length > 0 && (
+                                                    <div>
+                                                        <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Snacks</h4>
+                                                        <ul className="space-y-1">
+                                                            {dayMeal.snacks.map((item: string, idx: number) => (
+                                                                <li key={idx} className="text-sm text-gray-700 flex items-center gap-2">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0"></div>
+                                                                    {item}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                                {dayMeal.custom && dayMeal.custom.length > 0 && (
+                                                    <div>
+                                                        <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Other</h4>
+                                                        <ul className="space-y-1">
+                                                            {dayMeal.custom.map((item: string, idx: number) => (
+                                                                <li key={idx} className="text-sm text-gray-700 flex items-center gap-2">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0"></div>
+                                                                    {item}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
-                                    </details>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            )}
                         </section>
                     )}
 

@@ -19,7 +19,14 @@ export interface TourPackage {
     availabilityDate?: string; // New field for MongoDB tours
     maxPeople?: string; // New field for MongoDB tours
     earlyBirdDiscount?: number; // New field for MongoDB tours
-    meals?: string[]; // New field for MongoDB tours
+    meals?: string[] | {
+        day: number;
+        breakfast: string[];
+        lunch: string[];
+        dinner: string[];
+        snacks: string[];
+        custom: string[];
+    }[]; // Updated to support day-wise meals
 }
 
 // No static tour data - all tours come from MongoDB
