@@ -83,20 +83,7 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
                     {pkg.overview}
                 </p>
 
-                {/* Meal Options */}
-                {/* Meal Options */}
-                {pkg.meals && pkg.meals.length > 0 && (
-                    <div className="mb-4">
-                        <span className="text-xs font-semibold text-gray-700 block mb-1">Meals:</span>
-                        <div className="flex flex-wrap gap-2">
-                            {pkg.meals.map((meal, index) => (
-                                <span key={index} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-md border border-gray-200">
-                                    {meal}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                )}
+
 
                 <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-auto">
                     <div className="flex items-center gap-1.5 text-gray-500 text-xs font-medium bg-gray-50 px-3 py-1.5 rounded-lg">

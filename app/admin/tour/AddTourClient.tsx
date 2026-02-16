@@ -50,6 +50,10 @@ export default function AddTourClient() {
     const [requests, setRequests] = useState<any[]>([]);
     const [loadingRequests, setLoadingRequests] = useState(false);
 
+    // Custom inputs state
+    const [customInclusion, setCustomInclusion] = useState('');
+    const [exclusionInput, setExclusionInput] = useState('');
+
     const EMPTY_FORM_DATA = {
         title: '',
         location: '',
@@ -65,6 +69,7 @@ export default function AddTourClient() {
         maxPeople: '',
         overview: '',
         inclusions: [] as string[],
+        exclusions: [] as string[],
         itinerary: [] as { day: number; title: string; description: string; stay: string; activity: string; meal: string; transfer: string }[],
         images: [] as string[],
         // New Fields
@@ -103,6 +108,7 @@ export default function AddTourClient() {
         maxPeople: '10',
         overview: 'This is a test overview for the tour. It contains dummy data for development purposes.',
         inclusions: ["Daily breakfast", "Airport transfers"],
+        exclusions: ["Personal expenses", "Flight tickets"],
         itinerary: [
             { day: 1, title: 'Arrival', description: 'Arrive at the location.', stay: 'Hotel Test', activity: 'Rest', meal: 'Dinner', transfer: 'Airport Pickup' },
             { day: 2, title: 'Exploration', description: ' explore the city.', stay: 'Hotel Test', activity: 'City Tour', meal: 'Breakfast, Lunch', transfer: 'Bus' }
@@ -298,6 +304,48 @@ export default function AddTourClient() {
         });
     };
 
+    // Custom Inclusions Helper
+    const addCustomInclusion = () => {
+        if (!customInclusion.trim()) return;
+        if (formData.inclusions.includes(customInclusion.trim())) {
+            alert('Inclusion already exists');
+            return;
+        }
+        setFormData(prev => ({
+            ...prev,
+            inclusions: [...prev.inclusions, customInclusion.trim()]
+        }));
+        setCustomInclusion('');
+    };
+
+    const removeInclusion = (item: string) => {
+        setFormData(prev => ({
+            ...prev,
+            inclusions: prev.inclusions.filter(i => i !== item)
+        }));
+    };
+
+    // Exclusions Helper
+    const addExclusion = () => {
+        if (!exclusionInput.trim()) return;
+        if (formData.exclusions.includes(exclusionInput.trim())) {
+            alert('Exclusion already exists');
+            return;
+        }
+        setFormData(prev => ({
+            ...prev,
+            exclusions: [...prev.exclusions, exclusionInput.trim()]
+        }));
+        setExclusionInput('');
+    };
+
+    const removeExclusion = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            exclusions: prev.exclusions.filter((_, i) => i !== index)
+        }));
+    };
+
     // Cancellation Policy Helpers
     const addCancellationPolicy = () => {
         setFormData(prev => ({
@@ -382,6 +430,7 @@ export default function AddTourClient() {
             maxPeople: tour.maxPeople || '',
             overview: tour.overview || '',
             inclusions: tour.inclusions || [],
+            exclusions: tour.exclusions || [],
             itinerary: tour.itinerary || [],
             images: tour.images || [],
             // Populating new fields
@@ -450,6 +499,7 @@ export default function AddTourClient() {
             maxPeople: Number(formData.maxPeople),
             overview: formData.overview,
             inclusions: formData.inclusions,
+            exclusions: formData.exclusions,
             itinerary: formData.itinerary,
             image: formData.images, // Fix: Changed from 'images' to 'image' to match Schema
             // New Payload fields
@@ -1063,6 +1113,91 @@ export default function AddTourClient() {
                                         <span className="text-sm text-gray-600">{option}</span>
                                     </label>
                                 ))}
+                            </div>
+                        </div>
+
+                        {/* Custom Inclusions */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Custom Inclusions</label>
+                            <div className="flex gap-2 mb-2">
+                                <input
+                                    type="text"
+                                    value={customInclusion}
+                                    onChange={(e) => setCustomInclusion(e.target.value)}
+                                    className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    placeholder="Add other inclusions..."
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            addCustomInclusion();
+                                        }
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={addCustomInclusion}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                                >
+                                    Add
+                                </button>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {formData.inclusions.filter(inc => !INCLUSION_OPTIONS.includes(inc)).map((inc, idx) => (
+                                    <span key={idx} className="flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm border border-green-100">
+                                        {inc}
+                                        <button
+                                            type="button"
+                                            onClick={() => removeInclusion(inc)}
+                                            className="ml-1 text-green-500 hover:text-green-800"
+                                        >
+                                            <RiCloseLine />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Exclusions */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Exclusions</label>
+                            <div className="flex gap-2 mb-2">
+                                <input
+                                    type="text"
+                                    value={exclusionInput}
+                                    onChange={(e) => setExclusionInput(e.target.value)}
+                                    className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    placeholder="Add exclusions..."
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            addExclusion();
+                                        }
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={addExclusion}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                                >
+                                    Add
+                                </button>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {formData.exclusions.map((exc, idx) => (
+                                    <span key={idx} className="flex items-center gap-1 bg-red-50 text-red-700 px-3 py-1 rounded-full text-sm border border-red-100">
+                                        {exc}
+                                        <button
+                                            type="button"
+                                            onClick={() => removeExclusion(idx)}
+                                            className="ml-1 text-red-500 hover:text-red-800"
+                                        >
+                                            <RiCloseLine />
+                                        </button>
+                                    </span>
+                                ))}
+                                {formData.exclusions.length === 0 && (
+                                    <p className="text-xs text-gray-400 italic w-full">No exclusions added.</p>
+                                )}
                             </div>
                         </div>
 

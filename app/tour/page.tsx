@@ -10,6 +10,7 @@ import TourFilterSearch from "@/components/Pages/Tour/TourFilterSearch";
 import Header from "@/components/ui/Header";
 import Footer from "@/components/ui/Footor"; // Note: typo in original file 'Footor'
 import Image from "next/image";
+import SectionLoading from "@/components/ui/components/SectionLoading";
 
 export default function TourPage() {
     return (
@@ -24,11 +25,18 @@ function TourContent() {
     const [filteredPackages, setFilteredPackages] = useState<any[]>(tourData);
     const [allPackages, setAllPackages] = useState<any[]>(tourData); // Keep track of all available packages
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Fetch dynamic tours from API
     useEffect(() => {
         const fetchTours = async () => {
             try {
+                // Determine if we need to fetch. If tourData is empty, we definitely need to fetch to show something.
+                // Even if tourData has items, we might want to fetch dynamic ones.
+                // But for now, let's just assume we always fetch.
+
+                setIsLoading(true);
+
                 const res = await fetch('/api/tours');
                 const data = await res.json();
                 if (data.success) {
@@ -52,6 +60,8 @@ function TourContent() {
                 }
             } catch (error) {
                 console.error("Failed to fetch tours:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -183,7 +193,9 @@ function TourContent() {
                     </p>
                 </div>
 
-                {filteredPackages.length > 0 ? (
+                {isLoading ? (
+                    <SectionLoading />
+                ) : filteredPackages.length > 0 ? (
                     <div className="relative">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
                             {displayedPackages.map((pkg, index) => {
