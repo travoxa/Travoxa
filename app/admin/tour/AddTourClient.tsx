@@ -85,7 +85,7 @@ export default function AddTourClient() {
         totalSlots: '',
         bookingAmount: '',
         earlyBirdDiscount: '',
-        meals: [] as string[]
+        meals: [] as { day: number; breakfast: string[]; lunch: string[]; dinner: string[]; snacks: string[]; custom: string[] }[]
     };
 
     const isDev = process.env.NODE_ENV === 'development';
@@ -126,7 +126,24 @@ export default function AddTourClient() {
         totalSlots: '20',
         bookingAmount: '1000',
         earlyBirdDiscount: '10',
-        meals: ['English Breakfast', 'Chicken Biryani', 'Seafood BBQ']
+        meals: [
+            {
+                day: 1,
+                breakfast: ['Oatmeal', 'Eggs'],
+                lunch: ['Grilled Chicken Salad'],
+                dinner: ['Steak', 'Mashed Potatoes'],
+                snacks: ['Fruits'],
+                custom: []
+            },
+            {
+                day: 2,
+                breakfast: ['Pancakes'],
+                lunch: ['Sandwich'],
+                dinner: ['Pasta'],
+                snacks: ['Cookies'],
+                custom: []
+            }
+        ]
     };
 
     const [formData, setFormData] = useState(isDev ? DUMMY_FORM_DATA : EMPTY_FORM_DATA);
@@ -366,23 +383,47 @@ export default function AddTourClient() {
         setFormData(prev => ({ ...prev, cancellationPolicy: updated }));
     };
 
-    // Meals Helpers
-    const addMeal = () => {
+    // Meals Helpers - Day Wise
+    const addMealDay = () => {
         setFormData(prev => ({
             ...prev,
-            meals: [...prev.meals, '']
+            meals: [
+                ...prev.meals,
+                {
+                    day: prev.meals.length + 1,
+                    breakfast: [],
+                    lunch: [],
+                    dinner: [],
+                    snacks: [],
+                    custom: []
+                }
+            ]
         }));
     };
 
-    const updateMeal = (index: number, value: string) => {
+    const removeMealDay = (index: number) => {
         const updated = [...formData.meals];
-        updated[index] = value;
+        updated.splice(index, 1);
+        // Re-index days? Maybe not strictly necessary for the backend, but good for UI consistency if we display "Day X"
+        const reindexed = updated.map((item, idx) => ({ ...item, day: idx + 1 }));
+        setFormData(prev => ({ ...prev, meals: reindexed }));
+    };
+
+    const addMealItem = (dayIndex: number, type: 'breakfast' | 'lunch' | 'dinner' | 'snacks' | 'custom') => {
+        const updated = [...formData.meals];
+        updated[dayIndex][type].push('');
         setFormData(prev => ({ ...prev, meals: updated }));
     };
 
-    const removeMeal = (index: number) => {
+    const updateMealItem = (dayIndex: number, type: 'breakfast' | 'lunch' | 'dinner' | 'snacks' | 'custom', itemIndex: number, value: string) => {
         const updated = [...formData.meals];
-        updated.splice(index, 1);
+        updated[dayIndex][type][itemIndex] = value;
+        setFormData(prev => ({ ...prev, meals: updated }));
+    };
+
+    const removeMealItem = (dayIndex: number, type: 'breakfast' | 'lunch' | 'dinner' | 'snacks' | 'custom', itemIndex: number) => {
+        const updated = [...formData.meals];
+        updated[dayIndex][type].splice(itemIndex, 1);
         setFormData(prev => ({ ...prev, meals: updated }));
     };
 
@@ -446,7 +487,9 @@ export default function AddTourClient() {
             totalSlots: tour.totalSlots ? tour.totalSlots.toString() : '',
             bookingAmount: tour.bookingAmount ? tour.bookingAmount.toString() : '',
             earlyBirdDiscount: tour.earlyBirdDiscount ? tour.earlyBirdDiscount.toString() : '',
-            meals: tour.meals || []
+            meals: Array.isArray(tour.meals) && tour.meals.length > 0 && typeof tour.meals[0] === 'object'
+                ? tour.meals
+                : [] // Reset legacy string arrays or empty to empty array. Users will need to re-enter.
         });
 
         // Parse duration if exists
@@ -1004,41 +1047,204 @@ export default function AddTourClient() {
 
                             {/* Meal Options Section */}
                             <div>
-                                <h3 className="text-md font-medium text-gray-800 mb-3 block">Meal Options</h3>
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <label className="text-sm font-medium text-gray-700">Available Meals</label>
-                                        <button
-                                            type="button"
-                                            onClick={addMeal}
-                                            className="text-green-600 hover:text-green-700 text-sm flex items-center gap-1"
-                                        >
-                                            <RiAddLine /> Add Meal
-                                        </button>
-                                    </div>
-                                    <div className="space-y-2">
-                                        {formData.meals.map((meal, index) => (
-                                            <div key={index} className="flex gap-2">
-                                                <input
-                                                    type="text"
-                                                    value={meal}
-                                                    onChange={(e) => updateMeal(index, e.target.value)}
-                                                    className="flex-1 px-3 py-1.5 border rounded text-sm outline-none focus:ring-1 focus:ring-green-500"
-                                                    placeholder="e.g. English Breakfast"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeMeal(index)}
-                                                    className="text-red-500 hover:text-red-700"
-                                                >
-                                                    <RiDeleteBinLine />
-                                                </button>
+                                <h3 className="text-md font-medium text-gray-800 mb-3 block">Day-wise Meal Plan</h3>
+                                <button
+                                    type="button"
+                                    onClick={addMealDay}
+                                    className="text-sm text-green-600 font-bold hover:text-green-700 flex items-center gap-1 mb-4"
+                                >
+                                    <RiAddLine /> Add Day
+                                </button>
+
+                                <div className="space-y-6">
+                                    {formData.meals.map((dayMeal, dayIndex) => (
+                                        <div key={dayIndex} className="bg-gray-50 p-4 rounded-lg border border-gray-200 relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => removeMealDay(dayIndex)}
+                                                className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+                                            >
+                                                <RiDeleteBinLine />
+                                            </button>
+
+                                            <h4 className="font-medium text-gray-800 mb-4">Day {dayMeal.day}</h4>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                {/* Breakfast */}
+                                                <div>
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <label className="text-xs font-semibold text-gray-500 uppercase">Breakfast</label>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => addMealItem(dayIndex, 'breakfast')}
+                                                            className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
+                                                        >
+                                                            <RiAddLine /> Add Item
+                                                        </button>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        {dayMeal.breakfast.map((item, itemIdx) => (
+                                                            <div key={itemIdx} className="flex gap-2">
+                                                                <input
+                                                                    type="text"
+                                                                    value={item}
+                                                                    onChange={(e) => updateMealItem(dayIndex, 'breakfast', itemIdx, e.target.value)}
+                                                                    className="flex-1 px-2 py-1 border rounded text-sm outline-none focus:ring-1 focus:ring-green-500"
+                                                                    placeholder="e.g. Eggs & Toast"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeMealItem(dayIndex, 'breakfast', itemIdx)}
+                                                                    className="text-red-400 hover:text-red-600"
+                                                                >
+                                                                    <RiDeleteBinLine size={14} />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Lunch */}
+                                                <div>
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <label className="text-xs font-semibold text-gray-500 uppercase">Lunch</label>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => addMealItem(dayIndex, 'lunch')}
+                                                            className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
+                                                        >
+                                                            <RiAddLine /> Add Item
+                                                        </button>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        {dayMeal.lunch.map((item, itemIdx) => (
+                                                            <div key={itemIdx} className="flex gap-2">
+                                                                <input
+                                                                    type="text"
+                                                                    value={item}
+                                                                    onChange={(e) => updateMealItem(dayIndex, 'lunch', itemIdx, e.target.value)}
+                                                                    className="flex-1 px-2 py-1 border rounded text-sm outline-none focus:ring-1 focus:ring-green-500"
+                                                                    placeholder="e.g. Rice & Curry"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeMealItem(dayIndex, 'lunch', itemIdx)}
+                                                                    className="text-red-400 hover:text-red-600"
+                                                                >
+                                                                    <RiDeleteBinLine size={14} />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Dinner */}
+                                                <div>
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <label className="text-xs font-semibold text-gray-500 uppercase">Dinner</label>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => addMealItem(dayIndex, 'dinner')}
+                                                            className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
+                                                        >
+                                                            <RiAddLine /> Add Item
+                                                        </button>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        {dayMeal.dinner.map((item, itemIdx) => (
+                                                            <div key={itemIdx} className="flex gap-2">
+                                                                <input
+                                                                    type="text"
+                                                                    value={item}
+                                                                    onChange={(e) => updateMealItem(dayIndex, 'dinner', itemIdx, e.target.value)}
+                                                                    className="flex-1 px-2 py-1 border rounded text-sm outline-none focus:ring-1 focus:ring-green-500"
+                                                                    placeholder="e.g. Pasta"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeMealItem(dayIndex, 'dinner', itemIdx)}
+                                                                    className="text-red-400 hover:text-red-600"
+                                                                >
+                                                                    <RiDeleteBinLine size={14} />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Snacks */}
+                                                <div>
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <label className="text-xs font-semibold text-gray-500 uppercase">Snacks</label>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => addMealItem(dayIndex, 'snacks')}
+                                                            className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
+                                                        >
+                                                            <RiAddLine /> Add Item
+                                                        </button>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        {dayMeal.snacks.map((item, itemIdx) => (
+                                                            <div key={itemIdx} className="flex gap-2">
+                                                                <input
+                                                                    type="text"
+                                                                    value={item}
+                                                                    onChange={(e) => updateMealItem(dayIndex, 'snacks', itemIdx, e.target.value)}
+                                                                    className="flex-1 px-2 py-1 border rounded text-sm outline-none focus:ring-1 focus:ring-green-500"
+                                                                    placeholder="e.g. Tea & Biscuits"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeMealItem(dayIndex, 'snacks', itemIdx)}
+                                                                    className="text-red-400 hover:text-red-600"
+                                                                >
+                                                                    <RiDeleteBinLine size={14} />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Custom */}
+                                                <div className="col-span-1 md:col-span-2">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <label className="text-xs font-semibold text-gray-500 uppercase">Custom / Other</label>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => addMealItem(dayIndex, 'custom')}
+                                                            className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
+                                                        >
+                                                            <RiAddLine /> Add Item
+                                                        </button>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        {dayMeal.custom.map((item, itemIdx) => (
+                                                            <div key={itemIdx} className="flex gap-2">
+                                                                <input
+                                                                    type="text"
+                                                                    value={item}
+                                                                    onChange={(e) => updateMealItem(dayIndex, 'custom', itemIdx, e.target.value)}
+                                                                    className="flex-1 px-2 py-1 border rounded text-sm outline-none focus:ring-1 focus:ring-green-500"
+                                                                    placeholder="e.g. Special Requirements"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeMealItem(dayIndex, 'custom', itemIdx)}
+                                                                    className="text-red-400 hover:text-red-600"
+                                                                >
+                                                                    <RiDeleteBinLine size={14} />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             </div>
-                                        ))}
-                                        {formData.meals.length === 0 && (
-                                            <p className="text-xs text-gray-400 italic">No meals added.</p>
-                                        )}
-                                    </div>
+                                        </div>
+                                    ))}
+                                    {formData.meals.length === 0 && (
+                                        <p className="text-xs text-gray-400 italic">No meal days added.</p>
+                                    )}
                                 </div>
                             </div>
                             <div className="pt-6">

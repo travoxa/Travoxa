@@ -13,53 +13,71 @@ const LocalConnectPage = () => {
             <Header forceWhite={true} />
 
             {/* HERO SECTION - Updated to use Emerald Theme */}
-            <div className="pt-40 pb-20 text-center px-4">
-                <div className="inline-block bg-orange-50 text-orange-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-6 border border-orange-100 Mont">
-                    Authentic Travel Redefined
+            <div className="relative pt-40 pb-20 text-center px-4 overflow-hidden">
+
+                {/* Background Image */}
+                <div className="absolute inset-0 z-0">
+                    <Image
+                        src="https://res.cloudinary.com/dta29uych/image/upload/v1771256402/lucid-origin_A_wide_high-quality_flat_vector_illustration_suitable_for_a_website_hero_backgro-0_2_t8kneu.jpg"
+                        alt="Local Connect Background"
+                        fill
+                        className="object-cover"
+                        priority
+                        quality={100}
+                    />
+                    {/* Gradient Overlay for blending at bottom */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-white/90"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent"></div>
                 </div>
-                <h1 className="text-4xl lg:text-7xl font-bold text-slate-900 leading-tight mb-6 Mont tracking-tight">
-                    Explore Cities Through<br />
-                    <span className="text-emerald-500 italic font-medium font-serif">Locals, Not Tourists</span>
-                </h1>
-                <p className="text-slate-500 text-lg max-w-2xl mx-auto mb-10 Inter leading-relaxed">
-                    Stop following guidebooks. Connect with storytellers, foodies, and experts who open doors to the real soul of their city.
-                </p>
-                <div className="flex flex-col lg:flex-row items-center justify-center gap-4 mb-4">
-                    {/* Search Bar */}
-                    <div className="bg-white rounded-full p-2.5 flex items-center border border-slate-200 hover:border-emerald-500/30 transition-colors shadow-sm">
-                        <div className="relative group w-64">
-                            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-hover:text-emerald-500 transition-colors">
-                                <FaLocationDot size={10} />
+
+                <div className="relative z-10 flex flex-col items-center">
+                    <div className="inline-block bg-orange-50/90 backdrop-blur-sm text-orange-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-6 border border-orange-100 Mont">
+                        Authentic Travel Redefined
+                    </div>
+                    <h1 className="text-4xl lg:text-7xl font-bold text-slate-900 leading-tight mb-6 Mont tracking-tight drop-shadow-sm">
+                        Explore Cities Through<br />
+                        <span className="text-emerald-600 italic font-medium font-serif">Locals, Not Tourists</span>
+                    </h1>
+                    <p className="text-slate-600 text-lg max-w-2xl mx-auto mb-10 Inter leading-relaxed font-medium">
+                        Stop following guidebooks. Connect with storytellers, foodies, and experts who open doors to the real soul of their city.
+                    </p>
+                    <div className="flex flex-col lg:flex-row items-center justify-center gap-4 mb-4">
+                        {/* Search Bar */}
+                        <div className="bg-white/90 backdrop-blur-sm rounded-full p-2.5 flex items-center border border-slate-200 hover:border-emerald-500/30 transition-colors shadow-lg">
+                            <div className="relative group w-64">
+                                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-emerald-500 transition-colors">
+                                    <FaLocationDot size={10} />
+                                </div>
+                                <select
+                                    className="w-full h-9 pl-10 pr-6 rounded-full bg-transparent hover:bg-slate-50 border-none text-slate-700 text-xs font-light focus:outline-none focus:ring-0 appearance-none cursor-pointer transition-colors"
+                                >
+                                    <option value="">Select City</option>
+                                    <option value="Goa">Goa</option>
+                                    <option value="Jaipur">Jaipur</option>
+                                    <option value="Varanasi">Varanasi</option>
+                                    <option value="Kolkata">Kolkata</option>
+                                    <option value="Udaipur">Udaipur</option>
+                                    <option value="Mumbai">Mumbai</option>
+                                </select>
                             </div>
-                            <select
-                                className="w-full h-9 pl-10 pr-6 rounded-full bg-slate-50 hover:bg-slate-100 border-none text-slate-600 text-xs font-light focus:outline-none focus:ring-0 appearance-none cursor-pointer transition-colors"
-                            >
-                                <option value="">Select City</option>
-                                <option value="Goa">Goa</option>
-                                <option value="Jaipur">Jaipur</option>
-                                <option value="Varanasi">Varanasi</option>
-                                <option value="Kolkata">Kolkata</option>
-                                <option value="Udaipur">Udaipur</option>
-                                <option value="Mumbai">Mumbai</option>
-                            </select>
+
+                            {/* Search Button */}
+                            <button className="w-9 h-9 bg-slate-900 hover:bg-emerald-600 text-white text-[10px] font-medium rounded-full transition-all flex items-center justify-center ml-1 shadow-md">
+                                <FaUsers size={10} />
+                            </button>
                         </div>
 
-                        {/* Search Button */}
-                        <button className="w-9 h-9 bg-slate-900 hover:bg-emerald-600 text-white text-[10px] font-medium rounded-full transition-all flex items-center justify-center ml-1">
-                            <FaUsers size={10} />
-                        </button>
-                    </div>
+                        <div className="h-8 w-[1px] bg-slate-400 hidden lg:block"></div>
 
-                    <div className="h-8 w-[1px] bg-slate-200 hidden lg:block"></div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-2">
-                        <button className="h-10 px-6 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 Mont tracking-wide">
-                            Explore Cities
-                        </button>
-                        <button className="h-10 px-6 bg-white border border-slate-200 hover:bg-slate-50 text-slate-900 text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 Mont tracking-wide">
-                            Become a Connector
-                        </button>
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
+                            <button className="h-10 px-6 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 Mont tracking-wide">
+                                Explore Cities
+                            </button>
+                            <button className="h-10 px-6 bg-white/90 backdrop-blur-sm border border-slate-200 hover:bg-slate-50 text-slate-900 text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 Mont tracking-wide shadow-sm">
+                                Become a Connector
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
