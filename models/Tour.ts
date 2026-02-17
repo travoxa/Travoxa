@@ -14,6 +14,16 @@ const TourSchema = new mongoose.Schema({
         type: Number,
         required: [true, 'Please provide a price'],
     },
+    pricing: [{
+        people: Number,
+        hotelType: {
+            type: String,
+            enum: ['Standard', 'Premium']
+        },
+        rooms: Number,
+        packagePrice: Number, // Total price for the group
+        pricePerPerson: Number // Derived or explicit
+    }],
     duration: {
         type: String,
         required: [true, 'Please provide a duration'],
