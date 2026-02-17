@@ -85,12 +85,13 @@ export default function AddTourClient() {
         totalSlots: '',
         bookingAmount: '',
         earlyBirdDiscount: '',
-        meals: [] as { day: number; breakfast: string[]; lunch: string[]; dinner: string[]; snacks: string[]; custom: string[] }[]
+        meals: [] as { day: number; breakfast: string[]; lunch: string[]; dinner: string[]; snacks: string[]; custom: string[] }[],
+        pricing: [] as { people: number; hotelType: 'Standard' | 'Premium'; rooms: number; packagePrice: number; pricePerPerson: number }[]
     };
 
     const isDev = process.env.NODE_ENV === 'development';
 
-    const DUMMY_FORM_DATA = {
+    const DUMMY_FORM_DATA: typeof EMPTY_FORM_DATA = {
         title: 'Test Tour Adventure',
         location: 'Test Location, Earth',
         price: '5000',
@@ -143,6 +144,10 @@ export default function AddTourClient() {
                 snacks: ['Cookies'],
                 custom: []
             }
+        ],
+        pricing: [
+            { people: 2, hotelType: 'Standard', rooms: 1, packagePrice: 10000, pricePerPerson: 5000 },
+            { people: 4, hotelType: 'Standard', rooms: 2, packagePrice: 18000, pricePerPerson: 4500 }
         ]
     };
 
@@ -450,12 +455,40 @@ export default function AddTourClient() {
         setFormData(prev => ({ ...prev, availabilityBatches: updated }));
     };
 
+    // Pricing Helper
+    const addPricingRow = () => {
+        setFormData(prev => ({
+            ...prev,
+            pricing: [
+                ...prev.pricing,
+                { people: 1, hotelType: 'Standard', rooms: 1, packagePrice: 0, pricePerPerson: 0 }
+            ]
+        }));
+    };
 
+    const removePricingRow = (index: number) => {
+        const updated = [...formData.pricing];
+        updated.splice(index, 1);
+        setFormData(prev => ({ ...prev, pricing: updated }));
+    };
 
+    const updatePricingRow = (index: number, field: string, value: any) => {
+        const updated = [...formData.pricing];
+        // @ts-ignore
+        updated[index] = { ...updated[index], [field]: value };
+        setFormData(prev => ({ ...prev, pricing: updated }));
+    };
 
     // Handle edit
     const handleEdit = (tour: any) => {
         setEditingId(tour.id);
+
+        // Safe parsing for pricing
+        let pricingData: any[] = [];
+        if (tour.pricing && Array.isArray(tour.pricing)) {
+            pricingData = tour.pricing;
+        }
+
         setFormData({
             title: tour.title,
             location: tour.location,
@@ -489,7 +522,8 @@ export default function AddTourClient() {
             earlyBirdDiscount: tour.earlyBirdDiscount ? tour.earlyBirdDiscount.toString() : '',
             meals: Array.isArray(tour.meals) && tour.meals.length > 0 && typeof tour.meals[0] === 'object'
                 ? tour.meals
-                : [] // Reset legacy string arrays or empty to empty array. Users will need to re-enter.
+                : [], // Reset legacy string arrays or empty to empty array. Users will need to re-enter.
+            pricing: pricingData
         });
 
         // Parse duration if exists
@@ -532,10 +566,19 @@ export default function AddTourClient() {
         setError('');
         setSuccess('');
 
+        // Auto-calculate base price from dynamic pricing options
+        let calculatedPrice = Number(formData.price) || 0;
+        if (formData.pricing && formData.pricing.length > 0) {
+            const minPrice = Math.min(...formData.pricing.map(p => p.pricePerPerson));
+            if (!isNaN(minPrice) && minPrice > 0) {
+                calculatedPrice = minPrice;
+            }
+        }
+
         const payload = {
             title: formData.title,
             location: formData.location,
-            price: Number(formData.price),
+            price: calculatedPrice,
             duration: `${formData.durationDays} Days / ${formData.durationNights} Nights`,
             availabilityDate: `${formData.availabilityStart} to ${formData.availabilityEnd}`,
             minPeople: Number(formData.minPeople),
@@ -560,6 +603,7 @@ export default function AddTourClient() {
             earlyBirdDiscount: Number(formData.earlyBirdDiscount) || 0,
             meals: formData.meals,
             availabilityBatches: formData.availabilityBatches,
+            pricing: formData.pricing
         };
 
         if (payload.minPeople > payload.maxPeople) {
@@ -570,6 +614,7 @@ export default function AddTourClient() {
 
         console.log('[FORM] Sending payload to /api/tours:', payload);
         console.log('[FORM] Meals payload:', payload.meals);
+        console.log('[FORM] Pricing payload:', payload.pricing);
 
         try {
             const method = editingId ? 'PUT' : 'POST';
@@ -849,17 +894,7 @@ export default function AddTourClient() {
                                     />
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-                                <input
-                                    type="number"
-                                    required
-                                    value={formData.price}
-                                    onChange={e => setFormData({ ...formData, price: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="2200"
-                                />
-                            </div>
+                            {/* Price input removed - auto-calculated from dynamic options */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
                                 <div className="grid grid-cols-2 gap-2">
@@ -1477,6 +1512,108 @@ export default function AddTourClient() {
                                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
                                 placeholder="https://..."
                             />
+                        </div>
+
+                        {/* Pricing Management */}
+                        <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 mb-8">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-bold text-gray-800">Pricing Options (Dynamic)</h3>
+                                <button
+                                    type="button"
+                                    onClick={addPricingRow}
+                                    className="text-sm text-blue-600 font-semibold hover:text-blue-700 flex items-center gap-1"
+                                >
+                                    <RiAddLine /> Add Option
+                                </button>
+                            </div>
+
+                            {formData.pricing.length === 0 ? (
+                                <p className="text-sm text-gray-500 italic">No dynamic pricing options added. The standard "Price" field above will be used.</p>
+                            ) : (
+                                <div className="space-y-3">
+                                    {/* Header */}
+                                    <div className="grid grid-cols-12 gap-2 text-xs font-bold text-gray-500 uppercase px-2">
+                                        <div className="col-span-2">People</div>
+                                        <div className="col-span-3">Hotel Type</div>
+                                        <div className="col-span-2">Rooms</div>
+                                        <div className="col-span-2">Package Price</div>
+                                        <div className="col-span-2">Per Person</div>
+                                        <div className="col-span-1"></div>
+                                    </div>
+
+                                    {formData.pricing.map((row, index) => (
+                                        <div key={index} className="grid grid-cols-12 gap-2 items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+                                            <div className="col-span-2">
+                                                <input
+                                                    type="number"
+                                                    placeholder="Pax"
+                                                    min="1"
+                                                    value={row.people}
+                                                    onChange={(e) => updatePricingRow(index, 'people', Number(e.target.value))}
+                                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                                                />
+                                            </div>
+                                            <div className="col-span-3">
+                                                <select
+                                                    value={row.hotelType}
+                                                    onChange={(e) => updatePricingRow(index, 'hotelType', e.target.value)}
+                                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                                                >
+                                                    <option value="Standard">Standard</option>
+                                                    <option value="Premium">Premium</option>
+                                                </select>
+                                            </div>
+                                            <div className="col-span-2">
+                                                <input
+                                                    type="number"
+                                                    placeholder="Rooms"
+                                                    min="1"
+                                                    value={row.rooms}
+                                                    onChange={(e) => updatePricingRow(index, 'rooms', Number(e.target.value))}
+                                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                                                />
+                                            </div>
+                                            <div className="col-span-2">
+                                                <input
+                                                    type="number"
+                                                    placeholder="Total"
+                                                    min="0"
+                                                    value={row.packagePrice}
+                                                    onChange={(e) => {
+                                                        const val = Number(e.target.value);
+                                                        updatePricingRow(index, 'packagePrice', val);
+                                                        // Auto update per person if people > 0
+                                                        if (row.people > 0) {
+                                                            updatePricingRow(index, 'pricePerPerson', Math.round(val / row.people));
+                                                        }
+                                                    }}
+                                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                                                />
+                                            </div>
+                                            <div className="col-span-2">
+                                                <input
+                                                    type="number"
+                                                    placeholder="Per Person"
+                                                    min="0"
+                                                    value={row.pricePerPerson}
+                                                    onChange={(e) => updatePricingRow(index, 'pricePerPerson', Number(e.target.value))}
+                                                    className="w-full p-2 bg-gray-50 border border-gray-200 rounded text-gray-500 outline-none text-sm"
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="col-span-1 flex justify-end">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removePricingRow(index)}
+                                                    className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                                >
+                                                    <RiDeleteBinLine size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* Dynamic Itinerary */}

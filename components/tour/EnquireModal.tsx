@@ -11,16 +11,29 @@ interface EnquireModalProps {
     tourTitle: string;
     availabilityDate?: string;
     userPhone?: string;
+    selectedPeople?: number;
+    selectedHotelType?: string;
+    selectedRooms?: number;
+    calculatedPrice?: number;
 }
 
-export default function EnquireModal({ isOpen, onClose, tourId, tourTitle, availabilityDate, userPhone }: EnquireModalProps) {
+export default function EnquireModal({
+    isOpen,
+    onClose,
+    tourId,
+    tourTitle,
+    availabilityDate,
+    userPhone,
+    selectedPeople,
+    selectedHotelType
+}: EnquireModalProps) {
     const { data: session } = useSession();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
 
     const [formData, setFormData] = useState({
-        members: 2,
+        members: selectedPeople || 2,
         date: availabilityDate && availabilityDate !== 'Flexible' ? availabilityDate : '',
         phone: userPhone || ''
     });

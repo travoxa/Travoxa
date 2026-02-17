@@ -62,6 +62,14 @@ async function getTourById(id: string) {
                     ...batch,
                     _id: batch._id ? batch._id.toString() : undefined,
                 })) : [],
+                pricing: tour.pricing ? tour.pricing.map((p: any) => ({
+                    people: p.people,
+                    hotelType: p.hotelType,
+                    rooms: p.rooms,
+                    packagePrice: p.packagePrice,
+                    pricePerPerson: p.pricePerPerson,
+                    _id: p._id ? p._id.toString() : undefined
+                })) : [],
             };
         }
     } catch (error) {
@@ -468,7 +476,7 @@ export default async function TourDetailPage({ params }: PageProps) {
                         availabilityDate={pkg.availabilityDate}
                         availabilityBatches={pkg.availabilityBatches}
                         totalSlots={pkg.totalSlots}
-
+                        pricing={pkg.pricing}
                         bookedSlots={pkg.bookedSlots}
                         bookingAmount={pkg.bookingAmount}
                         brochureUrl={pkg.brochureUrl}
