@@ -5,12 +5,34 @@ import { FaHandshake, FaGlobe, FaUsers, FaChartLine, FaVideo, FaBullhorn, FaPlan
 
 const PartnersCTA = () => {
     return (
-        <div 
+        <div
         >
             <div style={{ minHeight: "60vh", display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "30px" }}>
                 <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=Barlow+Condensed:wght@800&display=swap');
-        .card{position:relative;width:420px;border-radius:26px;background:linear-gradient(145deg,rgba(255,255,255,.55),rgba(220,210,255,.45),rgba(180,210,255,.35));backdrop-filter:blur(24px);border:1.5px solid rgb(253, 253, 253);box-shadow:0px 0px 34px rgb(235, 223, 255),inset 0 1px 0 rgb(255, 255, 255);padding:0 24px 20px;overflow:hidden;animation:up .7s both}
+        .card{ position: relative;
+         padding: 0 44px 40px;
+  border-radius: 26px;
+  background: linear-gradient(
+    145deg,
+    rgba(255,255,255,.55),
+    rgba(220,210,255,.45),
+    rgba(213, 180, 255, 0.35)
+  );
+  backdrop-filter: blur(24px);
+  border: 1.5px solid rgb(253, 253, 253);
+  box-shadow:
+    0px 0px 34px rgb(235, 223, 255),
+    inset 0 1px 0 rgb(255, 255, 255);
+  overflow: hidden;
+  animation: up .7s both; /* ← FIX: semicolon added */
+
+  width: 420px;
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  }
         @keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
         .glow{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:280px;height:180px;background:radial-gradient(ellipse,rgba(160,140,255,.4),transparent 70%);filter:blur(18px);pointer-events:none}
         .illus{position:relative;height:150px}
@@ -45,10 +67,10 @@ const PartnersCTA = () => {
         @keyframes fl2{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-5px) rotate(3deg)}}
         @keyframes hb{0%,100%{transform:scale(1)}30%{transform:scale(1.2)}60%{transform:scale(.95)}}
         @keyframes sa{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
-        .title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;letter-spacing:2px;color:#2d2050;text-transform:uppercase;margin-bottom:8px;margin-top:10px}
+        .title{font-family:Montserrat, sans-serif;,sans-serif;font-size:26px;font-weight:800;letter-spacing:2px;color:#2d2050;text-transform:uppercase;margin-bottom:8px;margin-top:25px}
         .title span{color:#5a3ef8}
-        .desc{font-family:'Barlow',sans-serif;font-size:13px;color:#4a3a6a;line-height:1.55;margin-bottom:16px;text-align:center}
-        .btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#6b4ff8,#4430e0);color:#fff;font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;padding:10px 20px;border-radius:50px;border:none;cursor:pointer;box-shadow:0 8px 20px rgba(90,62,248,.45);transition:transform .2s,box-shadow .2s;text-decoration:none}
+        .desc{font-family:Inter, sans-serif;font-size:13px;color:#4a3a6a;line-height:1.55;margin-bottom:16px;text-align:center}
+        .btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#6b4ff8,#4430e0);color:#fff;font-family:Inter, sans-serif;font-size:13px;font-weight:600;padding:10px 20px;border-radius:50px;border:none;cursor:pointer;box-shadow:0 8px 20px rgba(90,62,248,.45);transition:transform .2s,box-shadow .2s;text-decoration:none}
         .btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(90,62,248,.55)}
 .bars {
   position: absolute;
@@ -94,7 +116,9 @@ const PartnersCTA = () => {
                     <div style={{ textAlign: "center" }}>
                         <h2 className="title">TRAVOXA <span>COLLAB</span></h2>
                         <p className="desc">Generate click-worthy opportunities and<br />grow your reach in seconds,<br />fully automated.</p>
-                        <a href="#" className="btn">Start Collaborating →</a>
+                        <Link href="/travoxa-partners" className="btn">
+                            Start Collaborating
+                        </Link>
                     </div>
                 </div>
             </div>
