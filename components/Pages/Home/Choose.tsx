@@ -532,7 +532,14 @@ const Choose = () => {
                   {/* Masking Overlay */}
                   <div className="absolute inset-0 bg-white/40 backdrop-blur-md z-20 flex flex-col items-center justify-center p-6 text-center">
                     <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg mb-4">
-                      <span className="text-2xl">🔒</span>
+                      {/* <span className="text-2xl">🔒</span> */}
+                      <span className="inline-block w-6 h-6">
+                        <img
+                          src="/lock.png"
+                          alt="Lock"
+                          className="w-full h-full object-contain"
+                        />
+                      </span>
                     </div>
                     <p className="text-black font-semibold Inter text-sm mb-1 uppercase tracking-wider">
                       Coming Soon
