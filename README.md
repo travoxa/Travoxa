@@ -86,5 +86,5 @@ The `Tour` model is the core of the package system:
 - **BackpackerGroup**: Stores group info, members, and chat references.
 - **User**: User profile, preferences, and auth provider data.
 - **TourRequest**: Stores user inquiries for custom tours.
-- **Sightseeing / Activity / Food / Rental**: Models for the specific discovery sections.
+- **Sightseeing / Activity / Food / Rental**: Models for the specific discovery.
 
