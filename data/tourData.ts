@@ -16,9 +16,17 @@ export interface TourPackage {
     }[];
     inclusions: string[];
     exclusions: string[];
+    highlights?: string[]; // New field for trip highlights
     availabilityDate?: string; // New field for MongoDB tours
     maxPeople?: string; // New field for MongoDB tours
     earlyBirdDiscount?: number; // New field for MongoDB tours
+    pricing?: { // Added for dynamic pricing support
+        people: number;
+        hotelType: 'Standard' | 'Premium';
+        rooms: number;
+        packagePrice: number;
+        pricePerPerson: number;
+    }[];
     meals?: string[] | {
         day: number;
         breakfast: string[];

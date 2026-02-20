@@ -1534,10 +1534,9 @@ export default function AddTourClient() {
                                     {/* Header */}
                                     <div className="grid grid-cols-12 gap-2 text-xs font-bold text-gray-500 uppercase px-2">
                                         <div className="col-span-2">People</div>
-                                        <div className="col-span-3">Hotel Type</div>
+                                        <div className="col-span-4">Hotel Type</div>
                                         <div className="col-span-2">Rooms</div>
-                                        <div className="col-span-2">Package Price</div>
-                                        <div className="col-span-2">Per Person</div>
+                                        <div className="col-span-3">Package Price</div>
                                         <div className="col-span-1"></div>
                                     </div>
 
@@ -1553,7 +1552,7 @@ export default function AddTourClient() {
                                                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                                                 />
                                             </div>
-                                            <div className="col-span-3">
+                                            <div className="col-span-4">
                                                 <select
                                                     value={row.hotelType}
                                                     onChange={(e) => updatePricingRow(index, 'hotelType', e.target.value)}
@@ -1573,7 +1572,7 @@ export default function AddTourClient() {
                                                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                                                 />
                                             </div>
-                                            <div className="col-span-2">
+                                            <div className="col-span-3">
                                                 <input
                                                     type="number"
                                                     placeholder="Total"
@@ -1581,24 +1580,14 @@ export default function AddTourClient() {
                                                     value={row.packagePrice}
                                                     onChange={(e) => {
                                                         const val = Number(e.target.value);
-                                                        updatePricingRow(index, 'packagePrice', val);
-                                                        // Auto update per person if people > 0
-                                                        if (row.people > 0) {
-                                                            updatePricingRow(index, 'pricePerPerson', Math.round(val / row.people));
-                                                        }
+                                                        // Update both packagePrice and pricePerPerson in one go to avoid race conditions
+                                                        const updated = [...formData.pricing];
+                                                        const perPerson = row.people > 0 ? Math.round(val / row.people) : 0;
+                                                        // @ts-ignore
+                                                        updated[index] = { ...updated[index], packagePrice: val, pricePerPerson: perPerson };
+                                                        setFormData(prev => ({ ...prev, pricing: updated }));
                                                     }}
                                                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                                                />
-                                            </div>
-                                            <div className="col-span-2">
-                                                <input
-                                                    type="number"
-                                                    placeholder="Per Person"
-                                                    min="0"
-                                                    value={row.pricePerPerson}
-                                                    onChange={(e) => updatePricingRow(index, 'pricePerPerson', Number(e.target.value))}
-                                                    className="w-full p-2 bg-gray-50 border border-gray-200 rounded text-gray-500 outline-none text-sm"
-                                                    readOnly
                                                 />
                                             </div>
                                             <div className="col-span-1 flex justify-end">

@@ -17,6 +17,7 @@ import AddHostedBackpackerClient from '@/app/admin/backpackers/AddHostedBackpack
 import AddActivitiesClient from '@/app/admin/activities/AddActivitiesClient'
 import AddAttractionsClient from '@/app/admin/attractions/AddAttractionsClient'
 import AddFoodClient from '@/app/admin/food/AddFoodClient'
+import AddStayClient from '@/app/admin/stay/AddStayClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -27,7 +28,7 @@ interface AdminDashboardClientProps {
 
 const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }) => {
     const [activeTab, setActiveTab] = useState('Overview')
-    const [activeDiscoveryForm, setActiveDiscoveryForm] = useState<'sightseeing' | 'rentals' | 'activities' | 'attractions' | 'food' | null>(null)
+    const [activeDiscoveryForm, setActiveDiscoveryForm] = useState<'sightseeing' | 'rentals' | 'activities' | 'attractions' | 'food' | 'stay' | null>(null)
     const router = useRouter()
 
     const renderContent = () => {
@@ -98,6 +99,15 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                             />
                         )}
 
+                        {activeDiscoveryForm === 'stay' && (
+                            <AddStayClient
+                                showManagementBox={false}
+                                showListings={false}
+                                showFormDirectly={true}
+                                onFormClose={() => setActiveDiscoveryForm(null)}
+                            />
+                        )}
+
                         {/* Row 1: Management Boxes - Side by Side (hidden when form is open) */}
                         {!activeDiscoveryForm && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -126,6 +136,11 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                                     showListings={false}
                                     onFormOpen={() => setActiveDiscoveryForm('food')}
                                 />
+                                <AddStayClient
+                                    showManagementBox={true}
+                                    showListings={false}
+                                    onFormOpen={() => setActiveDiscoveryForm('stay')}
+                                />
                             </div>
                         )}
 
@@ -135,6 +150,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                         <AddActivitiesClient showManagementBox={false} showListings={true} />
                         <AddAttractionsClient showManagementBox={false} showListings={true} />
                         <AddFoodClient showManagementBox={false} showListings={true} />
+                        <AddStayClient showManagementBox={false} showListings={true} />
                     </div>
                 )
 
@@ -195,4 +211,3 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
 }
 
 export default AdminDashboardClient
-

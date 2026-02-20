@@ -1,5 +1,6 @@
 'use client';
-
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import Image from "next/image";
 import { HiCalendar, HiUserGroup, HiCurrencyRupee, HiDownload } from "react-icons/hi";
@@ -34,6 +35,8 @@ export default function BookingWidget({
     tourTitle,
     userPhone
 }: BookingWidgetProps) {
+    const { data: session } = useSession();
+    const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedBatch, setSelectedBatch] = useState<string>('');
 
@@ -59,15 +62,21 @@ export default function BookingWidget({
     // Initialize Dynamic Pricing
     React.useEffect(() => {
         if (hasDynamicPricing && pricing) {
-            // Default to min people
-            const minPeople = Math.min(...pricing.map(p => p.people));
-            setSelectedPeople(minPeople);
+            // Default to the option with the LOWEST pricePerPerson (to match "Starting from" price)
+            let cheapestOption = pricing[0];
+            let minPrice = Number.MAX_VALUE;
 
-            // Find options for min people
-            const options = pricing.filter(p => p.people === minPeople);
-            if (options.length > 0) {
-                setSelectedHotel(options[0].hotelType); // Default first hotel type
-                setSelectedRooms(options[0].rooms); // Default rooms for that
+            for (const p of pricing) {
+                if (p.pricePerPerson < minPrice) {
+                    minPrice = p.pricePerPerson;
+                    cheapestOption = p;
+                }
+            }
+
+            if (cheapestOption) {
+                setSelectedPeople(cheapestOption.people);
+                setSelectedHotel(cheapestOption.hotelType);
+                setSelectedRooms(cheapestOption.rooms);
             }
         }
     }, [hasDynamicPricing, pricing]);
@@ -263,7 +272,13 @@ export default function BookingWidget({
 
                 <div className="flex flex-col gap-3 mb-8">
                     <button
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => {
+                            if (!session?.user?.email) {
+                                router.push(`/login?callbackUrl=/tour/${tourId}`);
+                                return;
+                            }
+                            setIsModalOpen(true);
+                        }}
                         className="w-full bg-black text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition-all active:scale-95 shadow-lg shadow-gray-200"
                     >
                         Check Availability / Enquire
