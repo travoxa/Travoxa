@@ -56,6 +56,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
       dropdown: [
         { label: "Sightseeing", path: "/travoxa-discovery/sightseeing" },
         { label: "Rentals", path: "/travoxa-discovery/rentals" },
+        { label: "Stay", path: "/travoxa-discovery/stay" },
         { label: "Local Connect", path: "/travoxa-discovery/local-connect" },
         { label: "Activities", path: "/travoxa-discovery/activities" },
         { label: "Attractions", path: "/travoxa-discovery/attractions" },

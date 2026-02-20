@@ -1,0 +1,457 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { RiDeleteBinLine, RiAddLine, RiCloseLine, RiMoreLine, RiEditLine } from 'react-icons/ri';
+import { CldUploadWidget } from 'next-cloudinary';
+import { INDIA_STATES, getCitiesForState } from '@/data/indiaStatesAndCities';
+
+const STAY_TYPE_OPTIONS = ['Hotel', 'Resort', 'Homestay', 'Villa', 'Apartment', 'Hostel', 'Campsite'];
+const PRICE_TYPE_OPTIONS = ["per_night", "per_person"];
+
+interface AddStayClientProps {
+    showManagementBox?: boolean;
+    showListings?: boolean;
+    showFormDirectly?: boolean;
+    onFormOpen?: () => void;
+    onFormClose?: () => void;
+}
+
+export default function AddStayClient({
+    showManagementBox = true,
+    showListings = true,
+    showFormDirectly = false,
+    onFormOpen,
+    onFormClose
+}: AddStayClientProps = {}) {
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState('');
+    const [error, setError] = useState('');
+    const [showFormInternal, setShowFormInternal] = useState(false);
+    const showForm = showFormDirectly || showFormInternal;
+    const [stays, setStays] = useState<any[]>([]);
+    const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [loadingStays, setLoadingStays] = useState(true);
+    const [editingId, setEditingId] = useState<string | null>(null);
+
+    const DUMMY_FORM_DATA = {
+        title: 'Luxury Mountain Resort',
+        city: 'Manali',
+        state: 'Himachal Pradesh',
+        location: 'Old Manali, Near Clubhouse',
+        type: 'Resort',
+        price: '5000',
+        priceType: 'per_night',
+        rating: 4.5,
+        reviews: 120,
+        overview: 'Nestled in the Himalayas, this luxury resort offers breathtaking views and world-class amenities.',
+        amenities: ['WiFi', 'Parking', 'Restaurant', 'Swimming Pool', 'Bonfire'],
+        images: [],
+        coverImage: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg',
+        contactPhone: '9876543210',
+        contactEmail: 'booking@mountainresort.com',
+        checkInTime: '12:00 PM',
+        checkOutTime: '11:00 AM',
+        maxGuests: 3,
+        bedrooms: 1,
+        bathrooms: 1,
+        isVerified: true,
+    };
+
+    const isDev = process.env.NODE_ENV === 'development';
+
+    const [formData, setFormData] = useState(isDev ? DUMMY_FORM_DATA : {
+        title: '',
+        city: '',
+        state: '',
+        location: '',
+        type: 'Hotel',
+        price: '',
+        priceType: 'per_night',
+        rating: 0,
+        reviews: 0,
+        overview: '',
+        amenities: [] as string[],
+        images: [] as string[],
+        coverImage: '',
+        contactPhone: '',
+        contactEmail: '',
+        checkInTime: '12:00 PM',
+        checkOutTime: '11:00 AM',
+        maxGuests: 2,
+        bedrooms: 1,
+        bathrooms: 1,
+        isVerified: false,
+    });
+
+    // Temporary input states for dynamic fields
+    const [amenityInput, setAmenityInput] = useState('');
+    const [imageInput, setImageInput] = useState('');
+
+    // Fetch stay packages
+    const fetchStays = async () => {
+        setLoadingStays(true);
+        try {
+            const res = await fetch('/api/stay');
+            const data = await res.json();
+            if (data.success) {
+                setStays(data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch stay packages:', error);
+        } finally {
+            setLoadingStays(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchStays();
+    }, []);
+
+    // Delete stay package
+    const handleDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this stay package?')) {
+            return;
+        }
+
+        setDeletingId(id);
+        try {
+            const res = await fetch(`/api/stay/${id}`, {
+                method: 'DELETE',
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setSuccess('Stay package deleted successfully!');
+                fetchStays();
+                setTimeout(() => setSuccess(''), 3000);
+            } else {
+                throw new Error(data.error || 'Failed to delete stay package');
+            }
+        } catch (err: any) {
+            setError(err.message);
+            setTimeout(() => setError(''), 3000);
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
+    // Helper functions for dynamic arrays
+    const addAmenity = () => {
+        if (amenityInput.trim()) {
+            setFormData(prev => ({
+                ...prev,
+                amenities: [...prev.amenities, amenityInput.trim()]
+            }));
+            setAmenityInput('');
+        }
+    };
+
+    const removeAmenity = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            amenities: prev.amenities.filter((_, i) => i !== index)
+        }));
+    };
+
+    // Handle edit
+    const handleEdit = (pkg: any) => {
+        setEditingId(pkg.id);
+        setFormData({
+            title: pkg.title,
+            city: pkg.city,
+            state: pkg.state,
+            location: pkg.location,
+            type: pkg.type,
+            price: pkg.price.toString(),
+            priceType: pkg.priceType,
+            rating: pkg.rating,
+            reviews: pkg.reviews,
+            overview: pkg.overview,
+            amenities: pkg.amenities || [],
+            images: pkg.images || [],
+            coverImage: pkg.coverImage,
+            contactPhone: pkg.contactPhone,
+            contactEmail: pkg.contactEmail,
+            checkInTime: pkg.checkInTime,
+            checkOutTime: pkg.checkOutTime,
+            maxGuests: pkg.maxGuests,
+            bedrooms: pkg.bedrooms,
+            bathrooms: pkg.bathrooms,
+            isVerified: pkg.isVerified,
+        });
+        setShowFormInternal(true);
+        setOpenMenuId(null);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        setSuccess('');
+
+        const payload = {
+            ...formData,
+            price: Number(formData.price),
+            rating: Number(formData.rating || 0),
+            reviews: Number(formData.reviews || 0),
+            maxGuests: Number(formData.maxGuests),
+            bedrooms: Number(formData.bedrooms),
+            bathrooms: Number(formData.bathrooms),
+        };
+
+        try {
+            const method = editingId ? 'PUT' : 'POST';
+            const url = editingId ? `/api/stay/${editingId}` : '/api/stay';
+
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || `Failed to ${editingId ? 'update' : 'create'} stay package`);
+            }
+
+            setSuccess(`Stay package ${editingId ? 'updated' : 'created'} successfully!`);
+            // Reset form
+            setFormData({
+                title: '',
+                city: '',
+                state: '',
+                location: '',
+                type: 'Hotel',
+                price: '',
+                priceType: 'per_night',
+                rating: 0,
+                reviews: 0,
+                overview: '',
+                amenities: [],
+                images: [],
+                coverImage: '',
+                contactPhone: '',
+                contactEmail: '',
+                checkInTime: '12:00 PM',
+                checkOutTime: '11:00 AM',
+                maxGuests: 2,
+                bedrooms: 1,
+                bathrooms: 1,
+                isVerified: false,
+            });
+            setEditingId(null);
+
+            // Refresh list
+            fetchStays();
+
+            // Hide form after successful creation/update
+            setTimeout(() => {
+                if (onFormClose) {
+                    onFormClose();
+                } else {
+                    setShowFormInternal(false);
+                }
+                setSuccess('');
+            }, 2000);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="space-y-6 relative">
+            {/* Loading Overlay */}
+            {deletingId && (
+                <div className="fixed inset-0 bg-white bg-opacity-60 z-50 flex items-center justify-center">
+                    <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-3 shadow-lg border border-gray-200">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900"></div>
+                        <p className="text-gray-900 font-medium">Deleting stay package...</p>
+                    </div>
+                </div>
+            )}
+
+            {!showForm ? (
+                <>
+                    {/* Create Button - Top */}
+                    {showManagementBox && (
+                        <div className="bg-white rounded-xl border border-gray-200 p-8">
+                            <h2 className="text-lg font-light text-gray-800 mb-4">Stay</h2>
+                            <button
+                                onClick={() => {
+                                    if (onFormOpen) {
+                                        onFormOpen();
+                                    } else {
+                                        setShowFormInternal(true);
+                                    }
+                                }}
+                                className="px-6 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all"
+                            >
+                                Create
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Stay Listing - Below */}
+                    {showListings && (loadingStays ? (
+                        <div className="bg-white rounded-xl border border-gray-200 p-6">
+                            <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Stay Packages</h2>
+                            <div className="space-y-3">
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="flex items-center justify-between py-3 animate-pulse">
+                                        <div className="flex-1 grid grid-cols-3 gap-4">
+                                            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                                        </div>
+                                        <div className="w-10 h-4 bg-gray-200 rounded"></div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : stays.length > 0 ? (
+                        <div className="bg-white rounded-xl border border-gray-200 p-6">
+                            <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Stay Packages</h2>
+                            <div className="flex items-center justify-between pb-2 mb-2 border-gray-200">
+                                <div className="flex-1 grid grid-cols-3 gap-4">
+                                    <p className="text-xs font-semibold text-gray-600 uppercase">Property Name</p>
+                                    <p className="text-xs font-semibold text-gray-600 uppercase">Location</p>
+                                    <p className="text-xs font-semibold text-gray-600 uppercase">Price</p>
+                                </div>
+                                <div className="w-10"></div>
+                            </div>
+                            <div className="divide-y divide-gray-200">
+                                {stays.map((pkg) => (
+                                    <div key={pkg.id} className="flex items-center justify-between py-1 hover:bg-gray-50 transition-colors">
+                                        <div className="flex-1 grid grid-cols-3 gap-4">
+                                            <p className="text-sm text-gray-900">{pkg.title}</p>
+                                            <p className="text-sm text-gray-900">{pkg.city}, {pkg.state}</p>
+                                            <p className="text-sm text-gray-900">₹{pkg.price}</p>
+                                        </div>
+                                        <div className="relative">
+                                            <button onClick={() => setOpenMenuId(openMenuId === pkg.id ? null : pkg.id)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                                <RiMoreLine className="text-gray-600" size={20} />
+                                            </button>
+                                            {openMenuId === pkg.id && (
+                                                <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                                                    <button onClick={() => { setOpenMenuId(null); handleEdit(pkg); }} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center gap-2 text-sm">
+                                                        <RiEditLine size={16} /> Edit
+                                                    </button>
+                                                    <button onClick={() => { setOpenMenuId(null); handleDelete(pkg.id); }} className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2 text-sm">
+                                                        <RiDeleteBinLine size={16} /> Delete
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="bg-white rounded-xl border border-gray-200 p-8 text-left">
+                            <h2 className="text-lg font-light text-gray-800 mb-2">No Stay Packages Yet</h2>
+                            <p className="text-gray-600 text-sm">Create your first stay package to get started.</p>
+                        </div>
+                    ))}
+                </>
+            ) : (
+                <div className="bg-white rounded-xl border border-gray-200 p-8 relative">
+                    <button onClick={() => { if (onFormClose) { onFormClose(); } else { setShowFormInternal(false); } }} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all">
+                        <RiCloseLine size={24} />
+                    </button>
+                    <h2 className="text-lg font-medium text-gray-800 mb-6">{editingId ? 'Edit' : 'Create New'} Stay Package</h2>
+                    {error && <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">{error}</div>}
+                    {success && <div className="bg-green-50 text-green-600 p-4 rounded-lg mb-6">{success}</div>}
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Property Name</label>
+                                <input type="text" required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="e.g. Luxury Mountain Resort" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                <select required value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value, city: '' })} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white">
+                                    <option value="">Select State</option>
+                                    {INDIA_STATES.map(state => (<option key={state} value={state}>{state}</option>))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                <select required value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} disabled={!formData.state} className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white ${!formData.state ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                    <option value="">{formData.state ? 'Select City' : 'Select State First'}</option>
+                                    {formData.state && getCitiesForState(formData.state).map(city => (<option key={city} value={city}>{city}</option>))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Specific Location</label>
+                                <input type="text" required value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="e.g. Old Manali, Near Clubhouse" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Stay Type</label>
+                                <select required value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                                    {STAY_TYPE_OPTIONS.map(type => (<option key={type} value={type}>{type}</option>))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
+                                <input type="number" required value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="e.g. 5000" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Check-in Time</label>
+                                <input type="text" value={formData.checkInTime} onChange={e => setFormData({ ...formData, checkInTime: e.target.value })} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="e.g. 12:00 PM" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Check-out Time</label>
+                                <input type="text" value={formData.checkOutTime} onChange={e => setFormData({ ...formData, checkOutTime: e.target.value })} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="e.g. 11:00 AM" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Max Guests</label>
+                                <input type="number" value={formData.maxGuests} onChange={e => setFormData({ ...formData, maxGuests: Number(e.target.value) })} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
+                                <input type="number" value={formData.bedrooms} onChange={e => setFormData({ ...formData, bedrooms: Number(e.target.value) })} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image URL</label>
+                            <input type="text" required value={formData.coverImage} onChange={e => setFormData({ ...formData, coverImage: e.target.value })} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="https://..." />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Overview</label>
+                            <textarea required value={formData.overview} onChange={e => setFormData({ ...formData, overview: e.target.value })} rows={4} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="Describe the stay..." />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-3">Amenities</label>
+                            <div className="flex gap-2 mb-3">
+                                <input type="text" value={amenityInput} onChange={e => setAmenityInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addAmenity())} className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="e.g. WiFi" />
+                                <button type="button" onClick={addAmenity} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs">+ Add</button>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {formData.amenities.map((amenity, idx) => (
+                                    <div key={idx} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm flex items-center gap-2">
+                                        {amenity}
+                                        <button type="button" onClick={() => removeAmenity(idx)}><RiCloseLine size={16} /></button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end pt-6 border-t">
+                            <button type="submit" disabled={loading} className={`px-8 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                {loading ? 'Saving...' : (editingId ? 'Update Package' : 'Create Package')}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+        </div>
+    );
+}

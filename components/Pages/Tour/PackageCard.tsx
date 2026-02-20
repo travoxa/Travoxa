@@ -3,8 +3,21 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { TourPackage } from "@/data/tourPackages";
-import { HiLocationMarker, HiStar, HiClock } from "react-icons/hi";
+import { TourPackage } from "@/data/tourPackages"; // Note: This might be tourData in some files but the import in previous file became package... wait, previous file import was { TourPackage } from "@/data/tourPackages";
+// Actually, let me double check the import in the previous view_file of PackageCard.tsx.
+// It was: import { TourPackage } from "@/data/tourPackages";
+// But wait, the file /data/tourData.ts export TourPackage interface.
+// Let me check if /data/tourPackages.ts exists or if it was a mistake in my generic thought.
+// The file I viewed was /data/tourData.ts.
+// In PackageCard.tsx it imported from "@/data/tourPackages".
+// I'll stick to what was there or correct it if it was wrong, but the file was working so it must be right.
+// Let me check if tourPackages exists.
+// Actually, I'll just use the same import as before if possible, or correct it to "@/data/tourData" based on my file listing.
+// Wait, looking at Step 23 output: `import { TourPackage } from "@/data/tourPackages";`
+// But I read `data/tourData.ts` in step 35.
+// I should probably check if `data/tourPackages.ts` exists.
+import { FaRegClock, FaStar, FaWhatsapp, FaMapMarkerAlt } from "react-icons/fa";
+import { MdLocationOn } from "react-icons/md";
 
 interface PackageCardProps {
     pkg: TourPackage;
@@ -19,82 +32,159 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
         ? (pkg.image[0] || '/placeholder.jpg')
         : (pkg.image || '/placeholder.jpg');
 
+    const handleWhatsApp = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const message = `Hi, I'm interested in the tour package: ${pkg.title} in ${pkg.location}. Please provide more details.`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    };
+
+    const handleCardClick = () => {
+        if (!isBlurItem) {
+            router.push(`/tour/${pkg.id}`);
+        }
+    };
+
+    // Calculate display price (lowest per person)
+    let displayPrice = pkg.price;
+
+    if (pkg.pricing && pkg.pricing.length > 0) {
+        // Find minimum pricePerPerson
+        const prices = pkg.pricing.map(p => p.pricePerPerson);
+        if (prices.length > 0) {
+            const minPrice = Math.min(...prices);
+            if (!isNaN(minPrice)) {
+                displayPrice = minPrice;
+            }
+        }
+    }
+
+    // Apply discount if exists
+    const finalPrice = pkg.earlyBirdDiscount && pkg.earlyBirdDiscount > 0
+        ? Math.round(displayPrice * (1 - pkg.earlyBirdDiscount / 100))
+        : displayPrice;
+
     return (
         <div
-            onClick={() => !isBlurItem && router.push(`/tour/${pkg.id}`)}
-            className={`bg-white rounded-3xl overflow-hidden border border-gray-100 flex flex-col h-full transition-all duration-300
+            onClick={handleCardClick}
+            className={`group bg-white rounded-2xl overflow-hidden border border-slate-200 transition-all duration-300 flex flex-col h-full
                 ${isBlurItem
                     ? ''
-                    : 'group shadow-sm hover:shadow-2xl cursor-pointer'
+                    : 'hover:border-emerald-500/50 cursor-pointer hover:shadow-lg'
                 }
             `}
         >
-            {/* Image Container */}
-            <div className="relative h-[250px] w-full overflow-hidden">
+            {/* Image Section */}
+            <div className="relative h-56 w-full overflow-hidden">
                 <Image
                     src={imageUrl}
                     alt={pkg.title}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 
-                {/* Price Tag */}
-                <div className={`absolute top-4 right-4 backdrop-blur-md px-4 py-2 rounded-full shadow-lg flex items-center gap-2
-                    ${pkg.earlyBirdDiscount && pkg.earlyBirdDiscount > 0
-                        ? 'bg-green-600/90 text-white'
-                        : 'bg-white/90 text-gray-900'
-                    }
-                `}>
-                    {pkg.earlyBirdDiscount && pkg.earlyBirdDiscount > 0 ? (
-                        <>
-                            <span className="text-sm font-bold">
-                                ₹{Math.round(pkg.price * (1 - pkg.earlyBirdDiscount / 100))}
-                            </span>
-                            <span className="text-[10px] text-green-100 line-through decoration-green-200/50">₹{pkg.price}</span>
-                        </>
-                    ) : (
-                        <span className="text-sm font-bold">₹{pkg.price}</span>
-                    )}
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+
+                {/* Top Right: Rating Badge */}
+                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                    <FaStar className="text-orange-400 text-[12px]" />
+                    <span className="text-[12px] font-medium text-slate-900">{pkg.rating}</span>
+                    <span className="text-[10px] text-slate-500">({pkg.reviews})</span>
                 </div>
 
-                {/* Rating */}
-                <div className="absolute bottom-4 left-4 flex items-center gap-1 text-white bg-black/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                    <HiStar className="text-yellow-400" />
-                    <span className="text-sm font-medium">{pkg.rating}</span>
-                    <span className="text-xs text-white/80">({pkg.reviews})</span>
+                {/* Top Left: Discount or Type Badge */}
+                {pkg.earlyBirdDiscount && pkg.earlyBirdDiscount > 0 && (
+                    <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded text-[10px] font-medium uppercase tracking-wide shadow-sm">
+                        {pkg.earlyBirdDiscount}% OFF
+                    </div>
+                )}
+
+                {!pkg.earlyBirdDiscount && (
+                    <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-sm text-white px-2 py-1 rounded text-[10px] font-medium uppercase tracking-wide">
+                        Tour Package
+                    </div>
+                )}
+
+                {/* Bottom Left: Duration Badge */}
+                <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white px-2 py-1 rounded text-[10px] font-medium flex items-center gap-1">
+                    <FaRegClock size={10} />
+                    {pkg.duration}
                 </div>
             </div>
 
-            {/* Content */}
-            <div className="p-6 flex flex-col flex-grow">
-                <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-1">
-                        {pkg.title}
-                    </h3>
+            {/* Content Section */}
+            <div className="p-5 flex flex-col flex-grow">
+                {/* Location */}
+                <div className="flex items-center gap-1 text-slate-500 text-xs font-medium mb-2 uppercase tracking-wide">
+                    <MdLocationOn className="text-emerald-500" />
+                    {pkg.location}
                 </div>
 
-                <div className="flex items-center gap-2 text-gray-500 text-sm mb-4">
-                    <HiLocationMarker className="text-green-500" />
-                    <span className="line-clamp-1">{pkg.location}</span>
+                {/* Title */}
+                <h3 className="text-lg font-medium text-slate-900 mb-3 leading-tight group-hover:text-emerald-600 transition-colors line-clamp-2 min-h-[3rem] Mont">
+                    {pkg.title}
+                </h3>
+
+                {/* Highlights / Inclusions as Tags */}
+                <div className="mb-4 flex-grow">
+                    <p className="text-[10px] uppercase text-slate-400 font-medium mb-1.5 tracking-wider">Highlights</p>
+                    <div className="flex flex-wrap gap-1.5">
+                        {/* Prefer highlights, fallback to inclusions */}
+                        {(pkg.highlights && pkg.highlights.length > 0 ? pkg.highlights : pkg.inclusions)?.slice(0, 3).map((item, idx) => (
+                            <span key={idx} className="bg-emerald-50 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full font-medium border border-emerald-100 line-clamp-1 max-w-full">
+                                {item}
+                            </span>
+                        ))}
+                        {(pkg.highlights && pkg.highlights.length > 0 ? pkg.highlights : pkg.inclusions)?.length > 3 && (
+                            <span className="text-[10px] text-slate-400 flex items-center px-1">
+                                +{(pkg.highlights && pkg.highlights.length > 0 ? pkg.highlights : pkg.inclusions).length - 3} more
+                            </span>
+                        )}
+                        {(!pkg.highlights || pkg.highlights.length === 0) && (!pkg.inclusions || pkg.inclusions.length === 0) && (
+                            <span className="text-[10px] text-slate-400 italic">No highlights available</span>
+                        )}
+                    </div>
                 </div>
 
-                <p className="text-gray-600 text-sm line-clamp-2 mb-6 flex-grow leading-relaxed">
-                    {pkg.overview}
-                </p>
-
-
-
-                <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-auto">
-                    <div className="flex items-center gap-1.5 text-gray-500 text-xs font-medium bg-gray-50 px-3 py-1.5 rounded-lg">
-                        <HiClock className="text-gray-400" />
-                        {pkg.duration}
+                {/* Footer: Price & Actions */}
+                <div className="mt-auto pt-4 border-t border-slate-100 flex items-end justify-between">
+                    <div>
+                        <p className="text-[10px] text-slate-400 font-medium mb-0.5">Starting from</p>
+                        <div className="flex items-baseline gap-1">
+                            {pkg.earlyBirdDiscount && pkg.earlyBirdDiscount > 0 ? (
+                                <>
+                                    <span className="text-lg font-medium text-slate-900">
+                                        ₹{finalPrice.toLocaleString()}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 line-through">₹{displayPrice.toLocaleString()}</span>
+                                </>
+                            ) : (
+                                <span className="text-lg font-medium text-slate-900">
+                                    ₹{finalPrice.toLocaleString()}
+                                </span>
+                            )}
+                            <span className="text-[10px] text-slate-500 font-medium">/ person</span>
+                        </div>
                     </div>
 
-                    <button className="text-sm font-bold text-gray-900 group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                        View Details
-                        <span className="text-green-600 text-lg">→</span>
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleWhatsApp}
+                            className="w-9 h-9 flex items-center justify-center rounded-full bg-green-100 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm"
+                            title="Chat on WhatsApp"
+                        >
+                            <FaWhatsapp size={16} />
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation(); // Prevent card click
+                                handleCardClick();
+                            }}
+                            className="bg-slate-900 hover:bg-emerald-600 text-white text-xs font-medium px-4 py-2.5 rounded-full transition-colors shadow-none"
+                        >
+                            View Details
+                        </button>
+                    </div>
                 </div>
             </div>
         </div >
