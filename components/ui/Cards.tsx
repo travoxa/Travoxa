@@ -6,9 +6,10 @@ interface CardProps {
   description: string;
   image: string;
   index: number;
+  price:string
 }
 
-export default function Card({ name, description, image, index }: CardProps) {
+export default function Card({ name, description, image, index ,price}: CardProps) {
   return (
     <div
       className={`
@@ -34,7 +35,7 @@ export default function Card({ name, description, image, index }: CardProps) {
       <div className="p-5">
         <div className="flex justify-between items-start mb-2">
           <h3 className="text-lg font-bold text-gray-900">{name}</h3>
-          <span className="text-lg font-bold text-black">$285</span>
+          <span className="text-lg font-bold text-black">{price}</span>
         </div>
         <div className="flex items-center gap-1 mb-4 text-gray-500 text-xs uppercase tracking-wide">
           <span>Bali, Indonesia</span> {/* Mock location */}
