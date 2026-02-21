@@ -22,10 +22,66 @@ export interface AttractionPackage {
     category: string;
     type: string;
     overview: string;
-    price: number;
     visitDuration: string;
     entryFee: number;
     openingHours: string;
+    highlights?: string[];
+    bestTime?: string;
+    badges?: string[];
+    categoryTags?: string[];
+    googleRating?: number;
+    openingHoursExtended?: {
+        monday: DailySchedule;
+        tuesday: DailySchedule;
+        wednesday: DailySchedule;
+        thursday: DailySchedule;
+        friday: DailySchedule;
+        saturday: DailySchedule;
+        sunday: DailySchedule;
+        specialTimings?: SpecialTiming[];
+    };
+    entryPricing?: { category: string; price: number }[];
+    additionalCharges?: { item: string; priceRange?: string; note?: string }[];
+    howToReach?: {
+        type: string;
+        station?: string;
+        distance?: string;
+        fare?: string;
+        time?: string;
+        availability?: string;
+        fareRange?: string;
+    }[];
+    nearbyAttractions?: any[];
+    nearbyFood?: any[];
+    emergencyInfo?: {
+        hospital?: { name: string; distance: string };
+        police?: { name: string; distance: string };
+        emergencyNumber?: string;
+        customInfo?: string[];
+    };
+    smartTips?: string[];
+    travelInformation?: {
+        crowdLevel?: string;
+        safetyScore?: number;
+    };
+}
+
+export interface OpeningSlot {
+    start: string;
+    end: string;
+}
+
+export interface DailySchedule {
+    slots: OpeningSlot[];
+    isClosed: boolean;
+    note?: string;
+}
+
+export interface SpecialTiming {
+    date: string | Date;
+    slots: OpeningSlot[];
+    isClosed: boolean;
+    note?: string;
 }
 
 interface AttractionsClientProps {

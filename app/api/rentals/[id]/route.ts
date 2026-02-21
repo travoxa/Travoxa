@@ -15,6 +15,46 @@ const connectDB = async () => {
     await mongoose.connect(process.env.MONGODB_URI);
 };
 
+export async function GET(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    const { id } = await params;
+
+    try {
+        await connectDB();
+
+        if (!id) {
+            return NextResponse.json(
+                { success: false, error: 'Rental ID is required' },
+                { status: 400 }
+            );
+        }
+
+        const rental = await Rental.findById(id);
+
+        if (!rental) {
+            return NextResponse.json(
+                { success: false, error: 'Rental not found' },
+                { status: 404 }
+            );
+        }
+
+        const rentalWithId = {
+            ...rental.toObject(),
+            id: rental._id.toString(),
+        };
+
+        return NextResponse.json({ success: true, data: rentalWithId });
+    } catch (error: any) {
+        console.error('Error fetching rental:', error);
+        return NextResponse.json({
+            success: false,
+            error: error.message || 'Failed to fetch rental'
+        }, { status: 500 });
+    }
+}
+
 export async function PUT(
     req: Request,
     { params }: { params: Promise<{ id: string }> }

@@ -1,5 +1,37 @@
 import mongoose from 'mongoose';
 
+const OpeningSlotSchema = new mongoose.Schema({
+    start: String,
+    end: String,
+}, { _id: false });
+
+const DailyScheduleSchema = new mongoose.Schema({
+    slots: { type: [OpeningSlotSchema], default: [] },
+    isClosed: { type: Boolean, default: false },
+    note: String,
+}, { _id: false });
+
+const ReachOptionSchema = new mongoose.Schema({
+    type: { type: String, required: true }, // Metro, Bus, Cab, Train, Airport, Ferry, etc.
+    station: String,
+    distance: String,
+    fare: String,
+    time: String,
+    availability: String,
+    fareRange: String,
+}, { _id: false });
+
+const EntryPriceSchema = new mongoose.Schema({
+    category: { type: String, required: true }, // Adult, Child, Foreigner, Camera, etc.
+    price: { type: Number, required: true }
+}, { _id: false });
+
+const ExtraChargeSchema = new mongoose.Schema({
+    item: { type: String, required: true }, // Guide, Parking, Boating, etc.
+    priceRange: String,
+    note: String
+}, { _id: false });
+
 const AttractionSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -57,6 +89,59 @@ const AttractionSchema = new mongoose.Schema({
     type: {
         type: String, // e.g., Palace, Museum
         required: [true, 'Please provide a type'],
+    },
+    // Extensive New Fields
+    badges: {
+        type: [String],
+        default: [], // Popular, Free Entry, Night View, Family Friendly, Featured, Verified, etc.
+    },
+    categoryTags: {
+        type: [String],
+        default: [], // Historical, Temple, Nature, Fort, etc.
+    },
+    googleRating: {
+        type: Number,
+        default: 0,
+    },
+    openingHoursExtended: {
+        monday: DailyScheduleSchema,
+        tuesday: DailyScheduleSchema,
+        wednesday: DailyScheduleSchema,
+        thursday: DailyScheduleSchema,
+        friday: DailyScheduleSchema,
+        saturday: DailyScheduleSchema,
+        sunday: DailyScheduleSchema,
+        specialTimings: [{
+            date: Date,
+            slots: [OpeningSlotSchema],
+            isClosed: Boolean,
+            note: String
+        }]
+    },
+    entryPricing: [EntryPriceSchema],
+    additionalCharges: [ExtraChargeSchema],
+    howToReach: [ReachOptionSchema],
+    nearbyAttractions: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Attraction'
+    }],
+    nearbyFood: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Food'
+    }],
+    emergencyInfo: {
+        hospital: { name: String, distance: String },
+        police: { name: String, distance: String },
+        emergencyNumber: String,
+        customInfo: [String]
+    },
+    smartTips: {
+        type: [String],
+        default: [],
+    },
+    travelInformation: {
+        crowdLevel: String, // Low, Moderate, High
+        safetyScore: Number, // 1-10
     },
     createdAt: {
         type: Date,

@@ -1,17 +1,20 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { RentalItem } from "@/data/rentalsData";
 import { FaWhatsapp, FaStar, FaGasPump, FaUserGroup, FaHelmetSafety } from "react-icons/fa6";
-import { MdLocationOn } from "react-icons/md";
+import { MdLocationOn, MdPlace } from "react-icons/md";
 
 interface RentalCardProps {
     item: RentalItem;
 }
 
 export default function RentalCard({ item }: RentalCardProps) {
+    const router = useRouter();
 
-    const handleWhatsApp = () => {
+    const handleWhatsApp = (e: React.MouseEvent) => {
+        e.stopPropagation();
         const message = `Hi, I'm interested in renting ${item.name} (${item.model}) in ${item.location}. Please provide details.`;
         // Use the whatsapp number if available, otherwise open generic WhatsApp share
         if (item.whatsapp) {
@@ -21,8 +24,15 @@ export default function RentalCard({ item }: RentalCardProps) {
         }
     };
 
+    const handleCardClick = () => {
+        router.push(`/travoxa-discovery/rentals/${item.id}`);
+    };
+
     return (
-        <div className="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-emerald-500/50 transition-all duration-300 cursor-pointer flex flex-col h-full hover:shadow-xl">
+        <div
+            onClick={handleCardClick}
+            className="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-emerald-500/50 transition-all duration-300 cursor-pointer flex flex-col h-full hover:shadow-xl"
+        >
             {/* Image Section */}
             <div className="relative h-56 overflow-hidden bg-slate-50">
                 <Image

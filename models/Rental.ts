@@ -78,6 +78,50 @@ const RentalSchema = new mongoose.Schema({
     location: {
         type: String,
         required: false
+    },
+    vehicleCondition: {
+        type: String,
+        required: false
+    },
+    hourlyPrice: {
+        type: Number,
+        required: false
+    },
+    weeklyPrice: {
+        type: Number,
+        required: false
+    },
+    securityDeposit: {
+        type: Number,
+        required: false
+    },
+    extraKmCharge: {
+        type: Number,
+        required: false
+    },
+    perDayKmLimit: {
+        type: Number,
+        required: false
+    },
+    minAge: {
+        type: Number,
+        required: false
+    },
+    documentsRequired: {
+        type: [String],
+        default: []
+    },
+    fuelPolicy: {
+        type: String,
+        required: false
+    },
+    lateReturnCharges: {
+        type: String,
+        required: false
+    },
+    googleMapLink: {
+        type: String,
+        required: false
     }
 }, {
     timestamps: true

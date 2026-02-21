@@ -13,6 +13,10 @@ export interface TourPackage {
         day: number;
         title: string;
         description: string;
+        stay?: string;
+        activity?: string;
+        meal?: string;
+        transfer?: string;
     }[];
     inclusions: string[];
     exclusions: string[];

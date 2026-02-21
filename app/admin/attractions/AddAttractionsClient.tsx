@@ -1,9 +1,8 @@
-'use client';
-
 import { useState, useEffect } from 'react';
-import { RiDeleteBinLine, RiAddLine, RiCloseLine, RiMoreLine, RiEditLine } from 'react-icons/ri';
+import { RiDeleteBinLine, RiAddLine, RiCloseLine, RiMoreLine, RiEditLine, RiTimeLine, RiPriceTag3Line, RiMapPinRangeLine, RiAlarmWarningLine, RiLightbulbLine, RiRestaurant2Line, RiParkingLine, RiGuideLine, RiHotelLine, RiDragMove2Fill } from 'react-icons/ri';
 import { CldUploadWidget } from 'next-cloudinary';
 import { INDIA_STATES, getCitiesForState } from '@/data/indiaStatesAndCities';
+import { motion, Reorder } from 'framer-motion';
 
 interface AddAttractionsClientProps {
     showManagementBox?: boolean;
@@ -12,6 +11,17 @@ interface AddAttractionsClientProps {
     onFormOpen?: () => void;
     onFormClose?: () => void;
 }
+
+const INITIAL_OPENING_HOURS = {
+    monday: { slots: [] as any[], isClosed: false, note: '' },
+    tuesday: { slots: [] as any[], isClosed: false, note: '' },
+    wednesday: { slots: [] as any[], isClosed: false, note: '' },
+    thursday: { slots: [] as any[], isClosed: false, note: '' },
+    friday: { slots: [] as any[], isClosed: false, note: '' },
+    saturday: { slots: [] as any[], isClosed: false, note: '' },
+    sunday: { slots: [] as any[], isClosed: false, note: '' },
+    specialTimings: [] as any[]
+};
 
 export default function AddAttractionsClient({
     showManagementBox = true,
@@ -26,41 +36,116 @@ export default function AddAttractionsClient({
     const [showFormInternal, setShowFormInternal] = useState(false);
     const showForm = showFormDirectly || showFormInternal;
     const [attractions, setAttractions] = useState<any[]>([]);
+    const [allAttractions, setAllAttractions] = useState<any[]>([]);
+    const [allFood, setAllFood] = useState<any[]>([]);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [loadingAttractions, setLoadingAttractions] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [availableCities, setAvailableCities] = useState<string[]>([]);
 
-    const DUMMY_FORM_DATA = {
-        title: 'Taj Mahal',
-        state: 'Uttar Pradesh',
-        city: 'Agra',
-        visitDuration: '2-3 Hours',
-        entryFee: '50',
-        overview: 'An immense mausoleum of white marble, built in Agra between 1631 and 1648 by order of the Mughal emperor Shah Jahan in memory of his favourite wife, the Taj Mahal is the jewel of Muslim art in India and one of the universally admired masterpieces of the world\'s heritage.',
-        highlights: ['Mughal Architecture', 'Yamuna View', 'Gardens'],
-        openingHours: '6:00 AM - 6:30 PM (Friday Closed)',
-        bestTime: 'October to March',
-        image: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg',
+    const INITIAL_FORM_STATE = {
+        title: '',
+        city: '',
+        state: '',
+        overview: '',
+        highlights: [] as string[],
+        bestTime: '',
+        image: '',
+        visitDuration: '',
+        category: '',
+        type: '',
+        badges: [] as string[],
+        categoryTags: [] as string[],
+        googleRating: '',
+        openingHoursExtended: INITIAL_OPENING_HOURS,
+        entryPricing: [] as { category: string; price: string }[],
+        additionalCharges: [] as { item: string; priceRange: string; note: string }[],
+        howToReach: [] as any[],
+        nearbyAttractions: [] as string[],
+        nearbyFood: [] as string[],
+        emergencyInfo: {
+            hospital: { name: '', distance: '' },
+            police: { name: '', distance: '' },
+            emergencyNumber: '',
+            customInfo: [] as string[]
+        },
+        openingHours: '',
+        smartTips: [] as string[],
+        travelInformation: {
+            crowdLevel: 'Moderate',
+            safetyScore: '8'
+        }
     };
 
     const isDev = process.env.NODE_ENV === 'development';
 
-    const [formData, setFormData] = useState(isDev ? DUMMY_FORM_DATA : {
-        title: '',
-        city: '',
-        state: '',
-        visitDuration: '',
-        entryFee: '',
-        overview: '',
-        highlights: [] as string[],
-        openingHours: '',
-        bestTime: '',
-        image: '',
-    });
+    const DUMMY_FORM_DATA: typeof INITIAL_FORM_STATE = {
+        title: 'Taj Mahal (Development)',
+        city: 'Agra',
+        state: 'Uttar Pradesh',
+        overview: 'The Taj Mahal is an ivory-white marble mausoleum on the south bank of the Yamuna river in the Indian city of Agra. It was commissioned in 1632 by the Mughal emperor, Shah Jahan, to house the tomb of his favourite wife, Mumtaz Mahal.',
+        highlights: ['UNESCO World Heritage Site', 'New7Wonders of the World', 'Mughal Architecture'],
+        bestTime: 'October to March',
+        visitDuration: '2-3 hours',
+        image: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg',
+        category: 'Historical',
+        type: 'Monument',
+        badges: ['Top Pick', 'Must Visit'],
+        categoryTags: ['History', 'Culture', 'Architecture'],
+        googleRating: '4.8',
+        openingHoursExtended: {
+            monday: { slots: [{ start: '06:00', end: '18:30' }], isClosed: false, note: 'Open all day' },
+            tuesday: { slots: [{ start: '06:00', end: '18:30' }], isClosed: false, note: 'Open all day' },
+            wednesday: { slots: [{ start: '06:00', end: '18:30' }], isClosed: false, note: 'Open all day' },
+            thursday: { slots: [{ start: '06:00', end: '18:30' }], isClosed: false, note: 'Open all day' },
+            friday: { slots: [], isClosed: true, note: 'Closed for Prayers' },
+            saturday: { slots: [{ start: '06:00', end: '18:30' }], isClosed: false, note: 'Open all day' },
+            sunday: { slots: [{ start: '06:00', end: '18:30' }], isClosed: false, note: 'Open all day' },
+            specialTimings: []
+        },
+        entryPricing: [
+            { category: 'Indian Citizen', price: '50' },
+            { category: 'Foreigner', price: '1100' },
+            { category: 'SAARC/BIMSTEC', price: '540' }
+        ],
+        additionalCharges: [
+            { item: 'Mausoleum Entry', priceRange: '200', note: 'Optional for main dome' },
+            { item: 'Professional Guide', priceRange: '500-1000', note: 'Approximate cost' }
+        ],
+        howToReach: [
+            { type: 'Train', station: 'Agra Cantt', distance: '6km', fare: '₹50-200', time: '15 mins', availability: 'Frequent' },
+            { type: 'Bus', station: 'Idgah Bus Stand', distance: '5km', fare: '₹20-50', time: '20 mins' }
+        ],
+        nearbyAttractions: [],
+        nearbyFood: [],
+        emergencyInfo: {
+            hospital: { name: 'District Hospital Agra', distance: '4km' },
+            police: { name: 'Tajganj Police Station', distance: '1km' },
+            emergencyNumber: '112',
+            customInfo: ['Emergency tourism helpline available']
+        },
+        openingHours: '06:00 AM - 06:30 PM',
+        smartTips: ['Reach early to avoid crowds', 'Carry ID proof', 'Main dome entry requires separate ticket'],
+        travelInformation: {
+            crowdLevel: 'High',
+            safetyScore: '9'
+        }
+    };
+
+    const [formData, setFormData] = useState(isDev ? DUMMY_FORM_DATA : INITIAL_FORM_STATE);
+
+    const [openingHoursMode, setOpeningHoursMode] = useState<'simple' | 'advanced'>('advanced');
+    const [simpleHours, setSimpleHours] = useState({ start: '09:00', end: '18:00' });
+    const [customType, setCustomType] = useState('');
+    const [customCategory, setCustomCategory] = useState('');
+    const [showCustomType, setShowCustomType] = useState(false);
+    const [showCustomCategory, setShowCustomCategory] = useState(false);
 
     const [highlightInput, setHighlightInput] = useState('');
+    const [badgeInput, setBadgeInput] = useState('');
+    const [tagInput, setTagInput] = useState('');
+    const [tipInput, setTipInput] = useState('');
 
     useEffect(() => {
         if (formData.state) {
@@ -78,13 +163,22 @@ export default function AddAttractionsClient({
     const fetchAttractions = async () => {
         setLoadingAttractions(true);
         try {
-            const res = await fetch('/api/attractions');
-            const data = await res.json();
-            if (data.success) {
-                setAttractions(data.data);
+            const [attRes, foodRes] = await Promise.all([
+                fetch('/api/attractions'),
+                fetch('/api/food')
+            ]);
+            const attData = await attRes.json();
+            const foodData = await foodRes.json();
+
+            if (attData.success) {
+                setAttractions(attData.data);
+                setAllAttractions(attData.data);
+            }
+            if (foodData.success) {
+                setAllFood(foodData.data);
             }
         } catch (error) {
-            console.error('Failed to fetch attractions:', error);
+            console.error('Failed to fetch data:', error);
         } finally {
             setLoadingAttractions(false);
         }
@@ -139,19 +233,166 @@ export default function AddAttractionsClient({
         }));
     };
 
+    // Opening Hours Helpers
+    const addOpeningSlot = (day: string) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            openingHoursExtended: {
+                ...prev.openingHoursExtended,
+                [day]: {
+                    ...prev.openingHoursExtended[day],
+                    slots: [...prev.openingHoursExtended[day].slots, { start: '09:00 AM', end: '06:00 PM' }]
+                }
+            }
+        }));
+    };
+
+    const removeOpeningSlot = (day: string, index: number) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            openingHoursExtended: {
+                ...prev.openingHoursExtended,
+                [day]: {
+                    ...prev.openingHoursExtended[day],
+                    slots: prev.openingHoursExtended[day].slots.filter((_: any, i: number) => i !== index)
+                }
+            }
+        }));
+    };
+
+    const updateOpeningSlot = (day: string, index: number, field: 'start' | 'end', value: string) => {
+        setFormData((prev: any) => {
+            const newSlots = [...prev.openingHoursExtended[day].slots];
+            newSlots[index] = { ...newSlots[index], [field]: value };
+            return {
+                ...prev,
+                openingHoursExtended: {
+                    ...prev.openingHoursExtended,
+                    [day]: { ...prev.openingHoursExtended[day], slots: newSlots }
+                }
+            };
+        });
+    };
+
+    const toggleDayClosed = (day: string) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            openingHoursExtended: {
+                ...prev.openingHoursExtended,
+                [day]: { ...prev.openingHoursExtended[day], isClosed: !prev.openingHoursExtended[day].isClosed }
+            }
+        }));
+    };
+
+    // Lists Helpers
+    const addPricingRow = () => {
+        setFormData(prev => ({ ...prev, entryPricing: [...prev.entryPricing, { category: '', price: '' }] }));
+    };
+
+    const removePricingRow = (idx: number) => {
+        setFormData(prev => ({ ...prev, entryPricing: prev.entryPricing.filter((_, i) => i !== idx) }));
+    };
+
+    const addChargeRow = () => {
+        setFormData(prev => ({ ...prev, additionalCharges: [...prev.additionalCharges, { item: '', priceRange: '', note: '' }] }));
+    };
+
+    const removeChargeRow = (idx: number) => {
+        setFormData(prev => ({ ...prev, additionalCharges: prev.additionalCharges.filter((_, i) => i !== idx) }));
+    };
+
+    const applySimpleHours = (start: string, end: string) => {
+        setFormData(prev => ({
+            ...prev,
+            openingHoursExtended: {
+                ...prev.openingHoursExtended,
+                monday: { slots: [{ start, end }], isClosed: false, note: '' },
+                tuesday: { slots: [{ start, end }], isClosed: false, note: '' },
+                wednesday: { slots: [{ start, end }], isClosed: false, note: '' },
+                thursday: { slots: [{ start, end }], isClosed: false, note: '' },
+                friday: { slots: [{ start, end }], isClosed: false, note: '' },
+                saturday: { slots: [{ start, end }], isClosed: false, note: '' },
+                sunday: { slots: [{ start, end }], isClosed: false, note: '' },
+            }
+        }));
+    };
+
+    const addReachStep = () => {
+        setFormData(prev => ({ ...prev, howToReach: [...prev.howToReach, { type: 'Metro', station: '', distance: '', fare: '', time: '', availability: '', fareRange: '' }] }));
+    };
+
+    const removeReachStep = (idx: number) => {
+        setFormData(prev => ({ ...prev, howToReach: prev.howToReach.filter((_, i) => i !== idx) }));
+    };
+
+    const moveReachStep = (idx: number, direction: 'up' | 'down') => {
+        const newReach = [...formData.howToReach];
+        const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+        if (targetIdx >= 0 && targetIdx < newReach.length) {
+            [newReach[idx], newReach[targetIdx]] = [newReach[targetIdx], newReach[idx]];
+            setFormData(prev => ({ ...prev, howToReach: newReach }));
+        }
+    };
+
+    const addBadge = () => {
+        if (badgeInput.trim() && !formData.badges.includes(badgeInput.trim())) {
+            setFormData(prev => ({ ...prev, badges: [...prev.badges, badgeInput.trim()] }));
+            setBadgeInput('');
+        }
+    };
+
+    const removeBadge = (badge: string) => {
+        setFormData(prev => ({ ...prev, badges: prev.badges.filter(b => b !== badge) }));
+    };
+
+    const addTag = () => {
+        if (tagInput.trim() && !formData.categoryTags.includes(tagInput.trim())) {
+            setFormData(prev => ({ ...prev, categoryTags: [...prev.categoryTags, tagInput.trim()] }));
+            setTagInput('');
+        }
+    };
+
+    const removeTag = (tag: string) => {
+        setFormData(prev => ({ ...prev, categoryTags: prev.categoryTags.filter(t => t !== tag) }));
+    };
+
+    const addTip = () => {
+        if (tipInput.trim()) {
+            setFormData(prev => ({ ...prev, smartTips: [...prev.smartTips, tipInput.trim()] }));
+            setTipInput('');
+        }
+    };
+
+    const removeTip = (index: number) => {
+        setFormData(prev => ({ ...prev, smartTips: prev.smartTips.filter((_, i) => i !== index) }));
+    };
+
     const handleEdit = (attraction: any) => {
         setEditingId(attraction._id);
         setFormData({
             title: attraction.title,
             city: attraction.city,
             state: attraction.state,
-            visitDuration: attraction.visitDuration,
-            entryFee: attraction.entryFee.toString(),
             overview: attraction.overview,
             highlights: attraction.highlights || [],
-            openingHours: attraction.openingHours,
             bestTime: attraction.bestTime || '',
+            visitDuration: attraction.visitDuration || '',
             image: attraction.image,
+            category: attraction.category || '',
+            type: attraction.type || '',
+            badges: attraction.badges || [],
+            categoryTags: attraction.categoryTags || [],
+            googleRating: attraction.googleRating?.toString() || '',
+            openingHoursExtended: attraction.openingHoursExtended || INITIAL_OPENING_HOURS,
+            entryPricing: attraction.entryPricing ? attraction.entryPricing.map((p: any) => ({ category: p.category, price: p.price?.toString() || '' })) : [],
+            additionalCharges: attraction.additionalCharges || [],
+            howToReach: attraction.howToReach || [],
+            nearbyAttractions: attraction.nearbyAttractions || [],
+            nearbyFood: attraction.nearbyFood || [],
+            emergencyInfo: attraction.emergencyInfo || INITIAL_FORM_STATE.emergencyInfo,
+            openingHours: attraction.openingHours || '',
+            smartTips: attraction.smartTips || [],
+            travelInformation: attraction.travelInformation || INITIAL_FORM_STATE.travelInformation,
         });
         setShowFormInternal(true);
         setOpenMenuId(null);
@@ -163,10 +404,28 @@ export default function AddAttractionsClient({
         setError('');
         setSuccess('');
 
-        const payload = {
+        const payload: any = {
             ...formData,
-            entryFee: Number(formData.entryFee),
+            googleRating: Number(formData.googleRating),
+            entryFee: formData.entryPricing && formData.entryPricing.length > 0 ? Number(formData.entryPricing[0].price) : 0,
+            entryPricing: formData.entryPricing.map(p => ({ ...p, price: Number(p.price) })),
+            travelInformation: {
+                ...formData.travelInformation,
+                safetyScore: Number(formData.travelInformation.safetyScore)
+            }
         };
+
+        // Sync legacy openingHours string if empty
+        if (!payload.openingHours && payload.openingHoursExtended) {
+            const monday = payload.openingHoursExtended.monday;
+            if (monday?.isClosed) {
+                payload.openingHours = 'Closed on Mondays';
+            } else if (monday?.slots?.length > 0) {
+                payload.openingHours = `${monday.slots[0].start} - ${monday.slots[0].end}`;
+            }
+        }
+
+        console.log('Submitting Attraction Payload:', JSON.stringify(payload, null, 2));
 
         try {
             const method = editingId ? 'PUT' : 'POST';
@@ -185,20 +444,10 @@ export default function AddAttractionsClient({
             }
 
             setSuccess(`Attraction ${editingId ? 'updated' : 'created'} successfully!`);
-            setFormData({
-                title: '',
-                city: '',
-                state: '',
-                visitDuration: '',
-                entryFee: '',
-                overview: '',
-                highlights: [],
-                openingHours: '',
-                bestTime: '',
-                image: '',
-            });
+            setFormData(isDev ? DUMMY_FORM_DATA : INITIAL_FORM_STATE);
             setEditingId(null);
             fetchAttractions();
+
 
             setTimeout(() => {
                 if (onFormClose) {
@@ -380,38 +629,88 @@ export default function AddAttractionsClient({
                                     ))}
                                 </select>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Visit Duration</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.visitDuration}
-                                    onChange={e => setFormData({ ...formData, visitDuration: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. 2-3 Hours"
-                                />
+                            <div className="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                                    <div className="space-y-2">
+                                        <select
+                                            required
+                                            value={showCustomType ? 'Custom' : formData.type}
+                                            onChange={e => {
+                                                if (e.target.value === 'Custom') {
+                                                    setShowCustomType(true);
+                                                    setFormData({ ...formData, type: '' });
+                                                } else {
+                                                    setShowCustomType(false);
+                                                    setFormData({ ...formData, type: e.target.value });
+                                                }
+                                            }}
+                                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white"
+                                        >
+                                            <option value="">Select Type</option>
+                                            <option value="Monument">Monument</option>
+                                            <option value="Museum">Museum</option>
+                                            <option value="Park">Park</option>
+                                            <option value="Temple">Temple</option>
+                                            <option value="Beach">Beach</option>
+                                            <option value="Waterfall">Waterfall</option>
+                                            <option value="Viewpoint">Viewpoint</option>
+                                            <option value="Market">Market</option>
+                                            <option value="Custom">Custom...</option>
+                                        </select>
+                                        {showCustomType && (
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.type}
+                                                onChange={e => setFormData({ ...formData, type: e.target.value })}
+                                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                placeholder="Enter custom type"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Entry Fee (₹)</label>
-                                <input
-                                    type="number"
-                                    required
-                                    value={formData.entryFee}
-                                    onChange={e => setFormData({ ...formData, entryFee: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="0 for free"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Opening Hours</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.openingHours}
-                                    onChange={e => setFormData({ ...formData, openingHours: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. 9:00 AM - 6:00 PM"
-                                />
+                            <div className="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                    <div className="space-y-2">
+                                        <select
+                                            required
+                                            value={showCustomCategory ? 'Custom' : formData.category}
+                                            onChange={e => {
+                                                if (e.target.value === 'Custom') {
+                                                    setShowCustomCategory(true);
+                                                    setFormData({ ...formData, category: '' });
+                                                } else {
+                                                    setShowCustomCategory(false);
+                                                    setFormData({ ...formData, category: e.target.value });
+                                                }
+                                            }}
+                                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white"
+                                        >
+                                            <option value="">Select Category</option>
+                                            <option value="Historical">Historical</option>
+                                            <option value="Nature">Nature</option>
+                                            <option value="Adventure">Adventure</option>
+                                            <option value="Religious">Religious</option>
+                                            <option value="Entertainment">Entertainment</option>
+                                            <option value="Shopping">Shopping</option>
+                                            <option value="Relaxation">Relaxation</option>
+                                            <option value="Custom">Custom...</option>
+                                        </select>
+                                        {showCustomCategory && (
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.category}
+                                                onChange={e => setFormData({ ...formData, category: e.target.value })}
+                                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                placeholder="Enter custom category"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Best Time to Visit</label>
@@ -422,6 +721,99 @@ export default function AddAttractionsClient({
                                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
                                     placeholder="e.g. October to March"
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Visit Duration</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formData.visitDuration}
+                                    onChange={e => setFormData({ ...formData, visitDuration: e.target.value })}
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    placeholder="e.g. 2-3 hours"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Google Rating</label>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    min="0"
+                                    max="5"
+                                    value={formData.googleRating}
+                                    onChange={e => setFormData({ ...formData, googleRating: e.target.value })}
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    placeholder="e.g. 4.6"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Badges & Tags */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-50 p-6 rounded-xl border border-slate-100">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                    <RiPriceTag3Line className="text-pink-500" /> Optional Badges
+                                </label>
+                                <div className="flex gap-2 mb-3">
+                                    <input
+                                        type="text"
+                                        list="badge-options"
+                                        value={badgeInput}
+                                        onChange={e => setBadgeInput(e.target.value)}
+                                        onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addBadge())}
+                                        className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 outline-none text-sm"
+                                        placeholder="e.g. Popular, Free Entry"
+                                    />
+                                    <datalist id="badge-options">
+                                        <option value="Popular" />
+                                        <option value="Free Entry" />
+                                        <option value="Night View" />
+                                        <option value="Family Friendly" />
+                                        <option value="Featured" />
+                                        <option value="Verified" />
+                                    </datalist>
+                                    <button type="button" onClick={addBadge} className="px-4 py-2 bg-pink-100 text-pink-700 rounded-lg hover:bg-pink-200 text-xs font-bold">+ Add</button>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {formData.badges.map((badge, idx) => (
+                                        <div key={idx} className="px-3 py-1 bg-pink-50 text-pink-700 rounded-full text-xs font-bold border border-pink-100 flex items-center gap-2">
+                                            {badge}
+                                            <button type="button" onClick={() => removeBadge(badge)}><RiCloseLine size={14} /></button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                    <RiPriceTag3Line className="text-emerald-500" /> Category Tags
+                                </label>
+                                <div className="flex gap-2 mb-3">
+                                    <input
+                                        type="text"
+                                        list="tag-options"
+                                        value={tagInput}
+                                        onChange={e => setTagInput(e.target.value)}
+                                        onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                                        className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+                                        placeholder="e.g. Historical, Temple"
+                                    />
+                                    <datalist id="tag-options">
+                                        <option value="Historical" />
+                                        <option value="Temple" />
+                                        <option value="Nature" />
+                                        <option value="Fort" />
+                                    </datalist>
+                                    <button type="button" onClick={addTag} className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 text-xs font-bold">+ Add</button>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {formData.categoryTags.map((tag, idx) => (
+                                        <div key={idx} className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold border border-emerald-100 flex items-center gap-2">
+                                            {tag}
+                                            <button type="button" onClick={() => removeTag(tag)}><RiCloseLine size={14} /></button>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -435,7 +827,515 @@ export default function AddAttractionsClient({
                                 placeholder="Describe the attraction..."
                             />
                         </div>
-                        {/* Dynamic Arrays */}
+
+                        {/* Opening Hours Extended */}
+                        <div className="space-y-6 border-t pt-8">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-md font-bold text-gray-800 flex items-center gap-2">
+                                    <RiTimeLine className="text-blue-500" /> Opening Hours
+                                </h3>
+                                <div className="flex bg-gray-100 p-1 rounded-lg">
+                                    <button
+                                        type="button"
+                                        onClick={() => setOpeningHoursMode('simple')}
+                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${openingHoursMode === 'simple' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                    >
+                                        Simple
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setOpeningHoursMode('advanced')}
+                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${openingHoursMode === 'advanced' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                    >
+                                        Advanced
+                                    </button>
+                                </div>
+                            </div>
+
+                            {openingHoursMode === 'simple' ? (
+                                <div className="p-6 bg-blue-50 rounded-xl border border-blue-100 space-y-4">
+                                    <p className="text-xs text-blue-600 font-medium italic">Apply the same timing to all days of the week.</p>
+                                    <div className="flex items-center gap-4">
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-blue-400 mb-1">Opens at</label>
+                                            <input
+                                                type="time"
+                                                value={simpleHours.start}
+                                                onChange={e => {
+                                                    setSimpleHours({ ...simpleHours, start: e.target.value });
+                                                    applySimpleHours(e.target.value, simpleHours.end);
+                                                }}
+                                                className="px-3 py-2 border rounded-lg text-sm bg-white"
+                                            />
+                                        </div>
+                                        <div className="text-blue-300 pt-5">→</div>
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-blue-400 mb-1">Closes at</label>
+                                            <input
+                                                type="time"
+                                                value={simpleHours.end}
+                                                onChange={e => {
+                                                    setSimpleHours({ ...simpleHours, end: e.target.value });
+                                                    applySimpleHours(simpleHours.start, e.target.value);
+                                                }}
+                                                className="px-3 py-2 border rounded-lg text-sm bg-white"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-4">
+                                    {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => {
+                                        const daySchedule = (formData.openingHoursExtended as any)[day];
+                                        return (
+                                            <div key={day} className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                                <div className="w-48 flex items-center justify-between pr-4 border-r border-gray-200">
+                                                    <span className="text-sm font-bold capitalize text-slate-700">{day}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleDayClosed(day)}
+                                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${!daySchedule.isClosed ? 'bg-blue-600' : 'bg-gray-200'}`}
+                                                    >
+                                                        <span
+                                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${!daySchedule.isClosed ? 'translate-x-6' : 'translate-x-1'}`}
+                                                        />
+                                                    </button>
+                                                </div>
+
+                                                {!daySchedule.isClosed ? (
+                                                    <div className="flex-1 space-y-2">
+                                                        {daySchedule.slots.map((slot: any, sIdx: number) => (
+                                                            <div key={sIdx} className="flex items-center gap-2">
+                                                                <input
+                                                                    type="time"
+                                                                    value={slot.start}
+                                                                    onChange={(e) => updateOpeningSlot(day, sIdx, 'start', e.target.value)}
+                                                                    className="px-2 py-1 border rounded text-xs"
+                                                                />
+                                                                <span className="text-gray-400">to</span>
+                                                                <input
+                                                                    type="time"
+                                                                    value={slot.end}
+                                                                    onChange={(e) => updateOpeningSlot(day, sIdx, 'end', e.target.value)}
+                                                                    className="px-2 py-1 border rounded text-xs"
+                                                                />
+                                                                <button type="button" onClick={() => removeOpeningSlot(day, sIdx)} className="text-red-500 hover:bg-red-50 p-1 rounded"><RiDeleteBinLine size={14} /></button>
+                                                            </div>
+                                                        ))}
+                                                        <button type="button" onClick={() => addOpeningSlot(day)} className="text-[10px] text-blue-600 font-bold hover:underline flex items-center gap-1">
+                                                            <RiAddLine /> Add Slot
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex-1 flex items-center gap-3">
+                                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Closed</span>
+                                                        <input
+                                                            type="text"
+                                                            value={daySchedule.note || ''}
+                                                            onChange={(e) => setFormData((prev: any) => ({
+                                                                ...prev,
+                                                                openingHoursExtended: {
+                                                                    ...prev.openingHoursExtended,
+                                                                    [day]: { ...prev.openingHoursExtended[day], note: e.target.value }
+                                                                }
+                                                            }))}
+                                                            className="flex-1 px-3 py-1.5 border rounded text-xs bg-white italic"
+                                                            placeholder="Note (e.g. Weekly Holiday)"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                        {/* Advanced Pricing */}
+                        <div className="space-y-6 border-t pt-8">
+                            <h3 className="text-md font-bold text-gray-800 flex items-center gap-2">
+                                <RiPriceTag3Line className="text-emerald-500" /> Entry Pricing Table
+                            </h3>
+                            <div className="space-y-3">
+                                {formData.entryPricing.map((row, idx) => (
+                                    <div key={idx} className="flex gap-4 items-center bg-emerald-50/50 p-3 rounded-lg border border-emerald-100">
+                                        <div className="flex-1">
+                                            <input
+                                                type="text"
+                                                value={row.category}
+                                                onChange={e => {
+                                                    const newPricing = [...formData.entryPricing];
+                                                    newPricing[idx].category = e.target.value;
+                                                    setFormData({ ...formData, entryPricing: newPricing });
+                                                }}
+                                                className="w-full px-3 py-1.5 border rounded text-sm outline-none focus:ring-1 focus:ring-emerald-500"
+                                                placeholder="Category (e.g. Adult, Child)"
+                                            />
+                                        </div>
+                                        <div className="w-32">
+                                            <input
+                                                type="text"
+                                                value={row.price}
+                                                onChange={e => {
+                                                    const newPricing = [...formData.entryPricing];
+                                                    newPricing[idx].price = e.target.value;
+                                                    setFormData({ ...formData, entryPricing: newPricing });
+                                                }}
+                                                className="w-full px-3 py-1.5 border rounded text-sm outline-none focus:ring-1 focus:ring-emerald-500"
+                                                placeholder="Price (₹)"
+                                            />
+                                        </div>
+                                        <button type="button" onClick={() => removePricingRow(idx)} className="text-red-500 p-1.5 hover:bg-red-50 rounded">
+                                            <RiDeleteBinLine size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                                <button type="button" onClick={addPricingRow} className="text-sm text-emerald-600 font-bold flex items-center gap-1 hover:underline">
+                                    <RiAddLine /> Add Row
+                                </button>
+                            </div>
+
+                            <h3 className="text-md font-bold text-gray-800 flex items-center gap-2 pt-4">
+                                <RiPriceTag3Line className="text-purple-500" /> Additional Charges (Optional)
+                            </h3>
+                            <div className="space-y-3">
+                                {formData.additionalCharges.map((row, idx) => (
+                                    <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-purple-50/50 p-3 rounded-lg border border-purple-100">
+                                        <input
+                                            type="text"
+                                            value={row.item}
+                                            onChange={e => {
+                                                const newCharges = [...formData.additionalCharges];
+                                                newCharges[idx].item = e.target.value;
+                                                setFormData({ ...formData, additionalCharges: newCharges });
+                                            }}
+                                            className="px-3 py-1.5 border rounded text-sm"
+                                            placeholder="Item (e.g. Parking)"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={row.priceRange}
+                                            onChange={e => {
+                                                const newCharges = [...formData.additionalCharges];
+                                                newCharges[idx].priceRange = e.target.value;
+                                                setFormData({ ...formData, additionalCharges: newCharges });
+                                            }}
+                                            className="px-3 py-1.5 border rounded text-sm"
+                                            placeholder="Price Range (e.g. ₹50)"
+                                        />
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={row.note}
+                                                onChange={e => {
+                                                    const newCharges = [...formData.additionalCharges];
+                                                    newCharges[idx].note = e.target.value;
+                                                    setFormData({ ...formData, additionalCharges: newCharges });
+                                                }}
+                                                className="flex-1 px-3 py-1.5 border rounded text-sm"
+                                                placeholder="Note"
+                                            />
+                                            <button type="button" onClick={() => removeChargeRow(idx)} className="text-red-500 p-1.5 hover:bg-red-50 rounded">
+                                                <RiDeleteBinLine size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                                <button type="button" onClick={addChargeRow} className="text-sm text-purple-600 font-bold flex items-center gap-1 hover:underline">
+                                    <RiAddLine /> Add Charge
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* How To Reach */}
+                        <div className="space-y-6 border-t pt-8">
+                            <h3 className="text-md font-bold text-gray-800 flex items-center gap-2">
+                                <RiMapPinRangeLine className="text-pink-500" /> How To Reach (Route Ordering)
+                            </h3>
+                            <p className="text-xs text-slate-500 italic mb-4">Drag and drop rows using the handle to change the route order.</p>
+
+                            <Reorder.Group
+                                axis="y"
+                                values={formData.howToReach}
+                                onReorder={(newOrder) => setFormData({ ...formData, howToReach: newOrder })}
+                                className="space-y-3"
+                            >
+                                {formData.howToReach.map((step, idx) => (
+                                    <Reorder.Item
+                                        key={step.station + idx}
+                                        value={step}
+                                        className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:border-pink-200 transition-colors"
+                                    >
+                                        <div className="flex gap-4 items-start">
+                                            {/* Drag Handle */}
+                                            <div className="pt-2 cursor-grab active:cursor-grabbing text-slate-300 hover:text-pink-400">
+                                                <RiDragMove2Fill size={20} />
+                                            </div>
+
+                                            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Transport</label>
+                                                    <select
+                                                        value={step.type}
+                                                        onChange={e => {
+                                                            const newReach = [...formData.howToReach];
+                                                            newReach[idx].type = e.target.value;
+                                                            setFormData({ ...formData, howToReach: newReach });
+                                                        }}
+                                                        className="w-full px-3 py-1.5 border rounded-lg text-sm bg-slate-50"
+                                                    >
+                                                        <option value="Train">Train</option>
+                                                        <option value="Bus">Bus</option>
+                                                        <option value="Metro">Metro</option>
+                                                        <option value="Taxi">Taxi</option>
+                                                        <option value="Auto">Auto</option>
+                                                        <option value="Walk">Walk</option>
+                                                    </select>
+                                                </div>
+                                                <div className="space-y-1 md:col-span-2">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Station / Point Name</label>
+                                                    <input
+                                                        type="text"
+                                                        value={step.station}
+                                                        onChange={e => {
+                                                            const newReach = [...formData.howToReach];
+                                                            newReach[idx].station = e.target.value;
+                                                            setFormData({ ...formData, howToReach: newReach });
+                                                        }}
+                                                        className="w-full px-3 py-1.5 border rounded-lg text-sm"
+                                                        placeholder="e.g. Agra Cantt Railway Station"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Distance</label>
+                                                    <input
+                                                        type="text"
+                                                        value={step.distance}
+                                                        onChange={e => {
+                                                            const newReach = [...formData.howToReach];
+                                                            newReach[idx].distance = e.target.value;
+                                                            setFormData({ ...formData, howToReach: newReach });
+                                                        }}
+                                                        className="w-full px-3 py-1.5 border rounded-lg text-sm"
+                                                        placeholder="e.g. 5 km"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Fare / Cost</label>
+                                                    <input
+                                                        type="text"
+                                                        value={step.fare}
+                                                        onChange={e => {
+                                                            const newReach = [...formData.howToReach];
+                                                            newReach[idx].fare = e.target.value;
+                                                            setFormData({ ...formData, howToReach: newReach });
+                                                        }}
+                                                        className="w-full px-3 py-1.5 border rounded-lg text-sm"
+                                                        placeholder="e.g. ₹50"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Time</label>
+                                                    <input
+                                                        type="text"
+                                                        value={step.time}
+                                                        onChange={e => {
+                                                            const newReach = [...formData.howToReach];
+                                                            newReach[idx].time = e.target.value;
+                                                            setFormData({ ...formData, howToReach: newReach });
+                                                        }}
+                                                        className="w-full px-3 py-1.5 border rounded-lg text-sm"
+                                                        placeholder="e.g. 15 mins"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => removeReachStep(idx)}
+                                                className="p-2 text-red-400 hover:bg-red-50 rounded-lg transition-colors mt-6"
+                                            >
+                                                <RiDeleteBinLine size={18} />
+                                            </button>
+                                        </div>
+                                    </Reorder.Item>
+                                ))}
+                            </Reorder.Group>
+
+                            <button
+                                type="button"
+                                onClick={addReachStep}
+                                className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-500 font-bold hover:border-pink-300 hover:text-pink-500 hover:bg-pink-50/30 transition-all flex items-center justify-center gap-2"
+                            >
+                                <RiAddLine size={20} /> Add Route Step
+                            </button>
+                        </div>
+
+                        {/* Nearby Connections */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t pt-8">
+                            <div>
+                                <h3 className="text-md font-bold text-gray-800 flex items-center gap-2 mb-4">
+                                    <RiMapPinRangeLine className="text-orange-500" /> Nearby Attractions
+                                </h3>
+                                <div className="space-y-2 max-h-48 overflow-y-auto p-2 border rounded-lg bg-gray-50">
+                                    {allAttractions.filter(a => a._id !== editingId).map(att => (
+                                        <label key={att._id} className="flex items-center gap-3 p-2 hover:bg-white rounded cursor-pointer border border-transparent hover:border-slate-200">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.nearbyAttractions.includes(att._id)}
+                                                onChange={e => {
+                                                    const current = [...formData.nearbyAttractions];
+                                                    if (e.target.checked) current.push(att._id);
+                                                    else {
+                                                        const idx = current.indexOf(att._id);
+                                                        if (idx > -1) current.splice(idx, 1);
+                                                    }
+                                                    setFormData({ ...formData, nearbyAttractions: current });
+                                                }}
+                                                className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                                            />
+                                            <img src={att.image} alt="" className="w-8 h-8 rounded object-cover" />
+                                            <span className="text-sm font-medium text-slate-700">{att.title}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-md font-bold text-gray-800 flex items-center gap-2 mb-4">
+                                    <RiRestaurant2Line className="text-amber-500" /> Nearby Food & Cafes
+                                </h3>
+                                <div className="space-y-2 max-h-48 overflow-y-auto p-2 border rounded-lg bg-gray-50">
+                                    {allFood.map(food => (
+                                        <label key={food._id} className="flex items-center gap-3 p-2 hover:bg-white rounded cursor-pointer border border-transparent hover:border-slate-200">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.nearbyFood.includes(food._id)}
+                                                onChange={e => {
+                                                    const current = [...formData.nearbyFood];
+                                                    if (e.target.checked) current.push(food._id);
+                                                    else {
+                                                        const idx = current.indexOf(food._id);
+                                                        if (idx > -1) current.splice(idx, 1);
+                                                    }
+                                                    setFormData({ ...formData, nearbyFood: current });
+                                                }}
+                                                className="w-4 h-4 text-amber-500 rounded focus:ring-amber-500"
+                                            />
+                                            <img src={food.image} alt="" className="w-8 h-8 rounded object-cover" />
+                                            <span className="text-sm font-medium text-slate-700">{food.name}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Safety & Emergency */}
+                        <div className="space-y-6 border-t pt-8">
+                            <h3 className="text-md font-bold text-gray-800 flex items-center gap-2">
+                                <RiAlarmWarningLine className="text-red-500" /> Emergency & Safety
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="space-y-3 p-4 bg-red-50/50 rounded-xl border border-red-100">
+                                    <label className="text-xs font-bold text-red-600 uppercase flex items-center gap-1"><RiHotelLine /> Hospital</label>
+                                    <input
+                                        type="text"
+                                        value={formData.emergencyInfo.hospital?.name}
+                                        onChange={e => setFormData({ ...formData, emergencyInfo: { ...formData.emergencyInfo, hospital: { ...formData.emergencyInfo.hospital, name: e.target.value } } })}
+                                        className="w-full px-3 py-1.5 border rounded text-sm bg-white"
+                                        placeholder="Hospital Name"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={formData.emergencyInfo.hospital?.distance}
+                                        onChange={e => setFormData({ ...formData, emergencyInfo: { ...formData.emergencyInfo, hospital: { ...formData.emergencyInfo.hospital, distance: e.target.value } } })}
+                                        className="w-full px-3 py-1.5 border rounded text-sm bg-white"
+                                        placeholder="Distance (e.g. 2km)"
+                                    />
+                                </div>
+                                <div className="space-y-3 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                                    <label className="text-xs font-bold text-blue-600 uppercase flex items-center gap-1">Police Station</label>
+                                    <input
+                                        type="text"
+                                        value={formData.emergencyInfo.police?.name}
+                                        onChange={e => setFormData({ ...formData, emergencyInfo: { ...formData.emergencyInfo, police: { ...formData.emergencyInfo.police, name: e.target.value } } })}
+                                        className="w-full px-3 py-1.5 border rounded text-sm bg-white"
+                                        placeholder="Police Station Name"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={formData.emergencyInfo.police?.distance}
+                                        onChange={e => setFormData({ ...formData, emergencyInfo: { ...formData.emergencyInfo, police: { ...formData.emergencyInfo.police, distance: e.target.value } } })}
+                                        className="w-full px-3 py-1.5 border rounded text-sm bg-white"
+                                        placeholder="Distance (e.g. 1km)"
+                                    />
+                                </div>
+                                <div className="space-y-3 p-4 bg-orange-50/50 rounded-xl border border-orange-100">
+                                    <label className="text-xs font-bold text-orange-600 uppercase">Emergency Contact</label>
+                                    <input
+                                        type="text"
+                                        value={formData.emergencyInfo.emergencyNumber}
+                                        onChange={e => setFormData({ ...formData, emergencyInfo: { ...formData.emergencyInfo, emergencyNumber: e.target.value } })}
+                                        className="w-full px-3 py-1.5 border rounded text-sm bg-white"
+                                        placeholder="Emergency Number (e.g. 112)"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Smart Tips */}
+                        <div className="space-y-4 border-t pt-8">
+                            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3">
+                                <RiLightbulbLine className="text-amber-500" />
+                                Travoxa Smart Tips
+                            </h3>
+                            <div className="flex gap-2 mb-3">
+                                <input
+                                    type="text"
+                                    value={tipInput}
+                                    onChange={e => setTipInput(e.target.value)}
+                                    onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addTip())}
+                                    className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none"
+                                    placeholder="e.g. Visit in evening, Carry cash"
+                                />
+                                <button type="button" onClick={addTip} className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 font-bold">Add</button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {formData.smartTips.map((tip, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-100 italic text-sm text-yellow-800">
+                                        <span>• {tip}</span>
+                                        <button type="button" onClick={() => removeTip(idx)} className="text-yellow-600 p-1 hover:bg-yellow-100 rounded">
+                                            <RiCloseLine size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Travel Information */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-8">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Crowd Level</label>
+                                <select
+                                    value={formData.travelInformation.crowdLevel}
+                                    onChange={e => setFormData({ ...formData, travelInformation: { ...formData.travelInformation, crowdLevel: e.target.value } })}
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white font-medium"
+                                >
+                                    <option value="Low">Low</option>
+                                    <option value="Moderate">Moderate</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Safety Score (1-10)</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="10"
+                                    value={formData.travelInformation.safetyScore}
+                                    onChange={e => setFormData({ ...formData, travelInformation: { ...formData.travelInformation, safetyScore: e.target.value } })}
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none font-medium"
+                                />
+                            </div>
+                        </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-3">Highlights</label>
                             <div className="flex gap-2 mb-3">
@@ -506,7 +1406,8 @@ export default function AddAttractionsClient({
                         </div>
                     </form>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
