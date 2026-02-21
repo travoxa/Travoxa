@@ -21,6 +21,17 @@ export interface RentalItem {
         lng: number;
     };
     rentalServiceName?: string;
+    vehicleCondition?: string;
+    hourlyPrice?: number;
+    weeklyPrice?: number;
+    securityDeposit?: number;
+    extraKmCharge?: number;
+    perDayKmLimit?: number;
+    minAge?: number;
+    documentsRequired?: string[];
+    fuelPolicy?: string;
+    lateReturnCharges?: string;
+    googleMapLink?: string;
 }
 
 // All rental items are now managed through the admin panel

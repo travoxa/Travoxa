@@ -4,8 +4,10 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { SightseeingPackage } from "@/data/sightseeingData";
-import { FaCar, FaUserFriends, FaRegClock, FaStar, FaWhatsapp } from "react-icons/fa";
+import { FaCar, FaUserFriends, FaRegClock, FaStar, FaShareAlt } from "react-icons/fa";
 import { MdLocationOn } from "react-icons/md";
+import { useState } from "react";
+import ShareModal from "@/components/ui/ShareModal";
 
 interface SightseeingPackageCardProps {
     pkg: SightseeingPackage;
@@ -14,16 +16,16 @@ interface SightseeingPackageCardProps {
 
 export default function SightseeingPackageCard({ pkg, activeTab = 'sharing' }: SightseeingPackageCardProps) {
     const router = useRouter();
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     const handleBookNow = (e: React.MouseEvent) => {
         e.stopPropagation();
         router.push(`/travoxa-discovery/sightseeing/${pkg.id}`);
     };
 
-    const handleWhatsApp = (e: React.MouseEvent) => {
+    const handleShare = (e: React.MouseEvent) => {
         e.stopPropagation();
-        const message = `Hi, I'm interested in ${pkg.title} in ${pkg.city}. Please provide more details.`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+        setIsShareModalOpen(true);
     };
 
     return (
@@ -116,11 +118,11 @@ export default function SightseeingPackageCard({ pkg, activeTab = 'sharing' }: S
 
                     <div className="flex gap-2">
                         <button
-                            onClick={handleWhatsApp}
-                            className="w-9 h-9 flex items-center justify-center rounded-full bg-green-100 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm"
-                            title="Chat on WhatsApp"
+                            onClick={handleShare}
+                            className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                            title="Share this package"
                         >
-                            <FaWhatsapp size={16} />
+                            <FaShareAlt size={14} />
                         </button>
                         <button
                             onClick={handleBookNow}
@@ -131,6 +133,12 @@ export default function SightseeingPackageCard({ pkg, activeTab = 'sharing' }: S
                     </div>
                 </div>
             </div>
+            <ShareModal
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                url={`/travoxa-discovery/sightseeing/${pkg.id}`}
+                title={pkg.title}
+            />
         </div>
     );
 }

@@ -66,7 +66,18 @@ export default function AddRentalsClient({
         city: 'Manali',
         whatsapp: '9876543210',
         mapLocation: { lat: '32.2396', lng: '77.1887' },
-        rentalServiceName: 'Himalayan Riders'
+        rentalServiceName: 'Himalayan Riders',
+        vehicleCondition: 'Excellent',
+        hourlyPrice: '150',
+        weeklyPrice: '7000',
+        securityDeposit: '2000',
+        extraKmCharge: '10',
+        perDayKmLimit: '200',
+        minAge: '21',
+        documentsRequired: 'Driving License, Aadhar Card',
+        fuelPolicy: 'Full to Full',
+        lateReturnCharges: '₹200 per hour',
+        googleMapLink: 'https://maps.app.goo.gl/xyz'
     };
 
     const isDev = process.env.NODE_ENV === 'development';
@@ -88,7 +99,18 @@ export default function AddRentalsClient({
         city: '',
         whatsapp: '',
         mapLocation: { lat: '', lng: '' },
-        rentalServiceName: ''
+        rentalServiceName: '',
+        vehicleCondition: '',
+        hourlyPrice: '',
+        weeklyPrice: '',
+        securityDeposit: '',
+        extraKmCharge: '',
+        perDayKmLimit: '',
+        minAge: '',
+        documentsRequired: '',
+        fuelPolicy: '',
+        lateReturnCharges: '',
+        googleMapLink: ''
     });
 
     // Update available cities when state changes
@@ -175,7 +197,18 @@ export default function AddRentalsClient({
             city: rental.city || '',
             whatsapp: rental.whatsapp || '',
             mapLocation: rental.mapLocation || { lat: '', lng: '' },
-            rentalServiceName: rental.rentalServiceName || ''
+            rentalServiceName: rental.rentalServiceName || '',
+            vehicleCondition: rental.vehicleCondition || '',
+            hourlyPrice: rental.hourlyPrice?.toString() || '',
+            weeklyPrice: rental.weeklyPrice?.toString() || '',
+            securityDeposit: rental.securityDeposit?.toString() || '',
+            extraKmCharge: rental.extraKmCharge?.toString() || '',
+            perDayKmLimit: rental.perDayKmLimit?.toString() || '',
+            minAge: rental.minAge?.toString() || '',
+            documentsRequired: (rental.documentsRequired || []).join(', '),
+            fuelPolicy: rental.fuelPolicy || '',
+            lateReturnCharges: rental.lateReturnCharges || '',
+            googleMapLink: rental.googleMapLink || ''
         });
         setShowMapInput(!!rental.mapLocation?.lat);
         setShowFormInternal(true);
@@ -198,6 +231,17 @@ export default function AddRentalsClient({
             mapLocation: formData.mapLocation.lat && formData.mapLocation.lng
                 ? { lat: Number(formData.mapLocation.lat), lng: Number(formData.mapLocation.lng) }
                 : undefined,
+            hourlyPrice: Number(formData.hourlyPrice) || 0,
+            weeklyPrice: Number(formData.weeklyPrice) || 0,
+            securityDeposit: Number(formData.securityDeposit) || 0,
+            extraKmCharge: Number(formData.extraKmCharge) || 0,
+            perDayKmLimit: Number(formData.perDayKmLimit) || 0,
+            minAge: Number(formData.minAge) || 0,
+            documentsRequired: formData.documentsRequired.split(',').map((s: string) => s.trim()).filter(Boolean),
+            vehicleCondition: formData.vehicleCondition,
+            fuelPolicy: formData.fuelPolicy,
+            lateReturnCharges: formData.lateReturnCharges,
+            googleMapLink: formData.googleMapLink,
         };
 
         try {
@@ -235,7 +279,18 @@ export default function AddRentalsClient({
                 city: '',
                 whatsapp: '',
                 mapLocation: { lat: '', lng: '' },
-                rentalServiceName: ''
+                rentalServiceName: '',
+                vehicleCondition: '',
+                hourlyPrice: '',
+                weeklyPrice: '',
+                securityDeposit: '',
+                extraKmCharge: '',
+                perDayKmLimit: '',
+                minAge: '',
+                documentsRequired: '',
+                fuelPolicy: '',
+                lateReturnCharges: '',
+                googleMapLink: ''
             });
             setEditingId(null);
             setShowMapInput(false);
@@ -510,6 +565,18 @@ export default function AddRentalsClient({
                                 </select>
                             </div>
 
+                            {/* Vehicle Condition */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Condition</label>
+                                <input
+                                    type="text"
+                                    value={formData.vehicleCondition}
+                                    onChange={e => setFormData({ ...formData, vehicleCondition: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                    placeholder="Good / Excellent / New"
+                                />
+                            </div>
+
                             {/* Price (Number formatted) */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Price (per day) *</label>
@@ -524,6 +591,78 @@ export default function AddRentalsClient({
                                         placeholder="399"
                                     />
                                 </div>
+                            </div>
+
+                            {/* Hourly Price */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Hourly Price</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                                    <input
+                                        type="text"
+                                        value={formData.hourlyPrice}
+                                        onChange={e => setFormData({ ...formData, hourlyPrice: formatNumber(e.target.value) })}
+                                        className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        placeholder="50"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Weekly Price */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Weekly Price</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                                    <input
+                                        type="text"
+                                        value={formData.weeklyPrice}
+                                        onChange={e => setFormData({ ...formData, weeklyPrice: formatNumber(e.target.value) })}
+                                        className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        placeholder="2500"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Security Deposit */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Security Deposit</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                                    <input
+                                        type="text"
+                                        value={formData.securityDeposit}
+                                        onChange={e => setFormData({ ...formData, securityDeposit: formatNumber(e.target.value) })}
+                                        className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        placeholder="2000"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Extra KM Charge */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Extra KM Charge (per km)</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                                    <input
+                                        type="text"
+                                        value={formData.extraKmCharge}
+                                        onChange={e => setFormData({ ...formData, extraKmCharge: formatNumber(e.target.value) })}
+                                        className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        placeholder="10"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* KM Limit */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">KM Limit (per day)</label>
+                                <input
+                                    type="text"
+                                    value={formData.perDayKmLimit}
+                                    onChange={e => setFormData({ ...formData, perDayKmLimit: formatNumber(e.target.value) })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                    placeholder="200"
+                                />
                             </div>
 
                             {/* State Dropdown */}
@@ -585,6 +724,66 @@ export default function AddRentalsClient({
                                     onChange={e => setFormData({ ...formData, rentalServiceName: e.target.value })}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                     placeholder="ABC Rentals"
+                                />
+                            </div>
+
+                            {/* Min Age Limit */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Age Limit</label>
+                                <input
+                                    type="text"
+                                    value={formData.minAge}
+                                    onChange={e => setFormData({ ...formData, minAge: formatNumber(e.target.value) })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                    placeholder="21"
+                                />
+                            </div>
+
+                            {/* Documents Required */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Documents Required (comma separated)</label>
+                                <input
+                                    type="text"
+                                    value={formData.documentsRequired}
+                                    onChange={e => setFormData({ ...formData, documentsRequired: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                    placeholder="Driving License, Aadhar Card"
+                                />
+                            </div>
+
+                            {/* Fuel Policy */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Fuel Policy</label>
+                                <input
+                                    type="text"
+                                    value={formData.fuelPolicy}
+                                    onChange={e => setFormData({ ...formData, fuelPolicy: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                    placeholder="Full to Full"
+                                />
+                            </div>
+
+                            {/* Late Return Charges */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Late Return Charges</label>
+                                <input
+                                    type="text"
+                                    value={formData.lateReturnCharges}
+                                    onChange={e => setFormData({ ...formData, lateReturnCharges: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                    placeholder="₹200 per hour"
+                                />
+                            </div>
+
+                            {/* Google Map Link */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Google Map Link</label>
+                                <input
+                                    type="text"
+                                    value={formData.googleMapLink}
+                                    onChange={e => setFormData({ ...formData, googleMapLink: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                    placeholder="https://maps.app.goo.gl/..."
                                 />
                             </div>
                         </div>

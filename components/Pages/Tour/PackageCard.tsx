@@ -16,8 +16,10 @@ import { TourPackage } from "@/data/tourPackages"; // Note: This might be tourDa
 // Wait, looking at Step 23 output: `import { TourPackage } from "@/data/tourPackages";`
 // But I read `data/tourData.ts` in step 35.
 // I should probably check if `data/tourPackages.ts` exists.
-import { FaRegClock, FaStar, FaWhatsapp, FaMapMarkerAlt } from "react-icons/fa";
+import { FaRegClock, FaStar, FaMapMarkerAlt, FaShareAlt } from "react-icons/fa";
 import { MdLocationOn } from "react-icons/md";
+import { useState } from "react";
+import ShareModal from "@/components/ui/ShareModal";
 
 interface PackageCardProps {
     pkg: TourPackage;
@@ -26,16 +28,16 @@ interface PackageCardProps {
 
 export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
     const router = useRouter();
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     // Handle both string and array formats for image (MongoDB returns array)
     const imageUrl = Array.isArray(pkg.image)
         ? (pkg.image[0] || '/placeholder.jpg')
         : (pkg.image || '/placeholder.jpg');
 
-    const handleWhatsApp = (e: React.MouseEvent) => {
+    const handleShare = (e: React.MouseEvent) => {
         e.stopPropagation();
-        const message = `Hi, I'm interested in the tour package: ${pkg.title} in ${pkg.location}. Please provide more details.`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+        setIsShareModalOpen(true);
     };
 
     const handleCardClick = () => {
@@ -46,15 +48,20 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
 
     // Calculate display price (lowest per person)
     let displayPrice = pkg.price;
+    let minPricePax = 0;
 
     if (pkg.pricing && pkg.pricing.length > 0) {
         // Find minimum pricePerPerson
-        const prices = pkg.pricing.map(p => p.pricePerPerson);
-        if (prices.length > 0) {
-            const minPrice = Math.min(...prices);
-            if (!isNaN(minPrice)) {
-                displayPrice = minPrice;
+        let minPrice = Number.MAX_VALUE;
+        pkg.pricing.forEach(p => {
+            if (p.pricePerPerson < minPrice) {
+                minPrice = p.pricePerPerson;
+                minPricePax = p.people;
             }
+        });
+
+        if (minPrice !== Number.MAX_VALUE) {
+            displayPrice = minPrice;
         }
     }
 
@@ -62,6 +69,11 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
     const finalPrice = pkg.earlyBirdDiscount && pkg.earlyBirdDiscount > 0
         ? Math.round(displayPrice * (1 - pkg.earlyBirdDiscount / 100))
         : displayPrice;
+
+    // Extract activities from itinerary
+    const itineraryActivities = pkg.itinerary
+        ?.map(item => item.activity)
+        .filter((activity): activity is string => !!activity && activity.trim() !== "") || [];
 
     return (
         <div
@@ -94,7 +106,7 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
 
                 {/* Top Left: Discount or Type Badge */}
                 {pkg.earlyBirdDiscount && pkg.earlyBirdDiscount > 0 && (
-                    <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded text-[10px] font-medium uppercase tracking-wide shadow-sm">
+                    <div className="absolute top-3 left-3 bg-emerald-600 text-white px-2 py-1 rounded text-[10px] font-medium uppercase tracking-wide shadow-sm">
                         {pkg.earlyBirdDiscount}% OFF
                     </div>
                 )}
@@ -129,18 +141,18 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
                 <div className="mb-4 flex-grow">
                     <p className="text-[10px] uppercase text-slate-400 font-medium mb-1.5 tracking-wider">Highlights</p>
                     <div className="flex flex-wrap gap-1.5">
-                        {/* Prefer highlights, fallback to inclusions */}
-                        {(pkg.highlights && pkg.highlights.length > 0 ? pkg.highlights : pkg.inclusions)?.slice(0, 3).map((item, idx) => (
+                        {/* Prefer itinerary activities, fallback to highlights then inclusions */}
+                        {(itineraryActivities.length > 0 ? itineraryActivities : (pkg.highlights && pkg.highlights.length > 0 ? pkg.highlights : pkg.inclusions))?.slice(0, 3).map((item, idx) => (
                             <span key={idx} className="bg-emerald-50 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full font-medium border border-emerald-100 line-clamp-1 max-w-full">
                                 {item}
                             </span>
                         ))}
-                        {(pkg.highlights && pkg.highlights.length > 0 ? pkg.highlights : pkg.inclusions)?.length > 3 && (
+                        {(itineraryActivities.length > 0 ? itineraryActivities : (pkg.highlights && pkg.highlights.length > 0 ? pkg.highlights : pkg.inclusions))?.length > 3 && (
                             <span className="text-[10px] text-slate-400 flex items-center px-1">
-                                +{(pkg.highlights && pkg.highlights.length > 0 ? pkg.highlights : pkg.inclusions).length - 3} more
+                                +{(itineraryActivities.length > 0 ? itineraryActivities : (pkg.highlights && pkg.highlights.length > 0 ? pkg.highlights : pkg.inclusions)).length - 3} more
                             </span>
                         )}
-                        {(!pkg.highlights || pkg.highlights.length === 0) && (!pkg.inclusions || pkg.inclusions.length === 0) && (
+                        {itineraryActivities.length === 0 && (!pkg.highlights || pkg.highlights.length === 0) && (!pkg.inclusions || pkg.inclusions.length === 0) && (
                             <span className="text-[10px] text-slate-400 italic">No highlights available</span>
                         )}
                     </div>
@@ -164,16 +176,21 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
                                 </span>
                             )}
                             <span className="text-[10px] text-slate-500 font-medium">/ person</span>
+                            {minPricePax > 0 && (
+                                <span className="text-[10px] text-emerald-600 font-bold ml-1">
+                                    (for {minPricePax} Pax)
+                                </span>
+                            )}
                         </div>
                     </div>
 
                     <div className="flex gap-2">
                         <button
-                            onClick={handleWhatsApp}
-                            className="w-9 h-9 flex items-center justify-center rounded-full bg-green-100 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm"
-                            title="Chat on WhatsApp"
+                            onClick={handleShare}
+                            className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                            title="Share this package"
                         >
-                            <FaWhatsapp size={16} />
+                            <FaShareAlt size={14} />
                         </button>
                         <button
                             onClick={(e) => {
@@ -187,6 +204,12 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
                     </div>
                 </div>
             </div>
+            <ShareModal
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                url={`/tour/${pkg.id}`}
+                title={pkg.title}
+            />
         </div >
     );
 }
