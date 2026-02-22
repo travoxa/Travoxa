@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/ui/Header';
+import NormalHeader from '@/components/ui/NormalHeader';
 import Footor from '@/components/ui/Footor';
 import Image from 'next/image';
 import {
@@ -83,10 +84,10 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
 
     return (
         <div className="bg-white min-h-screen">
-            <Header forceWhite={true} />
+            <NormalHeader logoHeight="h-[22px] lg:h-[28px]" />
 
             {/* HERO SECTION */}
-            <div className="relative h-[65vh] md:h-[75vh] w-full bg-slate-900">
+            <div className="relative h-[65vh]  w-full bg-slate-900">
                 {attraction.image ? (
                     <Image
                         src={attraction.image}
@@ -101,15 +102,6 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
 
                 <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
 
-                <div className="absolute top-24 left-4 md:left-8 z-20 flex items-center gap-4">
-                    <button
-                        onClick={() => router.back()}
-                        className="flex items-center gap-2 text-white/90 hover:text-white transition-all bg-black/30 backdrop-blur-xl px-5 py-2.5 rounded-full text-sm font-bold border border-white/10 hover:border-white/30"
-                    >
-                        <FaArrowLeft /> BACK
-                    </button>
-                    <SaveButton itemId={attraction.id} itemType="attraction" />
-                </div>
 
                 <div className="absolute inset-x-0 bottom-0 pb-16">
                     <div className="max-w-7xl mx-auto px-6">
@@ -430,47 +422,27 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                         </div>
 
                         {/* Emergency Info Grid */}
-                        <div data-aos="fade-up" className="bg-gray-900 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
+                        <div data-aos="fade-up" className="bg-white border border-gray-200 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
                             <div className="relative z-10">
                                 <h2 className="text-xl font-bold mb-10 flex items-center gap-3">
                                     <div className="bg-red-600 p-2 rounded-xl"><FaShieldAlt /></div>
-                                    Emergency & Safety Info
+                                    <p className=' text-2xl text-black'>Emergency & Safety Info</p>
                                 </h2>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                    <div className="space-y-4 p-6 bg-white/5 rounded-2xl border border-white/10">
+                                    <div className="space-y-4 p-6 bg-gray-100 rounded-2xl border border-white/10">
                                         <div className="flex items-center gap-3 text-red-400 font-bold uppercase text-[10px] tracking-widest"><FaHospital /> Nearest Hospital</div>
-                                        <h4 className="font-bold text-lg">{attraction.emergencyInfo?.hospital?.name || 'Agra Medical City'}</h4>
-                                        <p className="text-gray-400 text-sm italic">{attraction.emergencyInfo?.hospital?.distance || '1.8 km away'}</p>
-                                        {attraction.emergencyInfo?.hospital?.mapLink && (
-                                            <a
-                                                href={attraction.emergencyInfo.hospital.mapLink}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 text-[10px] font-bold text-red-500 uppercase tracking-widest hover:underline"
-                                            >
-                                                <FaMapMarkerAlt /> View on Map
-                                            </a>
-                                        )}
+                                        <h4 className="font-bold text-lg text-black">{attraction.emergencyInfo?.hospital?.name || 'Agra Medical City'}</h4>
+                                        <p className="text-gray-400 text-sm italic text-black">{attraction.emergencyInfo?.hospital?.distance || '1.8 km away'}</p>
                                     </div>
-                                    <div className="space-y-4 p-6 bg-white/5 rounded-2xl border border-white/10">
+                                    <div className="space-y-4 p-6 bg-gray-100 rounded-2xl border border-white/10">
                                         <div className="flex items-center gap-3 text-blue-400 font-bold uppercase text-[10px] tracking-widest"><FaShieldAlt /> Police Station</div>
-                                        <h4 className="font-bold text-lg">{attraction.emergencyInfo?.police?.name || 'Local Tourism Police Post'}</h4>
-                                        <p className="text-gray-400 text-sm italic">{attraction.emergencyInfo?.police?.distance || '0.5 km away'}</p>
-                                        {attraction.emergencyInfo?.police?.mapLink && (
-                                            <a
-                                                href={attraction.emergencyInfo.police.mapLink}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 text-[10px] font-bold text-blue-500 uppercase tracking-widest hover:underline"
-                                            >
-                                                <FaMapMarkerAlt /> View on Map
-                                            </a>
-                                        )}
+                                        <h4 className="font-bold text-lg text-black">{attraction.emergencyInfo?.police?.name || 'Local Tourism Police Post'}</h4>
+                                        <p className="text-gray-400 text-sm italic text-black">{attraction.emergencyInfo?.police?.distance || '0.5 km away'}</p>
                                     </div>
-                                    <div className="space-y-4 p-6 bg-white/5 rounded-2xl border border-white/10">
+                                    <div className="space-y-4 p-6 bg-gray-100 rounded-2xl border border-white/10">
                                         <div className="flex items-center gap-3 text-orange-400 font-bold uppercase text-[10px] tracking-widest"><FaPhoneAlt /> Local Hotline</div>
-                                        <h4 className="text-3xl font-bold text-white">{attraction.emergencyInfo?.emergencyNumber || '112 / 100'}</h4>
-                                        <p className="text-gray-400 text-sm">Available 24/7 for Tourists</p>
+                                        <h4 className="text-3xl font-bold text-black">{attraction.emergencyInfo?.emergencyNumber || '112 / 100'}</h4>
+                                        <p className="text-gray-400 text-sm text-black">Available 24/7 for Tourists</p>
                                     </div>
                                 </div>
                                 {attraction.emergencyInfo?.customInfo && attraction.emergencyInfo.customInfo.length > 0 && (
@@ -541,12 +513,12 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                             </div>
 
                             {/* Promotional Sidebar Card */}
-                            <div className="bg-gray-900 rounded-3xl p-8 text-white relative overflow-hidden group shadow-lg">
-                                <h3 className="text-xl font-bold mb-4 relative z-10 tracking-tight">VIP Experience?</h3>
-                                <p className="text-gray-400 mb-8 font-medium leading-relaxed relative z-10">
+                            <div className="bg-white rounded-3xl p-8 text-white relative overflow-hidden group shadow-lg border border-gray-200">
+                                <h3 className="text-xl font-bold mb-4 relative z-10 tracking-tight text-black">VIP Experience?</h3>
+                                <p className=" text-black mb-8 font-medium leading-relaxed relative z-10">
                                     Skip the long queues and enjoy exclusive garden access with our VIP Heritage Pass.
                                 </p>
-                                <button className="bg-white text-gray-900 font-bold px-8 py-4 rounded-xl hover:bg-gray-50 transition-all w-full relative z-10 shadow-md tracking-wider">
+                                <button className="bg-black text-white font-bold px-8 py-4 rounded-xl hover:bg-gray-700 transition-all w-full relative z-10 shadow-md tracking-wider">
                                     UPGRADE PASS
                                 </button>
                             </div>
