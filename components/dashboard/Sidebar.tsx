@@ -24,9 +24,10 @@ interface SidebarProps {
     activeTab: string;
     setActiveTab: (tab: string) => void;
     isAdmin?: boolean;
+    permissions?: string[];
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmin = false }) => {
+const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmin = false, permissions = [] }) => {
     const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
     const handleSignOut = async () => {
@@ -70,48 +71,60 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmi
                 <nav className="space-y-2">
                     {isAdmin ? (
                         <>
-                            <NavItem
-                                icon={<RiBarChartLine size={20} />}
-                                label="Overview"
-                                id="Overview"
-                                activeTab={activeTab}
-                                onClick={setActiveTab}
-                            />
-                            <NavItem
-                                icon={<RiHomeLine size={20} />}
-                                label="Landing"
-                                id="Landing"
-                                activeTab={activeTab}
-                                onClick={setActiveTab}
-                            />
-                            <NavItem
-                                icon={<RiCompass3Line size={20} />}
-                                label="Tour"
-                                id="Tour"
-                                activeTab={activeTab}
-                                onClick={setActiveTab}
-                            />
-                            <NavItem
-                                icon={<RiMapPinLine size={20} />}
-                                label="Discovery"
-                                id="Discovery"
-                                activeTab={activeTab}
-                                onClick={setActiveTab}
-                            />
-                            <NavItem
-                                icon={<RiGroupLine size={20} />}
-                                label="Backpackers"
-                                id="Backpackers"
-                                activeTab={activeTab}
-                                onClick={setActiveTab}
-                            />
-                            <NavItem
-                                icon={<RiGroupLine size={20} />}
-                                label="Team"
-                                id="Team"
-                                activeTab={activeTab}
-                                onClick={setActiveTab}
-                            />
+                            {permissions.includes('Overview') && (
+                                <NavItem
+                                    icon={<RiBarChartLine size={20} />}
+                                    label="Overview"
+                                    id="Overview"
+                                    activeTab={activeTab}
+                                    onClick={setActiveTab}
+                                />
+                            )}
+                            {permissions.includes('Landing') && (
+                                <NavItem
+                                    icon={<RiHomeLine size={20} />}
+                                    label="Landing"
+                                    id="Landing"
+                                    activeTab={activeTab}
+                                    onClick={setActiveTab}
+                                />
+                            )}
+                            {permissions.includes('Tour') && (
+                                <NavItem
+                                    icon={<RiCompass3Line size={20} />}
+                                    label="Tour"
+                                    id="Tour"
+                                    activeTab={activeTab}
+                                    onClick={setActiveTab}
+                                />
+                            )}
+                            {(permissions.includes('Discovery') || permissions.some(p => p.startsWith('Discovery:'))) && (
+                                <NavItem
+                                    icon={<RiMapPinLine size={20} />}
+                                    label="Discovery"
+                                    id="Discovery"
+                                    activeTab={activeTab}
+                                    onClick={setActiveTab}
+                                />
+                            )}
+                            {permissions.includes('Backpackers') && (
+                                <NavItem
+                                    icon={<RiGroupLine size={20} />}
+                                    label="Backpackers"
+                                    id="Backpackers"
+                                    activeTab={activeTab}
+                                    onClick={setActiveTab}
+                                />
+                            )}
+                            {permissions.includes('Team') && (
+                                <NavItem
+                                    icon={<RiGroupLine size={20} />}
+                                    label="Team"
+                                    id="Team"
+                                    activeTab={activeTab}
+                                    onClick={setActiveTab}
+                                />
+                            )}
                         </>
                     ) : (
                         <>

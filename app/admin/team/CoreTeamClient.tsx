@@ -5,15 +5,32 @@ import { RiDeleteBinLine, RiEditLine, RiAddLine, RiCloseLine, RiMoreLine, RiUser
 import { CldUploadWidget } from 'next-cloudinary';
 
 interface CoreTeamMember {
-    _id: string; // Changed from id to _id for MongoDB
+    _id: string;
     name: string;
     role: string;
     image: string;
+    username?: string;
+    permissions?: string[];
 }
 
 interface CoreTeamClientProps {
     onBack: () => void;
 }
+
+const SECTIONS = [
+    { id: 'Overview', label: 'Overview' },
+    { id: 'Landing', label: 'Landing' },
+    { id: 'Tour', label: 'Tour' },
+    { id: 'Discovery', label: 'Discovery (All)' },
+    { id: 'Discovery:Sightseeing', label: '↳ Discovery: Sightseeing' },
+    { id: 'Discovery:Attractions', label: '↳ Discovery: Attractions' },
+    { id: 'Discovery:Activities', label: '↳ Discovery: Activities' },
+    { id: 'Discovery:Rentals', label: '↳ Discovery: Rentals' },
+    { id: 'Discovery:Food', label: '↳ Discovery: Food' },
+    { id: 'Discovery:Stay', label: '↳ Discovery: Stay' },
+    { id: 'Backpackers', label: 'Backpackers' },
+    { id: 'Team', label: 'Team' },
+];
 
 export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
     const [members, setMembers] = useState<CoreTeamMember[]>([]);
@@ -25,7 +42,10 @@ export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
     const [formData, setFormData] = useState({
         name: '',
         role: '',
-        image: ''
+        image: '',
+        username: '',
+        password: '',
+        permissions: [] as string[]
     });
 
     // Fetch members on mount
@@ -48,7 +68,14 @@ export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
     };
 
     const resetForm = () => {
-        setFormData({ name: '', role: '', image: '' });
+        setFormData({
+            name: '',
+            role: '',
+            image: '',
+            username: '',
+            password: '',
+            permissions: []
+        });
         setEditingId(null);
         setShowForm(false);
     };
@@ -57,7 +84,10 @@ export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
         setFormData({
             name: member.name,
             role: member.role,
-            image: member.image
+            image: member.image,
+            username: member.username || '',
+            password: '', // Don't show password
+            permissions: member.permissions || []
         });
         setEditingId(member._id);
         setShowForm(true);
@@ -77,6 +107,15 @@ export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
         } catch (error) {
             console.error('Error deleting member:', error);
         }
+    };
+
+    const togglePermission = (sectionId: string) => {
+        setFormData(prev => ({
+            ...prev,
+            permissions: prev.permissions.includes(sectionId)
+                ? prev.permissions.filter(p => p !== sectionId)
+                : [...prev.permissions, sectionId]
+        }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -132,7 +171,7 @@ export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
             </div>
 
             {showForm ? (
-                <div className="bg-white rounded-xl border border-gray-200 p-8 max-w-2xl relative">
+                <div className="bg-white rounded-xl border border-gray-200 p-8 max-w-4xl relative">
                     <button
                         onClick={resetForm}
                         className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
@@ -143,69 +182,124 @@ export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
                     <h2 className="text-lg font-medium text-gray-800 mb-6">{editingId ? 'Edit' : 'Add New'} Team Member</h2>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                            <input
-                                type="text"
-                                required
-                                value={formData.name}
-                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                placeholder="e.g. Milan"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                            <input
-                                type="text"
-                                required
-                                value={formData.role}
-                                onChange={e => setFormData({ ...formData, role: e.target.value })}
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                placeholder="e.g. Tech Head"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-3">Profile Image</label>
-                            <CldUploadWidget
-                                uploadPreset="travoxa_tours"
-                                onSuccess={(result: any) => {
-                                    if (result.event === 'success') {
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            image: result.info.secure_url
-                                        }));
-                                    }
-                                }}
-                            >
-                                {({ open }) => (
-                                    <button
-                                        type="button"
-                                        onClick={() => open()}
-                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs font-medium mb-4"
-                                    >
-                                        {formData.image ? 'Change Image' : 'Upload Image'}
-                                    </button>
-                                )}
-                            </CldUploadWidget>
-
-                            {formData.image && (
-                                <div className="relative w-32 h-32 rounded-xl overflow-hidden border border-gray-200 group">
-                                    <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, image: '' })}
-                                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        <RiDeleteBinLine size={14} />
-                                    </button>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Personal Info */}
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.name}
+                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="e.g. Milan"
+                                    />
                                 </div>
-                            )}
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.role}
+                                        onChange={e => setFormData({ ...formData, role: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="e.g. Tech Head"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Username (for login)</label>
+                                    <input
+                                        type="text"
+                                        value={formData.username}
+                                        onChange={e => setFormData({ ...formData, username: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="e.g. milan_admin"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Password {editingId && '(Leave blank to keep current)'}
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={formData.password}
+                                        onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="••••••••"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-3">Profile Image (Optional)</label>
+                                    <CldUploadWidget
+                                        uploadPreset="travoxa_tours"
+                                        onSuccess={(result: any) => {
+                                            if (result.event === 'success') {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    image: result.info.secure_url
+                                                }));
+                                            }
+                                        }}
+                                    >
+                                        {({ open }) => (
+                                            <button
+                                                type="button"
+                                                onClick={() => open()}
+                                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs font-medium mb-4"
+                                            >
+                                                {formData.image ? 'Change Image' : 'Upload Image'}
+                                            </button>
+                                        )}
+                                    </CldUploadWidget>
+
+                                    {formData.image && (
+                                        <div className="relative w-32 h-32 rounded-xl overflow-hidden border border-gray-200 group">
+                                            <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, image: '' })}
+                                                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <RiDeleteBinLine size={14} />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Permissions */}
+                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                                <h3 className="text-sm font-semibold text-gray-800 mb-4 uppercase tracking-wider">Section Permissions</h3>
+                                <div className="space-y-4">
+                                    {SECTIONS.map(section => (
+                                        <div key={section.id} className="flex items-center justify-between">
+                                            <span className="text-sm text-gray-700">{section.label}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => togglePermission(section.id)}
+                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${formData.permissions.includes(section.id) ? 'bg-green-600' : 'bg-gray-200'
+                                                    }`}
+                                            >
+                                                <span
+                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.permissions.includes(section.id) ? 'translate-x-6' : 'translate-x-1'
+                                                        }`}
+                                                />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-6 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                    <strong>Note:</strong> Selected sections will be visible in the user's sidebar.
+                                </p>
+                            </div>
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-4">
+                        <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                             <button
                                 type="button"
                                 onClick={resetForm}
