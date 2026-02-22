@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FaMapMarkerAlt, FaStar, FaLandmark, FaChevronRight } from 'react-icons/fa';
 import { AttractionPackage } from '@/app/travoxa-discovery/attractions/AttractionsClient';
+import SaveButton from '@/components/ui/SaveButton';
 
 interface AttractionsCardProps {
     pkg: AttractionPackage;
@@ -22,7 +23,7 @@ const AttractionsCard: React.FC<AttractionsCardProps> = ({ pkg }) => {
                         className="object-cover group-hover:scale-110 transition-transform duration-700"
                     />
 
-                    {/* Rating & Badge */}
+                    {/* Rating & Badge & Save */}
                     <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
                         <div className="bg-white/95 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-sm border border-slate-100">
                             <FaStar className="text-amber-400 text-[10px]" />
@@ -85,8 +86,11 @@ const AttractionsCard: React.FC<AttractionsCardProps> = ({ pkg }) => {
                             )}
                         </div>
 
-                        <div className="h-9 w-9 bg-pink-50 text-pink-600 border border-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-600 group-hover:text-white transition-all shadow-sm">
-                            <FaChevronRight size={10} />
+                        <div className="flex gap-2">
+                            <SaveButton itemId={pkg.id} itemType="attraction" isSmall={true} />
+                            <div className="h-9 w-9 bg-pink-50 text-pink-600 border border-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-600 group-hover:text-white transition-all shadow-sm">
+                                <FaChevronRight size={10} />
+                            </div>
                         </div>
                     </div>
                 </div>

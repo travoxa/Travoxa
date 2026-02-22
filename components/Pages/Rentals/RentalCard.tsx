@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { RentalItem } from "@/data/rentalsData";
 import { FaWhatsapp, FaStar, FaGasPump, FaUserGroup, FaHelmetSafety } from "react-icons/fa6";
 import { MdLocationOn, MdPlace } from "react-icons/md";
+import SaveButton from "@/components/ui/SaveButton";
 
 interface RentalCardProps {
     item: RentalItem;
@@ -42,10 +43,11 @@ export default function RentalCard({ item }: RentalCardProps) {
                     className="object-cover group-hover:scale-110 transition-transform duration-700"
                 />
 
-                {/* Rating Badge */}
-                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                    <FaStar className="text-orange-400 text-[12px]" />
-                    <span className="text-[12px] font-medium text-slate-900">{item.rating}</span>
+                <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
+                    <div className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                        <FaStar className="text-orange-400 text-[12px]" />
+                        <span className="text-[12px] font-medium text-slate-900">{item.rating}</span>
+                    </div>
                 </div>
 
                 {/* Model Year Badge */}
@@ -99,12 +101,15 @@ export default function RentalCard({ item }: RentalCardProps) {
                         </div>
                     </div>
 
-                    <button
-                        onClick={handleWhatsApp}
-                        className="px-4 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
-                    >
-                        <FaWhatsapp size={16} /> Book Now
-                    </button>
+                    <div className="flex gap-2">
+                        <SaveButton itemId={item.id} itemType="rental" isSmall={true} />
+                        <button
+                            onClick={handleWhatsApp}
+                            className="px-4 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+                        >
+                            <FaWhatsapp size={16} /> Book Now
+                        </button>
+                    </div>
                 </div>
 
             </div>

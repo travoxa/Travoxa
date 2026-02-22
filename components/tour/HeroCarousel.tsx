@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import Image from "next/image";
 import { HiLocationMarker, HiStar, HiClock, HiChevronLeft, HiChevronRight } from "react-icons/hi";
+import SaveButton from "@/components/ui/SaveButton";
+import { FaArrowLeft } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 
 interface HeroCarouselProps {
     images: string[];
@@ -11,10 +14,13 @@ interface HeroCarouselProps {
     reviews: number;
     location: string;
     duration: string;
+    itemId: string;
+    itemType: 'tour' | 'attraction' | 'activity' | 'sightseeing' | 'stay' | 'rental' | 'food';
 }
 
-export default function HeroCarousel({ images, title, rating, reviews, location, duration }: HeroCarouselProps) {
+export default function HeroCarousel({ images, title, rating, reviews, location, duration, itemId, itemType }: HeroCarouselProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const router = useRouter();
 
     // Auto-rotate every 5 seconds
     useEffect(() => {
@@ -37,6 +43,17 @@ export default function HeroCarousel({ images, title, rating, reviews, location,
 
     return (
         <div className="relative h-[70vh] w-full">
+            {/* Back Button & Save Button */}
+            <div className="absolute top-24 left-4 md:left-12 z-40 flex items-center gap-4">
+                <button
+                    onClick={() => router.back()}
+                    className="flex items-center gap-2 text-white/90 hover:text-white transition-all bg-black/30 backdrop-blur-xl px-5 py-2.5 rounded-full text-sm font-bold border border-white/10 hover:border-white/30"
+                >
+                    <FaArrowLeft /> BACK
+                </button>
+                <SaveButton itemId={itemId} itemType={itemType} />
+            </div>
+
             {/* Image Display */}
             {images.map((img, index) => (
                 <div
@@ -110,8 +127,8 @@ export default function HeroCarousel({ images, title, rating, reviews, location,
                             key={index}
                             onClick={() => setCurrentIndex(index)}
                             className={`h-2 rounded-full transition-all ${index === currentIndex
-                                    ? 'w-8 bg-white'
-                                    : 'w-2 bg-white/50 hover:bg-white/75'
+                                ? 'w-8 bg-white'
+                                : 'w-2 bg-white/50 hover:bg-white/75'
                                 }`}
                             aria-label={`Go to image ${index + 1}`}
                         />

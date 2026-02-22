@@ -156,13 +156,15 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
   return (
     <>
       {/* MAIN NAVBAR */}
-      <header className="w-screen bg-transparent fixed top-0 left-0 right-0 z-50 Mont">
+      <header
+        style={{ right: session ? 'var(--sidebar-width)' : '0' }}
+        className="bg-transparent fixed top-0 left-0 z-50 Mont transition-all duration-500">
         <LoginRequiredPopup
           isOpen={showLoginPopup}
           onClose={() => setShowLoginPopup(false)}
           triggerAction={() => route('/login')}
         />
-        <div className={`z-50 mt-[24px] w-[90vw] lg:w-[80vw] rounded-full mx-auto relative flex items-center justify-between px-8 pr-4 py-2 transition-all duration-300 ${containerClasses}`}>
+        <div className={`z-50 mt-[24px] ${session ? "w-[95%] lg:w-[90%]" : "w-[90vw] lg:w-[80vw]"} rounded-full mx-auto relative flex items-center justify-between px-8 pr-4 py-2 transition-all duration-300 ${containerClasses}`}>
 
 
           {/* LOGO */}

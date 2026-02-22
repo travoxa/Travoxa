@@ -84,7 +84,7 @@ export default function Hero() {
   };
 
   return (
-    <div className="w-screen flex justify-center items-center px-[12px] py-[12px]" >
+    <div className="w-full flex justify-center items-center px-[12px] py-[12px]" >
       <div className="w-full h-[47vh] lg:h-[97vh] bg-center bg-cover bg-no-repeat rounded-[12px] relative" style={{ backgroundImage: `url('/hero-bg.jpg')` }} >
         {/* Overlay for better text visibility if needed */}
         <div className="absolute inset-0 bg-black/10 rounded-[12px]"></div>
