@@ -1,7 +1,33 @@
 import Image from 'next/image'
 import React from 'react'
-
+import { useState, useEffect } from 'react'
+import { createPortal } from "react-dom";
+import Link from 'next/link'
 const AboutUsQuote = () => {
+
+  const [showPopup, setShowPopup] = useState(false);
+  const [visible, setVisible] = useState(false); // for smooth transition
+  const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
+
+  const openPopup = () => {
+    setShowPopup(true);
+    setTimeout(() => setVisible(true), 10); // trigger transition
+  };
+
+  const closePopup = () => {
+    setVisible(false); // start fade-out
+    setTimeout(() => setShowPopup(false), 300); // remove from DOM after transition
+  };
+
+  const submitForm = () => {
+    if (!email) return alert("Enter email");
+    if (!consent) return alert("Please check the box")
+    console.log("Email:", email, "Consent:", consent);
+    setEmail("");
+    setConsent(false)
+    closePopup();
+  };
   return (
     <div className='container mx-auto px-6 lg:px-20 py-20 lg:py-32 flex flex-col lg:flex-row items-center gap-16' >
 
@@ -17,12 +43,146 @@ const AboutUsQuote = () => {
 
         {/* Buttons - Hidden on mobile */}
         <div className="hidden md:flex gap-4">
-          <button className="bg-black text-white px-8 py-3 rounded-full hover:bg-gray-800 transition-all font-medium">
-            Reminder me
-          </button>
-          <button className="bg-white border border-gray-300 text-black px-8 py-3 rounded-full hover:bg-gray-50 transition-all font-medium">
-            Learn More
-          </button>
+          <div>
+
+            {/* Button to open popup */}
+            <button className="bg-black text-white px-8 py-3 rounded-full hover:bg-gray-800 transition-all font-medium" onClick={openPopup}>
+              Remind me
+            </button>
+
+
+            {/* Popup */}
+            {showPopup &&
+              createPortal(
+                <div
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    background: "rgba(0,0,0,0.7)",
+                    zIndex: 9999,
+                    opacity: visible ? 1 : 0,
+                    pointerEvents: visible ? "auto" : "none",
+                    transition: "opacity 0.3s ease",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "relative",
+                      background: "#fff",
+                      padding: "30px 40px",
+                      borderRadius: "25px", // slightly more rounded modal edges
+                      boxShadow: "0 15px 40px rgba(0,0,0,0.3)",
+                      width: "600px",
+                      maxWidth: "90%",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "25px",
+                      transform: visible ? "scale(1)" : "scale(0.8)",
+                      transition: "transform 0.3s ease",
+                    }}
+                  >
+                    <button
+                      onClick={closePopup}
+                      style={{
+                        position: "absolute",
+                        top: "15px",
+                        right: "20px",
+                        background: "transparent",
+                        border: "none",
+                        fontSize: "25px",
+                        cursor: "pointer",
+                        fontWeight:"inherit",
+                        lineHeight: "1",
+                      }}
+                    >
+                      &times;
+                    </button>
+                    <h3 style={{
+                      margin: 0,
+                      textAlign: "center",
+                      fontSize: "20px",
+                      fontFamily: "Montserrat, sans-serif",
+                      fontWeight: "600",
+                    }}>Enter Your Details</h3>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      style={{
+                        width: "100%",
+                        padding: "12px 23px",
+                        fontSize: "14px",
+                        lineHeight: "20px",
+                        borderRadius: "50px",      // capsule
+                        border: "1px solid #ccc",
+                        outline: "none",
+                        boxSizing: "border-box",
+                        fontFamily: "Inter, sans-serif",
+                        transition: "border 0.2s",
+                      }}
+                    />
+
+                    {/* Consent textarea */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        fontFamily: "Inter, sans-serif",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={consent}
+                        onChange={(e) => setConsent(e.target.checked)}
+                        style={{ width: "15px", height: "15px", cursor: "pointer", marginLeft: "7px" }}
+                      />
+                      <label style={{ fontSize: "10px", cursor: "pointer" }}>
+                        I agree to the terms & Conditions and give my consent
+                      </label>
+                    </div>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      <button
+                        onClick={submitForm}
+                        style={{
+                          width: "100%",             // full width like input
+                          padding: "12px 23px",      // same padding as input
+                          fontSize: "14px",
+                          lineHeight: "20px",        // same height as input
+                          borderRadius: "50px",      // capsule
+                          border: "none",
+                          backgroundColor: "#000000",
+                          color: "#fff",
+                          cursor: "pointer",
+                          fontWeight: "500",
+                          transition: "background 0.2s",
+                        }}
+                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#070505")}
+                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#000000")}
+                      >
+                        Submit
+                      </button>
+                    </div>
+                  </div>
+                </div>,
+                document.body
+              )}
+
+          </div>
+
+
+          <Link href='/about'>
+            <button className="bg-white border border-gray-300 text-black px-8 py-3 rounded-full hover:bg-gray-50 transition-all font-medium">
+              Learn More
+            </button>
+          </Link>
         </div>
       </div>
 

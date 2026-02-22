@@ -7,6 +7,7 @@ interface CardProps {
   description: string;
   image: string;
   index: number;
+  price:string
 }
 
 const Destinations = () => {
@@ -16,60 +17,71 @@ const Destinations = () => {
       name: "Agra – Taj Mahal",
       description: "World wonder, iconic for international tourists.",
       image: "/Destinations/Des1.jpeg",
+      price:'₹15,200'
+
     },
     {
       id: 2,
       name: "Jaipur – Pink City",
       description: "Forts, palaces, culture — huge demand for couples & families.",
       image: "/Destinations/Des2.jpg",
+       price:'₹16,750'
     },
     {
       id: 3,
       name: "Kerala – Alleppey / Munnar",
       description: "Houseboats, tea plantations, hill stations — perfect for calm luxury.",
       image: "/Destinations/Des3.jpg",
+      price :'₹22,600'
     },
     {
       id: 4,
       name: "Goa",
       description: "Beaches + nightlife; huge seasonal demand especially November–February.",
       image: "/Destinations/Des4.jpg",
+      price :'₹25,400'
     },
     {
       id: 5,
       name: "Varanasi",
       description: "Spiritual capital; sunrise boat rides, ghats, rituals.",
       image: "/Destinations/Des5.jpg",
+      price:'₹26,900'
     },
     {
       id: 6,
       name: "Manali & Kullu",
       description: "Himalayan beauty, snowfall, adventure tourism.",
       image: "/Destinations/Des6.jpg",
+      price:'₹28,200'
     },
     {
       id: 7,
       name: "Ladakh",
       description: "Pangong Lake, monasteries — extreme scenic & biker's paradise.",
       image: "/Destinations/Des7.jpg",
+      price:'₹29,100'
     },
     {
       id: 8,
       name: "Andaman Islands",
       description: "Best white sand beaches in India; honeymoon hotspot.",
       image: "/Destinations/Des8.jpg",
+      price:'₹17,900'
     },
     {
       id: 9,
       name: "Mumbai",
       description: "Urban travel, food, nightlife, and Bollywood attractions.",
       image: "/Destinations/Des9.webp",
+      price:"₹29,950"
     },
     {
       id: 10,
       name: "Kashmir (Srinagar & Gulmarg)",
       description: "Considered 'heaven on earth'; shikara rides and snow adventures.",
       image: "/Destinations/Des10.jpg",
+      price:'₹29,100'
     },
   ];
 
@@ -97,6 +109,7 @@ const Destinations = () => {
               name={item.name}
               description={item.description}
               image={item.image}
+              price={item.price}
             />
           ))}
         </div>

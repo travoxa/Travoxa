@@ -164,7 +164,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
           onClose={() => setShowLoginPopup(false)}
           triggerAction={() => route('/login')}
         />
-        <div className={`z-50 mt-[24px] ${session ? "w-[95%] lg:w-[90%]" : "w-[90vw] lg:w-[80vw]"} rounded-full mx-auto relative flex items-center justify-between px-8 pr-4 py-2 transition-all duration-300 ${containerClasses}`}>
+        <div className={`z-50 mt-[24px] w-[90vw] lg:w-[80vw] rounded-full mx-auto relative flex items-center justify-between px-8 pr-2 py-[5px] transition-all duration-300 ${containerClasses}`}>
 
 
           {/* LOGO */}
@@ -233,7 +233,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
 
               onClick={() => route('/dashboard')}
 
-              className={`hidden lg:flex items-center gap-6 text-[14px] rounded-[30px] px-[24px] py-[12px] ${buttonClasses}`}>
+              className={`hidden lg:flex items-center gap-2 text-[14px] rounded-[30px] px-[24px] py-[12px] ${buttonClasses}`}>
               DASHBOARD
             </button>}
 

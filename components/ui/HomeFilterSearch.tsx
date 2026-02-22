@@ -38,7 +38,7 @@ export default function HomeFilterSearch() {
         <div className="hidden md:block h-6 w-px bg-gray-300 mx-2"></div>
 
         {/* Search */}
-        <div className="flex flex-col md:flex-row items-center gap-2 px-4">
+        <div className="flex flex-col md:flex-row items-center gap-2 px-0">
 
           {/* Location Selector */}
           <div className="relative group w-full md:w-auto">
