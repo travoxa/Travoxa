@@ -134,13 +134,13 @@ export default function NormalHeader({ backgroundColor = "bg-white", logoHeight 
     return (
         <>
             {/* MAIN NAVBAR - Normal Bar Style */}
-            <header className={`w-full ${backgroundColor} shadow-md fixed top-0 left-0 right-0 z-50 Mont border-b border-gray-200`}>
+            <header style={{ right: 'var(--sidebar-width)', width: 'calc(100% - var(--sidebar-width, 0px))' }} className={`${backgroundColor} shadow-md fixed top-0 left-0 z-[120] Mont border-b border-gray-200 transition-all duration-300`}>
                 <LoginRequiredPopup
                     isOpen={showLoginPopup}
                     onClose={() => setShowLoginPopup(false)}
                     triggerAction={() => route('/login')}
                 />
-                <div className="z-50 w-full max-w-[1400px] mx-auto relative flex items-center justify-between px-8 py-3 transition-all duration-300">
+                <div className="z-[100] w-full max-w-[1400px] mx-auto relative flex items-center justify-between px-8 py-3 transition-all duration-300">
 
 
                     {/* LOGO */}
@@ -224,7 +224,7 @@ export default function NormalHeader({ backgroundColor = "bg-white", logoHeight 
 
             {/* MOBILE SIDEBAR */}
             <div
-                className={`fixed top-0 left-0 h-full w-[75%] max-w-xs bg-white shadow-xl z-50 transform transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"
+                className={`fixed top-0 left-0 h-full w-[75%] max-w-xs bg-white shadow-xl z-[110] transform transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"
                     }`}
             >
                 {/* MOBILE HEADER */}
@@ -311,7 +311,7 @@ export default function NormalHeader({ backgroundColor = "bg-white", logoHeight 
             {/* MOBILE OVERLAY */}
             {mobileOpen && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-40 z-40"
+                    className="fixed inset-0 bg-black bg-opacity-40 z-[105]"
                     onClick={() => setMobileOpen(false)}
                 />
             )}

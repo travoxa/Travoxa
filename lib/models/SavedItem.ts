@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface ISavedItem extends Document {
-    userId: mongoose.Types.ObjectId;
+    userId: string;
     itemId: string;
     itemType: 'tour' | 'attraction' | 'activity' | 'sightseeing' | 'stay' | 'rental' | 'food';
     createdAt: Date;
@@ -9,8 +9,7 @@ export interface ISavedItem extends Document {
 
 const savedItemSchema = new Schema<ISavedItem>({
     userId: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
+        type: String,
         required: true,
     },
     itemId: {

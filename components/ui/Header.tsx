@@ -157,14 +157,14 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
     <>
       {/* MAIN NAVBAR */}
       <header
-        style={{ right: session ? 'var(--sidebar-width)' : '0' }}
-        className="bg-transparent fixed top-0 left-0 z-50 Mont transition-all duration-500">
+        style={{ right: 'var(--sidebar-width)', width: 'calc(100% - var(--sidebar-width, 0px))' }}
+        className="bg-transparent fixed top-0 left-0 z-[120] Mont transition-all duration-500">
         <LoginRequiredPopup
           isOpen={showLoginPopup}
           onClose={() => setShowLoginPopup(false)}
           triggerAction={() => route('/login')}
         />
-        <div className={`z-50 mt-[24px] w-[90vw] lg:w-[80vw] rounded-full mx-auto relative flex items-center justify-between px-8 pr-2 py-[5px] transition-all duration-300 ${containerClasses}`}>
+        <div className={`z-[100] mt-[24px] w-full max-w-[1200px] rounded-full mx-auto relative flex items-center justify-between px-8 pr-2 py-[5px] transition-all duration-300 ${containerClasses}`}>
 
 
           {/* LOGO */}
@@ -249,7 +249,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
 
       {/* MOBILE SIDEBAR */}
       <div
-        className={`fixed top-0 left-0 h-full w-[75%] max-w-xs bg-white shadow-xl z-50 transform transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 left-0 h-full w-[75%] max-w-xs bg-white shadow-xl z-[110] transform transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
         {/* MOBILE HEADER */}
@@ -336,7 +336,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
       {/* MOBILE OVERLAY */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-40 z-40"
+          className="fixed inset-0 bg-black bg-opacity-40 z-[105]"
           onClick={() => setMobileOpen(false)}
         />
       )}

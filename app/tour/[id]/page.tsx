@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { HiCheck, HiX, HiCalendar, HiLocationMarker, HiDownload, HiUserGroup, HiCurrencyRupee, HiChevronDown, HiChevronUp, HiBadgeCheck } from "react-icons/hi";
 import { MdRestaurant, MdHotel, MdCameraAlt, MdDirectionsBus, MdLocalFireDepartment, MdHiking, MdParagliding, MdLandscape, MdTempleHindu } from "react-icons/md";
 import HeroCarousel from "@/components/tour/HeroCarousel";
+import SaveButton from "@/components/ui/SaveButton";
 import BookingWidget from "@/components/tour/BookingWidget";
 
 
@@ -132,6 +133,7 @@ export default async function TourDetailPage({ params }: PageProps) {
                 duration={pkg.duration}
                 itemId={pkg._id ? pkg._id.toString() : pkg.id}
                 itemType="tour"
+                hideControls={true}
             />
 
             <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -157,7 +159,10 @@ export default async function TourDetailPage({ params }: PageProps) {
 
                     {/* Overview */}
                     <section>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            Overview
+                            <SaveButton itemId={pkg._id ? pkg._id.toString() : pkg.id} itemType="tour" />
+                        </h2>
                         <p className="text-gray-600 leading-relaxed text-lg">
                             {pkg.overview}
                         </p>
