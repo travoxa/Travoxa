@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Sidebar from '@/components/dashboard/Sidebar';
 import TopBar from '@/components/dashboard/TopBar';
 import Image from 'next/image';
@@ -19,6 +20,7 @@ import ActivityFeedCard from '@/components/dashboard/ActivityFeedCard';
 import InsightsCard from '@/components/dashboard/InsightsCard';
 import Notification from '@/components/dashboard/Notification';
 import Footor from '@/components/ui/Footor';
+import SavedItemsCard from '@/components/dashboard/SavedItemsCard';
 
 interface DashboardClientProps {
     user: {
@@ -33,10 +35,18 @@ interface DashboardClientProps {
 }
 
 const DashboardClient: React.FC<DashboardClientProps> = ({ user, createdGroups = [], tourRequests = [] }) => {
+    const searchParams = useSearchParams();
     const [activeTab, setActiveTab] = useState('UserProfileCard');
     const [showMobileNotifications, setShowMobileNotifications] = useState(false);
     // Local state for notifications to handle optimistic updates
     const [notifications, setNotifications] = useState(user.notifications || []);
+
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab && tabTitles[tab]) {
+            setActiveTab(tab);
+        }
+    }, [searchParams]);
 
 
     const handleSignOut = async () => {
@@ -68,6 +78,7 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user, createdGroups =
     const tabTitles: { [key: string]: string } = {
         'UserProfileCard': 'Profile',
         'Trips': 'Trips',
+        'SavedItems': 'Saved Items',
         'PreferencesCard': 'Preferences',
         'SafetyCard': 'Safety',
         'ActivityFeedCard': 'Activity',
@@ -82,6 +93,8 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user, createdGroups =
                 return <UserProfileCard />;
             case 'Trips':
                 return <TripsCard createdGroups={createdGroups} tourRequests={tourRequests} />;
+            case 'SavedItems':
+                return <SavedItemsCard />;
             case 'PreferencesCard':
                 return <PreferencesCard />;
             case 'SafetyCard':
@@ -170,6 +183,9 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user, createdGroups =
 
                             <h2 className="text-lg font-bold text-gray-800 px-1 mt-6">Insights</h2>
                             <InsightsCard />
+
+                            <h2 className="text-lg font-bold text-gray-800 px-1 mt-6">Saved Items</h2>
+                            <SavedItemsCard />
 
                             <h2 className="text-lg font-bold text-gray-800 px-1 mt-6">Trips</h2>
                             <TripsCard createdGroups={createdGroups} />

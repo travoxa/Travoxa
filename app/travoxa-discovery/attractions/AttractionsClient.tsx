@@ -54,8 +54,8 @@ export interface AttractionPackage {
     nearbyAttractions?: any[];
     nearbyFood?: any[];
     emergencyInfo?: {
-        hospital?: { name: string; distance: string };
-        police?: { name: string; distance: string };
+        hospital?: { name: string; distance: string; mapLink?: string };
+        police?: { name: string; distance: string; mapLink?: string };
         emergencyNumber?: string;
         customInfo?: string[];
     };

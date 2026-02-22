@@ -9,6 +9,7 @@ import Footor from "@/components/ui/Footor";
 import { FaClock, FaCar, FaUserFriends, FaMapMarkerAlt, FaCheckCircle, FaTimesCircle, FaWhatsapp, FaArrowLeft } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import ReviewSection from "@/components/sightseeing/ReviewSection";
+import SaveButton from "@/components/ui/SaveButton";
 
 export default function SightseeingDetailPage() {
     const params = useParams();
@@ -103,13 +104,14 @@ export default function SightseeingDetailPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
 
-                <div className="absolute top-24 left-4 md:left-8 z-20">
+                <div className="absolute top-24 left-4 md:left-8 z-20 flex items-center gap-4">
                     <button
                         onClick={() => router.back()}
                         className="flex items-center gap-2 text-white/80 hover:text-white transition-colors bg-black/20 backdrop-blur-md px-4 py-2 rounded-full text-sm font-medium"
                     >
                         <FaArrowLeft /> Back to Search
                     </button>
+                    <SaveButton itemId={pkg.id} itemType="sightseeing" />
                 </div>
 
                 <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 text-white">

@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Playfair_Display, Montserrat } from "next/font/google";
 import { Providers } from './providers'
 import "./globals.css";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import VerticalSidebar from "@/components/ui/VerticalSidebar";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -23,17 +26,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html lang="en">
       <body
         className={`${playfair.variable} ${montserrat.variable} font-sans `}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <div className="flex min-h-screen w-full">
+            <main className="flex-1 min-w-0 relative">
+              {children}
+            </main>
+            {session && <VerticalSidebar />}
+          </div>
+        </Providers>
       </body>
     </html>
   );

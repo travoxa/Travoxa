@@ -19,9 +19,13 @@ import {
     FaShieldHalved
 } from "react-icons/fa6";
 import { MdLocationOn, MdPlace, MdPhone, MdMap } from "react-icons/md";
+import SaveButton from "@/components/ui/SaveButton";
+import { useRouter } from "next/navigation";
+import { FaArrowLeft } from "react-icons/fa";
 
 export default function RentalDetailsPage() {
     const { id } = useParams();
+    const router = useRouter();
     const [rental, setRental] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState("");
@@ -86,6 +90,17 @@ export default function RentalDetailsPage() {
             <Header forceWhite={true} />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+
+                {/* Back Button & Save Button */}
+                <div className="flex items-center gap-4 mb-8">
+                    <button
+                        onClick={() => router.back()}
+                        className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors bg-white px-4 py-2 rounded-full text-sm font-bold border border-slate-200 shadow-sm"
+                    >
+                        <FaArrowLeft /> BACK
+                    </button>
+                    <SaveButton itemId={rental._id || id} itemType="rental" />
+                </div>
 
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">

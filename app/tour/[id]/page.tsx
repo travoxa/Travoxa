@@ -130,6 +130,8 @@ export default async function TourDetailPage({ params }: PageProps) {
                 reviews={pkg.reviews}
                 location={pkg.location}
                 duration={pkg.duration}
+                itemId={pkg._id ? pkg._id.toString() : pkg.id}
+                itemType="tour"
             />
 
             <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12">

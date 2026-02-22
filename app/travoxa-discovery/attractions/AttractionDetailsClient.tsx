@@ -15,6 +15,7 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import SaveButton from '@/components/ui/SaveButton';
 
 interface AttractionDetailsClientProps {
     attraction: AttractionPackage;
@@ -100,13 +101,14 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
 
                 <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
 
-                <div className="absolute top-24 left-4 md:left-8 z-20">
+                <div className="absolute top-24 left-4 md:left-8 z-20 flex items-center gap-4">
                     <button
                         onClick={() => router.back()}
                         className="flex items-center gap-2 text-white/90 hover:text-white transition-all bg-black/30 backdrop-blur-xl px-5 py-2.5 rounded-full text-sm font-bold border border-white/10 hover:border-white/30"
                     >
                         <FaArrowLeft /> BACK
                     </button>
+                    <SaveButton itemId={attraction.id} itemType="attraction" />
                 </div>
 
                 <div className="absolute inset-x-0 bottom-0 pb-16">
@@ -439,11 +441,31 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                                         <div className="flex items-center gap-3 text-red-400 font-bold uppercase text-[10px] tracking-widest"><FaHospital /> Nearest Hospital</div>
                                         <h4 className="font-bold text-lg">{attraction.emergencyInfo?.hospital?.name || 'Agra Medical City'}</h4>
                                         <p className="text-gray-400 text-sm italic">{attraction.emergencyInfo?.hospital?.distance || '1.8 km away'}</p>
+                                        {attraction.emergencyInfo?.hospital?.mapLink && (
+                                            <a
+                                                href={attraction.emergencyInfo.hospital.mapLink}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 text-[10px] font-bold text-red-500 uppercase tracking-widest hover:underline"
+                                            >
+                                                <FaMapMarkerAlt /> View on Map
+                                            </a>
+                                        )}
                                     </div>
                                     <div className="space-y-4 p-6 bg-white/5 rounded-2xl border border-white/10">
                                         <div className="flex items-center gap-3 text-blue-400 font-bold uppercase text-[10px] tracking-widest"><FaShieldAlt /> Police Station</div>
                                         <h4 className="font-bold text-lg">{attraction.emergencyInfo?.police?.name || 'Local Tourism Police Post'}</h4>
                                         <p className="text-gray-400 text-sm italic">{attraction.emergencyInfo?.police?.distance || '0.5 km away'}</p>
+                                        {attraction.emergencyInfo?.police?.mapLink && (
+                                            <a
+                                                href={attraction.emergencyInfo.police.mapLink}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 text-[10px] font-bold text-blue-500 uppercase tracking-widest hover:underline"
+                                            >
+                                                <FaMapMarkerAlt /> View on Map
+                                            </a>
+                                        )}
                                     </div>
                                     <div className="space-y-4 p-6 bg-white/5 rounded-2xl border border-white/10">
                                         <div className="flex items-center gap-3 text-orange-400 font-bold uppercase text-[10px] tracking-widest"><FaPhoneAlt /> Local Hotline</div>

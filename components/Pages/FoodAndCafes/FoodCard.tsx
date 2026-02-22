@@ -3,6 +3,7 @@ import React from 'react';
 import Image from 'next/image';
 import { FaMapMarkerAlt, FaStar, FaUtensils, FaChevronRight } from 'react-icons/fa';
 import { FoodPackage } from '@/app/travoxa-discovery/food-and-cafes/FoodClient';
+import SaveButton from '@/components/ui/SaveButton';
 
 interface FoodCardProps {
     pkg: FoodPackage;
@@ -23,11 +24,12 @@ const FoodCard: React.FC<FoodCardProps> = ({ pkg }) => {
                     className="object-cover group-hover:scale-110 transition-transform duration-700"
                 />
 
-                {/* Rating Badge */}
-                <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                    <FaStar className="text-yellow-400 text-[10px]" />
-                    <span className="text-[10px] font-bold text-slate-900">{pkg.rating}</span>
-                    <span className="text-[9px] text-slate-400 font-medium">({pkg.reviews})</span>
+                <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
+                    <div className="bg-white/95 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                        <FaStar className="text-yellow-400 text-[10px]" />
+                        <span className="text-[10px] font-bold text-slate-900">{pkg.rating}</span>
+                        <span className="text-[9px] text-slate-400 font-medium">({pkg.reviews})</span>
+                    </div>
                 </div>
 
                 {/* Cuisine Badge */}
@@ -74,9 +76,12 @@ const FoodCard: React.FC<FoodCardProps> = ({ pkg }) => {
                         <span className="text-sm font-bold text-slate-900 Mont tracking-widest">{pkg.priceRange}</span>
                     </div>
 
-                    <button className="h-9 w-9 bg-yellow-50 text-yellow-600 border border-yellow-100 rounded-full flex items-center justify-center hover:bg-yellow-500 hover:text-white transition-all shadow-sm">
-                        <FaChevronRight size={10} />
-                    </button>
+                    <div className="flex gap-2">
+                        <SaveButton itemId={pkg.id} itemType="food" isSmall={true} />
+                        <button className="h-9 w-9 bg-yellow-50 text-yellow-600 border border-yellow-100 rounded-full flex items-center justify-center hover:bg-yellow-500 hover:text-white transition-all shadow-sm">
+                            <FaChevronRight size={10} />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
