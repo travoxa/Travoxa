@@ -87,7 +87,7 @@ const AttractionsCard: React.FC<AttractionsCardProps> = ({ pkg }) => {
                         </div>
 
                         <div className="flex gap-2">
-                            <SaveButton itemId={pkg.id} itemType="attraction" isSmall={true} />
+                            <SaveButton itemId={pkg.id} itemType="attraction" isSmall={true} activeColor="bg-pink-600" />
                             <div className="h-9 w-9 bg-pink-50 text-pink-600 border border-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-600 group-hover:text-white transition-all shadow-sm">
                                 <FaChevronRight size={10} />
                             </div>

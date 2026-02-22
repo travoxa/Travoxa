@@ -9,9 +9,15 @@ interface SaveButtonProps {
     itemId: string;
     itemType: 'tour' | 'attraction' | 'activity' | 'sightseeing' | 'stay' | 'rental' | 'food';
     isSmall?: boolean;
+    activeColor?: string;
 }
 
-export default function SaveButton({ itemId, itemType, isSmall = false }: SaveButtonProps) {
+export default function SaveButton({
+    itemId,
+    itemType,
+    isSmall = false,
+    activeColor = "bg-emerald-600"
+}: SaveButtonProps) {
     const { data: session } = useSession();
     const router = useRouter();
     const [isSaved, setIsSaved] = useState(false);
@@ -64,24 +70,25 @@ export default function SaveButton({ itemId, itemType, isSmall = false }: SaveBu
         }
     };
 
-    const buttonSize = isSmall ? "text-sm" : "text-xl";
-    const padding = isSmall ? "p-1.5" : "p-2.5";
+    const iconSize = isSmall ? 14 : 18;
 
     return (
         <button
             onClick={handleToggleSave}
             disabled={isLoading}
-            className={`${padding} rounded-full transition-all duration-300 flex items-center justify-center
-        ${isSaved
-                    ? "bg-emerald-50 text-emerald-500 border border-emerald-100"
-                    : "bg-white/80 backdrop-blur-sm text-slate-400 border border-white/50 hover:text-emerald-500 hover:border-emerald-200"
+            className={`w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm
+                ${isSaved
+                    ? `${activeColor} text-white`
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }
-        ${isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-        shadow-sm hover:shadow-md
-      `}
+                ${isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+            `}
             title={isSaved ? "Unsave" : "Save"}
         >
-            <FiTag className={`${buttonSize} ${isSaved ? 'fill-emerald-500' : ''} transition-all duration-300`} />
+            <FiTag
+                size={iconSize}
+                className={`${isSaved ? 'fill-white' : ''} transition-all duration-300`}
+            />
         </button>
     );
 }

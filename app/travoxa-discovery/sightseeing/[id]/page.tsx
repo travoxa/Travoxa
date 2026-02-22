@@ -104,15 +104,7 @@ export default function SightseeingDetailPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
 
-                <div className="absolute top-24 left-4 md:left-8 z-20 flex items-center gap-4">
-                    <button
-                        onClick={() => router.back()}
-                        className="flex items-center gap-2 text-white/80 hover:text-white transition-colors bg-black/20 backdrop-blur-md px-4 py-2 rounded-full text-sm font-medium"
-                    >
-                        <FaArrowLeft /> Back to Search
-                    </button>
-                    <SaveButton itemId={pkg.id} itemType="sightseeing" />
-                </div>
+
 
                 <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 text-white">
                     <div className="max-w-[1400px] mx-auto">
@@ -151,7 +143,9 @@ export default function SightseeingDetailPage() {
 
                     {/* Overview */}
                     <section>
-                        <h2 className="text-2xl font-bold text-slate-900 mb-4 Mont">Overview</h2>
+                        <h2 className="text-2xl font-bold text-slate-900 mb-4 Mont flex items-center gap-2">Overview
+                            <SaveButton itemId={pkg.id} itemType="sightseeing" />
+                        </h2>
                         <p className="text-slate-600 leading-relaxed text-lg Inter">
                             {pkg.overview}
                         </p>
