@@ -9,6 +9,7 @@ import PartnersCTA from '@/components/Pages/Home/PartnersCTA'
 import YatraCTA from '@/components/Pages/Home/YatraCTA'
 import Footor from '@/components/ui/Footor'
 import Header from '@/components/ui/Header'
+import Cta from '@/components/ui/cta';
 import HomeFilterSearch from '@/components/ui/HomeFilterSearch'
 import { useEffect } from 'react'
 import AOS from 'aos'
@@ -33,6 +34,7 @@ const Index = () => {
         <PartnersCTA />
         <YatraCTA />
       </section>
+      <Cta/>
       <Footor />
     </div>
   )

@@ -25,10 +25,29 @@ const Footor = () => {
             <Link href="/privacy" className='text-white text-[24px]  font-light hover:text-gray-300 transition-colors' >Privacy Policy</Link>
           </div>
         </div>
+        <div className="text-white space-y-3 py-5 pl-3">
+          <p>
+            <span className="font-bold">ADDRESS:</span>{" "}
+            Flat 402, Shree Ganesh Residency,
+            MG Road, Andheri East,
+            Mumbai, Maharashtra 400069,
+            India
+          </p>
+
+          <p>
+            <span className="font-bold">PHONE:</span>{" "}
+            (+91) 81005 39204
+          </p>
+
+          <p>
+            <span className="font-bold">EMAIL:</span>{" "}
+            travoxa@gmail.com
+          </p>
+        </div>
       </div>
-      <div className='text-center flex flex-1 justify-center items-center flex-col mt-[48px]' >
-        <p className='text-center flex items-center gap-[12px] font-light' ><LiaCopyrightSolid color='white' />2025 Travoxa. All Rights Reserved.</p>
-        <p className='Mont mt-0 lg:mt-[36px] text-[14vw] lg:text-[16vw] leading-[15vh] tracking-[1vw] font-extrabold ' >TRAVOXA</p>
+      <div className='text-center flex flex-1 justify-center items-center flex-col pt-[0px]' >
+        <p className='text-center flex items-center gap-[12px] pb-3 font-light' ><LiaCopyrightSolid color='white' />2025 Travoxa. All Rights Reserved.</p>
+        <p className='Mont mt-0 lg:mt-[36px] text-[14vw] lg:text-[16vw] leading-[15vh] pb-4 tracking-[1vw] font-extrabold ' >TRAVOXA</p>
       </div>
     </div>
   )
