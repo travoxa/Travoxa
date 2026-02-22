@@ -156,7 +156,9 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
   return (
     <>
       {/* MAIN NAVBAR */}
-      <header className="w-screen bg-transparent fixed top-0 left-0 right-0 z-50 Mont">
+      <header
+        style={{ right: session ? 'var(--sidebar-width)' : '0' }}
+        className="bg-transparent fixed top-0 left-0 z-50 Mont transition-all duration-500">
         <LoginRequiredPopup
           isOpen={showLoginPopup}
           onClose={() => setShowLoginPopup(false)}

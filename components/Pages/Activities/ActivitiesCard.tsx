@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FaMapMarkerAlt, FaStar, FaRegClock, FaRupeeSign, FaBolt } from 'react-icons/fa';
 import { ActivityPackage } from '@/app/travoxa-discovery/activities/ActivitiesClient';
+import SaveButton from '@/components/ui/SaveButton';
 
 interface ActivitiesCardProps {
     pkg: ActivityPackage;
@@ -32,19 +33,21 @@ const ActivitiesCard: React.FC<ActivitiesCardProps> = ({ pkg }) => {
                         <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">No Image</div>
                     )}
 
-                    {/* Rating Badge */}
-                    {pkg.rating && (
-                        <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                            <FaStar className="text-orange-400 text-[10px]" />
-                            <span className="text-[10px] font-bold text-slate-900">{pkg.rating}</span>
-                            <span className="text-[9px] text-slate-400 font-medium">({pkg.reviews || 0})</span>
-                        </div>
-                    )}
+                    {/* Rating & Save Badge */}
+                    <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
+                        {pkg.rating && (
+                            <div className="bg-white/95 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                                <FaStar className="text-orange-400 text-[10px]" />
+                                <span className="text-[10px] font-bold text-slate-900">{pkg.rating}</span>
+                                <span className="text-[9px] text-slate-400 font-medium">({pkg.reviews || 0})</span>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Level Badge */}
                     <div className={`absolute top-3 left-3 px-2 py-1 rounded-full flex items-center gap-1 shadow-sm text-[10px] font-bold uppercase tracking-wider ${difficulty === 'Easy' ? 'bg-green-100 text-green-700' :
-                            difficulty === 'Moderate' ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-red-100 text-red-700'
+                        difficulty === 'Moderate' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-red-100 text-red-700'
                         }`}>
                         <FaBolt size={8} /> {difficulty}
                     </div>
@@ -101,6 +104,7 @@ const ActivitiesCard: React.FC<ActivitiesCardProps> = ({ pkg }) => {
                         </div>
 
                         <div className="flex gap-2">
+                            <SaveButton itemId={pkg._id} itemType="activity" isSmall={true} />
                             <span className="h-9 px-5 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg text-[11px] font-bold uppercase tracking-wider hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-all Mont flex items-center">
                                 View Details
                             </span>

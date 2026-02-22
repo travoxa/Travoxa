@@ -65,8 +65,8 @@ export default function AddAttractionsClient({
         nearbyAttractions: [] as string[],
         nearbyFood: [] as string[],
         emergencyInfo: {
-            hospital: { name: '', distance: '' },
-            police: { name: '', distance: '' },
+            hospital: { name: '', distance: '', mapLink: '' },
+            police: { name: '', distance: '', mapLink: '' },
             emergencyNumber: '',
             customInfo: [] as string[]
         },
@@ -120,8 +120,8 @@ export default function AddAttractionsClient({
         nearbyAttractions: [],
         nearbyFood: [],
         emergencyInfo: {
-            hospital: { name: 'District Hospital Agra', distance: '4km' },
-            police: { name: 'Tajganj Police Station', distance: '1km' },
+            hospital: { name: 'District Hospital Agra', distance: '4km', mapLink: 'https://maps.google.com' },
+            police: { name: 'Tajganj Police Station', distance: '1km', mapLink: 'https://maps.google.com' },
             emergencyNumber: '112',
             customInfo: ['Emergency tourism helpline available']
         },
@@ -1250,6 +1250,13 @@ export default function AddAttractionsClient({
                                         className="w-full px-3 py-1.5 border rounded text-sm bg-white"
                                         placeholder="Distance (e.g. 2km)"
                                     />
+                                    <input
+                                        type="text"
+                                        value={formData.emergencyInfo.hospital?.mapLink}
+                                        onChange={e => setFormData({ ...formData, emergencyInfo: { ...formData.emergencyInfo, hospital: { ...formData.emergencyInfo.hospital, mapLink: e.target.value } } })}
+                                        className="w-full px-3 py-1.5 border rounded text-sm bg-white"
+                                        placeholder="Map Link (e.g. https://maps.google.com/...)"
+                                    />
                                 </div>
                                 <div className="space-y-3 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
                                     <label className="text-xs font-bold text-blue-600 uppercase flex items-center gap-1">Police Station</label>
@@ -1266,6 +1273,13 @@ export default function AddAttractionsClient({
                                         onChange={e => setFormData({ ...formData, emergencyInfo: { ...formData.emergencyInfo, police: { ...formData.emergencyInfo.police, distance: e.target.value } } })}
                                         className="w-full px-3 py-1.5 border rounded text-sm bg-white"
                                         placeholder="Distance (e.g. 1km)"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={formData.emergencyInfo.police?.mapLink}
+                                        onChange={e => setFormData({ ...formData, emergencyInfo: { ...formData.emergencyInfo, police: { ...formData.emergencyInfo.police, mapLink: e.target.value } } })}
+                                        className="w-full px-3 py-1.5 border rounded text-sm bg-white"
+                                        placeholder="Map Link (e.g. https://maps.google.com/...)"
                                     />
                                 </div>
                                 <div className="space-y-3 p-4 bg-orange-50/50 rounded-xl border border-orange-100">

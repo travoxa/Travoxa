@@ -12,12 +12,16 @@ import {
 import { ActivityPackage } from './ActivitiesClient';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import SaveButton from '@/components/ui/SaveButton';
+import { useRouter } from 'next/navigation';
+import { FaArrowLeft } from 'react-icons/fa';
 
 interface ActivityDetailsClientProps {
     activity: ActivityPackage;
 }
 
 const ActivityDetailsClient: React.FC<ActivityDetailsClientProps> = ({ activity }) => {
+    const router = useRouter();
 
     useEffect(() => {
         AOS.init({
@@ -48,6 +52,18 @@ const ActivityDetailsClient: React.FC<ActivityDetailsClientProps> = ({ activity 
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-500">No Image Available</div>
                 )}
+
+
+
+                <div className="absolute top-24 left-4 md:left-8 z-20 flex items-center gap-4">
+                    <button
+                        onClick={() => router.back()}
+                        className="flex items-center gap-2 text-white/90 hover:text-white transition-all bg-black/30 backdrop-blur-xl px-5 py-2.5 rounded-full text-sm font-bold border border-white/10 hover:border-white/30"
+                    >
+                        <FaArrowLeft /> BACK
+                    </button>
+                    <SaveButton itemId={activity._id} itemType="activity" />
+                </div>
 
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent pt-32 pb-12">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

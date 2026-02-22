@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FaStar, FaMapMarkerAlt, FaBed, FaBath, FaUserFriends, FaWhatsapp } from "react-icons/fa";
+import SaveButton from "@/components/ui/SaveButton";
 
 interface StayPackageCardProps {
     pkg: any; // Using any for flexibility with mongoose document
@@ -36,14 +37,15 @@ export default function StayPackageCard({ pkg }: StayPackageCardProps) {
                     className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
 
-                {/* Rating Badge */}
-                {pkg.rating > 0 && (
-                    <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
-                        <FaStar className="text-orange-400 text-[12px]" />
-                        <span className="text-[12px] font-bold text-slate-900">{pkg.rating}</span>
-                        <span className="text-[10px] text-slate-400 font-medium">({pkg.reviews})</span>
-                    </div>
-                )}
+                <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
+                    {pkg.rating > 0 && (
+                        <div className="bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                            <FaStar className="text-orange-400 text-[12px]" />
+                            <span className="text-[12px] font-bold text-slate-900">{pkg.rating}</span>
+                            <span className="text-[10px] text-slate-400 font-medium">({pkg.reviews})</span>
+                        </div>
+                    )}
+                </div>
 
                 {/* Type Badge */}
                 <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md text-white px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider">
@@ -96,6 +98,7 @@ export default function StayPackageCard({ pkg }: StayPackageCardProps) {
                     </div>
 
                     <div className="flex gap-2">
+                        <SaveButton itemId={pkg.id} itemType="stay" isSmall={true} />
                         <button
                             onClick={handleWhatsApp}
                             className="w-10 h-10 flex items-center justify-center rounded-full bg-green-50 text-green-600 hover:bg-green-600 hover:text-white transition-all border border-green-100"

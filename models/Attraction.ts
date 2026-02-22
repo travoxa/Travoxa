@@ -130,8 +130,8 @@ const AttractionSchema = new mongoose.Schema({
         ref: 'Food'
     }],
     emergencyInfo: {
-        hospital: { name: String, distance: String },
-        police: { name: String, distance: String },
+        hospital: { name: String, distance: String, mapLink: String },
+        police: { name: String, distance: String, mapLink: String },
         emergencyNumber: String,
         customInfo: [String]
     },

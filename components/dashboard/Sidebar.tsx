@@ -12,7 +12,8 @@ import {
     RiCloseLine,
     RiHomeLine,
     RiCompass3Line,
-    RiGroupLine
+    RiGroupLine,
+    RiPriceTagLine
 } from 'react-icons/ri';
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
@@ -139,6 +140,13 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmi
                                 icon={<RiMapPinLine size={20} />}
                                 label="Trips"
                                 id="Trips"
+                                activeTab={activeTab}
+                                onClick={setActiveTab}
+                            />
+                            <NavItem
+                                icon={<RiPriceTagLine size={20} />}
+                                label="Saved Items"
+                                id="SavedItems"
                                 activeTab={activeTab}
                                 onClick={setActiveTab}
                             />

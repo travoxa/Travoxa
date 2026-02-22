@@ -16,6 +16,7 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import SaveButton from '@/components/ui/SaveButton';
 
 interface AttractionDetailsClientProps {
     attraction: AttractionPackage;

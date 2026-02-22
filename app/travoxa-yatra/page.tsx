@@ -63,7 +63,7 @@ const TravoxaYatraPayload = () => {
             <Header forceWhite={true} />
 
             {/* Hero Section - Matching Global Design */}
-            <div className="w-screen flex justify-center items-center px-[12px] py-[12px]">
+            <div className="w-full flex justify-center items-center px-[12px] py-[12px]">
                 <div className="w-full h-[47vh] lg:h-[97vh] bg-center bg-cover bg-no-repeat rounded-[12px] relative overflow-hidden" style={{ backgroundImage: "url('/home/tourist-places6.jpg')" }}>
                     {/* Overlay for readability if needed, though global hero relies on text shadow/styles */}
 

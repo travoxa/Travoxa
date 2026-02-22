@@ -5,10 +5,13 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import Header from "@/components/ui/Header";
 import Footor from "@/components/ui/Footor";
-import { FaMapMarkerAlt, FaStar, FaBed, FaBath, FaUserFriends, FaWhatsapp, FaCheck, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
+import { FaMapMarkerAlt, FaStar, FaBed, FaBath, FaUserFriends, FaWhatsapp, FaCheck, FaPhoneAlt, FaEnvelope, FaArrowLeft } from "react-icons/fa";
+import SaveButton from "@/components/ui/SaveButton";
+import { useRouter } from "next/navigation";
 
 export default function StayDetailsPage() {
     const { id } = useParams();
+    const router = useRouter();
     const [stay, setStay] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [activeImage, setActiveImage] = useState("");
@@ -63,6 +66,16 @@ export default function StayDetailsPage() {
             <Header forceWhite={true} />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+                {/* Back Button & Save Button */}
+                <div className="flex items-center gap-4 mb-8">
+                    <button
+                        onClick={() => router.back()}
+                        className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors bg-white px-4 py-2 rounded-full text-sm font-bold border border-slate-200 shadow-sm"
+                    >
+                        <FaArrowLeft /> BACK
+                    </button>
+                    <SaveButton itemId={stay._id || id} itemType="stay" />
+                </div>
 
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">

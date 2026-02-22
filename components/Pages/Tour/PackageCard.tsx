@@ -20,6 +20,7 @@ import { FaRegClock, FaStar, FaMapMarkerAlt, FaShareAlt } from "react-icons/fa";
 import { MdLocationOn } from "react-icons/md";
 import { useState } from "react";
 import ShareModal from "@/components/ui/ShareModal";
+import SaveButton from "@/components/ui/SaveButton";
 
 interface PackageCardProps {
     pkg: TourPackage;
@@ -97,11 +98,12 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
                 {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 
-                {/* Top Right: Rating Badge */}
-                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                    <FaStar className="text-orange-400 text-[12px]" />
-                    <span className="text-[12px] font-medium text-slate-900">{pkg.rating}</span>
-                    <span className="text-[10px] text-slate-500">({pkg.reviews})</span>
+                <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
+                    <div className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                        <FaStar className="text-orange-400 text-[12px]" />
+                        <span className="text-[12px] font-medium text-slate-900">{pkg.rating}</span>
+                        <span className="text-[10px] text-slate-500">({pkg.reviews})</span>
+                    </div>
                 </div>
 
                 {/* Top Left: Discount or Type Badge */}
@@ -176,15 +178,16 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
                                 </span>
                             )}
                             <span className="text-[10px] text-slate-500 font-medium">/ person</span>
-                            {minPricePax > 0 && (
-                                <span className="text-[10px] text-emerald-600 font-bold ml-1">
-                                    (for {minPricePax} Pax)
-                                </span>
-                            )}
                         </div>
+                        {minPricePax > 0 && (
+                            <div className="text-[10px] text-emerald-600 font-bold mt-0.5">
+                                (for {minPricePax} Pax)
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex gap-2">
+                        <SaveButton itemId={pkg.id} itemType="tour" isSmall={true} />
                         <button
                             onClick={handleShare}
                             className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
