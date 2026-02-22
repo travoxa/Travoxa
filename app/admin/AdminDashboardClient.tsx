@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Sidebar from '@/components/dashboard/Sidebar'
 import TopBar from '@/components/dashboard/TopBar'
 import { useRouter } from 'next/navigation'
+import { RiShieldCheckLine } from 'react-icons/ri'
 
 // Admin-specific components
 // import AddLocationClient from '@/app/admin/add-locations/AddLocationClient'
@@ -23,15 +24,40 @@ interface AdminDashboardClientProps {
     adminUser: {
         name: string
         email: string
+        permissions?: string[]
     }
 }
 
 const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }) => {
-    const [activeTab, setActiveTab] = useState('Overview')
+    const permissions = adminUser.permissions || [];
+    const [activeTab, setActiveTab] = useState(permissions.includes('Overview') ? 'Overview' : (permissions[0] || 'Overview'))
     const [activeDiscoveryForm, setActiveDiscoveryForm] = useState<'sightseeing' | 'rentals' | 'activities' | 'attractions' | 'food' | 'stay' | null>(null)
     const router = useRouter()
 
     const renderContent = () => {
+        const permissions = adminUser.permissions || [];
+
+        const hasDiscoveryPermission = (subSection?: string) => {
+            if (permissions.includes('Discovery')) return true;
+            if (!subSection) {
+                return permissions.some(p => p.startsWith('Discovery:'));
+            }
+            return permissions.includes(`Discovery:${subSection}`);
+        };
+
+        // Check if current tab is allowed
+        const isAllowed = permissions.includes(activeTab) || (activeTab === 'Discovery' && hasDiscoveryPermission());
+
+        if (!isAllowed) {
+            return (
+                <div className="flex flex-col items-center justify-center h-[60vh] text-gray-500">
+                    <RiShieldCheckLine size={64} className="mb-4 opacity-20" />
+                    <h2 className="text-xl font-medium Inter">Access Restricted</h2>
+                    <p className="text-sm">You don't have permission to access the {activeTab} section.</p>
+                </div>
+            );
+        }
+
         switch (activeTab) {
             case 'Landing':
                 return (
@@ -54,7 +80,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                         <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Discovery</h1>
 
                         {/* Full-width form when active - appears at top */}
-                        {activeDiscoveryForm === 'sightseeing' && (
+                        {activeDiscoveryForm === 'sightseeing' && hasDiscoveryPermission('Sightseeing') && (
                             <AddSightseeingClient
                                 showManagementBox={false}
                                 showListings={false}
@@ -63,7 +89,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                             />
                         )}
 
-                        {activeDiscoveryForm === 'rentals' && (
+                        {activeDiscoveryForm === 'rentals' && hasDiscoveryPermission('Rentals') && (
                             <AddRentalsClient
                                 showManagementBox={false}
                                 showListings={false}
@@ -72,7 +98,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                             />
                         )}
 
-                        {activeDiscoveryForm === 'activities' && (
+                        {activeDiscoveryForm === 'activities' && hasDiscoveryPermission('Activities') && (
                             <AddActivitiesClient
                                 showManagementBox={false}
                                 showListings={false}
@@ -81,7 +107,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                             />
                         )}
 
-                        {activeDiscoveryForm === 'attractions' && (
+                        {activeDiscoveryForm === 'attractions' && hasDiscoveryPermission('Attractions') && (
                             <AddAttractionsClient
                                 showManagementBox={false}
                                 showListings={false}
@@ -90,7 +116,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                             />
                         )}
 
-                        {activeDiscoveryForm === 'food' && (
+                        {activeDiscoveryForm === 'food' && hasDiscoveryPermission('Food') && (
                             <AddFoodClient
                                 showManagementBox={false}
                                 showListings={false}
@@ -99,7 +125,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                             />
                         )}
 
-                        {activeDiscoveryForm === 'stay' && (
+                        {activeDiscoveryForm === 'stay' && hasDiscoveryPermission('Stay') && (
                             <AddStayClient
                                 showManagementBox={false}
                                 showListings={false}
@@ -111,46 +137,58 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                         {/* Row 1: Management Boxes - Side by Side (hidden when form is open) */}
                         {!activeDiscoveryForm && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                                <AddSightseeingClient
-                                    showManagementBox={true}
-                                    showListings={false}
-                                    onFormOpen={() => setActiveDiscoveryForm('sightseeing')}
-                                />
-                                <AddRentalsClient
-                                    showManagementBox={true}
-                                    showListings={false}
-                                    onFormOpen={() => setActiveDiscoveryForm('rentals')}
-                                />
-                                <AddActivitiesClient
-                                    showManagementBox={true}
-                                    showListings={false}
-                                    onFormOpen={() => setActiveDiscoveryForm('activities')}
-                                />
-                                <AddAttractionsClient
-                                    showManagementBox={true}
-                                    showListings={false}
-                                    onFormOpen={() => setActiveDiscoveryForm('attractions')}
-                                />
-                                <AddFoodClient
-                                    showManagementBox={true}
-                                    showListings={false}
-                                    onFormOpen={() => setActiveDiscoveryForm('food')}
-                                />
-                                <AddStayClient
-                                    showManagementBox={true}
-                                    showListings={false}
-                                    onFormOpen={() => setActiveDiscoveryForm('stay')}
-                                />
+                                {hasDiscoveryPermission('Sightseeing') && (
+                                    <AddSightseeingClient
+                                        showManagementBox={true}
+                                        showListings={false}
+                                        onFormOpen={() => setActiveDiscoveryForm('sightseeing')}
+                                    />
+                                )}
+                                {hasDiscoveryPermission('Rentals') && (
+                                    <AddRentalsClient
+                                        showManagementBox={true}
+                                        showListings={false}
+                                        onFormOpen={() => setActiveDiscoveryForm('rentals')}
+                                    />
+                                )}
+                                {hasDiscoveryPermission('Activities') && (
+                                    <AddActivitiesClient
+                                        showManagementBox={true}
+                                        showListings={false}
+                                        onFormOpen={() => setActiveDiscoveryForm('activities')}
+                                    />
+                                )}
+                                {hasDiscoveryPermission('Attractions') && (
+                                    <AddAttractionsClient
+                                        showManagementBox={true}
+                                        showListings={false}
+                                        onFormOpen={() => setActiveDiscoveryForm('attractions')}
+                                    />
+                                )}
+                                {hasDiscoveryPermission('Food') && (
+                                    <AddFoodClient
+                                        showManagementBox={true}
+                                        showListings={false}
+                                        onFormOpen={() => setActiveDiscoveryForm('food')}
+                                    />
+                                )}
+                                {hasDiscoveryPermission('Stay') && (
+                                    <AddStayClient
+                                        showManagementBox={true}
+                                        showListings={false}
+                                        onFormOpen={() => setActiveDiscoveryForm('stay')}
+                                    />
+                                )}
                             </div>
                         )}
 
                         {/* Row 2: Listings */}
-                        <AddSightseeingClient showManagementBox={false} showListings={true} />
-                        <AddRentalsClient showManagementBox={false} showListings={true} />
-                        <AddActivitiesClient showManagementBox={false} showListings={true} />
-                        <AddAttractionsClient showManagementBox={false} showListings={true} />
-                        <AddFoodClient showManagementBox={false} showListings={true} />
-                        <AddStayClient showManagementBox={false} showListings={true} />
+                        {hasDiscoveryPermission('Sightseeing') && <AddSightseeingClient showManagementBox={false} showListings={true} />}
+                        {hasDiscoveryPermission('Rentals') && <AddRentalsClient showManagementBox={false} showListings={true} />}
+                        {hasDiscoveryPermission('Activities') && <AddActivitiesClient showManagementBox={false} showListings={true} />}
+                        {hasDiscoveryPermission('Attractions') && <AddAttractionsClient showManagementBox={false} showListings={true} />}
+                        {hasDiscoveryPermission('Food') && <AddFoodClient showManagementBox={false} showListings={true} />}
+                        {hasDiscoveryPermission('Stay') && <AddStayClient showManagementBox={false} showListings={true} />}
                     </div>
                 )
 
@@ -193,7 +231,13 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
     return (
         <div className="flex min-h-screen bg-white font-sans">
             {/* Sidebar */}
-            <Sidebar user={adminUser} activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={true} />
+            <Sidebar
+                user={adminUser}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                isAdmin={true}
+                permissions={adminUser.permissions}
+            />
 
             {/* Main Content */}
             <main className="flex-1 ml-52 p-8 lg:p-12 overflow-y-auto">
