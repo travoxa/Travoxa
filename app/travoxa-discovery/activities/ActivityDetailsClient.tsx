@@ -75,9 +75,17 @@ const ActivityDetailsClient: React.FC<ActivityDetailsClientProps> = ({ activity 
                                 )}
                             </div>
 
-                            <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight Mont">
-                                {activity.title}
-                            </h1>
+                            <div className="flex items-center gap-4 mb-4">
+                                <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight Mont">
+                                    {activity.title}
+                                </h1>
+                                <SaveButton
+                                    itemId={activity.id}
+                                    itemType="activity"
+                                    title={activity.title}
+                                    itemLink={`/travoxa-discovery/activities/${activity.id}`}
+                                />
+                            </div>
 
                             <div className="flex items-center gap-6 text-white text-sm md:text-base Inter">
                                 <div className="flex items-center gap-2">

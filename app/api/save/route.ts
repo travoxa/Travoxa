@@ -14,7 +14,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { itemId, itemType } = await req.json();
+        const { itemId, itemType, title, itemLink } = await req.json();
+        console.log('[API SAVE] Received:', { itemId, itemType, title, itemLink });
 
         if (!itemId || !itemType) {
             return NextResponse.json({ error: "Missing itemId or itemType" }, { status: 400 });
@@ -39,6 +40,8 @@ export async function POST(req: NextRequest) {
                 userId: user.id,
                 itemId,
                 itemType,
+                title,
+                itemLink,
             });
             return NextResponse.json({ saved: true, message: "Item saved successfully" });
         }

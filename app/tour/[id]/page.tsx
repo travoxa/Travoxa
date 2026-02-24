@@ -133,6 +133,7 @@ export default async function TourDetailPage({ params }: PageProps) {
                 duration={pkg.duration}
                 itemId={pkg._id ? pkg._id.toString() : pkg.id}
                 itemType="tour"
+                itemLink={`/tour/${pkg._id ? pkg._id.toString() : pkg.id}`}
                 hideControls={true}
             />
 
@@ -161,7 +162,12 @@ export default async function TourDetailPage({ params }: PageProps) {
                     <section>
                         <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                             Overview
-                            <SaveButton itemId={pkg._id ? pkg._id.toString() : pkg.id} itemType="tour" />
+                            <SaveButton
+                                itemId={pkg._id ? pkg._id.toString() : pkg.id}
+                                itemType="tour"
+                                title={pkg.title}
+                                itemLink={`/tour/${pkg._id ? pkg._id.toString() : pkg.id}`}
+                            />
                         </h2>
                         <p className="text-gray-600 leading-relaxed text-lg">
                             {pkg.overview}

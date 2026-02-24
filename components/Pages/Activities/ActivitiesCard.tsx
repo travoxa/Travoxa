@@ -104,7 +104,14 @@ const ActivitiesCard: React.FC<ActivitiesCardProps> = ({ pkg }) => {
                         </div>
 
                         <div className="flex gap-2">
-                            <SaveButton itemId={pkg.id} itemType="activity" isSmall={true} activeColor="bg-orange-600" />
+                            <SaveButton
+                                itemId={pkg.id}
+                                itemType="activity"
+                                title={pkg.title}
+                                itemLink={`/travoxa-discovery/activities/${pkg._id}`}
+                                isSmall={true}
+                                activeColor="bg-orange-600"
+                            />
                             <span className="h-9 px-5 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg text-[11px] font-bold uppercase tracking-wider hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-all Mont flex items-center">
                                 View Details
                             </span>

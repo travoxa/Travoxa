@@ -99,7 +99,12 @@ export default function RentalDetailsPage() {
                     >
                         <FaArrowLeft /> BACK
                     </button>
-                    <SaveButton itemId={rental._id || id} itemType="rental" />
+                    <SaveButton
+                        itemId={rental._id || id}
+                        itemType="rental"
+                        title={rental.name}
+                        itemLink={`/travoxa-discovery/rentals/${rental._id || id}`}
+                    />
                 </div>
 
                 {/* Header Section */}
