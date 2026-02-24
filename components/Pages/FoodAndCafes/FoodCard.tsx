@@ -77,7 +77,14 @@ const FoodCard: React.FC<FoodCardProps> = ({ pkg }) => {
                     </div>
 
                     <div className="flex gap-2">
-                        <SaveButton itemId={pkg.id} itemType="food" isSmall={true} activeColor="bg-yellow-500" />
+                        <SaveButton
+                            itemId={pkg.id}
+                            itemType="food"
+                            title={pkg.title}
+                            itemLink={`/travoxa-discovery/food-and-cafes/${pkg.id}`}
+                            isSmall={true}
+                            activeColor="bg-yellow-500"
+                        />
                         <button className="h-9 w-9 bg-yellow-50 text-yellow-600 border border-yellow-100 rounded-full flex items-center justify-center hover:bg-yellow-500 hover:text-white transition-all shadow-sm">
                             <FaChevronRight size={10} />
                         </button>

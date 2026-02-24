@@ -187,7 +187,13 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
                     </div>
 
                     <div className="flex gap-2">
-                        <SaveButton itemId={pkg.id} itemType="tour" isSmall={true} />
+                        <SaveButton
+                            itemId={pkg.id}
+                            itemType="tour"
+                            title={pkg.title}
+                            itemLink={`/tour/${pkg.id}`}
+                            isSmall={true}
+                        />
                         <button
                             onClick={handleShare}
                             className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"

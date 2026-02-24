@@ -98,7 +98,13 @@ export default function StayPackageCard({ pkg }: StayPackageCardProps) {
                     </div>
 
                     <div className="flex gap-2">
-                        <SaveButton itemId={pkg.id} itemType="stay" isSmall={true} />
+                        <SaveButton
+                            itemId={pkg.id}
+                            itemType="stay"
+                            title={pkg.title}
+                            itemLink={`/travoxa-discovery/stay/${pkg.id}`}
+                            isSmall={true}
+                        />
                         <button
                             onClick={handleWhatsApp}
                             className="w-10 h-10 flex items-center justify-center rounded-full bg-green-50 text-green-600 hover:bg-green-600 hover:text-white transition-all border border-green-100"

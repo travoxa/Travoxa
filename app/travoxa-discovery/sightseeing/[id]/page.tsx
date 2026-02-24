@@ -144,7 +144,12 @@ export default function SightseeingDetailPage() {
                     {/* Overview */}
                     <section>
                         <h2 className="text-2xl font-bold text-slate-900 mb-4 Mont flex items-center gap-2">Overview
-                            <SaveButton itemId={pkg.id} itemType="sightseeing" />
+                            <SaveButton
+                                itemId={pkg.id}
+                                itemType="sightseeing"
+                                title={pkg.title}
+                                itemLink={`/travoxa-discovery/sightseeing/${pkg.id}`}
+                            />
                         </h2>
                         <p className="text-slate-600 leading-relaxed text-lg Inter">
                             {pkg.overview}

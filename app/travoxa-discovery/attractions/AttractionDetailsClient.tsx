@@ -121,9 +121,17 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                                 </span>
                             </div>
 
-                            <h1 className="text-4xl md:text-6xl font-bold text-white mb-8 leading-tight">
-                                {attraction.title}
-                            </h1>
+                            <div className="flex items-center gap-4 mb-8">
+                                <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight">
+                                    {attraction.title}
+                                </h1>
+                                <SaveButton
+                                    itemId={attraction.id}
+                                    itemType="attraction"
+                                    title={attraction.title}
+                                    itemLink={`/travoxa-discovery/attractions/${attraction.id}`}
+                                />
+                            </div>
 
                             <div className="flex flex-wrap items-center gap-6 text-white/90 text-base md:text-lg">
                                 <div className="flex items-center gap-2">

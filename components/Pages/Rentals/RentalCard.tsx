@@ -102,7 +102,14 @@ export default function RentalCard({ item }: RentalCardProps) {
                     </div>
 
                     <div className="flex gap-2">
-                        <SaveButton itemId={item.id} itemType="rental" isSmall={true} />
+                        <SaveButton
+                            itemId={item.id}
+                            itemType="rental"
+                            title={item.name}
+                            itemLink={`/travoxa-discovery/rentals/${item.id}`}
+                            isSmall={true}
+                            activeColor="bg-emerald-500"
+                        />
                         <button
                             onClick={handleWhatsApp}
                             className="px-4 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
