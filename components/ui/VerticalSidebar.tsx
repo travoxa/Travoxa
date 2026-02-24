@@ -212,54 +212,34 @@ export default function VerticalSidebar() {
                 ) : (
                     /* Expanded Content (Saved Items List) */
                     <div className="h-full flex flex-col">
-                        <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                        <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
                             <FiTag className="text-emerald-500" /> Saved Collections
                         </h3>
 
                         {isLoading ? (
                             <div className="flex-1 flex items-center justify-center">
-                                <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                                <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
                             </div>
                         ) : savedItems.length === 0 ? (
                             <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
-                                <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
-                                    <FiTag size={24} />
-                                </div>
                                 <p className="text-xs font-medium text-slate-500">Your collection is empty</p>
-                                <button
-                                    onClick={() => { setIsExpanded(false); route('/travoxa-discovery'); }}
-                                    className="mt-4 text-[10px] font-bold text-emerald-600 uppercase tracking-widest hover:underline"
-                                >
-                                    Start Exploring
-                                </button>
                             </div>
                         ) : (
-                            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar scrollbar-hide flex flex-col gap-4 pb-4">
+                            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar scrollbar-hide flex flex-col gap-2">
                                 {savedItems.map((item) => (
                                     <div
                                         key={item._id}
-                                        className="group relative bg-slate-50 rounded-2xl p-4 border border-transparent hover:border-emerald-100 hover:bg-white transition-all duration-300 shadow-sm"
+                                        className="flex justify-between items-center bg-slate-50 rounded-md px-3 py-2 border border-slate-200 hover:border-emerald-300 hover:bg-white transition-all duration-200"
                                     >
-                                        <div className="flex justify-between items-start mb-2">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md">
-                                                {item.itemType}
-                                            </span>
-                                            <button
-                                                onClick={() => handleRemove(item.itemId, item.itemType)}
-                                                className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 transition-all"
-                                            >
-                                                <FiTrash2 size={14} />
-                                            </button>
-                                        </div>
-                                        <h4 className="text-xs font-bold text-slate-800 line-clamp-1 mb-3">
-                                            {item.itemType.charAt(0).toUpperCase() + item.itemType.slice(1)} #{item.itemId.slice(-6)}
-                                        </h4>
-                                        <Link
-                                            href={`/travoxa-discovery/${item.itemType === 'tour' ? 'tours' : item.itemType === 'attraction' ? 'attractions' : item.itemType}s/${item.itemId}`}
-                                            className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 transition-colors"
+                                        <span className="text-[10px] font-bold text-emerald-500 uppercase">
+                                            {item.itemType} #{item.itemId.slice(-6)}
+                                        </span>
+                                        <button
+                                            onClick={() => handleRemove(item.itemId, item.itemType)}
+                                            className="text-slate-300 hover:text-rose-500"
                                         >
-                                            Take a Look <FiChevronRight />
-                                        </Link>
+                                            <FiTrash2 size={14} />
+                                        </button>
                                     </div>
                                 ))}
                             </div>
