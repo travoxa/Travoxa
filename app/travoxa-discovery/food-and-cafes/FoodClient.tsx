@@ -20,9 +20,36 @@ export interface FoodPackage {
     reviews: number;
     image: string;
     category: string; // Mapped from 'type' in DB
-    cuisine: string | string[]; // DB has array, UI might expect string or array
+    cuisine: string | string[];
     overview: string;
     priceRange: string;
+    famousDish: string;
+    distFromAttraction?: string;
+    area?: string;
+    avgCostPerPerson?: number;
+    hygieneRating?: number;
+    badges?: string[];
+    dishType: string;
+    attractionName?: string;
+    whatsappNumber?: string;
+    phoneNumber?: string;
+    contactPerson?: string;
+    openingTime?: string;
+    closingTime?: string;
+    bestTimeToVisit?: string;
+    dineIn?: boolean;
+    takeaway?: boolean;
+    homeDelivery?: boolean;
+    fullMenu?: Array<{
+        category: string;
+        items: Array<{
+            name: string;
+            price: number;
+        }>;
+    }>;
+    mustTry?: string[];
+    address?: string;
+    avgCost?: number;
 }
 
 interface FoodClientProps {
@@ -41,7 +68,14 @@ const FoodClient: React.FC<FoodClientProps> = ({ initialPackages }) => {
     // State
     const [filteredPackages, setFilteredPackages] = useState<FoodPackage[]>(initialPackages);
     // Search State
-    const [searchQuery, setSearchQuery] = useState({ state: "", city: "", category: "" });
+    const [searchQuery, setSearchQuery] = useState({
+        state: "",
+        city: "",
+        category: "",
+        dishType: "",
+        famousDish: "",
+        priceRange: ""
+    });
     // Filters State
     const [filters, setFilters] = useState({
         category: [] as string[],
@@ -50,7 +84,7 @@ const FoodClient: React.FC<FoodClientProps> = ({ initialPackages }) => {
     });
 
     // Handle Search from Hero
-    const handleSearch = (query: { state: string; city: string; category: string }) => {
+    const handleSearch = (query: typeof searchQuery) => {
         setSearchQuery(query);
         applyFilters(query, filters);
     };
@@ -95,13 +129,24 @@ const FoodClient: React.FC<FoodClientProps> = ({ initialPackages }) => {
 
         // 1. Search Query Filters
         if (query.state) {
-            results = results.filter(pkg => pkg.state === query.state);
+            results = results.filter(pkg => pkg.state.toLowerCase() === query.state.toLowerCase());
         }
         if (query.city) {
-            results = results.filter(pkg => pkg.city === query.city);
+            results = results.filter(pkg => pkg.city.toLowerCase() === query.city.toLowerCase());
         }
         if (query.category) {
-            results = results.filter(pkg => pkg.category === query.category);
+            results = results.filter(pkg => pkg.category.toLowerCase() === query.category.toLowerCase());
+        }
+        if (query.dishType) {
+            results = results.filter(pkg => pkg.dishType === query.dishType);
+        }
+        if (query.famousDish) {
+            results = results.filter(pkg =>
+                pkg.famousDish.toLowerCase().includes(query.famousDish.toLowerCase())
+            );
+        }
+        if (query.priceRange) {
+            results = results.filter(pkg => pkg.priceRange === query.priceRange);
         }
 
         // 2. Sidebar Filters

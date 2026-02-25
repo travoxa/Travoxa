@@ -47,17 +47,63 @@ export default function AddFoodClient({
 
     const isDev = process.env.NODE_ENV === 'development';
 
-    const [formData, setFormData] = useState(isDev ? DUMMY_FORM_DATA : {
+    const [formData, setFormData] = useState(isDev ? {
+        ...DUMMY_FORM_DATA,
+        avgCost: DUMMY_FORM_DATA.avgCost.toString(),
+        avgCostPerPerson: '600',
+        dishType: 'Both',
+        openingTime: '10:00 AM',
+        closingTime: '11:00 PM',
+        bestTimeToVisit: 'Evening',
+        dineIn: true,
+        takeaway: true,
+        homeDelivery: false,
+        contactPerson: 'Rahul Sharma',
+        phoneNumber: '9876543210',
+        whatsappNumber: '9876543210',
+        address: 'Old Manali, Near Manalsu River',
+        attractionName: 'Manalsu River',
+        famousDish: 'Trout Fish',
+        distFromAttraction: '50m',
+        area: 'Old Manali',
+        hygieneRating: 4.5,
+        badges: ['Travoxa Recommended', 'Premium'],
+        fullMenu: [
+            {
+                category: 'Main Course',
+                items: [{ name: 'Grilled Trout', price: 550 }]
+            }
+        ]
+    } : {
         title: '',
         city: '',
         state: '',
         type: '',
         priceRange: '$',
         avgCost: '',
+        avgCostPerPerson: '',
         overview: '',
         mustTry: [] as string[],
         cuisine: [] as string[],
         image: '',
+        famousDish: '',
+        distFromAttraction: '',
+        area: '',
+        hygieneRating: 0,
+        badges: [] as string[],
+        dishType: 'Both',
+        openingTime: '',
+        closingTime: '',
+        bestTimeToVisit: '',
+        dineIn: true,
+        takeaway: true,
+        homeDelivery: false,
+        contactPerson: '',
+        phoneNumber: '',
+        whatsappNumber: '',
+        address: '',
+        attractionName: '',
+        fullMenu: [] as { category: string, items: { name: string, price: number }[] }[],
     });
 
     const [mustTryInput, setMustTryInput] = useState('');
@@ -157,6 +203,53 @@ export default function AddFoodClient({
         }));
     };
 
+    const addMenuCategory = () => {
+        setFormData(prev => ({
+            ...prev,
+            fullMenu: [...prev.fullMenu, { category: '', items: [] }]
+        }));
+    };
+
+    const updateCategoryName = (idx: number, name: string) => {
+        const newMenu = [...formData.fullMenu];
+        newMenu[idx].category = name;
+        setFormData({ ...formData, fullMenu: newMenu });
+    };
+
+    const removeCategory = (idx: number) => {
+        setFormData(prev => ({
+            ...prev,
+            fullMenu: prev.fullMenu.filter((_, i) => i !== idx)
+        }));
+    };
+
+    const addMenuItem = (catIdx: number) => {
+        const newMenu = [...formData.fullMenu];
+        newMenu[catIdx].items.push({ name: '', price: 0 });
+        setFormData({ ...formData, fullMenu: newMenu });
+    };
+
+    const updateMenuItem = (catIdx: number, itemIdx: number, field: 'name' | 'price', value: any) => {
+        const newMenu = [...formData.fullMenu];
+        newMenu[catIdx].items[itemIdx] = { ...newMenu[catIdx].items[itemIdx], [field]: value };
+        setFormData({ ...formData, fullMenu: newMenu });
+    };
+
+    const removeMenuItem = (catIdx: number, itemIdx: number) => {
+        const newMenu = [...formData.fullMenu];
+        newMenu[catIdx].items = newMenu[catIdx].items.filter((_, i) => i !== itemIdx);
+        setFormData({ ...formData, fullMenu: newMenu });
+    };
+
+    const toggleBadge = (badge: string) => {
+        setFormData(prev => ({
+            ...prev,
+            badges: prev.badges.includes(badge)
+                ? prev.badges.filter(b => b !== badge)
+                : [...prev.badges, badge]
+        }));
+    };
+
     const handleEdit = (food: any) => {
         setEditingId(food._id);
         setFormData({
@@ -166,10 +259,29 @@ export default function AddFoodClient({
             type: food.type,
             priceRange: food.priceRange,
             avgCost: food.avgCost.toString(),
+            avgCostPerPerson: (food.avgCostPerPerson || '').toString(),
             overview: food.overview,
             mustTry: food.mustTry || [],
             cuisine: food.cuisine || [],
             image: food.image,
+            famousDish: food.famousDish || '',
+            distFromAttraction: food.distFromAttraction || '',
+            area: food.area || '',
+            hygieneRating: food.hygieneRating || 0,
+            badges: food.badges || [],
+            dishType: food.dishType || 'Both',
+            openingTime: food.openingTime || '',
+            closingTime: food.closingTime || '',
+            bestTimeToVisit: food.bestTimeToVisit || '',
+            dineIn: food.dineIn !== undefined ? food.dineIn : true,
+            takeaway: food.takeaway !== undefined ? food.takeaway : true,
+            homeDelivery: food.homeDelivery || false,
+            contactPerson: food.contactPerson || '',
+            phoneNumber: food.phoneNumber || '',
+            whatsappNumber: food.whatsappNumber || '',
+            address: food.address || '',
+            attractionName: food.attractionName || '',
+            fullMenu: food.fullMenu || [],
         });
         setShowFormInternal(true);
         setOpenMenuId(null);
@@ -184,6 +296,8 @@ export default function AddFoodClient({
         const payload = {
             ...formData,
             avgCost: Number(formData.avgCost),
+            avgCostPerPerson: Number(formData.avgCostPerPerson),
+            hygieneRating: Number(formData.hygieneRating),
         };
 
         try {
@@ -210,10 +324,29 @@ export default function AddFoodClient({
                 type: '',
                 priceRange: '$',
                 avgCost: '',
+                avgCostPerPerson: '',
                 overview: '',
                 mustTry: [],
                 cuisine: [],
                 image: '',
+                famousDish: '',
+                distFromAttraction: '',
+                area: '',
+                hygieneRating: 0,
+                badges: [],
+                dishType: 'Both',
+                openingTime: '',
+                closingTime: '',
+                bestTimeToVisit: '',
+                dineIn: true,
+                takeaway: true,
+                homeDelivery: false,
+                contactPerson: '',
+                phoneNumber: '',
+                whatsappNumber: '',
+                address: '',
+                attractionName: '',
+                fullMenu: [],
             });
             setEditingId(null);
             fetchFood();
@@ -446,7 +579,286 @@ export default function AddFoodClient({
                                 placeholder="Describe the place..."
                             />
                         </div>
-                        {/* Dynamic Arrays */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Famous Dish</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formData.famousDish}
+                                    onChange={e => setFormData({ ...formData, famousDish: e.target.value })}
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    placeholder="e.g. Chole Bhature"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Dish Type</label>
+                                <select
+                                    required
+                                    value={formData.dishType}
+                                    onChange={e => setFormData({ ...formData, dishType: e.target.value })}
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                >
+                                    <option value="Veg">Veg</option>
+                                    <option value="Non-Veg">Non-Veg</option>
+                                    <option value="Both">Both</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Avg Cost (per person)</label>
+                                <input
+                                    type="number"
+                                    required
+                                    value={formData.avgCostPerPerson}
+                                    onChange={e => setFormData({ ...formData, avgCostPerPerson: e.target.value })}
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    placeholder="e.g. 500"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-xl">
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Location & Context</h3>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Area / Landmark</label>
+                                    <input
+                                        type="text"
+                                        value={formData.area}
+                                        onChange={e => setFormData({ ...formData, area: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="e.g. Near Mall Road"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Nearby Attraction</label>
+                                    <input
+                                        type="text"
+                                        value={formData.attractionName}
+                                        onChange={e => setFormData({ ...formData, attractionName: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="e.g. Hadimba Temple"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Distance from Attraction</label>
+                                    <input
+                                        type="text"
+                                        value={formData.distFromAttraction}
+                                        onChange={e => setFormData({ ...formData, distFromAttraction: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="e.g. 200m away"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Address</label>
+                                    <textarea
+                                        value={formData.address}
+                                        onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        placeholder="Complete address..."
+                                        rows={2}
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Contact Information</h3>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Contact Person</label>
+                                    <input
+                                        type="text"
+                                        value={formData.contactPerson}
+                                        onChange={e => setFormData({ ...formData, contactPerson: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                    <input
+                                        type="text"
+                                        value={formData.phoneNumber}
+                                        onChange={e => setFormData({ ...formData, phoneNumber: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
+                                    <input
+                                        type="text"
+                                        value={formData.whatsappNumber}
+                                        onChange={e => setFormData({ ...formData, whatsappNumber: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Hygiene Rating (0-5)</label>
+                                    <input
+                                        type="number"
+                                        step="0.1"
+                                        min="0"
+                                        max="5"
+                                        value={formData.hygieneRating}
+                                        onChange={e => setFormData({ ...formData, hygieneRating: Number(e.target.value) })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Opening Time</label>
+                                <input
+                                    type="text"
+                                    value={formData.openingTime}
+                                    onChange={e => setFormData({ ...formData, openingTime: e.target.value })}
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    placeholder="e.g. 9:00 AM"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Closing Time</label>
+                                <input
+                                    type="text"
+                                    value={formData.closingTime}
+                                    onChange={e => setFormData({ ...formData, closingTime: e.target.value })}
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    placeholder="e.g. 10:00 PM"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Best Time to Visit</label>
+                                <input
+                                    type="text"
+                                    value={formData.bestTimeToVisit}
+                                    onChange={e => setFormData({ ...formData, bestTimeToVisit: e.target.value })}
+                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                    placeholder="e.g. For dinner"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-8 py-4 px-6 bg-gray-50 rounded-xl">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.dineIn}
+                                    onChange={e => setFormData({ ...formData, dineIn: e.target.checked })}
+                                    className="w-4 h-4 rounded text-green-600 focus:ring-green-500"
+                                />
+                                <span className="text-sm font-medium text-gray-700">Dine-in Available</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.takeaway}
+                                    onChange={e => setFormData({ ...formData, takeaway: e.target.checked })}
+                                    className="w-4 h-4 rounded text-green-600 focus:ring-green-500"
+                                />
+                                <span className="text-sm font-medium text-gray-700">Takeaway Available</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.homeDelivery}
+                                    onChange={e => setFormData({ ...formData, homeDelivery: e.target.checked })}
+                                    className="w-4 h-4 rounded text-green-600 focus:ring-green-500"
+                                />
+                                <span className="text-sm font-medium text-gray-700">Home Delivery</span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-3">Badges</label>
+                            <div className="flex flex-wrap gap-3">
+                                {['Verified by Travoxa', 'Travoxa Recommended', 'Most Famous', 'Budget Friendly', 'Premium'].map(badge => (
+                                    <button
+                                        key={badge}
+                                        type="button"
+                                        onClick={() => toggleBadge(badge)}
+                                        className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${formData.badges.includes(badge)
+                                            ? 'bg-yellow-500 text-white shadow-md'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        {badge}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="space-y-6 bg-white border border-gray-100 p-6 rounded-2xl shadow-sm">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-bold text-gray-900 Mont">Full Menu</h3>
+                                <button
+                                    type="button"
+                                    onClick={addMenuCategory}
+                                    className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 text-xs font-bold transition-all"
+                                >
+                                    <RiAddLine /> Add Category
+                                </button>
+                            </div>
+
+                            {formData.fullMenu.map((cat, catIdx) => (
+                                <div key={catIdx} className="border border-gray-200 rounded-xl p-4 bg-gray-50/50 space-y-4">
+                                    <div className="flex items-center gap-4">
+                                        <input
+                                            type="text"
+                                            value={cat.category}
+                                            onChange={e => updateCategoryName(catIdx, e.target.value)}
+                                            placeholder="Category Name (e.g. Snacks)"
+                                            className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm font-bold"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeCategory(catIdx)}
+                                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                        >
+                                            <RiDeleteBinLine size={18} />
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-3 pl-4 border-l-2 border-gray-200">
+                                        {cat.items.map((item, itemIdx) => (
+                                            <div key={itemIdx} className="flex items-center gap-3">
+                                                <input
+                                                    type="text"
+                                                    value={item.name}
+                                                    onChange={e => updateMenuItem(catIdx, itemIdx, 'name', e.target.value)}
+                                                    placeholder="Dish Name"
+                                                    className="flex-1 px-3 py-1.5 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-xs"
+                                                />
+                                                <div className="relative w-28">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">₹</span>
+                                                    <input
+                                                        type="number"
+                                                        value={item.price}
+                                                        onChange={e => updateMenuItem(catIdx, itemIdx, 'price', Number(e.target.value))}
+                                                        className="w-full pl-6 pr-3 py-1.5 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-xs"
+                                                        placeholder="Price"
+                                                    />
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeMenuItem(catIdx, itemIdx)}
+                                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-white rounded-lg transition-all"
+                                                >
+                                                    <RiCloseLine size={16} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            onClick={() => addMenuItem(catIdx)}
+                                            className="w-full py-2 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 hover:border-green-300 hover:text-green-500 text-[10px] font-bold transition-all uppercase tracking-wider"
+                                        >
+                                            + Add Item to {cat.category || 'Category'}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-3">Must Try</label>
                             <div className="flex gap-2 mb-3">
