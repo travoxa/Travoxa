@@ -4,11 +4,12 @@ import Helpline from '@/models/Helpline';
 
 export async function GET(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const urlParams = await params;
         await connectDB();
-        const helpline = await Helpline.findById(params.id);
+        const helpline = await Helpline.findById(urlParams.id);
         if (!helpline) {
             return NextResponse.json({ success: false, error: 'Helpline not found' }, { status: 404 });
         }
@@ -20,12 +21,13 @@ export async function GET(
 
 export async function PUT(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const urlParams = await params;
         await connectDB();
         const body = await req.json();
-        const helpline = await Helpline.findByIdAndUpdate(params.id, body, {
+        const helpline = await Helpline.findByIdAndUpdate(urlParams.id, body, {
             new: true,
             runValidators: true,
         });
@@ -40,11 +42,12 @@ export async function PUT(
 
 export async function DELETE(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const urlParams = await params;
         await connectDB();
-        const deletedHelpline = await Helpline.findByIdAndDelete(params.id);
+        const deletedHelpline = await Helpline.findByIdAndDelete(urlParams.id);
         if (!deletedHelpline) {
             return NextResponse.json({ success: false, error: 'Helpline not found' }, { status: 404 });
         }
