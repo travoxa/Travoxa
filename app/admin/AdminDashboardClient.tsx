@@ -19,6 +19,7 @@ import AddActivitiesClient from '@/app/admin/activities/AddActivitiesClient'
 import AddAttractionsClient from '@/app/admin/attractions/AddAttractionsClient'
 import AddFoodClient from '@/app/admin/food/AddFoodClient'
 import AddStayClient from '@/app/admin/stay/AddStayClient'
+import AddHelplineClient from '@/app/admin/helpline/AddHelplineClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -31,7 +32,7 @@ interface AdminDashboardClientProps {
 const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }) => {
     const permissions = adminUser.permissions || [];
     const [activeTab, setActiveTab] = useState(permissions.includes('Overview') ? 'Overview' : (permissions[0] || 'Overview'))
-    const [activeDiscoveryForm, setActiveDiscoveryForm] = useState<'sightseeing' | 'rentals' | 'activities' | 'attractions' | 'food' | 'stay' | null>(null)
+    const [activeDiscoveryForm, setActiveDiscoveryForm] = useState<'sightseeing' | 'rentals' | 'activities' | 'attractions' | 'food' | 'stay' | 'helpline' | null>(null)
     const router = useRouter()
 
     const renderContent = () => {
@@ -134,6 +135,15 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                             />
                         )}
 
+                        {activeDiscoveryForm === 'helpline' && hasDiscoveryPermission('Emergency') && (
+                            <AddHelplineClient
+                                showManagementBox={false}
+                                showListings={false}
+                                showFormDirectly={true}
+                                onFormClose={() => setActiveDiscoveryForm(null)}
+                            />
+                        )}
+
                         {/* Row 1: Management Boxes - Side by Side (hidden when form is open) */}
                         {!activeDiscoveryForm && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -179,6 +189,13 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                                         onFormOpen={() => setActiveDiscoveryForm('stay')}
                                     />
                                 )}
+                                {hasDiscoveryPermission('Emergency') && (
+                                    <AddHelplineClient
+                                        showManagementBox={true}
+                                        showListings={false}
+                                        onFormOpen={() => setActiveDiscoveryForm('helpline')}
+                                    />
+                                )}
                             </div>
                         )}
 
@@ -189,6 +206,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                         {hasDiscoveryPermission('Attractions') && <AddAttractionsClient showManagementBox={false} showListings={true} />}
                         {hasDiscoveryPermission('Food') && <AddFoodClient showManagementBox={false} showListings={true} />}
                         {hasDiscoveryPermission('Stay') && <AddStayClient showManagementBox={false} showListings={true} />}
+                        {hasDiscoveryPermission('Emergency') && <AddHelplineClient showManagementBox={false} showListings={true} />}
                     </div>
                 )
 

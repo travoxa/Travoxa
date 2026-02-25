@@ -35,21 +35,69 @@ const FoodSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please provide an overview'],
     },
-    mustTry: {
+    famousDish: {
+        type: String,
+        required: [true, 'Please provide famous dish name'],
+    },
+    distFromAttraction: {
+        type: String, // e.g. "250m away"
+    },
+    area: {
+        type: String, // Location detail
+    },
+    avgCostPerPerson: {
+        type: Number,
+        required: [true, 'Please provide average cost for one person'],
+    },
+    hygieneRating: {
+        type: Number,
+        min: 0,
+        max: 5,
+        default: 0,
+    },
+    badges: {
         type: [String],
         default: [],
     },
+    dishType: {
+        type: String,
+        enum: ['Veg', 'Non-Veg', 'Both'],
+        required: [true, 'Please provide dish type'],
+    },
+    openingTime: String,
+    closingTime: String,
+    bestTimeToVisit: String,
+    dineIn: {
+        type: Boolean,
+        default: true,
+    },
+    takeaway: {
+        type: Boolean,
+        default: true,
+    },
+    homeDelivery: {
+        type: Boolean,
+        default: false,
+    },
+    contactPerson: String,
+    phoneNumber: String,
+    whatsappNumber: String,
+    address: String,
+    attractionName: String, // For distance context
+    fullMenu: [
+        {
+            category: String,
+            items: [
+                {
+                    name: String,
+                    price: Number,
+                }
+            ]
+        }
+    ],
     image: {
         type: String,
         required: [true, 'Please provide an image'],
-    },
-    rating: {
-        type: Number,
-        default: 0,
-    },
-    reviews: {
-        type: Number,
-        default: 0,
     },
     createdAt: {
         type: Date,
