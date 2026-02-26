@@ -11,6 +11,14 @@ const serializeConfig = (doc: any) => {
         id: doc._id.toString(),
         category: doc.type, // Map 'type' from DB to 'category' for UI
         createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : null,
+        fullMenu: doc.fullMenu ? doc.fullMenu.map((cat: any) => ({
+            ...cat,
+            _id: cat._id?.toString(),
+            items: cat.items?.map((item: any) => ({
+                ...item,
+                _id: item._id?.toString()
+            }))
+        })) : []
     };
 };
 
