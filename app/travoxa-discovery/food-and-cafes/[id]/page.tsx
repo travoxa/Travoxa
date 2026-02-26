@@ -16,6 +16,14 @@ async function getFood(id: string) {
         id: (food._id as any).toString(),
         category: (food as any).type,
         createdAt: (food as any).createdAt ? new Date((food as any).createdAt).toISOString() : null,
+        fullMenu: (food as any).fullMenu ? (food as any).fullMenu.map((cat: any) => ({
+            ...cat,
+            _id: cat._id?.toString(),
+            items: cat.items?.map((item: any) => ({
+                ...item,
+                _id: item._id?.toString()
+            }))
+        })) : []
     };
 }
 
