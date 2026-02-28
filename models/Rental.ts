@@ -139,7 +139,19 @@ const RentalSchema = new mongoose.Schema({
     relatedRentals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Rental' }],
     relatedStays: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Stay' }],
     relatedFood: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Food' }],
-    relatedAttractions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attraction' }]
+    relatedAttractions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attraction' }],
+    partners: [{
+        name: String,
+        logo: String,
+        phone: String,
+        website: String,
+        location: String,
+        state: String,
+        isVerified: {
+            type: Boolean,
+            default: false
+        }
+    }]
 }, {
     timestamps: true
 });

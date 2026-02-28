@@ -14,6 +14,15 @@ export interface ActivityPackage {
     level: string; // e.g., Easy, Moderate
     highlights: string[];
     overview: string;
+    partners?: {
+        name: string;
+        logo?: string;
+        phone?: string;
+        website?: string;
+        location?: string;
+        state?: string;
+        isVerified?: boolean;
+    }[];
 }
 
 export const activitiesPackages: ActivityPackage[] = [

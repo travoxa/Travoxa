@@ -89,6 +89,11 @@ const TourSchema = new mongoose.Schema({
     },
     partners: [{
         name: String,
+        logo: String,
+        phone: String,
+        website: String,
+        location: String,
+        state: String,
         isVerified: {
             type: Boolean,
             default: false

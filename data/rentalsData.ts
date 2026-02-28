@@ -32,6 +32,15 @@ export interface RentalItem {
     fuelPolicy?: string;
     lateReturnCharges?: string;
     googleMapLink?: string;
+    partners?: {
+        name: string;
+        logo?: string;
+        phone?: string;
+        website?: string;
+        location?: string;
+        state?: string;
+        isVerified?: boolean;
+    }[];
 }
 
 // All rental items are now managed through the admin panel
