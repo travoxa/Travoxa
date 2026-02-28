@@ -99,6 +99,15 @@ const FoodSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please provide an image'],
     },
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'approved'
+    },
     createdAt: {
         type: Date,
         default: Date.now,

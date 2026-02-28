@@ -22,6 +22,7 @@ export function proxy(request: NextRequest) {
     pathname.startsWith("/privacy") ||
     pathname.startsWith("/help") ||
     pathname.startsWith("/search") ||
+    pathname.startsWith("/vendor/login") || // Allow vendor login
     // Comprehensive static asset check (images, fonts, media, documents)
     pathname.match(/\.(png|jpg|jpeg|webp|gif|svg|ico|bmp|tiff|css|js|woff|woff2|ttf|otf|eot|mp4|webm|pdf|json|xml|txt)$/i)
   ) {
@@ -34,8 +35,18 @@ export function proxy(request: NextRequest) {
 
   if (!sessionToken) {
     // Redirect to login if not authenticated
+    // If they were trying to go to a vendor route, redirect to vendor login
+    if (pathname.startsWith("/vendor")) {
+      return NextResponse.redirect(new URL("/vendor/login", request.url));
+    }
     return NextResponse.redirect(new URL("/login", request.url));
   }
+
+  // NOTE: Role-based authorization for /admin and /vendor is handled
+  // inside the layout.tsx and page.tsx components themselves because
+  // reading the decrypted JWT token role in Edge middleware requires
+  // the 'next-auth/jwt' NextAuth secret which can be complex here.
+  // We rely on the components to kick out unauthorized users.
 
   return NextResponse.next();
 }

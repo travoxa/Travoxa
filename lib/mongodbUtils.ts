@@ -34,6 +34,13 @@ export interface UserFormData {
   interests: string[];
   authProvider: string;
   profileComplete?: boolean;
+  role?: string;
+  vendorDetails?: {
+    businessName: string;
+    businessType: string;
+    address: string;
+    taxId?: string;
+  };
 }
 
 export const checkUserExists = async (email: string): Promise<boolean> => {
@@ -72,35 +79,35 @@ export const getUserById = async (id: string): Promise<IUser | null> => {
 export const createUser = async (userData: UserFormData): Promise<IUser> => {
   try {
     await connectDB();
-    
+
     const newUser = new User({
       ...userData,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    
+
     return await newUser.save();
   } catch (error) {
-      console.error("Error creating user:", error);
-      console.error("Full error details:", JSON.stringify(error, null, 2));
-      if (error instanceof Error) {
-        console.error("Error message:", error.message);
-        console.error("Error stack:", error.stack);
-      }
-      throw error; // Throw the original error, not a generic one
+    console.error("Error creating user:", error);
+    console.error("Full error details:", JSON.stringify(error, null, 2));
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
     }
+    throw error; // Throw the original error, not a generic one
+  }
 };
 
 export const updateUser = async (email: string, updates: Partial<UserFormData>): Promise<IUser | null> => {
   try {
     await connectDB();
-    
+
     const updatedUser = await User.findOneAndUpdate(
       { email },
       { ...updates, updatedAt: new Date() },
       { new: true }
     );
-    
+
     return updatedUser;
   } catch (error) {
     console.error("Error updating user:", error);

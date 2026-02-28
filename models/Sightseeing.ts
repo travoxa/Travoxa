@@ -103,6 +103,15 @@ const SightseeingSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'approved'
+    },
     createdAt: {
         type: Date,
         default: Date.now,

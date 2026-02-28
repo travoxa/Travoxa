@@ -15,11 +15,24 @@ const connectDB = async () => {
     await mongoose.connect(process.env.MONGODB_URI);
 };
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
         await connectDB();
+        const { searchParams } = new URL(req.url);
+        const vendorId = searchParams.get('vendorId');
+        const admin = searchParams.get('admin');
+        const status = searchParams.get('status');
 
-        const rentals = await Rental.find({});
+        const query: any = {};
+        if (vendorId) {
+            query.vendorId = vendorId;
+        } else if (admin === 'true') {
+            if (status) query.status = status;
+        } else {
+            query.status = 'approved';
+        }
+
+        const rentals = await Rental.find(query);
 
         // Map MongoDB _id to id for frontend
         const rentalsWithId = rentals.map(rental => ({
@@ -41,10 +54,14 @@ export async function POST(req: Request) {
     try {
         await connectDB();
 
-        const body = await req.json();
+        const rentalData = await req.json();
+
+        if (rentalData.vendorId) {
+            rentalData.status = 'pending';
+        }
 
         // Validate required fields
-        if (!body.name || !body.type || !body.price || !body.state || !body.city || !body.whatsapp) {
+        if (!rentalData.name || !rentalData.type || !rentalData.price || !rentalData.state || !rentalData.city || !rentalData.whatsapp) {
             return NextResponse.json(
                 { success: false, error: 'Please provide all required fields' },
                 { status: 400 }
@@ -52,9 +69,9 @@ export async function POST(req: Request) {
         }
 
         // Set location from state and city for backward compatibility
-        body.location = `${body.city}, ${body.state}`;
+        rentalData.location = `${rentalData.city}, ${rentalData.state}`;
 
-        const newRental = await Rental.create(body);
+        const newRental = await Rental.create(rentalData);
 
         const rentalWithId = {
             ...newRental.toObject(),

@@ -33,6 +33,13 @@ export interface IUser extends Document {
   interests: string[];
   authProvider: string;
   profileComplete?: boolean;
+  role: string;
+  vendorDetails?: {
+    businessName: string;
+    businessType: string;
+    address: string;
+    taxId?: string;
+  };
   notifications: {
     senderId: string;
     message: string;
@@ -173,6 +180,17 @@ const userSchema = new Schema<IUser>({
   profileComplete: {
     type: Boolean,
     default: false,
+  },
+  role: {
+    type: String,
+    enum: ["user", "vendor", "admin"],
+    default: "user",
+  },
+  vendorDetails: {
+    businessName: { type: String, trim: true },
+    businessType: { type: String, trim: true },
+    address: { type: String, trim: true },
+    taxId: { type: String, trim: true },
   },
   createdAt: {
     type: Date,
