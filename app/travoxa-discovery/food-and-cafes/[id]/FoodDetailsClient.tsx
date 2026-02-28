@@ -7,6 +7,7 @@ import {
     FaWhatsapp, FaPhoneAlt, FaUser, FaDirections, FaBicycle,
     FaWalking, FaLayerGroup, FaTags, FaAward, FaCrown, FaTag
 } from 'react-icons/fa';
+import { HiBadgeCheck, HiLocationMarker, HiPhone, HiGlobeAlt } from "react-icons/hi";
 import Header from '@/components/ui/Header';
 import Footor from '@/components/ui/Footor';
 import { FoodPackage } from '../FoodClient';
@@ -31,6 +32,12 @@ export default function FoodDetailsClient({ pkg }: FoodDetailsClientProps) {
 
     const cuisineDisplay = Array.isArray(pkg.cuisine) ? pkg.cuisine.join(' • ') : pkg.cuisine;
 
+    const ensureProtocol = (url: string) => {
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return `https://${url}`;
+    };
+
     return (
         <main className="bg-slate-50 min-h-screen">
             <Header />
@@ -44,7 +51,7 @@ export default function FoodDetailsClient({ pkg }: FoodDetailsClientProps) {
                     className="object-cover"
                     priority
                 />
-                <div className="absolute inset-0 bg-linear-to-t from-slate-900 via-slate-900/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
 
                 <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16">
                     <div className="max-w-7xl mx-auto">
@@ -206,6 +213,64 @@ export default function FoodDetailsClient({ pkg }: FoodDetailsClientProps) {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Partners Info */}
+                        {pkg.partners && pkg.partners.length > 0 && (
+                            <div data-aos="fade-up" className="space-y-6">
+                                <h2 className="text-3xl font-black text-slate-900 Mont flex items-center gap-4">
+                                    <span className="w-12 h-1 bg-yellow-500 rounded-full" />
+                                    Official Partners
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {pkg.partners.map((partner: any, index: number) => (
+                                        <div key={index} className="bg-white rounded-[32px] p-6 border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl transition-all">
+                                            <div className="flex items-center gap-4 mb-4">
+                                                {partner.logo ? (
+                                                    <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center p-2 shrink-0 overflow-hidden">
+                                                        <img src={partner.logo} alt={partner.name} className="w-full h-full object-contain" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+                                                        <span className="text-slate-400 text-xs font-black uppercase tracking-tighter">No Logo</span>
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <h3 className="font-black text-lg text-slate-900 flex items-center gap-2">
+                                                        {partner.name}
+                                                        {partner.isVerified && <HiBadgeCheck className="text-blue-500 text-xl" title="Verified Partner" />}
+                                                    </h3>
+                                                    {(partner.location || partner.state) && (
+                                                        <p className="text-sm text-slate-500 flex items-start gap-1 mt-1">
+                                                            <HiLocationMarker className="text-yellow-500 mt-0.5 shrink-0" />
+                                                            <span className="font-bold">
+                                                                {partner.location}{partner.location && partner.state ? ', ' : ''}{partner.state}
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {(partner.phone || partner.website) && (
+                                                <div className="pt-4 border-t border-slate-100 flex flex-col gap-2">
+                                                    {partner.phone && (
+                                                        <a href={`tel:${partner.phone}`} className="flex items-center gap-2 text-sm text-slate-600 hover:text-yellow-600 transition-colors font-bold">
+                                                            <HiPhone className="text-slate-400" />
+                                                            <span>{partner.phone}</span>
+                                                        </a>
+                                                    )}
+                                                    {partner.website && (
+                                                        <a href={ensureProtocol(partner.website)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline transition-colors font-bold">
+                                                            <HiGlobeAlt className="text-slate-400" />
+                                                            <span>Visit Website</span>
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Full Menu Section */}
                         <div data-aos="fade-up" id="menu" className="bg-slate-900 rounded-[50px] overflow-hidden shadow-2xl relative">

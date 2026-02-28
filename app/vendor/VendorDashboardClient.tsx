@@ -4,15 +4,15 @@ import { useState } from 'react'
 import Sidebar from '@/components/dashboard/Sidebar'
 import TopBar from '@/components/dashboard/TopBar'
 import { useRouter } from 'next/navigation'
-import { RiStore2Line } from 'react-icons/ri'
+import { RiStore2Line, RiEditLine, RiCloseLine, RiCheckLine } from 'react-icons/ri'
 
 // Reusing Admin components for now since Vendor uses same listings framework
-import AddTourClient from '@/app/admin/tour/AddTourClient'
-import AddSightseeingClient from '@/app/admin/sightseeing/AddSightseeingClient'
-import AddRentalsClient from '@/app/admin/rentals/AddRentalsClient'
 import AddActivitiesClient from '@/app/admin/activities/AddActivitiesClient'
+import AddTourClient from '@/app/admin/tour/AddTourClient'
+import AddRentalsClient from '@/app/admin/rentals/AddRentalsClient'
 import AddStayClient from '@/app/admin/stay/AddStayClient'
 import AddFoodClient from '@/app/admin/food/AddFoodClient'
+import AddSightseeingClient from '@/app/admin/sightseeing/AddSightseeingClient'
 
 interface VendorDashboardClientProps {
     vendorUser: {
@@ -22,39 +22,148 @@ interface VendorDashboardClientProps {
         vendorDetails?: {
             businessName: string
             businessType: string
+            address?: string
         }
     }
 }
 
 const VendorDashboardClient: React.FC<VendorDashboardClientProps> = ({ vendorUser }) => {
-    // Determine default tab based on business type, or default to Overview
-    const defaultTab = () => {
-        const type = vendorUser.vendorDetails?.businessType;
-        if (type === 'tour_operator') return 'Tour';
-        if (type === 'rental_agency') return 'Rentals';
-        if (type === 'activity_provider') return 'Activities';
-        if (type === 'hospitality') return 'Stay';
-        if (type === 'food_beverage') return 'Food';
-        return 'Overview';
-    };
+    const [activeTab, setActiveTab] = useState('Overview');
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [editForm, setEditForm] = useState({
+        businessName: vendorUser.vendorDetails?.businessName || '',
+        businessType: vendorUser.vendorDetails?.businessType || '',
+        address: vendorUser.vendorDetails?.address || ''
+    });
 
-    const [activeTab, setActiveTab] = useState(defaultTab());
     const router = useRouter()
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            const response = await fetch('/api/vendor/update', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(editForm),
+            });
+
+            if (response.ok) {
+                setIsEditing(false);
+                router.refresh();
+            } else {
+                const data = await response.json();
+                alert(data.error || 'Failed to update profile');
+            }
+        } catch (error) {
+            console.error('Error updating vendor profile:', error);
+            alert('Something went wrong');
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     const renderContent = () => {
         switch (activeTab) {
             case 'Overview':
                 return (
                     <div className="space-y-6">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-16 h-16 bg-black rounded-lg flex items-center justify-center text-white">
-                                <RiStore2Line size={32} />
-                            </div>
-                            <div>
-                                <h1 className="text-3xl font-medium text-gray-800 Inter">{vendorUser.vendorDetails?.businessName || 'Your Business'}</h1>
-                                <p className="text-gray-500 capitalize">{vendorUser.vendorDetails?.businessType?.replace('_', ' ') || 'Vendor'}</p>
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 bg-black rounded-lg flex items-center justify-center text-white">
+                                    <RiStore2Line size={32} />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h1 className="text-3xl font-medium text-gray-800 Inter">
+                                            {vendorUser.vendorDetails?.businessName || 'Your Business'}
+                                        </h1>
+                                        <button
+                                            onClick={() => setIsEditing(true)}
+                                            className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-black"
+                                            title="Edit Profile"
+                                        >
+                                            <RiEditLine size={20} />
+                                        </button>
+                                    </div>
+                                    <p className="text-gray-500 capitalize">{vendorUser.vendorDetails?.businessType?.replace('_', ' ') || 'Vendor'}</p>
+                                </div>
                             </div>
                         </div>
+
+                        {isEditing && (
+                            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-xl font-semibold">Edit Business Profile</h2>
+                                    <button onClick={() => setIsEditing(false)} className="text-gray-400 hover:text-black">
+                                        <RiCloseLine size={24} />
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700">Business Name</label>
+                                        <input
+                                            type="text"
+                                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                                            value={editForm.businessName}
+                                            onChange={(e) => setEditForm({ ...editForm, businessName: e.target.value })}
+                                            placeholder="Enter business name"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700">Business Type</label>
+                                        <select
+                                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                                            value={editForm.businessType}
+                                            onChange={(e) => setEditForm({ ...editForm, businessType: e.target.value })}
+                                        >
+                                            <option value="tour_operator">Tour Operator</option>
+                                            <option value="rental_agency">Rental Agency</option>
+                                            <option value="activity_provider">Activity Provider</option>
+                                            <option value="hospitality">Hotel / Stay Provider</option>
+                                            <option value="food_beverage">Restaurant / Cafe</option>
+                                            <option value="multi_service">Multi-Service Agency</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-sm font-medium text-gray-700">Business Address / City</label>
+                                        <input
+                                            type="text"
+                                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                                            value={editForm.address}
+                                            onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                                            placeholder="Enter business address"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-3 mt-8">
+                                    <button
+                                        onClick={() => setIsEditing(false)}
+                                        className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={isSaving}
+                                        className="px-6 py-2 bg-black text-white rounded-lg hover:bg-black/90 transition-colors font-medium flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        {isSaving ? (
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        ) : (
+                                            <RiCheckLine size={18} />
+                                        )}
+                                        {isSaving ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-2">
@@ -82,69 +191,28 @@ const VendorDashboardClient: React.FC<VendorDashboardClientProps> = ({ vendorUse
                     </div>
                 )
 
-            case 'Tour':
+            case 'Listings':
+                const businessType = vendorUser.vendorDetails?.businessType || 'activity_provider';
+
+                const componentMap: Record<string, { component: any, title: string }> = {
+                    'tour_operator': { component: AddTourClient, title: 'My Tours' },
+                    'rental_agency': { component: AddRentalsClient, title: 'My Rentals' },
+                    'activity_provider': { component: AddActivitiesClient, title: 'My Activities' },
+                    'hospitality': { component: AddStayClient, title: 'My Stays' },
+                    'food_beverage': { component: AddFoodClient, title: 'My Food & Beverages' },
+                    'multi_service': { component: AddSightseeingClient, title: 'My Listings' },
+                };
+
+                const { component: ListingComponent, title: listingTitle } = componentMap[businessType] || componentMap['activity_provider'];
+
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">My Tours</h1>
-                        <AddTourClient vendorId={vendorUser.id} />
+                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">{listingTitle}</h1>
+                        <ListingComponent vendorId={vendorUser.id} showManagementBox={true} showListings={true} showFormDirectly={false} />
                     </div>
                 )
 
-            case 'Sightseeing':
-                return (
-                    <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">My Sightseeing Packages</h1>
-                        <AddSightseeingClient vendorId={vendorUser.id} showManagementBox={false} showListings={true} showFormDirectly={true} />
-                    </div>
-                )
 
-            case 'Rentals':
-                return (
-                    <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">My Rentals</h1>
-                        <AddRentalsClient vendorId={vendorUser.id} showManagementBox={false} showListings={true} showFormDirectly={true} />
-                    </div>
-                )
-
-            case 'Activities':
-                return (
-                    <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">My Activities</h1>
-                        <AddActivitiesClient vendorId={vendorUser.id} showManagementBox={false} showListings={true} showFormDirectly={true} />
-                    </div>
-                )
-
-            case 'Stay':
-                return (
-                    <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">My Stays</h1>
-                        <AddStayClient vendorId={vendorUser.id} showManagementBox={false} showListings={true} showFormDirectly={true} />
-                    </div>
-                )
-
-            case 'Food':
-                return (
-                    <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">My Food Listings</h1>
-                        <AddFoodClient vendorId={vendorUser.id} showManagementBox={false} showListings={true} showFormDirectly={true} />
-                    </div>
-                )
-
-            case 'Profile':
-                return (
-                    <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Business Profile</h1>
-                        <div className="bg-white rounded-xl border border-gray-200 p-8">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4">Edit details in Onboarding Flow</h2>
-                            <button
-                                onClick={() => router.push('/vendor/onboarding')}
-                                className="px-6 py-3 bg-black text-white rounded-lg text-sm font-medium"
-                            >
-                                Update Profile Details
-                            </button>
-                        </div>
-                    </div>
-                )
 
             default:
                 return (
@@ -159,21 +227,10 @@ const VendorDashboardClient: React.FC<VendorDashboardClientProps> = ({ vendorUse
         }
     }
 
-    // Determine viable sidebar options for the vendor based on type 
-    // (A multi-service agent gets everything, others get specific items)
-    const isMulti = vendorUser.vendorDetails?.businessType === 'multi_service';
-    const type = vendorUser.vendorDetails?.businessType;
-
     const vendorPermissions = [
         'Overview',
-        (isMulti || type === 'tour_operator') ? 'Tour' : null,
-        (isMulti || type === 'tour_operator') ? 'Sightseeing' : null,
-        (isMulti || type === 'rental_agency') ? 'Rentals' : null,
-        (isMulti || type === 'activity_provider') ? 'Activities' : null,
-        (isMulti || type === 'hospitality') ? 'Stay' : null,
-        (isMulti || type === 'food_beverage') ? 'Food' : null,
-        'Profile' // Replacing generic Landing etc
-    ].filter(Boolean) as string[];
+        'Listings'
+    ];
 
     return (
         <div className="flex min-h-screen bg-white font-sans">

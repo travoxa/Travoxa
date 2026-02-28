@@ -50,6 +50,15 @@ export interface FoodPackage {
     mustTry?: string[];
     address?: string;
     avgCost?: number;
+    partners?: {
+        name: string;
+        logo?: string;
+        phone?: string;
+        website?: string;
+        location?: string;
+        state?: string;
+        isVerified?: boolean;
+    }[];
 }
 
 interface FoodClientProps {

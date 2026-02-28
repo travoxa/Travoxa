@@ -33,6 +33,7 @@ export default function AddActivitiesClient({
     const [loadingActivities, setLoadingActivities] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [availableCities, setAvailableCities] = useState<string[]>([]);
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
 
     // Related Packages Data States
     const [allTours, setAllTours] = useState<any[]>([]);
@@ -98,7 +99,8 @@ export default function AddActivitiesClient({
         relatedRentals: [] as string[],
         relatedStays: [] as string[],
         relatedFood: [] as string[],
-        relatedAttractions: [] as string[]
+        relatedAttractions: [] as string[],
+        partners: [{ name: 'Test Partner', logo: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg', phone: '+1234567890', website: 'https://example.com', location: 'Test Location', state: 'Test State', isVerified: true }],
     };
 
     const isDev = process.env.NODE_ENV === 'development';
@@ -148,7 +150,8 @@ export default function AddActivitiesClient({
         relatedRentals: [] as string[],
         relatedStays: [] as string[],
         relatedFood: [] as string[],
-        relatedAttractions: [] as string[]
+        relatedAttractions: [] as string[],
+        partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[],
     });
 
     const [highlightInput, setHighlightInput] = useState('');
@@ -272,6 +275,28 @@ export default function AddActivitiesClient({
         }));
     };
 
+    const addPartner = () => {
+        setFormData(prev => ({
+            ...prev,
+            partners: [...prev.partners, { name: '', logo: '', phone: '', website: '', location: '', state: '', isVerified: false }]
+        }));
+    };
+
+    const updatePartner = (index: number, field: string, value: any) => {
+        setFormData(prev => {
+            const updated = [...prev.partners];
+            updated[index] = { ...updated[index], [field]: value };
+            return { ...prev, partners: updated };
+        });
+    };
+
+    const removePartner = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            partners: prev.partners.filter((_, i) => i !== index)
+        }));
+    };
+
     const handleEdit = (activity: any) => {
         setEditingId(activity._id);
         // Parse duration if string "30 Minutes"
@@ -322,7 +347,8 @@ export default function AddActivitiesClient({
             relatedRentals: activity.relatedRentals || [],
             relatedStays: activity.relatedStays || [],
             relatedFood: activity.relatedFood || [],
-            relatedAttractions: activity.relatedAttractions || []
+            relatedAttractions: activity.relatedAttractions || [],
+            partners: activity.partners || []
         });
         setShowFormInternal(true);
         setOpenMenuId(null);
@@ -353,6 +379,7 @@ export default function AddActivitiesClient({
             relatedStays: formData.relatedStays,
             relatedFood: formData.relatedFood,
             relatedAttractions: formData.relatedAttractions,
+            partners: formData.partners,
             ...(vendorId && { vendorId })
         };
 
@@ -498,18 +525,23 @@ export default function AddActivitiesClient({
                                 <div className="flex-1 grid grid-cols-4 gap-4">
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Title</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Type</p>
-                                    <p className="text-xs font-semibold text-gray-600 uppercase">City</p>
+                                    <p className="text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Price</p>
                                 </div>
                                 <div className="w-10"></div>
                             </div>
                             <div className="divide-y divide-gray-200">
-                                {activities.map((activity) => (
+                                {([...activities].sort((a, b) => {
+                                    if (!sortOrder) return 0;
+                                    const stateA = a.state || '';
+                                    const stateB = b.state || '';
+                                    return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
+                                })).map((activity) => (
                                     <div key={activity._id} className="flex items-center justify-between py-2 hover:bg-gray-50 transition-colors">
                                         <div className="flex-1 grid grid-cols-4 gap-4">
                                             <p className="text-sm text-gray-900 truncate pr-2">{activity.title}</p>
                                             <p className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded w-fit">{activity.type}</p>
-                                            <p className="text-sm text-gray-900">{activity.city}</p>
+                                            <p className="text-sm text-gray-900">{activity.state}</p>
                                             <p className="text-sm text-gray-900">₹{activity.price}</p>
                                         </div>
                                         <div className="relative">
@@ -953,13 +985,152 @@ export default function AddActivitiesClient({
                             )}
                         </div>
 
+                        {/* Partners Section */}
+                        <div className="pt-8 border-t border-gray-200 mt-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-800">Tour Partners</h3>
+                                    <p className="text-sm text-gray-500">Add information about partners involved in this tour</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={addPartner}
+                                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-semibold"
+                                >
+                                    <RiAddLine size={18} />
+                                    Add Partner
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6">
+                                {formData.partners.map((partner, idx) => (
+                                    <div key={idx} className="bg-gray-50 border border-gray-200 rounded-xl p-6 relative">
+                                        <button
+                                            type="button"
+                                            onClick={() => removePartner(idx)}
+                                            className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"
+                                            title="Remove Partner"
+                                        >
+                                            <RiDeleteBinLine size={20} />
+                                        </button>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="md:col-span-2">
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.name}
+                                                    onChange={(e) => updatePartner(idx, 'name', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                                                    placeholder="e.g. Skyline Travel Agency"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Logo</label>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden shrink-0">
+                                                        {partner.logo ? (
+                                                            <img src={partner.logo} alt="Logo" className="w-full h-full object-contain" />
+                                                        ) : (
+                                                            <span className="text-xs text-gray-400">No Image</span>
+                                                        )}
+                                                    </div>
+                                                    <CldUploadWidget
+                                                        uploadPreset="travoxa"
+                                                        onSuccess={(result: any) => {
+                                                            updatePartner(idx, 'logo', result.info.secure_url);
+                                                        }}
+                                                    >
+                                                        {({ open }) => (
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => { e.preventDefault(); open(); }}
+                                                                className="px-3 py-1.5 bg-white border border-gray-300 rounded text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
+                                                            >
+                                                                <RiAddLine /> {partner.logo ? 'Change Logo' : 'Upload Logo'}
+                                                            </button>
+                                                        )}
+                                                    </CldUploadWidget>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center pt-6">
+                                                <label className="flex items-center gap-2 cursor-pointer group">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={partner.isVerified}
+                                                        onChange={(e) => updatePartner(idx, 'isVerified', e.target.checked)}
+                                                        className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                    />
+                                                    <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors flex items-center gap-1">
+                                                        Verified Partner
+                                                    </span>
+                                                </label>
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Phone Number</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.phone}
+                                                    onChange={(e) => updatePartner(idx, 'phone', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="+91..."
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Website URL</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.website}
+                                                    onChange={(e) => updatePartner(idx, 'website', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="https://..."
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">State</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.state}
+                                                    onChange={(e) => updatePartner(idx, 'state', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="State"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Location/Address</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.location}
+                                                    onChange={(e) => updatePartner(idx, 'location', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="City or Full Address"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {formData.partners.length === 0 && (
+                                <div className="text-center py-8 bg-gray-50 border border-dashed border-gray-300 rounded-xl">
+                                    <p className="text-sm text-gray-500">No partners added yet</p>
+                                </div>
+                            )}
+                        </div>
+
                         {/* Related Packages */}
                         <div className="pt-8 border-t border-gray-200 mt-8 mb-8">
                             <h3 className="text-lg font-bold text-gray-800 mb-6">Related Packages</h3>
                             {loadingRelated ? (
-                                <p className="text-sm text-gray-500 flex items-center gap-2">
+                                <div className="text-sm text-gray-500 flex items-center gap-2">
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div> Loading related packages...
-                                </p>
+                                </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                                     {renderRelatedCheckboxes('Tours', allTours, 'relatedTours')}

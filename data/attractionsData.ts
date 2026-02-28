@@ -12,6 +12,15 @@ export interface AttractionPackage {
     type: string; // e.g., Palace, Museum
     overview: string;
     price: number; // Entry fee estimation or guided tour price
+    partners?: {
+        name: string;
+        logo?: string;
+        phone?: string;
+        website?: string;
+        location?: string;
+        state?: string;
+        isVerified?: boolean;
+    }[];
 }
 
 export const attractionsPackages: AttractionPackage[] = [

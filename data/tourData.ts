@@ -39,6 +39,15 @@ export interface TourPackage {
         snacks: string[];
         custom: string[];
     }[]; // Updated to support day-wise meals
+    partners?: {
+        name: string;
+        logo?: string;
+        phone?: string;
+        website?: string;
+        location?: string;
+        state?: string;
+        isVerified?: boolean;
+    }[];
 }
 
 // No static tour data - all tours come from MongoDB

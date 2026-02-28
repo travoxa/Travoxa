@@ -36,8 +36,10 @@ export default async function VendorDashboard() {
         vendorDetails: {
             businessName: dbUser.vendorDetails.businessName || '',
             businessType: dbUser.vendorDetails.businessType || '',
+            address: dbUser.vendorDetails.address || '',
         }
     }
+
 
     return <VendorDashboardClient vendorUser={vendorUser} />
 }

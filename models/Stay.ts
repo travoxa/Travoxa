@@ -92,6 +92,18 @@ const StaySchema = new mongoose.Schema({
         enum: ['pending', 'approved', 'rejected'],
         default: 'approved'
     },
+    partners: [{
+        name: String,
+        logo: String,
+        phone: String,
+        website: String,
+        location: String,
+        state: String,
+        isVerified: {
+            type: Boolean,
+            default: false
+        }
+    }],
     createdAt: {
         type: Date,
         default: Date.now,

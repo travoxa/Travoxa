@@ -67,6 +67,7 @@ export default function AddHelplineClient({
     const [editingId, setEditingId] = useState<string | null>(null);
     const [showForm, setShowForm] = useState(showFormDirectly);
     const [availableCities, setAvailableCities] = useState<string[]>([]);
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
 
     useEffect(() => {
         if (form.state) {
@@ -436,7 +437,7 @@ export default function AddHelplineClient({
                         <div className="flex-1 grid grid-cols-4 gap-4">
                             <p className="text-xs font-semibold text-gray-500 uppercase">Service Name</p>
                             <p className="text-xs font-semibold text-gray-500 uppercase">Type</p>
-                            <p className="text-xs font-semibold text-gray-500 uppercase">Location</p>
+                            <p className="text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
                             <p className="text-xs font-semibold text-gray-500 uppercase">Phone</p>
                         </div>
                         <div className="w-10"></div>
@@ -448,7 +449,12 @@ export default function AddHelplineClient({
                         ) : helplines.length === 0 ? (
                             <div className="py-8 text-center text-gray-400 text-sm">No helplines found. Add one above.</div>
                         ) : (
-                            helplines.map((h) => (
+                            ([...helplines].sort((a, b) => {
+                                if (!sortOrder) return 0;
+                                const stateA = a.state || '';
+                                const stateB = b.state || '';
+                                return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
+                            })).map((h) => (
                                 <div key={h._id} className="flex items-center justify-between py-2 hover:bg-gray-50 transition-colors">
                                     <div className="flex-1 grid grid-cols-4 gap-4 items-center">
                                         <div className="text-sm font-medium text-gray-900">{h.serviceName}</div>
@@ -457,7 +463,7 @@ export default function AddHelplineClient({
                                                 {h.emergencyType}
                                             </span>
                                         </div>
-                                        <div className="text-sm text-gray-500">{h.city}, {h.state}</div>
+                                        <div className="text-sm text-gray-500">{h.state}</div>
                                         <div className="text-sm font-medium text-rose-600">{h.phone}</div>
                                     </div>
 

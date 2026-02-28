@@ -3,7 +3,7 @@ import NormalHeader from "@/components/ui/NormalHeader";
 import Footer from "@/components/ui/Footor";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { HiCheck, HiX, HiCalendar, HiLocationMarker, HiDownload, HiUserGroup, HiCurrencyRupee, HiChevronDown, HiChevronUp, HiBadgeCheck } from "react-icons/hi";
+import { HiCheck, HiX, HiCalendar, HiLocationMarker, HiDownload, HiUserGroup, HiCurrencyRupee, HiChevronDown, HiChevronUp, HiBadgeCheck, HiPhone, HiGlobeAlt } from "react-icons/hi";
 import { MdRestaurant, MdHotel, MdCameraAlt, MdDirectionsBus, MdLocalFireDepartment, MdHiking, MdParagliding, MdLandscape, MdTempleHindu } from "react-icons/md";
 import HeroCarousel from "@/components/tour/HeroCarousel";
 import SaveButton from "@/components/ui/SaveButton";
@@ -159,22 +159,6 @@ export default async function TourDetailPage({ params }: PageProps) {
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-12">
 
-                    {/* Partners Info */}
-                    {pkg.partners && pkg.partners.length > 0 && (
-                        <div className="flex flex-wrap gap-4">
-                            {pkg.partners.map((partner: any, idx: number) => (
-                                <div key={idx} className="inline-flex items-center gap-3 bg-white border border-gray-200 px-4 py-2 rounded-full shadow-sm">
-                                    {partner.logo && (
-                                        <img src={partner.logo} alt={partner.name} className="w-6 h-6 object-contain rounded-full" />
-                                    )}
-                                    <span className="font-semibold text-gray-800 text-sm">{partner.name}</span>
-                                    {partner.isVerified && (
-                                        <HiBadgeCheck className="text-blue-500 text-lg" title="Verified Partner" />
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
 
                     {/* Overview */}
                     <section>
@@ -344,6 +328,61 @@ export default async function TourDetailPage({ params }: PageProps) {
                                                 </div>
                                             </div>
                                         </details>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Partners Info Section */}
+                    {pkg.partners && pkg.partners.length > 0 && (
+                        <section>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-6">Our Tour Partners</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {pkg.partners.map((partner: any, idx: number) => (
+                                    <div key={idx} className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col gap-4">
+                                        <div className="flex items-center gap-4">
+                                            {partner.logo ? (
+                                                <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                                                    <img src={partner.logo} alt={partner.name} className="w-full h-full object-contain p-1" />
+                                                </div>
+                                            ) : (
+                                                <div className="w-16 h-16 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
+                                                    <span className="text-gray-400 text-xs font-medium">No Logo</span>
+                                                </div>
+                                            )}
+                                            <div>
+                                                <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
+                                                    {partner.name}
+                                                    {partner.isVerified && <HiBadgeCheck className="text-blue-500 text-xl" title="Verified Partner" />}
+                                                </h3>
+                                                {(partner.location || partner.state) && (
+                                                    <p className="text-sm text-gray-500 flex items-start gap-1 mt-1">
+                                                        <HiLocationMarker className="text-gray-400 mt-0.5 shrink-0" />
+                                                        <span>
+                                                            {partner.location}{partner.location && partner.state ? ', ' : ''}{partner.state}
+                                                        </span>
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {(partner.phone || partner.website) && (
+                                            <div className="pt-4 border-t border-gray-100 flex flex-col gap-2">
+                                                {partner.phone && (
+                                                    <a href={`tel:${partner.phone}`} className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-600 transition-colors">
+                                                        <HiPhone className="text-gray-400" />
+                                                        <span>{partner.phone}</span>
+                                                    </a>
+                                                )}
+                                                {partner.website && (
+                                                    <a href={ensureProtocol(partner.website)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline transition-colors">
+                                                        <HiGlobeAlt className="text-gray-400" />
+                                                        <span>Visit Website</span>
+                                                    </a>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>

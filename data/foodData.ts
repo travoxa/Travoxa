@@ -12,6 +12,15 @@ export interface FoodPackage {
     cuisine: string; // e.g., Goan, Continental
     overview: string;
     priceRange: string; // e.g., ₹₹, ₹₹₹
+    partners?: {
+        name: string;
+        logo?: string;
+        phone?: string;
+        website?: string;
+        location?: string;
+        state?: string;
+        isVerified?: boolean;
+    }[];
 }
 
 export const foodPackages: FoodPackage[] = [

@@ -39,6 +39,15 @@ export interface ActivityPackage {
     photographyAllowed?: boolean;
     parkingAvailable?: boolean;
     medicalRestrictions?: { exists: boolean; details: string };
+    partners?: {
+        name: string;
+        logo?: string;
+        phone?: string;
+        website?: string;
+        location?: string;
+        state?: string;
+        isVerified?: boolean;
+    }[];
 }
 
 interface ActivitiesClientProps {
