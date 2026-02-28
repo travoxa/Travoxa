@@ -143,6 +143,10 @@ const AttractionSchema = new mongoose.Schema({
         crowdLevel: String, // Low, Moderate, High
         safetyScore: Number, // 1-10
     },
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
     createdAt: {
         type: Date,
         default: Date.now,

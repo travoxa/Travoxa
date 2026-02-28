@@ -14,6 +14,7 @@ interface AddSightseeingClientProps {
     showManagementBox?: boolean;
     showListings?: boolean;
     showFormDirectly?: boolean;
+    vendorId?: string;
     onFormOpen?: () => void;
     onFormClose?: () => void;
 }
@@ -22,6 +23,7 @@ export default function AddSightseeingClient({
     showManagementBox = true,
     showListings = true,
     showFormDirectly = false,
+    vendorId,
     onFormOpen,
     onFormClose
 }: AddSightseeingClientProps = {}) {
@@ -108,7 +110,8 @@ export default function AddSightseeingClient({
     const fetchSightseeing = async () => {
         setLoadingSightseeing(true);
         try {
-            const res = await fetch('/api/sightseeing');
+            const url = vendorId ? `/api/sightseeing?vendorId=${vendorId}` : '/api/sightseeing';
+            const res = await fetch(url);
             const data = await res.json();
             if (data.success) {
                 setSightseeing(data.data);

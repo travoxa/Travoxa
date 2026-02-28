@@ -12,6 +12,7 @@ interface AddStayClientProps {
     showManagementBox?: boolean;
     showListings?: boolean;
     showFormDirectly?: boolean;
+    vendorId?: string;
     onFormOpen?: () => void;
     onFormClose?: () => void;
 }
@@ -20,6 +21,7 @@ export default function AddStayClient({
     showManagementBox = true,
     showListings = true,
     showFormDirectly = false,
+    vendorId,
     onFormOpen,
     onFormClose
 }: AddStayClientProps = {}) {
@@ -92,7 +94,8 @@ export default function AddStayClient({
     const fetchStays = async () => {
         setLoadingStays(true);
         try {
-            const res = await fetch('/api/stay');
+            const url = vendorId ? `/api/stay?vendorId=${vendorId}` : '/api/stay';
+            const res = await fetch(url);
             const data = await res.json();
             if (data.success) {
                 setStays(data.data);
@@ -154,6 +157,7 @@ export default function AddStayClient({
             amenities: prev.amenities.filter((_, i) => i !== index)
         }));
     };
+
 
     // Handle edit
     const handleEdit = (pkg: any) => {

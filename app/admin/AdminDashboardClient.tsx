@@ -20,6 +20,7 @@ import AddAttractionsClient from '@/app/admin/attractions/AddAttractionsClient'
 import AddFoodClient from '@/app/admin/food/AddFoodClient'
 import AddStayClient from '@/app/admin/stay/AddStayClient'
 import AddHelplineClient from '@/app/admin/helpline/AddHelplineClient'
+import VendorRequestsClient from '@/app/admin/requests/VendorRequestsClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -215,6 +216,14 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                     <div className="space-y-6">
                         <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Backpackers</h1>
                         <AddHostedBackpackerClient />
+                    </div>
+                )
+
+            case 'Vendor Requests':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Vendor Requests</h1>
+                        <VendorRequestsClient />
                     </div>
                 )
 

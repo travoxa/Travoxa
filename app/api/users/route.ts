@@ -4,7 +4,7 @@ import { checkUserExists, createUser, updateUser, getUser } from "@/lib/mongodbU
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, name, phone, gender, interests, hasBike, authProvider } = body;
+    const { email, name, phone, gender, interests, hasBike, authProvider, role, vendorDetails, profileComplete, city } = body;
 
     if (!email || !name || !gender) {
       return NextResponse.json(
@@ -21,11 +21,15 @@ export async function POST(request: NextRequest) {
       interests: interests || [],
       hasBike: hasBike || false,
       authProvider: authProvider || "email",
+      ...(role ? { role } : {}),
+      ...(vendorDetails ? { vendorDetails } : {}),
+      ...(profileComplete !== undefined ? { profileComplete } : {}),
+      ...(city ? { city } : {}),
     };
 
     // For API calls, we use email as the identifier for MongoDB
     const exists = await checkUserExists(email);
-    
+
     if (exists) {
       await updateUser(email, userData);
     } else {
@@ -37,14 +41,14 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-      console.error("Error in users API:", error);
-      console.error("Error details:", error instanceof Error ? error.message : error);
-      console.error("Stack:", error instanceof Error ? error.stack : 'No stack');
-      return NextResponse.json(
-        { error: "Failed to save user data", details: error instanceof Error ? error.message : String(error) },
-        { status: 500 }
-      );
-    }
+    console.error("Error in users API:", error);
+    console.error("Error details:", error instanceof Error ? error.message : error);
+    console.error("Stack:", error instanceof Error ? error.stack : 'No stack');
+    return NextResponse.json(
+      { error: "Failed to save user data", details: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
+  }
 }
 
 export async function GET(request: NextRequest) {

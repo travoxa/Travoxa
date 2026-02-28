@@ -12,6 +12,7 @@ interface AddRentalsClientProps {
     showManagementBox?: boolean;
     showListings?: boolean;
     showFormDirectly?: boolean;
+    vendorId?: string;
     onFormOpen?: () => void;
     onFormClose?: () => void;
 }
@@ -33,6 +34,7 @@ export default function AddRentalsClient({
     showManagementBox = true,
     showListings = true,
     showFormDirectly = false,
+    vendorId,
     onFormOpen,
     onFormClose
 }: AddRentalsClientProps = {}) {
@@ -132,7 +134,8 @@ export default function AddRentalsClient({
     const fetchRentals = async () => {
         setLoadingRentals(true);
         try {
-            const res = await fetch('/api/rentals');
+            const url = vendorId ? `/api/rentals?vendorId=${vendorId}` : '/api/rentals';
+            const res = await fetch(url);
             const data = await res.json();
             if (data.success) {
                 setRentals(data.data);

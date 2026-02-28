@@ -112,7 +112,7 @@ const ActivitySchema = new mongoose.Schema({
     },
     photographyAllowed: Boolean,
     droneAllowed: Boolean,
-    parkingAvailable: Boolean,
+    parkingAvailable: { type: Boolean, default: false },
 
     // Organizer Info
     localOrganizer: String,
@@ -138,6 +138,15 @@ const ActivitySchema = new mongoose.Schema({
     },
     level: {
         type: String, // Keeping for backward compatibility, sync with difficultyLevel
+    },
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'approved'
     },
     createdAt: {
         type: Date,

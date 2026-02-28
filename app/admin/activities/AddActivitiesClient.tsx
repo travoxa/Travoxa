@@ -9,6 +9,7 @@ interface AddActivitiesClientProps {
     showManagementBox?: boolean;
     showListings?: boolean;
     showFormDirectly?: boolean;
+    vendorId?: string;
     onFormOpen?: () => void;
     onFormClose?: () => void;
 }
@@ -17,6 +18,7 @@ export default function AddActivitiesClient({
     showManagementBox = true,
     showListings = true,
     showFormDirectly = false,
+    vendorId,
     onFormOpen,
     onFormClose
 }: AddActivitiesClientProps = {}) {
@@ -147,7 +149,8 @@ export default function AddActivitiesClient({
     const fetchActivities = async () => {
         setLoadingActivities(true);
         try {
-            const res = await fetch('/api/activities');
+            const url = vendorId ? `/api/activities?vendorId=${vendorId}` : '/api/activities';
+            const res = await fetch(url);
             const data = await res.json();
             if (data.success) {
                 setActivities(data.data);
@@ -280,6 +283,7 @@ export default function AddActivitiesClient({
             // Ensure objects are passed correctly - they are in state already
             category: finalType, // Mapped for backward compat
             level: formData.difficultyLevel, // Mapped for backward compat
+            ...(vendorId && { vendorId })
         };
 
         try {
@@ -635,8 +639,8 @@ export default function AddActivitiesClient({
                                             type="button"
                                             onClick={() => toggleArraySelection('suitableFor', opt)}
                                             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${formData.suitableFor.includes(opt)
-                                                    ? 'bg-blue-600 text-white border-blue-600'
-                                                    : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
+                                                ? 'bg-blue-600 text-white border-blue-600'
+                                                : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
                                                 }`}
                                         >
                                             {opt}
@@ -654,8 +658,8 @@ export default function AddActivitiesClient({
                                             type="button"
                                             onClick={() => toggleArraySelection('season', opt)}
                                             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${formData.season.includes(opt)
-                                                    ? 'bg-orange-600 text-white border-orange-600'
-                                                    : 'bg-white text-gray-600 border-gray-300 hover:border-orange-400'
+                                                ? 'bg-orange-600 text-white border-orange-600'
+                                                : 'bg-white text-gray-600 border-gray-300 hover:border-orange-400'
                                                 }`}
                                         >
                                             {opt}

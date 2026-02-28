@@ -122,11 +122,17 @@ const TourSchema = new mongoose.Schema({
         snacks: [String],
         custom: [String]
     }],
-    createdAt: {
-        type: Date,
-        default: Date.now,
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false
     },
-});
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'approved'
+    }
+}, { timestamps: true });
 
 // Prevent mongoose from creating a new model if it already exists
 // This is needed because in development we don't want to restart the server for every change

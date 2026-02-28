@@ -9,6 +9,7 @@ interface AddFoodClientProps {
     showManagementBox?: boolean;
     showListings?: boolean;
     showFormDirectly?: boolean;
+    vendorId?: string;
     onFormOpen?: () => void;
     onFormClose?: () => void;
 }
@@ -17,6 +18,7 @@ export default function AddFoodClient({
     showManagementBox = true,
     showListings = true,
     showFormDirectly = false,
+    vendorId,
     onFormOpen,
     onFormClose
 }: AddFoodClientProps = {}) {
@@ -122,10 +124,12 @@ export default function AddFoodClient({
         }
     }, [formData.state]);
 
+    // Fetch food listings
     const fetchFood = async () => {
         setLoadingFood(true);
         try {
-            const res = await fetch('/api/food');
+            const url = vendorId ? `/api/food?vendorId=${vendorId}` : '/api/food';
+            const res = await fetch(url);
             const data = await res.json();
             if (data.success) {
                 setFoodItems(data.data);

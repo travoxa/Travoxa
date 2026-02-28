@@ -36,7 +36,14 @@ const DEFAULT_CANCELLATION_POLICY = [
     "For any refunds, please contact the support team."
 ];
 
-export default function AddTourClient() {
+interface AddTourClientProps {
+    vendorId?: string;
+    showManagementBox?: boolean;
+    showListings?: boolean;
+    showFormDirectly?: boolean;
+}
+
+export default function AddTourClient({ vendorId, showManagementBox, showListings, showFormDirectly }: AddTourClientProps) {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
@@ -157,7 +164,8 @@ export default function AddTourClient() {
     const fetchTours = async () => {
         setLoadingTours(true);
         try {
-            const res = await fetch('/api/tours');
+            const url = vendorId ? `/api/tours?vendorId=${vendorId}` : '/api/tours';
+            const res = await fetch(url);
             const data = await res.json();
             if (data.success) {
                 setTours(data.data);
@@ -603,7 +611,8 @@ export default function AddTourClient() {
             earlyBirdDiscount: Number(formData.earlyBirdDiscount) || 0,
             meals: formData.meals,
             availabilityBatches: formData.availabilityBatches,
-            pricing: formData.pricing
+            pricing: formData.pricing,
+            ...(vendorId && { vendorId })
         };
 
         if (payload.minPeople > payload.maxPeople) {

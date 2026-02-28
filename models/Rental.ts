@@ -122,10 +122,18 @@ const RentalSchema = new mongoose.Schema({
     googleMapLink: {
         type: String,
         required: false
+    },
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'approved'
     }
 }, {
     timestamps: true
 });
 
 export default mongoose.models.Rental || mongoose.model('Rental', RentalSchema);
-
