@@ -10,6 +10,7 @@ import { FaClock, FaCar, FaUserFriends, FaMapMarkerAlt, FaCheckCircle, FaTimesCi
 import { useState, useEffect } from "react";
 import ReviewSection from "@/components/sightseeing/ReviewSection";
 import SaveButton from "@/components/ui/SaveButton";
+import RelatedPackages from "@/components/ui/RelatedPackages";
 
 export default function SightseeingDetailPage() {
     const params = useParams();
@@ -30,10 +31,10 @@ export default function SightseeingDetailPage() {
         const fetchPackage = async () => {
             setLoading(true);
             try {
-                const res = await fetch('/api/sightseeing');
+                const res = await fetch(`/api/sightseeing/${id}`);
                 const data = await res.json();
                 if (data.success) {
-                    const foundPackage = data.data.find((p: SightseeingPackage) => p.id === id);
+                    const foundPackage = data.data;
                     if (foundPackage) {
                         setPkg(foundPackage);
                         // Set default booking type
@@ -333,6 +334,18 @@ export default function SightseeingDetailPage() {
                     </div>
 
                 </div>
+            </div>
+
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+                <RelatedPackages
+                    tours={(pkg as any).relatedTours}
+                    sightseeing={(pkg as any).relatedSightseeing}
+                    activities={(pkg as any).relatedActivities}
+                    rentals={(pkg as any).relatedRentals}
+                    stays={(pkg as any).relatedStays}
+                    food={(pkg as any).relatedFood}
+                    attractions={(pkg as any).relatedAttractions}
+                />
             </div>
 
             <Footor />

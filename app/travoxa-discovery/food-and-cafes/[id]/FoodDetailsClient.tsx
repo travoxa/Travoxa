@@ -11,6 +11,7 @@ import Header from '@/components/ui/Header';
 import Footor from '@/components/ui/Footor';
 import { FoodPackage } from '../FoodClient';
 import SaveButton from '@/components/ui/SaveButton';
+import RelatedPackages from '@/components/ui/RelatedPackages';
 import { motion } from 'framer-motion';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -376,6 +377,18 @@ export default function FoodDetailsClient({ pkg }: FoodDetailsClientProps) {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6 pb-16">
+                <RelatedPackages
+                    tours={(pkg as any).relatedTours}
+                    sightseeing={(pkg as any).relatedSightseeing}
+                    activities={(pkg as any).relatedActivities}
+                    rentals={(pkg as any).relatedRentals}
+                    stays={(pkg as any).relatedStays}
+                    food={(pkg as any).relatedFood}
+                    attractions={(pkg as any).relatedAttractions}
+                />
             </div>
 
             <Footor />

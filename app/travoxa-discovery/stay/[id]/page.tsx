@@ -8,6 +8,7 @@ import Footor from "@/components/ui/Footor";
 import { FaMapMarkerAlt, FaStar, FaBed, FaBath, FaUserFriends, FaWhatsapp, FaCheck, FaPhoneAlt, FaEnvelope, FaArrowLeft } from "react-icons/fa";
 import SaveButton from "@/components/ui/SaveButton";
 import { useRouter } from "next/navigation";
+import RelatedPackages from "@/components/ui/RelatedPackages";
 
 export default function StayDetailsPage() {
     const { id } = useParams();
@@ -227,8 +228,20 @@ export default function StayDetailsPage() {
                         </div>
                     </div>
                 </div>
-
             </div>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+                <RelatedPackages
+                    tours={stay?.relatedTours}
+                    sightseeing={stay?.relatedSightseeing}
+                    activities={stay?.relatedActivities}
+                    rentals={stay?.relatedRentals}
+                    stays={stay?.relatedStays}
+                    food={stay?.relatedFood}
+                    attractions={stay?.relatedAttractions}
+                />
+            </div>
+
             <Footor />
         </div>
     );

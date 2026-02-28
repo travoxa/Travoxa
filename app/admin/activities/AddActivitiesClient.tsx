@@ -34,6 +34,15 @@ export default function AddActivitiesClient({
     const [editingId, setEditingId] = useState<string | null>(null);
     const [availableCities, setAvailableCities] = useState<string[]>([]);
 
+    // Related Packages Data States
+    const [allTours, setAllTours] = useState<any[]>([]);
+    const [allSightseeing, setAllSightseeing] = useState<any[]>([]);
+    const [allRentals, setAllRentals] = useState<any[]>([]);
+    const [allStays, setAllStays] = useState<any[]>([]);
+    const [allFood, setAllFood] = useState<any[]>([]);
+    const [allAttractions, setAllAttractions] = useState<any[]>([]);
+    const [loadingRelated, setLoadingRelated] = useState(false);
+
     const ACTIVITY_TYPES = [
         'Trekking', 'Paragliding', 'Scuba Diving', 'River Rafting', 'Camping',
         'Skiing', 'Bungee Jumping', 'Ziplining', 'Water Sports', 'Wildlife Safari',
@@ -82,6 +91,14 @@ export default function AddActivitiesClient({
         photographyAllowed: true,
         droneAllowed: false,
         parkingAvailable: true,
+        // Related Packages
+        relatedTours: [] as string[],
+        relatedSightseeing: [] as string[],
+        relatedActivities: [] as string[],
+        relatedRentals: [] as string[],
+        relatedStays: [] as string[],
+        relatedFood: [] as string[],
+        relatedAttractions: [] as string[]
     };
 
     const isDev = process.env.NODE_ENV === 'development';
@@ -125,6 +142,13 @@ export default function AddActivitiesClient({
         photographyAllowed: false,
         droneAllowed: false,
         parkingAvailable: false,
+        relatedTours: [] as string[],
+        relatedSightseeing: [] as string[],
+        relatedActivities: [] as string[],
+        relatedRentals: [] as string[],
+        relatedStays: [] as string[],
+        relatedFood: [] as string[],
+        relatedAttractions: [] as string[]
     });
 
     const [highlightInput, setHighlightInput] = useState('');
@@ -162,8 +186,40 @@ export default function AddActivitiesClient({
         }
     };
 
+    const fetchRelatedPackages = async () => {
+        setLoadingRelated(true);
+        try {
+            const [attRes, foodRes, tourRes, sightRes, rentRes, stayRes] = await Promise.all([
+                fetch('/api/attractions'),
+                fetch('/api/food'),
+                fetch('/api/tours'),
+                fetch('/api/sightseeing'),
+                fetch('/api/rentals'),
+                fetch('/api/stay')
+            ]);
+            const attData = await attRes.json();
+            const foodData = await foodRes.json();
+            const tourData = await tourRes.json();
+            const sightData = await sightRes.json();
+            const rentData = await rentRes.json();
+            const stayData = await stayRes.json();
+
+            if (attData.success) setAllAttractions(attData.data);
+            if (foodData.success) setAllFood(foodData.data);
+            if (tourData.success) setAllTours(tourData.data);
+            if (sightData.success) setAllSightseeing(sightData.data);
+            if (rentData.success) setAllRentals(rentData.data);
+            if (stayData.success) setAllStays(stayData.data);
+        } catch (error) {
+            console.error('Failed to fetch related packages:', error);
+        } finally {
+            setLoadingRelated(false);
+        }
+    };
+
     useEffect(() => {
         fetchActivities();
+        fetchRelatedPackages();
     }, []);
 
     const handleDelete = async (id: string) => {
@@ -260,6 +316,13 @@ export default function AddActivitiesClient({
             photographyAllowed: activity.photographyAllowed || false,
             droneAllowed: activity.droneAllowed || false,
             parkingAvailable: activity.parkingAvailable || false,
+            relatedTours: activity.relatedTours || [],
+            relatedSightseeing: activity.relatedSightseeing || [],
+            relatedActivities: activity.relatedActivities || [],
+            relatedRentals: activity.relatedRentals || [],
+            relatedStays: activity.relatedStays || [],
+            relatedFood: activity.relatedFood || [],
+            relatedAttractions: activity.relatedAttractions || []
         });
         setShowFormInternal(true);
         setOpenMenuId(null);
@@ -283,6 +346,13 @@ export default function AddActivitiesClient({
             // Ensure objects are passed correctly - they are in state already
             category: finalType, // Mapped for backward compat
             level: formData.difficultyLevel, // Mapped for backward compat
+            relatedTours: formData.relatedTours,
+            relatedSightseeing: formData.relatedSightseeing,
+            relatedActivities: formData.relatedActivities,
+            relatedRentals: formData.relatedRentals,
+            relatedStays: formData.relatedStays,
+            relatedFood: formData.relatedFood,
+            relatedAttractions: formData.relatedAttractions,
             ...(vendorId && { vendorId })
         };
 
@@ -305,7 +375,16 @@ export default function AddActivitiesClient({
             setSuccess(`Activity ${editingId ? 'updated' : 'created'} successfully!`);
             // Reset to defaults (simplified reset)
             if (!editingId) {
-                setFormData({ ...formData, title: '', durationValue: '', price: '', image: '', overview: '' }); // basic reset, full reset is verbose
+                setFormData({
+                    ...formData, title: '', durationValue: '', price: '', image: '', overview: '',
+                    relatedTours: [],
+                    relatedSightseeing: [],
+                    relatedActivities: [],
+                    relatedRentals: [],
+                    relatedStays: [],
+                    relatedFood: [],
+                    relatedAttractions: []
+                }); // basic reset, full reset is verbose
             }
 
             setEditingId(null);
@@ -336,6 +415,42 @@ export default function AddActivitiesClient({
             }
         });
     };
+
+    const renderRelatedCheckboxes = (title: string, items: any[], field: keyof typeof formData) => (
+        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <h4 className="font-semibold text-gray-700 mb-3">{title}</h4>
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                {items.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                    const id = item._id || item.id;
+                    const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                    const isChecked = (formData[field] as string[]).includes(id);
+                    return (
+                        <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                            <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={e => {
+                                    const current = [...(formData[field] as string[])];
+                                    if (e.target.checked) current.push(id);
+                                    else {
+                                        const idx = current.indexOf(id);
+                                        if (idx > -1) current.splice(idx, 1);
+                                    }
+                                    setFormData({ ...formData, [field]: current as any });
+                                }}
+                                className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0"
+                            />
+                            <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p>
+                            </div>
+                        </label>
+                    );
+                })}
+                {items.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+            </div>
+        </div>
+    );
 
     return (
         <div className="space-y-6 relative">
@@ -837,6 +952,27 @@ export default function AddActivitiesClient({
                                 </div>
                             )}
                         </div>
+
+                        {/* Related Packages */}
+                        <div className="pt-8 border-t border-gray-200 mt-8 mb-8">
+                            <h3 className="text-lg font-bold text-gray-800 mb-6">Related Packages</h3>
+                            {loadingRelated ? (
+                                <p className="text-sm text-gray-500 flex items-center gap-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div> Loading related packages...
+                                </p>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                                    {renderRelatedCheckboxes('Tours', allTours, 'relatedTours')}
+                                    {renderRelatedCheckboxes('Sightseeing', allSightseeing, 'relatedSightseeing')}
+                                    {renderRelatedCheckboxes('Activities', activities, 'relatedActivities')}
+                                    {renderRelatedCheckboxes('Rentals', allRentals, 'relatedRentals')}
+                                    {renderRelatedCheckboxes('Stays', allStays, 'relatedStays')}
+                                    {renderRelatedCheckboxes('Food & Cafes', allFood, 'relatedFood')}
+                                    {renderRelatedCheckboxes('Attractions', allAttractions, 'relatedAttractions')}
+                                </div>
+                            )}
+                        </div>
+
                         <div className="flex justify-end pt-4">
                             <button
                                 type="submit"

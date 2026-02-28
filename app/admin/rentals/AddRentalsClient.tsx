@@ -51,6 +51,15 @@ export default function AddRentalsClient({
     const [availableCities, setAvailableCities] = useState<string[]>([]);
     const [showMapInput, setShowMapInput] = useState(false);
 
+    // Related Packages Data States
+    const [allTours, setAllTours] = useState<any[]>([]);
+    const [allSightseeing, setAllSightseeing] = useState<any[]>([]);
+    const [allActivities, setAllActivities] = useState<any[]>([]);
+    const [allStays, setAllStays] = useState<any[]>([]);
+    const [allFood, setAllFood] = useState<any[]>([]);
+    const [allAttractions, setAllAttractions] = useState<any[]>([]);
+    const [loadingRelated, setLoadingRelated] = useState(false);
+
     const DUMMY_FORM_DATA = {
         name: 'Royal Enfield Classic 350',
         type: 'Bike',
@@ -79,7 +88,15 @@ export default function AddRentalsClient({
         documentsRequired: 'Driving License, Aadhar Card',
         fuelPolicy: 'Full to Full',
         lateReturnCharges: '₹200 per hour',
-        googleMapLink: 'https://maps.app.goo.gl/xyz'
+        googleMapLink: 'https://maps.app.goo.gl/xyz',
+        // Related Packages
+        relatedTours: [] as string[],
+        relatedSightseeing: [] as string[],
+        relatedActivities: [] as string[],
+        relatedRentals: [] as string[],
+        relatedStays: [] as string[],
+        relatedFood: [] as string[],
+        relatedAttractions: [] as string[]
     };
 
     const isDev = process.env.NODE_ENV === 'development';
@@ -112,7 +129,14 @@ export default function AddRentalsClient({
         documentsRequired: '',
         fuelPolicy: '',
         lateReturnCharges: '',
-        googleMapLink: ''
+        googleMapLink: '',
+        relatedTours: [] as string[],
+        relatedSightseeing: [] as string[],
+        relatedActivities: [] as string[],
+        relatedRentals: [] as string[],
+        relatedStays: [] as string[],
+        relatedFood: [] as string[],
+        relatedAttractions: [] as string[]
     });
 
     // Update available cities when state changes
@@ -147,8 +171,40 @@ export default function AddRentalsClient({
         }
     };
 
+    const fetchRelatedPackages = async () => {
+        setLoadingRelated(true);
+        try {
+            const [attRes, foodRes, tourRes, sightRes, actRes, stayRes] = await Promise.all([
+                fetch('/api/attractions'),
+                fetch('/api/food'),
+                fetch('/api/tours'),
+                fetch('/api/sightseeing'),
+                fetch('/api/activities'),
+                fetch('/api/stay')
+            ]);
+            const attData = await attRes.json();
+            const foodData = await foodRes.json();
+            const tourData = await tourRes.json();
+            const sightData = await sightRes.json();
+            const actData = await actRes.json();
+            const stayData = await stayRes.json();
+
+            if (attData.success) setAllAttractions(attData.data);
+            if (foodData.success) setAllFood(foodData.data);
+            if (tourData.success) setAllTours(tourData.data);
+            if (sightData.success) setAllSightseeing(sightData.data);
+            if (actData.success) setAllActivities(actData.data);
+            if (stayData.success) setAllStays(stayData.data);
+        } catch (error) {
+            console.error('Failed to fetch related packages:', error);
+        } finally {
+            setLoadingRelated(false);
+        }
+    };
+
     useEffect(() => {
         fetchRentals();
+        fetchRelatedPackages();
     }, []);
 
     // Delete rental
@@ -211,7 +267,14 @@ export default function AddRentalsClient({
             documentsRequired: (rental.documentsRequired || []).join(', '),
             fuelPolicy: rental.fuelPolicy || '',
             lateReturnCharges: rental.lateReturnCharges || '',
-            googleMapLink: rental.googleMapLink || ''
+            googleMapLink: rental.googleMapLink || '',
+            relatedTours: rental.relatedTours || [],
+            relatedSightseeing: rental.relatedSightseeing || [],
+            relatedActivities: rental.relatedActivities || [],
+            relatedRentals: rental.relatedRentals || [],
+            relatedStays: rental.relatedStays || [],
+            relatedFood: rental.relatedFood || [],
+            relatedAttractions: rental.relatedAttractions || []
         });
         setShowMapInput(!!rental.mapLocation?.lat);
         setShowFormInternal(true);
@@ -245,6 +308,13 @@ export default function AddRentalsClient({
             fuelPolicy: formData.fuelPolicy,
             lateReturnCharges: formData.lateReturnCharges,
             googleMapLink: formData.googleMapLink,
+            relatedTours: formData.relatedTours,
+            relatedSightseeing: formData.relatedSightseeing,
+            relatedActivities: formData.relatedActivities,
+            relatedRentals: formData.relatedRentals,
+            relatedStays: formData.relatedStays,
+            relatedFood: formData.relatedFood,
+            relatedAttractions: formData.relatedAttractions,
         };
 
         try {
@@ -293,7 +363,14 @@ export default function AddRentalsClient({
                 documentsRequired: '',
                 fuelPolicy: '',
                 lateReturnCharges: '',
-                googleMapLink: ''
+                googleMapLink: '',
+                relatedTours: [],
+                relatedSightseeing: [],
+                relatedActivities: [],
+                relatedRentals: [],
+                relatedStays: [],
+                relatedFood: [],
+                relatedAttractions: []
             });
             setEditingId(null);
             setShowMapInput(false);
@@ -316,6 +393,42 @@ export default function AddRentalsClient({
             setLoading(false);
         }
     };
+
+    const renderRelatedCheckboxes = (title: string, items: any[], field: keyof typeof formData) => (
+        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <h4 className="font-semibold text-gray-700 mb-3">{title}</h4>
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                {items.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                    const id = item._id || item.id;
+                    const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                    const isChecked = (formData[field] as string[]).includes(id);
+                    return (
+                        <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                            <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={e => {
+                                    const current = [...(formData[field] as string[])];
+                                    if (e.target.checked) current.push(id);
+                                    else {
+                                        const idx = current.indexOf(id);
+                                        if (idx > -1) current.splice(idx, 1);
+                                    }
+                                    setFormData({ ...formData, [field]: current as any });
+                                }}
+                                className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0"
+                            />
+                            <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p>
+                            </div>
+                        </label>
+                    );
+                })}
+                {items.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+            </div>
+        </div>
+    );
 
     return (
         <div className="space-y-6">
@@ -878,6 +991,26 @@ export default function AddRentalsClient({
                                 />
                                 <span className="text-sm text-gray-700">Verified</span>
                             </label>
+                        </div>
+
+                        {/* Related Packages */}
+                        <div className="pt-8 border-t border-gray-200 mt-8 mb-8">
+                            <h3 className="text-lg font-bold text-gray-800 mb-6">Related Packages</h3>
+                            {loadingRelated ? (
+                                <p className="text-sm text-gray-500 flex items-center gap-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div> Loading related packages...
+                                </p>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                                    {renderRelatedCheckboxes('Tours', allTours, 'relatedTours')}
+                                    {renderRelatedCheckboxes('Sightseeing', allSightseeing, 'relatedSightseeing')}
+                                    {renderRelatedCheckboxes('Activities', allActivities, 'relatedActivities')}
+                                    {renderRelatedCheckboxes('Rentals', rentals, 'relatedRentals')}
+                                    {renderRelatedCheckboxes('Stays', allStays, 'relatedStays')}
+                                    {renderRelatedCheckboxes('Food & Cafes', allFood, 'relatedFood')}
+                                    {renderRelatedCheckboxes('Attractions', allAttractions, 'relatedAttractions')}
+                                </div>
+                            )}
                         </div>
 
                         <div className="pt-4 flex gap-4">

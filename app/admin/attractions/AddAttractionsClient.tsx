@@ -38,6 +38,12 @@ export default function AddAttractionsClient({
     const [attractions, setAttractions] = useState<any[]>([]);
     const [allAttractions, setAllAttractions] = useState<any[]>([]);
     const [allFood, setAllFood] = useState<any[]>([]);
+    const [allTours, setAllTours] = useState<any[]>([]);
+    const [allSightseeing, setAllSightseeing] = useState<any[]>([]);
+    const [allActivities, setAllActivities] = useState<any[]>([]);
+    const [allRentals, setAllRentals] = useState<any[]>([]);
+    const [allStays, setAllStays] = useState<any[]>([]);
+    const [loadingRelated, setLoadingRelated] = useState(false);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [loadingAttractions, setLoadingAttractions] = useState(true);
@@ -62,8 +68,13 @@ export default function AddAttractionsClient({
         entryPricing: [] as { category: string; price: string }[],
         additionalCharges: [] as { item: string; priceRange: string; note: string }[],
         howToReach: [] as any[],
-        nearbyAttractions: [] as string[],
-        nearbyFood: [] as string[],
+        relatedTours: [] as string[],
+        relatedSightseeing: [] as string[],
+        relatedActivities: [] as string[],
+        relatedRentals: [] as string[],
+        relatedStays: [] as string[],
+        relatedFood: [] as string[],
+        relatedAttractions: [] as string[],
         emergencyInfo: {
             hospital: { name: '', distance: '', mapLink: '' },
             police: { name: '', distance: '', mapLink: '' },
@@ -117,8 +128,13 @@ export default function AddAttractionsClient({
             { type: 'Train', station: 'Agra Cantt', distance: '6km', fare: '₹50-200', time: '15 mins', availability: 'Frequent' },
             { type: 'Bus', station: 'Idgah Bus Stand', distance: '5km', fare: '₹20-50', time: '20 mins' }
         ],
-        nearbyAttractions: [],
-        nearbyFood: [],
+        relatedTours: [],
+        relatedSightseeing: [],
+        relatedActivities: [],
+        relatedRentals: [],
+        relatedStays: [],
+        relatedFood: [],
+        relatedAttractions: [],
         emergencyInfo: {
             hospital: { name: 'District Hospital Agra', distance: '4km', mapLink: 'https://maps.google.com' },
             police: { name: 'Tajganj Police Station', distance: '1km', mapLink: 'https://maps.google.com' },
@@ -162,25 +178,40 @@ export default function AddAttractionsClient({
 
     const fetchAttractions = async () => {
         setLoadingAttractions(true);
+        setLoadingRelated(true);
         try {
-            const [attRes, foodRes] = await Promise.all([
+            const [attRes, foodRes, tourRes, sightRes, actRes, rentRes, stayRes] = await Promise.all([
                 fetch('/api/attractions'),
-                fetch('/api/food')
+                fetch('/api/food'),
+                fetch('/api/tours'),
+                fetch('/api/sightseeing'),
+                fetch('/api/activities'),
+                fetch('/api/rentals'),
+                fetch('/api/stay')
             ]);
             const attData = await attRes.json();
             const foodData = await foodRes.json();
+            const tourData = await tourRes.json();
+            const sightData = await sightRes.json();
+            const actData = await actRes.json();
+            const rentData = await rentRes.json();
+            const stayData = await stayRes.json();
 
             if (attData.success) {
                 setAttractions(attData.data);
                 setAllAttractions(attData.data);
             }
-            if (foodData.success) {
-                setAllFood(foodData.data);
-            }
+            if (foodData.success) setAllFood(foodData.data);
+            if (tourData.success) setAllTours(tourData.data);
+            if (sightData.success) setAllSightseeing(sightData.data);
+            if (actData.success) setAllActivities(actData.data);
+            if (rentData.success) setAllRentals(rentData.data);
+            if (stayData.success) setAllStays(stayData.data);
         } catch (error) {
             console.error('Failed to fetch data:', error);
         } finally {
             setLoadingAttractions(false);
+            setLoadingRelated(false);
         }
     };
 
@@ -387,8 +418,13 @@ export default function AddAttractionsClient({
             entryPricing: attraction.entryPricing ? attraction.entryPricing.map((p: any) => ({ category: p.category, price: p.price?.toString() || '' })) : [],
             additionalCharges: attraction.additionalCharges || [],
             howToReach: attraction.howToReach || [],
-            nearbyAttractions: attraction.nearbyAttractions || [],
-            nearbyFood: attraction.nearbyFood || [],
+            relatedTours: attraction.relatedTours || [],
+            relatedSightseeing: attraction.relatedSightseeing || [],
+            relatedActivities: attraction.relatedActivities || [],
+            relatedRentals: attraction.relatedRentals || [],
+            relatedStays: attraction.relatedStays || [],
+            relatedFood: attraction.relatedFood || [],
+            relatedAttractions: attraction.relatedAttractions || [],
             emergencyInfo: attraction.emergencyInfo || INITIAL_FORM_STATE.emergencyInfo,
             openingHours: attraction.openingHours || '',
             smartTips: attraction.smartTips || [],
@@ -1170,63 +1206,49 @@ export default function AddAttractionsClient({
                             </button>
                         </div>
 
-                        {/* Nearby Connections */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t pt-8">
-                            <div>
-                                <h3 className="text-md font-bold text-gray-800 flex items-center gap-2 mb-4">
-                                    <RiMapPinRangeLine className="text-orange-500" /> Nearby Attractions
-                                </h3>
-                                <div className="space-y-2 max-h-48 overflow-y-auto p-2 border rounded-lg bg-gray-50">
-                                    {allAttractions.filter(a => a._id !== editingId).map(att => (
-                                        <label key={att._id} className="flex items-center gap-3 p-2 hover:bg-white rounded cursor-pointer border border-transparent hover:border-slate-200">
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.nearbyAttractions.includes(att._id)}
-                                                onChange={e => {
-                                                    const current = [...formData.nearbyAttractions];
-                                                    if (e.target.checked) current.push(att._id);
-                                                    else {
-                                                        const idx = current.indexOf(att._id);
-                                                        if (idx > -1) current.splice(idx, 1);
-                                                    }
-                                                    setFormData({ ...formData, nearbyAttractions: current });
-                                                }}
-                                                className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
-                                            />
-                                            <img src={att.image} alt="" className="w-8 h-8 rounded object-cover" />
-                                            <span className="text-sm font-medium text-slate-700">{att.title}</span>
-                                        </label>
-                                    ))}
+                        {/* Related Packages */}
+                        {(() => {
+                            const renderRelatedCheckboxes = (title: string, items: any[], field: keyof typeof formData) => (
+                                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                    <h4 className="font-semibold text-gray-700 mb-3">{title}</h4>
+                                    <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                        {items.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                            const id = item._id || item.id;
+                                            const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                            const isChecked = (formData[field] as string[]).includes(id);
+                                            return (
+                                                <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-orange-50 border-orange-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                    <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...(formData[field] as string[])]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, [field]: cur as any }); }} className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500 flex-shrink-0" />
+                                                    <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                    <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                </label>
+                                            );
+                                        })}
+                                        {items.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <h3 className="text-md font-bold text-gray-800 flex items-center gap-2 mb-4">
-                                    <RiRestaurant2Line className="text-amber-500" /> Nearby Food & Cafes
-                                </h3>
-                                <div className="space-y-2 max-h-48 overflow-y-auto p-2 border rounded-lg bg-gray-50">
-                                    {allFood.map(food => (
-                                        <label key={food._id} className="flex items-center gap-3 p-2 hover:bg-white rounded cursor-pointer border border-transparent hover:border-slate-200">
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.nearbyFood.includes(food._id)}
-                                                onChange={e => {
-                                                    const current = [...formData.nearbyFood];
-                                                    if (e.target.checked) current.push(food._id);
-                                                    else {
-                                                        const idx = current.indexOf(food._id);
-                                                        if (idx > -1) current.splice(idx, 1);
-                                                    }
-                                                    setFormData({ ...formData, nearbyFood: current });
-                                                }}
-                                                className="w-4 h-4 text-amber-500 rounded focus:ring-amber-500"
-                                            />
-                                            <img src={food.image} alt="" className="w-8 h-8 rounded object-cover" />
-                                            <span className="text-sm font-medium text-slate-700">{food.name}</span>
-                                        </label>
-                                    ))}
+                            );
+                            return (
+                                <div className="pt-8 border-t border-gray-200 mt-8 mb-8">
+                                    <h3 className="text-lg font-bold text-gray-800 mb-6">Related Packages</h3>
+                                    {loadingRelated ? (
+                                        <p className="text-sm text-gray-500 flex items-center gap-2">
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div> Loading related packages...
+                                        </p>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                                            {renderRelatedCheckboxes('Tours', allTours, 'relatedTours')}
+                                            {renderRelatedCheckboxes('Sightseeing', allSightseeing, 'relatedSightseeing')}
+                                            {renderRelatedCheckboxes('Activities', allActivities, 'relatedActivities')}
+                                            {renderRelatedCheckboxes('Rentals', allRentals, 'relatedRentals')}
+                                            {renderRelatedCheckboxes('Stays', allStays, 'relatedStays')}
+                                            {renderRelatedCheckboxes('Food & Cafes', allFood, 'relatedFood')}
+                                            {renderRelatedCheckboxes('Attractions', allAttractions, 'relatedAttractions')}
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        </div>
+                            );
+                        })()}
 
                         {/* Safety & Emergency */}
                         <div className="space-y-6 border-t pt-8">
