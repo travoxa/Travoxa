@@ -22,6 +22,7 @@ import { MdLocationOn, MdPlace, MdPhone, MdMap } from "react-icons/md";
 import SaveButton from "@/components/ui/SaveButton";
 import { useRouter } from "next/navigation";
 import { FaArrowLeft } from "react-icons/fa";
+import RelatedPackages from "@/components/ui/RelatedPackages";
 
 export default function RentalDetailsPage() {
     const { id } = useParams();
@@ -392,6 +393,19 @@ export default function RentalDetailsPage() {
                 </div>
 
             </div>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+                <RelatedPackages
+                    tours={rental?.relatedTours}
+                    sightseeing={rental?.relatedSightseeing}
+                    activities={rental?.relatedActivities}
+                    rentals={rental?.relatedRentals}
+                    stays={rental?.relatedStays}
+                    food={rental?.relatedFood}
+                    attractions={rental?.relatedAttractions}
+                />
+            </div>
+
             <Footor />
         </div>
     );

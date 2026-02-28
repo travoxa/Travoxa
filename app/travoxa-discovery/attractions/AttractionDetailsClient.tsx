@@ -17,6 +17,7 @@ import 'aos/dist/aos.css';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import SaveButton from '@/components/ui/SaveButton';
+import RelatedPackages from '@/components/ui/RelatedPackages';
 
 interface AttractionDetailsClientProps {
     attraction: AttractionPackage;
@@ -533,6 +534,18 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6 pb-16 pt-8">
+                <RelatedPackages
+                    tours={(attraction as any).relatedTours}
+                    sightseeing={(attraction as any).relatedSightseeing}
+                    activities={(attraction as any).relatedActivities}
+                    rentals={(attraction as any).relatedRentals}
+                    stays={(attraction as any).relatedStays}
+                    food={(attraction as any).relatedFood}
+                    attractions={(attraction as any).relatedAttractions}
+                />
             </div>
 
             <Footor />

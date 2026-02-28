@@ -151,6 +151,14 @@ const AttractionSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    // Related Packages
+    relatedTours: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tour' }],
+    relatedSightseeing: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Sightseeing' }],
+    relatedActivities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Activity' }],
+    relatedRentals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Rental' }],
+    relatedStays: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Stay' }],
+    relatedFood: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Food' }],
+    relatedAttractions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attraction' }]
 });
 
 export default mongoose.models.Attraction || mongoose.model('Attraction', AttractionSchema);

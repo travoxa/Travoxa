@@ -12,6 +12,13 @@ import BookingWidget from "@/components/tour/BookingWidget";
 
 import Tour from "@/models/Tour";
 import { connectDB } from "@/lib/mongodb";
+import Sightseeing from '@/models/Sightseeing';
+import Activity from '@/models/Activity';
+import Rental from '@/models/Rental';
+import Stay from '@/models/Stay';
+import Food from '@/models/Food';
+import Attraction from '@/models/Attraction';
+import RelatedPackages from '@/components/ui/RelatedPackages';
 
 // Helper for Highlight Icons
 const getHighlightIcon = (highlight: string) => {
@@ -48,13 +55,24 @@ async function getTourById(id: string) {
     // First try to fetch from MongoDB directly
     try {
         await connectDB();
-        const tour = await Tour.findById(id).lean();
+        // pre-register models to ensure population works
+        Sightseeing.find().limit(1); Activity.find().limit(1); Rental.find().limit(1); Stay.find().limit(1); Food.find().limit(1); Attraction.find().limit(1);
+
+        const tour = await Tour.findById(id)
+            .populate('relatedTours', 'title image _id googleRating rating location city state')
+            .populate('relatedSightseeing', 'title image _id rating location city state')
+            .populate('relatedActivities', 'title image _id rating location city state')
+            .populate('relatedRentals', 'title name image _id rating location city state')
+            .populate('relatedStays', 'title name image _id rating location city state')
+            .populate('relatedFood', 'name image _id rating location city state cuisine')
+            .populate('relatedAttractions', 'title image _id rating location city state type category')
+            .lean();
 
         if (tour) {
             console.log('[DETAIL PAGE] Found MongoDB tour with id:', id);
             // Serialize _id and dates to simple strings to pass to components
             return {
-                ...tour,
+                ...JSON.parse(JSON.stringify(tour)),
                 _id: tour._id.toString(),
                 id: tour._id.toString(),
                 createdAt: tour.createdAt ? new Date(tour.createdAt).toISOString() : undefined,
@@ -497,6 +515,18 @@ export default async function TourDetailPage({ params }: PageProps) {
                     />
                 </div>
 
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6 pb-12">
+                <RelatedPackages
+                    tours={pkg.relatedTours}
+                    sightseeing={pkg.relatedSightseeing}
+                    activities={pkg.relatedActivities}
+                    rentals={pkg.relatedRentals}
+                    stays={pkg.relatedStays}
+                    food={pkg.relatedFood}
+                    attractions={pkg.relatedAttractions}
+                />
             </div>
 
             <Footer />

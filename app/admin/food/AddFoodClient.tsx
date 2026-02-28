@@ -34,6 +34,15 @@ export default function AddFoodClient({
     const [editingId, setEditingId] = useState<string | null>(null);
     const [availableCities, setAvailableCities] = useState<string[]>([]);
 
+    // Related Packages Data States
+    const [allTours, setAllTours] = useState<any[]>([]);
+    const [allSightseeing, setAllSightseeing] = useState<any[]>([]);
+    const [allActivities, setAllActivities] = useState<any[]>([]);
+    const [allRentals, setAllRentals] = useState<any[]>([]);
+    const [allStays, setAllStays] = useState<any[]>([]);
+    const [allAttractions, setAllAttractions] = useState<any[]>([]);
+    const [loadingRelated, setLoadingRelated] = useState(false);
+
     const DUMMY_FORM_DATA = {
         title: 'Cafe 1947',
         state: 'Himachal Pradesh',
@@ -45,6 +54,14 @@ export default function AddFoodClient({
         mustTry: ['Trout Fish', 'Wood Fired Pizza', 'Coffee'],
         cuisine: ['Italian', 'Continental', 'Indian'],
         image: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg',
+        // Related Packages
+        relatedTours: [] as string[],
+        relatedSightseeing: [] as string[],
+        relatedActivities: [] as string[],
+        relatedRentals: [] as string[],
+        relatedStays: [] as string[],
+        relatedFood: [] as string[],
+        relatedAttractions: [] as string[]
     };
 
     const isDev = process.env.NODE_ENV === 'development';
@@ -106,6 +123,13 @@ export default function AddFoodClient({
         address: '',
         attractionName: '',
         fullMenu: [] as { category: string, items: { name: string, price: number }[] }[],
+        relatedTours: [] as string[],
+        relatedSightseeing: [] as string[],
+        relatedActivities: [] as string[],
+        relatedRentals: [] as string[],
+        relatedStays: [] as string[],
+        relatedFood: [] as string[],
+        relatedAttractions: [] as string[]
     });
 
     const [mustTryInput, setMustTryInput] = useState('');
@@ -141,8 +165,40 @@ export default function AddFoodClient({
         }
     };
 
+    const fetchRelatedPackages = async () => {
+        setLoadingRelated(true);
+        try {
+            const [attRes, tourRes, sightRes, actRes, rentRes, stayRes] = await Promise.all([
+                fetch('/api/attractions'),
+                fetch('/api/tours'),
+                fetch('/api/sightseeing'),
+                fetch('/api/activities'),
+                fetch('/api/rentals'),
+                fetch('/api/stay')
+            ]);
+            const attData = await attRes.json();
+            const tourData = await tourRes.json();
+            const sightData = await sightRes.json();
+            const actData = await actRes.json();
+            const rentData = await rentRes.json();
+            const stayData = await stayRes.json();
+
+            if (attData.success) setAllAttractions(attData.data);
+            if (tourData.success) setAllTours(tourData.data);
+            if (sightData.success) setAllSightseeing(sightData.data);
+            if (actData.success) setAllActivities(actData.data);
+            if (rentData.success) setAllRentals(rentData.data);
+            if (stayData.success) setAllStays(stayData.data);
+        } catch (error) {
+            console.error('Failed to fetch related packages:', error);
+        } finally {
+            setLoadingRelated(false);
+        }
+    };
+
     useEffect(() => {
         fetchFood();
+        fetchRelatedPackages();
     }, []);
 
     const handleDelete = async (id: string) => {
@@ -286,6 +342,13 @@ export default function AddFoodClient({
             address: food.address || '',
             attractionName: food.attractionName || '',
             fullMenu: food.fullMenu || [],
+            relatedTours: food.relatedTours || [],
+            relatedSightseeing: food.relatedSightseeing || [],
+            relatedActivities: food.relatedActivities || [],
+            relatedRentals: food.relatedRentals || [],
+            relatedStays: food.relatedStays || [],
+            relatedFood: food.relatedFood || [],
+            relatedAttractions: food.relatedAttractions || []
         });
         setShowFormInternal(true);
         setOpenMenuId(null);
@@ -302,6 +365,13 @@ export default function AddFoodClient({
             avgCost: Number(formData.avgCost),
             avgCostPerPerson: Number(formData.avgCostPerPerson),
             hygieneRating: Number(formData.hygieneRating),
+            relatedTours: formData.relatedTours,
+            relatedSightseeing: formData.relatedSightseeing,
+            relatedActivities: formData.relatedActivities,
+            relatedRentals: formData.relatedRentals,
+            relatedStays: formData.relatedStays,
+            relatedFood: formData.relatedFood,
+            relatedAttractions: formData.relatedAttractions,
         };
 
         try {
@@ -351,6 +421,13 @@ export default function AddFoodClient({
                 address: '',
                 attractionName: '',
                 fullMenu: [],
+                relatedTours: [],
+                relatedSightseeing: [],
+                relatedActivities: [],
+                relatedRentals: [],
+                relatedStays: [],
+                relatedFood: [],
+                relatedAttractions: []
             });
             setEditingId(null);
             fetchFood();
@@ -941,6 +1018,145 @@ export default function AddFoodClient({
                                     >
                                         <RiDeleteBinLine size={14} />
                                     </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Related Packages */}
+                        <div className="pt-8 border-t border-gray-200 mt-8 mb-8">
+                            <h3 className="text-lg font-bold text-gray-800 mb-6">Related Packages</h3>
+                            {loadingRelated ? (
+                                <p className="text-sm text-gray-500 flex items-center gap-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div> Loading related packages...
+                                </p>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <h4 className="font-semibold text-gray-700 mb-3">Tours</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {allTours.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                                const id = item._id || item.id;
+                                                const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                                const isChecked = formData.relatedTours.includes(id);
+                                                return (
+                                                    <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...formData.relatedTours]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, relatedTours: cur }); }} className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0" />
+                                                        <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                    </label>
+                                                );
+                                            })}
+                                            {allTours.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <h4 className="font-semibold text-gray-700 mb-3">Sightseeing</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {allSightseeing.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                                const id = item._id || item.id;
+                                                const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                                const isChecked = formData.relatedSightseeing.includes(id);
+                                                return (
+                                                    <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...formData.relatedSightseeing]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, relatedSightseeing: cur }); }} className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0" />
+                                                        <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                    </label>
+                                                );
+                                            })}
+                                            {allSightseeing.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <h4 className="font-semibold text-gray-700 mb-3">Activities</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {allActivities.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                                const id = item._id || item.id;
+                                                const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                                const isChecked = formData.relatedActivities.includes(id);
+                                                return (
+                                                    <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...formData.relatedActivities]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, relatedActivities: cur }); }} className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0" />
+                                                        <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                    </label>
+                                                );
+                                            })}
+                                            {allActivities.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <h4 className="font-semibold text-gray-700 mb-3">Rentals</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {allRentals.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                                const id = item._id || item.id;
+                                                const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                                const isChecked = formData.relatedRentals.includes(id);
+                                                return (
+                                                    <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...formData.relatedRentals]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, relatedRentals: cur }); }} className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0" />
+                                                        <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                    </label>
+                                                );
+                                            })}
+                                            {allRentals.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <h4 className="font-semibold text-gray-700 mb-3">Stays</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {allStays.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                                const id = item._id || item.id;
+                                                const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                                const isChecked = formData.relatedStays.includes(id);
+                                                return (
+                                                    <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...formData.relatedStays]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, relatedStays: cur }); }} className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0" />
+                                                        <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                    </label>
+                                                );
+                                            })}
+                                            {allStays.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <h4 className="font-semibold text-gray-700 mb-3">Food & Cafes</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {foodItems.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                                const id = item._id || item.id;
+                                                const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                                const isChecked = formData.relatedFood.includes(id);
+                                                return (
+                                                    <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...formData.relatedFood]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, relatedFood: cur }); }} className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0" />
+                                                        <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                    </label>
+                                                );
+                                            })}
+                                            {foodItems.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <h4 className="font-semibold text-gray-700 mb-3">Attractions</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {allAttractions.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                                const id = item._id || item.id;
+                                                const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                                const isChecked = formData.relatedAttractions.includes(id);
+                                                return (
+                                                    <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...formData.relatedAttractions]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, relatedAttractions: cur }); }} className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0" />
+                                                        <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                    </label>
+                                                );
+                                            })}
+                                            {allAttractions.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>

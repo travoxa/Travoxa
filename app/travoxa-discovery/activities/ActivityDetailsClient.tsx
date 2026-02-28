@@ -15,6 +15,7 @@ import 'aos/dist/aos.css';
 import SaveButton from '@/components/ui/SaveButton';
 import { useRouter } from 'next/navigation';
 import { FaArrowLeft } from 'react-icons/fa';
+import RelatedPackages from '@/components/ui/RelatedPackages';
 
 interface ActivityDetailsClientProps {
     activity: ActivityPackage;
@@ -291,6 +292,18 @@ const ActivityDetailsClient: React.FC<ActivityDetailsClientProps> = ({ activity 
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+                <RelatedPackages
+                    tours={(activity as any).relatedTours}
+                    sightseeing={(activity as any).relatedSightseeing}
+                    activities={(activity as any).relatedActivities}
+                    rentals={(activity as any).relatedRentals}
+                    stays={(activity as any).relatedStays}
+                    food={(activity as any).relatedFood}
+                    attractions={(activity as any).relatedAttractions}
+                />
             </div>
 
             <Footor />
