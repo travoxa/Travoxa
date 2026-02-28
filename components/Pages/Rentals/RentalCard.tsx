@@ -64,7 +64,7 @@ export default function RentalCard({ item }: RentalCardProps) {
             </div>
 
             {/* Content Section */}
-            <div className="p-5 flex flex-col flex-grow">
+            <div className="p-5 flex flex-col grow">
                 {/* Location */}
                 <div className="flex items-center gap-1 text-slate-500 text-xs font-medium mb-2 uppercase tracking-wide">
                     <MdLocationOn className="text-emerald-500" />

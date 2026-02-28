@@ -158,13 +158,13 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
       {/* MAIN NAVBAR */}
       <header
         style={{ right: 'var(--sidebar-width)', width: 'calc(100% - var(--sidebar-width, 0px))' }}
-        className="bg-transparent fixed top-0 left-0 z-[120] Mont transition-all duration-500">
+        className="bg-transparent fixed top-0 left-6  z-[120] Mont transition-all duration-500">
         <LoginRequiredPopup
           isOpen={showLoginPopup}
           onClose={() => setShowLoginPopup(false)}
           triggerAction={() => route('/login')}
         />
-        <div className={`z-[100] mt-[24px] w-full max-w-[1200px] rounded-full mx-auto relative flex items-center justify-between px-8 pr-2 py-[5px] transition-all duration-300 ${containerClasses}`}>
+        <div className={`z-[100] mt-[24px] w-full max-w-[1200px] rounded-full mx-auto relative flex items-center justify-between px-4 md:px-8 md:pr-2 pr-4 py-[5px] transition-all duration-300 ${containerClasses}`}>
 
 
           {/* LOGO */}
@@ -271,22 +271,32 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
           {menuItems.map((item) => (
             <div key={item.label}>
               {/* MAIN ITEM */}
-              <button
-                type="button"
-                className={`flex items-center justify-between w-full py-3 text-sm font-medium ${item.className ? item.className : 'text-gray-900'}`}
-                onClick={() =>
-                  item.dropdown.length > 0
-                    ? toggleDropdown(item.label)
-                    : navigateTo(item.path)
-                }
-              >
-                <span>{item.label}</span>
+              <div className="flex items-center justify-between w-full">
+
+                {/* LABEL → navigate */}
+                <button
+                  type="button"
+                  className="py-3 text-sm font-medium text-gray-900"
+                  onClick={() => navigateTo(item.path)}
+                >
+                  {item.label}
+                </button>
+
+                {/* ICON → toggle dropdown */}
                 {item.dropdown.length > 0 && (
-                  <FiChevronDown
-                    className={`${openDropdown === item.label ? "rotate-180" : ""} transition-transform`}
-                  />
+                  <button
+                    type="button"
+                    onClick={() => toggleDropdown(item.label)}
+                    className="p-2"
+                  >
+                    <FiChevronDown
+                      className={`transition-transform ${openDropdown === item.label ? "rotate-180" : ""
+                        }`}
+                    />
+                  </button>
                 )}
-              </button>
+
+              </div>
 
               {/* MOBILE DROPDOWN */}
               {openDropdown === item.label && item.dropdown.length > 0 && (
