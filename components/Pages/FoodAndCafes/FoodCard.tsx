@@ -1,5 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
 import { FaMapMarkerAlt, FaStar, FaUtensils, FaUsers, FaShareAlt } from 'react-icons/fa';
 import { FoodPackage } from '@/app/travoxa-discovery/food-and-cafes/FoodClient';
 import SaveButton from '@/components/ui/SaveButton';
