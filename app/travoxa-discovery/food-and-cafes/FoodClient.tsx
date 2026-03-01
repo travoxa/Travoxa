@@ -12,44 +12,66 @@ import 'aos/dist/aos.css';
 export interface FoodPackage {
     _id: string;
     id: string;
+
     title: string;
     city: string;
     state: string;
     location?: string;
+
     rating: number;
     reviews: number;
+
     image: string;
-    category: string; // Mapped from 'type' in DB
-    cuisine: string | string[];
+    category: string;
+
+    cuisine: string[];
+
     overview: string;
+
+    price: number;
     priceRange: string;
+
+    createdAt: string;
+
     famousDish: string;
+    dishType: string;
+
     distFromAttraction?: string;
     area?: string;
+
     avgCostPerPerson?: number;
     hygieneRating?: number;
+
     badges?: string[];
-    dishType: string;
+
     attractionName?: string;
+
     whatsappNumber?: string;
     phoneNumber?: string;
     contactPerson?: string;
+
     openingTime?: string;
     closingTime?: string;
     bestTimeToVisit?: string;
+
     dineIn?: boolean;
     takeaway?: boolean;
     homeDelivery?: boolean;
-    fullMenu?: Array<{
+
+    mustTry?: string[];
+
+    address?: string;
+
+    avgCost?: number;
+
+    fullMenu?: {
         category: string;
-        items: Array<{
+        items: {
             name: string;
             price: number;
-        }>;
-    }>;
-    mustTry?: string[];
-    address?: string;
-    avgCost?: number;
+        }[];
+    }[];
+
     partners?: {
         name: string;
         logo?: string;

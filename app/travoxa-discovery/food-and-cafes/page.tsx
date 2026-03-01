@@ -2,24 +2,9 @@ import React from 'react';
 import { connectDB } from '@/lib/mongodb';
 import Food from '@/models/Food';
 import FoodClient from './FoodClient';
+import { FoodPackage } from './FoodClient';
 
 // FoodClient.tsx
-export interface FoodPackage {
-    _id: string;
-    id: string;
-    title: string;
-    city: string;
-    state: string;
-    location?: string;
-    rating: number;
-    reviews: number;
-    image: string;
-    category: string;
-    cuisine: string | string[];
-    overview: string;
-    priceRange: string;
-    price: number;
-}
 
 
 
@@ -30,18 +15,13 @@ const serializeConfig = (doc: any): FoodPackage => ({
     _id: doc._id.toString(),
     id: doc._id.toString(),
 
-    title: doc.title || doc.name || '',
+    title: doc.title || '',
     city: doc.city || '',
     state: doc.state || '',
     location: doc.location || '',
 
-    rating: doc.rating?.toString
-        ? parseFloat(doc.rating.toString())
-        : doc.rating || 0,
-
-    reviews: doc.reviews?.toString
-        ? parseInt(doc.reviews.toString())
-        : doc.reviews || 0,
+    rating: Number(doc.rating) || 0,
+    reviews: Number(doc.reviews) || 0,
 
     image: doc.image || '',
     category: doc.type || '',
@@ -52,31 +32,20 @@ const serializeConfig = (doc: any): FoodPackage => ({
 
     overview: doc.overview || '',
 
-    priceRange: doc.price?.toString
-        ? parseFloat(doc.price.toString())
-        : doc.price || 0,
+    price: Number(doc.price) || 0,
 
-    price: doc.price?.toString
-        ? parseFloat(doc.price.toString())
-        : doc.price || 0,
+    // convert number to string because filter expects string
+    priceRange: String(doc.priceRange || doc.price || ''),
+
+    createdAt: doc.createdAt
+        ? new Date(doc.createdAt).toISOString()
+        : new Date().toISOString(),
+
+    famousDish: doc.famousDish || '',
+    dishType: doc.dishType || '',
+
+    fullMenu: doc.fullMenu || [],
 });
-const serializeConfig = (doc: any) => {
-    return {
-        ...doc,
-        _id: doc._id.toString(),
-        id: doc._id.toString(),
-        category: doc.type, // Map 'type' from DB to 'category' for UI
-        createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : null,
-        fullMenu: doc.fullMenu ? doc.fullMenu.map((cat: any) => ({
-            ...cat,
-            _id: cat._id?.toString(),
-            items: cat.items?.map((item: any) => ({
-                ...item,
-                _id: item._id?.toString()
-            }))
-        })) : []
-    };
-};
 
 export default async function FoodAndCafesPage() {
     await connectDB();
