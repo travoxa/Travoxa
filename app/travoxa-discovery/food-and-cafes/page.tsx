@@ -21,25 +21,44 @@ export interface FoodPackage {
     price: number;
 }
 
+
+
+
 export const dynamic = 'force-dynamic';
-
-
 
 const serializeConfig = (doc: any): FoodPackage => ({
     _id: doc._id.toString(),
     id: doc._id.toString(),
-    title: doc.title || doc.name || '',        // fallback if DB uses `name`
+
+    title: doc.title || doc.name || '',
     city: doc.city || '',
     state: doc.state || '',
     location: doc.location || '',
-    rating: doc.rating?.toString ? parseFloat(doc.rating.toString()) : doc.rating || 0,
-    reviews: doc.reviews?.toString ? parseInt(doc.reviews.toString()) : doc.reviews || 0,
+
+    rating: doc.rating?.toString
+        ? parseFloat(doc.rating.toString())
+        : doc.rating || 0,
+
+    reviews: doc.reviews?.toString
+        ? parseInt(doc.reviews.toString())
+        : doc.reviews || 0,
+
     image: doc.image || '',
     category: doc.type || '',
-    cuisine: Array.isArray(doc.cuisine) ? doc.cuisine : [doc.cuisine || ''],
+
+    cuisine: Array.isArray(doc.cuisine)
+        ? doc.cuisine
+        : [doc.cuisine || ''],
+
     overview: doc.overview || '',
-    priceRange: doc.price?.toString ? parseFloat(doc.price.toString()) : doc.price || 0,
-    price :doc.price?.toString ? parseFloat(doc.price.toString()) : doc.price || 0,
+
+    priceRange: doc.price?.toString
+        ? parseFloat(doc.price.toString())
+        : doc.price || 0,
+
+    price: doc.price?.toString
+        ? parseFloat(doc.price.toString())
+        : doc.price || 0,
 });
 const serializeConfig = (doc: any) => {
     return {
