@@ -4,6 +4,8 @@ export interface ISavedItem extends Document {
     userId: string;
     itemId: string;
     itemType: 'tour' | 'attraction' | 'activity' | 'sightseeing' | 'stay' | 'rental' | 'food';
+    title?: string;
+    itemLink?: string;
     createdAt: Date;
 }
 
@@ -20,6 +22,12 @@ const savedItemSchema = new Schema<ISavedItem>({
         type: String,
         required: true,
         enum: ['tour', 'attraction', 'activity', 'sightseeing', 'stay', 'rental', 'food'],
+    },
+    title: {
+        type: String,
+    },
+    itemLink: {
+        type: String,
     },
     createdAt: {
         type: Date,

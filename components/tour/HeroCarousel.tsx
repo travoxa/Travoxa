@@ -16,10 +16,11 @@ interface HeroCarouselProps {
     duration: string;
     itemId: string;
     itemType: 'tour' | 'attraction' | 'activity' | 'sightseeing' | 'stay' | 'rental' | 'food';
+    itemLink?: string;
     hideControls?: boolean;
 }
 
-export default function HeroCarousel({ images, title, rating, reviews, location, duration, itemId, itemType, hideControls = false }: HeroCarouselProps) {
+export default function HeroCarousel({ images, title, rating, reviews, location, duration, itemId, itemType, itemLink, hideControls = false }: HeroCarouselProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const router = useRouter();
 
@@ -53,7 +54,7 @@ export default function HeroCarousel({ images, title, rating, reviews, location,
                     >
                         <FaArrowLeft /> BACK
                     </button>
-                    <SaveButton itemId={itemId} itemType={itemType} />
+                    <SaveButton itemId={itemId} itemType={itemType} title={title} itemLink={itemLink} />
                 </div>
             )}
 

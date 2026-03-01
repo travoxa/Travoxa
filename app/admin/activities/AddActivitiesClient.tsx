@@ -9,6 +9,7 @@ interface AddActivitiesClientProps {
     showManagementBox?: boolean;
     showListings?: boolean;
     showFormDirectly?: boolean;
+    vendorId?: string;
     onFormOpen?: () => void;
     onFormClose?: () => void;
 }
@@ -17,6 +18,7 @@ export default function AddActivitiesClient({
     showManagementBox = true,
     showListings = true,
     showFormDirectly = false,
+    vendorId,
     onFormOpen,
     onFormClose
 }: AddActivitiesClientProps = {}) {
@@ -31,6 +33,16 @@ export default function AddActivitiesClient({
     const [loadingActivities, setLoadingActivities] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [availableCities, setAvailableCities] = useState<string[]>([]);
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
+
+    // Related Packages Data States
+    const [allTours, setAllTours] = useState<any[]>([]);
+    const [allSightseeing, setAllSightseeing] = useState<any[]>([]);
+    const [allRentals, setAllRentals] = useState<any[]>([]);
+    const [allStays, setAllStays] = useState<any[]>([]);
+    const [allFood, setAllFood] = useState<any[]>([]);
+    const [allAttractions, setAllAttractions] = useState<any[]>([]);
+    const [loadingRelated, setLoadingRelated] = useState(false);
 
     const ACTIVITY_TYPES = [
         'Trekking', 'Paragliding', 'Scuba Diving', 'River Rafting', 'Camping',
@@ -80,6 +92,15 @@ export default function AddActivitiesClient({
         photographyAllowed: true,
         droneAllowed: false,
         parkingAvailable: true,
+        // Related Packages
+        relatedTours: [] as string[],
+        relatedSightseeing: [] as string[],
+        relatedActivities: [] as string[],
+        relatedRentals: [] as string[],
+        relatedStays: [] as string[],
+        relatedFood: [] as string[],
+        relatedAttractions: [] as string[],
+        partners: [{ name: 'Test Partner', logo: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg', phone: '+1234567890', website: 'https://example.com', location: 'Test Location', state: 'Test State', isVerified: true }],
     };
 
     const isDev = process.env.NODE_ENV === 'development';
@@ -123,6 +144,14 @@ export default function AddActivitiesClient({
         photographyAllowed: false,
         droneAllowed: false,
         parkingAvailable: false,
+        relatedTours: [] as string[],
+        relatedSightseeing: [] as string[],
+        relatedActivities: [] as string[],
+        relatedRentals: [] as string[],
+        relatedStays: [] as string[],
+        relatedFood: [] as string[],
+        relatedAttractions: [] as string[],
+        partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[],
     });
 
     const [highlightInput, setHighlightInput] = useState('');
@@ -147,7 +176,8 @@ export default function AddActivitiesClient({
     const fetchActivities = async () => {
         setLoadingActivities(true);
         try {
-            const res = await fetch('/api/activities');
+            const url = vendorId ? `/api/activities?vendorId=${vendorId}` : '/api/activities';
+            const res = await fetch(url);
             const data = await res.json();
             if (data.success) {
                 setActivities(data.data);
@@ -159,8 +189,40 @@ export default function AddActivitiesClient({
         }
     };
 
+    const fetchRelatedPackages = async () => {
+        setLoadingRelated(true);
+        try {
+            const [attRes, foodRes, tourRes, sightRes, rentRes, stayRes] = await Promise.all([
+                fetch('/api/attractions'),
+                fetch('/api/food'),
+                fetch('/api/tours'),
+                fetch('/api/sightseeing'),
+                fetch('/api/rentals'),
+                fetch('/api/stay')
+            ]);
+            const attData = await attRes.json();
+            const foodData = await foodRes.json();
+            const tourData = await tourRes.json();
+            const sightData = await sightRes.json();
+            const rentData = await rentRes.json();
+            const stayData = await stayRes.json();
+
+            if (attData.success) setAllAttractions(attData.data);
+            if (foodData.success) setAllFood(foodData.data);
+            if (tourData.success) setAllTours(tourData.data);
+            if (sightData.success) setAllSightseeing(sightData.data);
+            if (rentData.success) setAllRentals(rentData.data);
+            if (stayData.success) setAllStays(stayData.data);
+        } catch (error) {
+            console.error('Failed to fetch related packages:', error);
+        } finally {
+            setLoadingRelated(false);
+        }
+    };
+
     useEffect(() => {
         fetchActivities();
+        fetchRelatedPackages();
     }, []);
 
     const handleDelete = async (id: string) => {
@@ -213,6 +275,28 @@ export default function AddActivitiesClient({
         }));
     };
 
+    const addPartner = () => {
+        setFormData(prev => ({
+            ...prev,
+            partners: [...prev.partners, { name: '', logo: '', phone: '', website: '', location: '', state: '', isVerified: false }]
+        }));
+    };
+
+    const updatePartner = (index: number, field: string, value: any) => {
+        setFormData(prev => {
+            const updated = [...prev.partners];
+            updated[index] = { ...updated[index], [field]: value };
+            return { ...prev, partners: updated };
+        });
+    };
+
+    const removePartner = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            partners: prev.partners.filter((_, i) => i !== index)
+        }));
+    };
+
     const handleEdit = (activity: any) => {
         setEditingId(activity._id);
         // Parse duration if string "30 Minutes"
@@ -257,6 +341,14 @@ export default function AddActivitiesClient({
             photographyAllowed: activity.photographyAllowed || false,
             droneAllowed: activity.droneAllowed || false,
             parkingAvailable: activity.parkingAvailable || false,
+            relatedTours: activity.relatedTours || [],
+            relatedSightseeing: activity.relatedSightseeing || [],
+            relatedActivities: activity.relatedActivities || [],
+            relatedRentals: activity.relatedRentals || [],
+            relatedStays: activity.relatedStays || [],
+            relatedFood: activity.relatedFood || [],
+            relatedAttractions: activity.relatedAttractions || [],
+            partners: activity.partners || []
         });
         setShowFormInternal(true);
         setOpenMenuId(null);
@@ -280,6 +372,15 @@ export default function AddActivitiesClient({
             // Ensure objects are passed correctly - they are in state already
             category: finalType, // Mapped for backward compat
             level: formData.difficultyLevel, // Mapped for backward compat
+            relatedTours: formData.relatedTours,
+            relatedSightseeing: formData.relatedSightseeing,
+            relatedActivities: formData.relatedActivities,
+            relatedRentals: formData.relatedRentals,
+            relatedStays: formData.relatedStays,
+            relatedFood: formData.relatedFood,
+            relatedAttractions: formData.relatedAttractions,
+            partners: formData.partners,
+            ...(vendorId && { vendorId })
         };
 
         try {
@@ -301,7 +402,16 @@ export default function AddActivitiesClient({
             setSuccess(`Activity ${editingId ? 'updated' : 'created'} successfully!`);
             // Reset to defaults (simplified reset)
             if (!editingId) {
-                setFormData({ ...formData, title: '', durationValue: '', price: '', image: '', overview: '' }); // basic reset, full reset is verbose
+                setFormData({
+                    ...formData, title: '', durationValue: '', price: '', image: '', overview: '',
+                    relatedTours: [],
+                    relatedSightseeing: [],
+                    relatedActivities: [],
+                    relatedRentals: [],
+                    relatedStays: [],
+                    relatedFood: [],
+                    relatedAttractions: []
+                }); // basic reset, full reset is verbose
             }
 
             setEditingId(null);
@@ -332,6 +442,42 @@ export default function AddActivitiesClient({
             }
         });
     };
+
+    const renderRelatedCheckboxes = (title: string, items: any[], field: keyof typeof formData) => (
+        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <h4 className="font-semibold text-gray-700 mb-3">{title}</h4>
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                {items.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                    const id = item._id || item.id;
+                    const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                    const isChecked = (formData[field] as string[]).includes(id);
+                    return (
+                        <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                            <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={e => {
+                                    const current = [...(formData[field] as string[])];
+                                    if (e.target.checked) current.push(id);
+                                    else {
+                                        const idx = current.indexOf(id);
+                                        if (idx > -1) current.splice(idx, 1);
+                                    }
+                                    setFormData({ ...formData, [field]: current as any });
+                                }}
+                                className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0"
+                            />
+                            <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p>
+                            </div>
+                        </label>
+                    );
+                })}
+                {items.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+            </div>
+        </div>
+    );
 
     return (
         <div className="space-y-6 relative">
@@ -379,18 +525,23 @@ export default function AddActivitiesClient({
                                 <div className="flex-1 grid grid-cols-4 gap-4">
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Title</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Type</p>
-                                    <p className="text-xs font-semibold text-gray-600 uppercase">City</p>
+                                    <p className="text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Price</p>
                                 </div>
                                 <div className="w-10"></div>
                             </div>
                             <div className="divide-y divide-gray-200">
-                                {activities.map((activity) => (
+                                {([...activities].sort((a, b) => {
+                                    if (!sortOrder) return 0;
+                                    const stateA = a.state || '';
+                                    const stateB = b.state || '';
+                                    return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
+                                })).map((activity) => (
                                     <div key={activity._id} className="flex items-center justify-between py-2 hover:bg-gray-50 transition-colors">
                                         <div className="flex-1 grid grid-cols-4 gap-4">
                                             <p className="text-sm text-gray-900 truncate pr-2">{activity.title}</p>
                                             <p className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded w-fit">{activity.type}</p>
-                                            <p className="text-sm text-gray-900">{activity.city}</p>
+                                            <p className="text-sm text-gray-900">{activity.state}</p>
                                             <p className="text-sm text-gray-900">₹{activity.price}</p>
                                         </div>
                                         <div className="relative">
@@ -635,8 +786,8 @@ export default function AddActivitiesClient({
                                             type="button"
                                             onClick={() => toggleArraySelection('suitableFor', opt)}
                                             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${formData.suitableFor.includes(opt)
-                                                    ? 'bg-blue-600 text-white border-blue-600'
-                                                    : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
+                                                ? 'bg-blue-600 text-white border-blue-600'
+                                                : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
                                                 }`}
                                         >
                                             {opt}
@@ -654,8 +805,8 @@ export default function AddActivitiesClient({
                                             type="button"
                                             onClick={() => toggleArraySelection('season', opt)}
                                             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${formData.season.includes(opt)
-                                                    ? 'bg-orange-600 text-white border-orange-600'
-                                                    : 'bg-white text-gray-600 border-gray-300 hover:border-orange-400'
+                                                ? 'bg-orange-600 text-white border-orange-600'
+                                                : 'bg-white text-gray-600 border-gray-300 hover:border-orange-400'
                                                 }`}
                                         >
                                             {opt}
@@ -833,6 +984,166 @@ export default function AddActivitiesClient({
                                 </div>
                             )}
                         </div>
+
+                        {/* Partners Section */}
+                        <div className="pt-8 border-t border-gray-200 mt-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-800">Tour Partners</h3>
+                                    <p className="text-sm text-gray-500">Add information about partners involved in this tour</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={addPartner}
+                                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-semibold"
+                                >
+                                    <RiAddLine size={18} />
+                                    Add Partner
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6">
+                                {formData.partners.map((partner, idx) => (
+                                    <div key={idx} className="bg-gray-50 border border-gray-200 rounded-xl p-6 relative">
+                                        <button
+                                            type="button"
+                                            onClick={() => removePartner(idx)}
+                                            className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"
+                                            title="Remove Partner"
+                                        >
+                                            <RiDeleteBinLine size={20} />
+                                        </button>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="md:col-span-2">
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.name}
+                                                    onChange={(e) => updatePartner(idx, 'name', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                                                    placeholder="e.g. Skyline Travel Agency"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Logo</label>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden shrink-0">
+                                                        {partner.logo ? (
+                                                            <img src={partner.logo} alt="Logo" className="w-full h-full object-contain" />
+                                                        ) : (
+                                                            <span className="text-xs text-gray-400">No Image</span>
+                                                        )}
+                                                    </div>
+                                                    <CldUploadWidget
+                                                        uploadPreset="travoxa"
+                                                        onSuccess={(result: any) => {
+                                                            updatePartner(idx, 'logo', result.info.secure_url);
+                                                        }}
+                                                    >
+                                                        {({ open }) => (
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => { e.preventDefault(); open(); }}
+                                                                className="px-3 py-1.5 bg-white border border-gray-300 rounded text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
+                                                            >
+                                                                <RiAddLine /> {partner.logo ? 'Change Logo' : 'Upload Logo'}
+                                                            </button>
+                                                        )}
+                                                    </CldUploadWidget>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center pt-6">
+                                                <label className="flex items-center gap-2 cursor-pointer group">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={partner.isVerified}
+                                                        onChange={(e) => updatePartner(idx, 'isVerified', e.target.checked)}
+                                                        className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                    />
+                                                    <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors flex items-center gap-1">
+                                                        Verified Partner
+                                                    </span>
+                                                </label>
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Phone Number</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.phone}
+                                                    onChange={(e) => updatePartner(idx, 'phone', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="+91..."
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Website URL</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.website}
+                                                    onChange={(e) => updatePartner(idx, 'website', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="https://..."
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">State</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.state}
+                                                    onChange={(e) => updatePartner(idx, 'state', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="State"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Location/Address</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.location}
+                                                    onChange={(e) => updatePartner(idx, 'location', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="City or Full Address"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {formData.partners.length === 0 && (
+                                <div className="text-center py-8 bg-gray-50 border border-dashed border-gray-300 rounded-xl">
+                                    <p className="text-sm text-gray-500">No partners added yet</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Related Packages */}
+                        <div className="pt-8 border-t border-gray-200 mt-8 mb-8">
+                            <h3 className="text-lg font-bold text-gray-800 mb-6">Related Packages</h3>
+                            {loadingRelated ? (
+                                <div className="text-sm text-gray-500 flex items-center gap-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div> Loading related packages...
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                                    {renderRelatedCheckboxes('Tours', allTours, 'relatedTours')}
+                                    {renderRelatedCheckboxes('Sightseeing', allSightseeing, 'relatedSightseeing')}
+                                    {renderRelatedCheckboxes('Activities', activities, 'relatedActivities')}
+                                    {renderRelatedCheckboxes('Rentals', allRentals, 'relatedRentals')}
+                                    {renderRelatedCheckboxes('Stays', allStays, 'relatedStays')}
+                                    {renderRelatedCheckboxes('Food & Cafes', allFood, 'relatedFood')}
+                                    {renderRelatedCheckboxes('Attractions', allAttractions, 'relatedAttractions')}
+                                </div>
+                            )}
+                        </div>
+
                         <div className="flex justify-end pt-4">
                             <button
                                 type="submit"

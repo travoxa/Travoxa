@@ -2,6 +2,7 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { getUser } from "@/lib/mongodbUtils"
 
 // OPTION 2: Using Firebase REST API (No Admin SDK needed)
 // This is simpler and doesn't require service account setup
@@ -84,12 +85,23 @@ export const authOptions = {
     async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id;
+        try {
+          if (user.email) {
+            const dbUser = await getUser(user.email);
+            if (dbUser) {
+              token.role = dbUser.role || 'user';
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching user role for JWT:", e);
+        }
       }
       return token;
     },
     async session({ session, token }: any) {
       if (session?.user) {
         session.user.id = token.id || token.sub!;
+        session.user.role = token.role || 'user';
       }
       return session;
     },

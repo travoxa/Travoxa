@@ -7,14 +7,15 @@ import Image from 'next/image';
 import {
     FaMapMarkerAlt, FaStar, FaRegClock, FaBolt, FaCheck, FaTimes,
     FaShieldAlt, FaCamera, FaUsers, FaChild, FaNotesMedical,
-    FaCalendarAlt, FaParking, FaInfoCircle
+    FaCalendarAlt, FaParking, FaInfoCircle, FaArrowLeft
 } from 'react-icons/fa';
+import { HiBadgeCheck, HiLocationMarker, HiPhone, HiGlobeAlt } from "react-icons/hi";
 import { ActivityPackage } from './ActivitiesClient';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import SaveButton from '@/components/ui/SaveButton';
 import { useRouter } from 'next/navigation';
-import { FaArrowLeft } from 'react-icons/fa';
+import RelatedPackages from '@/components/ui/RelatedPackages';
 
 interface ActivityDetailsClientProps {
     activity: ActivityPackage;
@@ -35,6 +36,12 @@ const ActivityDetailsClient: React.FC<ActivityDetailsClientProps> = ({ activity 
         ? `${activity.location.name}, ${activity.city}, ${activity.state}`
         : `${activity.city}, ${activity.state}`;
 
+    const ensureProtocol = (url: string) => {
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return `https://${url}`;
+    };
+
     return (
         <div className="bg-white min-h-screen font-sans">
             <Header forceWhite={true} />
@@ -52,10 +59,6 @@ const ActivityDetailsClient: React.FC<ActivityDetailsClientProps> = ({ activity 
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-500">No Image Available</div>
                 )}
-
-
-
-
 
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent pt-32 pb-12">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,9 +78,17 @@ const ActivityDetailsClient: React.FC<ActivityDetailsClientProps> = ({ activity 
                                 )}
                             </div>
 
-                            <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight Mont">
-                                {activity.title}
-                            </h1>
+                            <div className="flex items-center gap-4 mb-4">
+                                <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight Mont">
+                                    {activity.title}
+                                </h1>
+                                <SaveButton
+                                    itemId={activity.id}
+                                    itemType="activity"
+                                    title={activity.title}
+                                    itemLink={`/travoxa-discovery/activities/${activity.id}`}
+                                />
+                            </div>
 
                             <div className="flex items-center gap-6 text-white text-sm md:text-base Inter">
                                 <div className="flex items-center gap-2">
@@ -230,6 +241,64 @@ const ActivityDetailsClient: React.FC<ActivityDetailsClientProps> = ({ activity 
                             </div>
                         </div>
 
+                        {/* Partners Info */}
+                        {activity.partners && activity.partners.length > 0 && (
+                            <div className="bg-gray-50 rounded-2xl p-8 border border-slate-200" data-aos="fade-up">
+                                <div className="mb-8">
+                                    <h2 className="text-2xl font-bold text-slate-900 Mont">Official Partners</h2>
+                                    <p className="text-slate-500 mt-1 Inter">Authorized service providers for this activity</p>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {activity.partners.map((partner: any, index: number) => (
+                                        <div key={index} className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="flex items-center gap-4 mb-4">
+                                                {partner.logo ? (
+                                                    <div className="w-16 h-16 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-2 shrink-0 overflow-hidden">
+                                                        <img src={partner.logo} alt={partner.name} className="w-full h-full object-contain" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+                                                        <span className="text-slate-400 text-xs font-medium">No Logo</span>
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                                                        {partner.name}
+                                                        {partner.isVerified && <HiBadgeCheck className="text-blue-500 text-xl" title="Verified Partner" />}
+                                                    </h3>
+                                                    {(partner.location || partner.state) && (
+                                                        <p className="text-sm text-gray-500 flex items-start gap-1 mt-1">
+                                                            <HiLocationMarker className="text-gray-400 mt-0.5 shrink-0" />
+                                                            <span>
+                                                                {partner.location}{partner.location && partner.state ? ', ' : ''}{partner.state}
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {(partner.phone || partner.website) && (
+                                                <div className="pt-4 border-t border-slate-100 flex flex-col gap-2">
+                                                    {partner.phone && (
+                                                        <a href={`tel:${partner.phone}`} className="flex items-center gap-2 text-sm text-slate-600 hover:text-orange-600 transition-colors">
+                                                            <HiPhone className="text-gray-400" />
+                                                            <span>{partner.phone}</span>
+                                                        </a>
+                                                    )}
+                                                    {partner.website && (
+                                                        <a href={ensureProtocol(partner.website)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline transition-colors">
+                                                            <HiGlobeAlt className="text-slate-400" />
+                                                            <span>Visit Website</span>
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Location Map */}
                         {activity.location?.mapLink && (
                             <div data-aos="fade-up">
@@ -283,6 +352,18 @@ const ActivityDetailsClient: React.FC<ActivityDetailsClientProps> = ({ activity 
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+                <RelatedPackages
+                    tours={(activity as any).relatedTours}
+                    sightseeing={(activity as any).relatedSightseeing}
+                    activities={(activity as any).relatedActivities}
+                    rentals={(activity as any).relatedRentals}
+                    stays={(activity as any).relatedStays}
+                    food={(activity as any).relatedFood}
+                    attractions={(activity as any).relatedAttractions}
+                />
             </div>
 
             <Footor />

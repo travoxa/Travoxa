@@ -1,6 +1,12 @@
 import React from 'react';
 import { connectDB } from '@/lib/mongodb';
 import Attraction from '@/models/Attraction';
+import Tour from '@/models/Tour';
+import Sightseeing from '@/models/Sightseeing';
+import Activity from '@/models/Activity';
+import Rental from '@/models/Rental';
+import Stay from '@/models/Stay';
+import Food from '@/models/Food';
 import AttractionDetailsClient from '../AttractionDetailsClient';
 import { notFound } from 'next/navigation';
 
@@ -12,13 +18,9 @@ interface PageProps {
 
 // Helper to serialize Mongoose documents
 const serializeConfig = (doc: any) => {
-    return {
-        ...doc,
-        _id: doc._id.toString(),
-        id: doc._id.toString(),
-        createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : null,
-        updatedAt: doc.updatedAt ? new Date(doc.updatedAt).toISOString() : null,
-    };
+    const serialized = JSON.parse(JSON.stringify(doc));
+    serialized.id = serialized._id.toString();
+    return serialized;
 };
 
 export default async function AttractionDetailsPage({ params }: PageProps) {
@@ -26,7 +28,17 @@ export default async function AttractionDetailsPage({ params }: PageProps) {
     const { id } = await params;
 
     try {
-        const attraction = await Attraction.findById(id).lean();
+        Tour.find().limit(1); Sightseeing.find().limit(1); Activity.find().limit(1); Rental.find().limit(1); Stay.find().limit(1); Food.find().limit(1); Attraction.find().limit(1);
+
+        const attraction = await Attraction.findById(id)
+            .populate('relatedTours', 'title image _id googleRating rating location city state')
+            .populate('relatedSightseeing', 'title image _id rating location city state')
+            .populate('relatedActivities', 'title image _id rating location city state')
+            .populate('relatedRentals', 'title name image _id rating location city state')
+            .populate('relatedStays', 'title name image _id rating location city state')
+            .populate('relatedFood', 'name image _id rating location city state cuisine')
+            .populate('relatedAttractions', 'title image _id rating location city state type category')
+            .lean();
 
         if (!attraction) {
             notFound();

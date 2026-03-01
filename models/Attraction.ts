@@ -143,10 +143,34 @@ const AttractionSchema = new mongoose.Schema({
         crowdLevel: String, // Low, Moderate, High
         safetyScore: Number, // 1-10
     },
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+    partners: [{
+        name: String,
+        logo: String,
+        phone: String,
+        website: String,
+        location: String,
+        state: String,
+        isVerified: {
+            type: Boolean,
+            default: false
+        }
+    }],
     createdAt: {
         type: Date,
         default: Date.now,
     },
+    // Related Packages
+    relatedTours: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tour' }],
+    relatedSightseeing: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Sightseeing' }],
+    relatedActivities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Activity' }],
+    relatedRentals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Rental' }],
+    relatedStays: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Stay' }],
+    relatedFood: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Food' }],
+    relatedAttractions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attraction' }]
 });
 
 export default mongoose.models.Attraction || mongoose.model('Attraction', AttractionSchema);

@@ -6,8 +6,10 @@ import Image from "next/image";
 import Header from "@/components/ui/Header";
 import Footor from "@/components/ui/Footor";
 import { FaMapMarkerAlt, FaStar, FaBed, FaBath, FaUserFriends, FaWhatsapp, FaCheck, FaPhoneAlt, FaEnvelope, FaArrowLeft } from "react-icons/fa";
+import { HiBadgeCheck, HiLocationMarker, HiPhone, HiGlobeAlt } from "react-icons/hi";
 import SaveButton from "@/components/ui/SaveButton";
 import { useRouter } from "next/navigation";
+import RelatedPackages from "@/components/ui/RelatedPackages";
 
 export default function StayDetailsPage() {
     const { id } = useParams();
@@ -43,6 +45,12 @@ export default function StayDetailsPage() {
         window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
     };
 
+    const ensureProtocol = (url: string) => {
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return `https://${url}`;
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -74,7 +82,12 @@ export default function StayDetailsPage() {
                     >
                         <FaArrowLeft /> BACK
                     </button>
-                    <SaveButton itemId={stay._id || id} itemType="stay" />
+                    <SaveButton
+                        itemId={stay._id || id}
+                        itemType="stay"
+                        title={stay.title}
+                        itemLink={`/travoxa-discovery/stay/${stay._id || id}`}
+                    />
                 </div>
 
                 {/* Header Section */}
@@ -181,6 +194,62 @@ export default function StayDetailsPage() {
                             </div>
                         </section>
 
+                        {/* Partners Info */}
+                        {stay.partners && stay.partners.length > 0 && (
+                            <section>
+                                <h2 className="text-xl font-bold text-slate-900 mb-6 Mont">Official Booking Partners</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {stay.partners.map((partner: any, index: number) => (
+                                        <div key={index} className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:border-emerald-300 transition-colors">
+                                            <div className="flex items-center gap-4 mb-4">
+                                                {partner.logo ? (
+                                                    <div className="w-16 h-16 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-2 shrink-0 overflow-hidden">
+                                                        <img src={partner.logo} alt={partner.name} className="w-full h-full object-contain" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+                                                        <span className="text-slate-400 text-[10px] font-bold uppercase">No Logo</span>
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                                                        {partner.name}
+                                                        {partner.isVerified && <HiBadgeCheck className="text-blue-500 text-xl" title="Verified Partner" />}
+                                                    </h3>
+                                                    {(partner.location || partner.state) && (
+                                                        <p className="text-sm text-slate-500 flex items-start gap-1 mt-1">
+                                                            <HiLocationMarker className="text-emerald-500 mt-0.5 shrink-0" />
+                                                            <span>
+                                                                {partner.location}{partner.location && partner.state ? ', ' : ''}{partner.state}
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {(partner.phone || partner.website) && (
+                                                <div className="pt-4 border-t border-slate-100 flex flex-col gap-2">
+                                                    {partner.phone && (
+                                                        <a href={`tel:${partner.phone}`} className="flex items-center gap-2 text-sm text-slate-600 hover:text-emerald-600 transition-colors">
+                                                            <HiPhone className="text-slate-400" />
+                                                            <span>{partner.phone}</span>
+                                                        </a>
+                                                    )}
+                                                    {partner.website && (
+                                                        <a href={ensureProtocol(partner.website)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline transition-colors">
+                                                            <HiGlobeAlt className="text-slate-400" />
+                                                            <span>Visit Website</span>
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+
                     </div>
 
                     {/* RIGHT COLUMN: Booking Card */}
@@ -222,8 +291,20 @@ export default function StayDetailsPage() {
                         </div>
                     </div>
                 </div>
-
             </div>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+                <RelatedPackages
+                    tours={stay?.relatedTours}
+                    sightseeing={stay?.relatedSightseeing}
+                    activities={stay?.relatedActivities}
+                    rentals={stay?.relatedRentals}
+                    stays={stay?.relatedStays}
+                    food={stay?.relatedFood}
+                    attractions={stay?.relatedAttractions}
+                />
+            </div>
+
             <Footor />
         </div>
     );

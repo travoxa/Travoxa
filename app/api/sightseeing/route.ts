@@ -15,10 +15,25 @@ const connectDB = async () => {
     await mongoose.connect(process.env.MONGODB_URI);
 };
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
         await connectDB();
-        const packages = await Sightseeing.find({}).sort({ createdAt: -1 });
+
+        const { searchParams } = new URL(req.url);
+        const vendorId = searchParams.get('vendorId');
+        const admin = searchParams.get('admin');
+        const status = searchParams.get('status');
+
+        const query: any = {};
+        if (vendorId) {
+            query.vendorId = vendorId;
+        } else if (admin === 'true') {
+            if (status) query.status = status;
+        } else {
+            query.status = 'approved';
+        }
+
+        const packages = await Sightseeing.find(query).sort({ createdAt: -1 });
 
         // Map _id to id for frontend compatibility
         const packagesWithId = packages.map(pkg => ({
@@ -36,17 +51,22 @@ export async function GET() {
 export async function POST(req: Request) {
     try {
         await connectDB();
-        const body = await req.json();
+        const sightseeingData = await req.json();
+
+        // Auto-set pending if created by vendor
+        if (sightseeingData.vendorId) {
+            sightseeingData.status = 'pending';
+        }
 
         // Validate required fields
-        if (!body.title || !body.city || !body.state || !body.price) {
+        if (!sightseeingData.title || !sightseeingData.city || !sightseeingData.state || !sightseeingData.price) {
             return NextResponse.json(
                 { success: false, error: 'Please provide all required fields' },
                 { status: 400 }
             );
         }
 
-        const sightseeingPackage = await Sightseeing.create(body);
+        const sightseeingPackage = await Sightseeing.create(sightseeingData);
 
         // Return with id field
         const packageWithId = {

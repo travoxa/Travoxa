@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 interface SaveButtonProps {
     itemId: string;
     itemType: 'tour' | 'attraction' | 'activity' | 'sightseeing' | 'stay' | 'rental' | 'food';
+    title?: string;
+    itemLink?: string;
     isSmall?: boolean;
     activeColor?: string;
 }
@@ -15,6 +17,8 @@ interface SaveButtonProps {
 export default function SaveButton({
     itemId,
     itemType,
+    title,
+    itemLink,
     isSmall = false,
     activeColor = "bg-emerald-600"
 }: SaveButtonProps) {
@@ -57,7 +61,7 @@ export default function SaveButton({
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ itemId, itemType }),
+                body: JSON.stringify({ itemId, itemType, title, itemLink }),
             });
             const data = await res.json();
             if (data.saved !== undefined) {

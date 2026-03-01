@@ -67,8 +67,12 @@ export default function Login() {
             // New user - go to onboarding
             router.push("/onboarding");
           } else {
-            // Existing user - go to home
-            router.push("/");
+            // Existing user
+            if (result.userData?.role === 'vendor') {
+              router.push("/vendor");
+            } else {
+              router.push("/");
+            }
           }
         } catch (error) {
           console.error("Error checking user in MongoDB:", error);
@@ -150,14 +154,18 @@ export default function Login() {
           // New user - go to onboarding
           router.push("/onboarding");
         } else {
-          // Existing user - sign in and go to home
+          // Existing user - sign in
           await signIn("credentials", {
             email: user.email,
             password,
             redirect: false,
           });
 
-          router.push("/");
+          if (result.userData?.role === 'vendor') {
+            router.push("/vendor");
+          } else {
+            router.push("/");
+          }
         }
       } else {
         // Sign up flow

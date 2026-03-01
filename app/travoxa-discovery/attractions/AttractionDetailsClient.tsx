@@ -11,12 +11,14 @@ import {
     FaWalking, FaBus, FaTaxi, FaTrain, FaPlane, FaShip, FaHospital, FaPhoneAlt, FaLightbulb,
     FaUsers, FaLock, FaChevronRight
 } from 'react-icons/fa';
+import { HiBadgeCheck, HiLocationMarker, HiPhone, HiGlobeAlt } from "react-icons/hi";
 import { AttractionPackage } from './AttractionsClient';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import SaveButton from '@/components/ui/SaveButton';
+import RelatedPackages from '@/components/ui/RelatedPackages';
 
 interface AttractionDetailsClientProps {
     attraction: AttractionPackage;
@@ -82,6 +84,12 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
         }
     };
 
+    const ensureProtocol = (url: string) => {
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return `https://${url}`;
+    };
+
     return (
         <div className="bg-white min-h-screen">
             <NormalHeader logoHeight="h-[22px] lg:h-[28px]" />
@@ -121,9 +129,17 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                                 </span>
                             </div>
 
-                            <h1 className="text-4xl md:text-6xl font-bold text-white mb-8 leading-tight">
-                                {attraction.title}
-                            </h1>
+                            <div className="flex items-center gap-4 mb-8">
+                                <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight">
+                                    {attraction.title}
+                                </h1>
+                                <SaveButton
+                                    itemId={attraction.id}
+                                    itemType="attraction"
+                                    title={attraction.title}
+                                    itemLink={`/travoxa-discovery/attractions/${attraction.id}`}
+                                />
+                            </div>
 
                             <div className="flex flex-wrap items-center gap-6 text-white/90 text-base md:text-lg">
                                 <div className="flex items-center gap-2">
@@ -165,8 +181,8 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                                 <div className="text-2xl text-emerald-600 mb-2">
                                     <FaRegClock />
                                 </div>
-                                <span className={`text-xs font-medium uppercase tracking-wide ${status?.color || 'text-gray-600'}`}>{status?.status || 'Open'}</span>
-                                <span className="text-[10px] text-gray-400 font-bold mt-1">Status Now</span>
+                                <span className="text-xs font-medium uppercase tracking-wide text-gray-900">{attraction.openingHours || 'Not Specified'}</span>
+                                <span className="text-[10px] text-gray-400 font-bold mt-1">Opening Hours</span>
                             </div>
                             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col items-center text-center group transition-colors">
                                 <div className="text-2xl text-blue-600 mb-2">
@@ -359,6 +375,64 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                             </div>
                         )}
 
+                        {/* Partners Info */}
+                        {attraction.partners && attraction.partners.length > 0 && (
+                            <section className="bg-gray-50 rounded-3xl p-8 border border-gray-100" data-aos="fade-up">
+                                <div className="mb-8">
+                                    <h2 className="text-2xl font-bold text-gray-900">Official Partners</h2>
+                                    <p className="text-gray-500 mt-1">Authorized service providers for this attraction</p>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {attraction.partners.map((partner: any, index: number) => (
+                                        <div key={index} className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="flex items-center gap-4 mb-4">
+                                                {partner.logo ? (
+                                                    <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center p-2 shrink-0 overflow-hidden">
+                                                        <img src={partner.logo} alt={partner.name} className="w-full h-full object-contain" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-16 h-16 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
+                                                        <span className="text-gray-400 text-xs font-medium">No Logo</span>
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
+                                                        {partner.name}
+                                                        {partner.isVerified && <HiBadgeCheck className="text-blue-500 text-xl" title="Verified Partner" />}
+                                                    </h3>
+                                                    {(partner.location || partner.state) && (
+                                                        <p className="text-sm text-gray-500 flex items-start gap-1 mt-1">
+                                                            <HiLocationMarker className="text-gray-400 mt-0.5 shrink-0" />
+                                                            <span>
+                                                                {partner.location}{partner.location && partner.state ? ', ' : ''}{partner.state}
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {(partner.phone || partner.website) && (
+                                                <div className="pt-4 border-t border-gray-100 flex flex-col gap-2">
+                                                    {partner.phone && (
+                                                        <a href={`tel:${partner.phone}`} className="flex items-center gap-2 text-sm text-gray-600 hover:text-emerald-600 transition-colors">
+                                                            <HiPhone className="text-gray-400" />
+                                                            <span>{partner.phone}</span>
+                                                        </a>
+                                                    )}
+                                                    {partner.website && (
+                                                        <a href={ensureProtocol(partner.website)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline transition-colors">
+                                                            <HiGlobeAlt className="text-gray-400" />
+                                                            <span>Visit Website</span>
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
                         {/* Nearby Sections */}
                         <div className="space-y-16">
                             {/* Nearby Attractions */}
@@ -475,19 +549,15 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                                                 {attraction.entryFee > 0 && <span className="text-gray-400 text-sm font-bold uppercase">/ person</span>}
                                             </div>
                                         </div>
-                                        <div className={`px-3 py-1 rounded-full font-bold text-[10px] uppercase shadow-sm ${status?.color === 'text-emerald-500' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-50 text-gray-700'}`}>
-                                            {status?.status || 'OPEN'}
-                                        </div>
                                     </div>
                                 </div>
 
                                 <div className="p-8 pt-4 space-y-4">
-                                    <button className="w-full bg-black text-white font-bold py-4 rounded-xl text-lg hover:bg-gray-800 transition-all active:scale-[0.98] flex items-center justify-center gap-3">
-                                        BOOK ENTRY TICKETS <FaChevronRight size={14} />
-                                    </button>
-                                    <button className="w-full bg-white text-gray-900 border border-gray-200 font-bold py-3 rounded-xl text-lg hover:bg-gray-50 transition-all active:scale-[0.98]">
-                                        PLAN VISIT
-                                    </button>
+                                    {attraction.entryFee > 0 && (
+                                        <button className="w-full bg-black text-white font-bold py-4 rounded-xl text-lg hover:bg-gray-800 transition-all active:scale-[0.98] flex items-center justify-center gap-3">
+                                            BOOK ENTRY TICKETS <FaChevronRight size={14} />
+                                        </button>
+                                    )}
                                 </div>
 
                                 <div className="px-8 pb-8 space-y-4">
@@ -525,6 +595,18 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6 pb-16 pt-8">
+                <RelatedPackages
+                    tours={(attraction as any).relatedTours}
+                    sightseeing={(attraction as any).relatedSightseeing}
+                    activities={(attraction as any).relatedActivities}
+                    rentals={(attraction as any).relatedRentals}
+                    stays={(attraction as any).relatedStays}
+                    food={(attraction as any).relatedFood}
+                    attractions={(attraction as any).relatedAttractions}
+                />
             </div>
 
             <Footor />

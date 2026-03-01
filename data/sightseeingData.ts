@@ -30,6 +30,15 @@ export interface SightseeingPackage {
     fuelIncluded?: boolean;
     driverIncluded?: boolean;
     customizablePickup?: boolean;
+    partners?: {
+        name: string;
+        logo?: string;
+        phone?: string;
+        website?: string;
+        location?: string;
+        state?: string;
+        isVerified?: boolean;
+    }[];
 }
 
 // All sightseeing packages are now managed through the admin panel

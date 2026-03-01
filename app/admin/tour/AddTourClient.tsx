@@ -36,7 +36,14 @@ const DEFAULT_CANCELLATION_POLICY = [
     "For any refunds, please contact the support team."
 ];
 
-export default function AddTourClient() {
+interface AddTourClientProps {
+    vendorId?: string;
+    showManagementBox?: boolean;
+    showListings?: boolean;
+    showFormDirectly?: boolean;
+}
+
+export default function AddTourClient({ vendorId, showManagementBox, showListings, showFormDirectly }: AddTourClientProps) {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
@@ -46,9 +53,20 @@ export default function AddTourClient() {
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [loadingTours, setLoadingTours] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [availableCities, setAvailableCities] = useState<string[]>([]);
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
     const [activeTab, setActiveTab] = useState<'tours' | 'requests'>('tours');
     const [requests, setRequests] = useState<any[]>([]);
     const [loadingRequests, setLoadingRequests] = useState(false);
+
+    // Related Packages Data States
+    const [allSightseeing, setAllSightseeing] = useState<any[]>([]);
+    const [allActivities, setAllActivities] = useState<any[]>([]);
+    const [allRentals, setAllRentals] = useState<any[]>([]);
+    const [allStays, setAllStays] = useState<any[]>([]);
+    const [allFood, setAllFood] = useState<any[]>([]);
+    const [allAttractions, setAllAttractions] = useState<any[]>([]);
+    const [loadingRelated, setLoadingRelated] = useState(false);
 
     // Custom inputs state
     const [customInclusion, setCustomInclusion] = useState('');
@@ -78,7 +96,7 @@ export default function AddTourClient() {
         dropLocation: '',
         dropMapLink: '',
         locationMapLink: '',
-        partners: [] as { name: string; isVerified: boolean }[],
+        partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[],
         highlights: [] as string[],
         cancellationPolicy: DEFAULT_CANCELLATION_POLICY,
         brochureUrl: '',
@@ -86,7 +104,15 @@ export default function AddTourClient() {
         bookingAmount: '',
         earlyBirdDiscount: '',
         meals: [] as { day: number; breakfast: string[]; lunch: string[]; dinner: string[]; snacks: string[]; custom: string[] }[],
-        pricing: [] as { people: number; hotelType: 'Standard' | 'Premium'; rooms: number; packagePrice: number; pricePerPerson: number }[]
+        pricing: [] as { people: number; hotelType: 'Standard' | 'Premium'; rooms: number; packagePrice: number; pricePerPerson: number }[],
+        // Related Packages
+        relatedTours: [] as string[],
+        relatedSightseeing: [] as string[],
+        relatedActivities: [] as string[],
+        relatedRentals: [] as string[],
+        relatedStays: [] as string[],
+        relatedFood: [] as string[],
+        relatedAttractions: [] as string[]
     };
 
     const isDev = process.env.NODE_ENV === 'development';
@@ -120,7 +146,7 @@ export default function AddTourClient() {
         dropLocation: 'Test City Center',
         dropMapLink: 'https://maps.google.com',
         locationMapLink: 'https://maps.google.com',
-        partners: [{ name: 'Test Partner', isVerified: true }],
+        partners: [{ name: 'Test Partner', logo: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg', phone: '+1234567890', website: 'https://example.com', location: 'Test Location', state: 'Test State', isVerified: true }],
         highlights: ["Adventure", "Nature"],
         cancellationPolicy: DEFAULT_CANCELLATION_POLICY,
         brochureUrl: 'https://example.com/brochure.pdf',
@@ -148,7 +174,14 @@ export default function AddTourClient() {
         pricing: [
             { people: 2, hotelType: 'Standard', rooms: 1, packagePrice: 10000, pricePerPerson: 5000 },
             { people: 4, hotelType: 'Standard', rooms: 2, packagePrice: 18000, pricePerPerson: 4500 }
-        ]
+        ],
+        relatedTours: [],
+        relatedSightseeing: [],
+        relatedActivities: [],
+        relatedRentals: [],
+        relatedStays: [],
+        relatedFood: [],
+        relatedAttractions: []
     };
 
     const [formData, setFormData] = useState(isDev ? DUMMY_FORM_DATA : EMPTY_FORM_DATA);
@@ -157,7 +190,8 @@ export default function AddTourClient() {
     const fetchTours = async () => {
         setLoadingTours(true);
         try {
-            const res = await fetch('/api/tours');
+            const url = vendorId ? `/api/tours?vendorId=${vendorId}` : '/api/tours';
+            const res = await fetch(url);
             const data = await res.json();
             if (data.success) {
                 setTours(data.data);
@@ -184,9 +218,41 @@ export default function AddTourClient() {
         }
     };
 
+    const fetchRelatedPackages = async () => {
+        setLoadingRelated(true);
+        try {
+            const [attRes, foodRes, sightRes, actRes, rentRes, stayRes] = await Promise.all([
+                fetch('/api/attractions'),
+                fetch('/api/food'),
+                fetch('/api/sightseeing'),
+                fetch('/api/activities'),
+                fetch('/api/rentals'),
+                fetch('/api/stay')
+            ]);
+            const attData = await attRes.json();
+            const foodData = await foodRes.json();
+            const sightData = await sightRes.json();
+            const actData = await actRes.json();
+            const rentData = await rentRes.json();
+            const stayData = await stayRes.json();
+
+            if (attData.success) setAllAttractions(attData.data);
+            if (foodData.success) setAllFood(foodData.data);
+            if (sightData.success) setAllSightseeing(sightData.data);
+            if (actData.success) setAllActivities(actData.data);
+            if (rentData.success) setAllRentals(rentData.data);
+            if (stayData.success) setAllStays(stayData.data);
+        } catch (error) {
+            console.error('Failed to fetch related packages:', error);
+        } finally {
+            setLoadingRelated(false);
+        }
+    };
+
     useEffect(() => {
         fetchTours();
         fetchRequests();
+        fetchRelatedPackages();
     }, []);
 
     const handleRequestAction = async (requestId: string, status: 'approved' | 'rejected') => {
@@ -281,7 +347,7 @@ export default function AddTourClient() {
     const addPartner = () => {
         setFormData(prev => ({
             ...prev,
-            partners: [...prev.partners, { name: '', isVerified: false }]
+            partners: [...prev.partners, { name: '', logo: '', phone: '', website: '', location: '', state: '', isVerified: false }]
         }));
     };
 
@@ -523,7 +589,14 @@ export default function AddTourClient() {
             meals: Array.isArray(tour.meals) && tour.meals.length > 0 && typeof tour.meals[0] === 'object'
                 ? tour.meals
                 : [], // Reset legacy string arrays or empty to empty array. Users will need to re-enter.
-            pricing: pricingData
+            pricing: pricingData,
+            relatedTours: tour.relatedTours || [],
+            relatedSightseeing: tour.relatedSightseeing || [],
+            relatedActivities: tour.relatedActivities || [],
+            relatedRentals: tour.relatedRentals || [],
+            relatedStays: tour.relatedStays || [],
+            relatedFood: tour.relatedFood || [],
+            relatedAttractions: tour.relatedAttractions || []
         });
 
         // Parse duration if exists
@@ -603,7 +676,15 @@ export default function AddTourClient() {
             earlyBirdDiscount: Number(formData.earlyBirdDiscount) || 0,
             meals: formData.meals,
             availabilityBatches: formData.availabilityBatches,
-            pricing: formData.pricing
+            pricing: formData.pricing,
+            relatedTours: formData.relatedTours,
+            relatedSightseeing: formData.relatedSightseeing,
+            relatedActivities: formData.relatedActivities,
+            relatedRentals: formData.relatedRentals,
+            relatedStays: formData.relatedStays,
+            relatedFood: formData.relatedFood,
+            relatedAttractions: formData.relatedAttractions,
+            ...(vendorId && { vendorId })
         };
 
         if (payload.minPeople > payload.maxPeople) {
@@ -655,6 +736,42 @@ export default function AddTourClient() {
             setLoading(false);
         }
     };
+
+    const renderRelatedCheckboxes = (title: string, items: any[], field: keyof typeof formData) => (
+        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <h4 className="font-semibold text-gray-700 mb-3">{title}</h4>
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                {items.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                    const id = item._id || item.id;
+                    const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                    const isChecked = (formData[field] as string[]).includes(id);
+                    return (
+                        <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                            <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={e => {
+                                    const current = [...(formData[field] as string[])];
+                                    if (e.target.checked) current.push(id);
+                                    else {
+                                        const idx = current.indexOf(id);
+                                        if (idx > -1) current.splice(idx, 1);
+                                    }
+                                    setFormData({ ...formData, [field]: current as any });
+                                }}
+                                className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0"
+                            />
+                            <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p>
+                            </div>
+                        </label>
+                    );
+                })}
+                {items.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+            </div>
+        </div>
+    );
 
     return (
         <div className="mx-auto space-y-6 relative">
@@ -772,8 +889,9 @@ export default function AddTourClient() {
                                 <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Tours</h2>
 
                                 <div className="flex items-center justify-between pb-2 mb-2  border-gray-200">
-                                    <div className="flex-1 grid grid-cols-3 gap-4">
+                                    <div className="flex-1 grid grid-cols-4 gap-4">
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Tour Name</p>
+                                        <p className="text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Price</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Group Size</p>
                                     </div>
@@ -781,13 +899,19 @@ export default function AddTourClient() {
                                 </div>
 
                                 <div className="divide-y divide-gray-200">
-                                    {tours.map((tour) => (
+                                    {([...tours].sort((a, b) => {
+                                        if (!sortOrder) return 0;
+                                        const stateA = a.state || '';
+                                        const stateB = b.state || '';
+                                        return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
+                                    })).map((tour) => (
                                         <div
                                             key={tour.id}
                                             className="flex items-center justify-between py-1 hover:bg-gray-50 transition-colors"
                                         >
-                                            <div className="flex-1 grid grid-cols-3 gap-4">
+                                            <div className="flex-1 grid grid-cols-4 gap-4">
                                                 <p className="text-sm text-gray-900">{tour.title}</p>
+                                                <p className="text-sm text-gray-900">{tour.state}</p>
                                                 <p className="text-sm text-gray-900">₹{tour.price}</p>
                                                 <p className="text-sm text-gray-900">{tour.minPeople && tour.maxPeople ? `${tour.minPeople} - ${tour.maxPeople}` : (tour.maxPeople || 'N/A')}</p>
                                             </div>
@@ -1293,26 +1417,100 @@ export default function AddTourClient() {
                                         <RiAddLine /> Add Partner
                                     </button>
                                 </div>
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {formData.partners.map((partner, idx) => (
-                                        <div key={idx} className="flex flex-col gap-2 p-3 bg-gray-50 rounded border border-gray-100 relative">
+                                        <div key={idx} className="flex flex-col gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 relative">
                                             <button
                                                 type="button"
                                                 onClick={() => removePartner(idx)}
-                                                className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+                                                className="absolute top-3 right-3 text-gray-400 hover:text-red-500"
                                             >
-                                                <RiDeleteBinLine />
+                                                <RiDeleteBinLine size={18} />
                                             </button>
-                                            <div className="grid grid-cols-1 gap-3">
-                                                <input
-                                                    type="text"
-                                                    placeholder="Partner Name"
-                                                    value={partner.name}
-                                                    onChange={e => updatePartner(idx, 'name', e.target.value)}
-                                                    className="w-full px-3 py-2 border rounded text-sm outline-none focus:ring-1 focus:ring-green-500"
-                                                />
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="col-span-1 md:col-span-2">
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1">Partner Logo</label>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden shrink-0">
+                                                            {partner.logo ? (
+                                                                <img src={partner.logo} alt="Logo" className="w-full h-full object-contain" />
+                                                            ) : (
+                                                                <span className="text-xs text-gray-400">No Image</span>
+                                                            )}
+                                                        </div>
+                                                        <CldUploadWidget
+                                                            uploadPreset="travoxa"
+                                                            onSuccess={(result: any) => {
+                                                                updatePartner(idx, 'logo', result.info.secure_url);
+                                                            }}
+                                                        >
+                                                            {({ open }) => (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => { e.preventDefault(); open(); }}
+                                                                    className="px-3 py-1.5 bg-white border border-gray-300 rounded text-sm hover:bg-gray-50 transition-colors"
+                                                                >
+                                                                    {partner.logo ? 'Change Logo' : 'Upload Logo'}
+                                                                </button>
+                                                            )}
+                                                        </CldUploadWidget>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1">Partner Name*</label>
+                                                    <input
+                                                        type="text"
+                                                        value={partner.name}
+                                                        onChange={e => updatePartner(idx, 'name', e.target.value)}
+                                                        className="w-full px-3 py-2 border rounded text-sm outline-none focus:ring-1 focus:ring-green-500"
+                                                        placeholder="e.g. Acme Tours"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1">Phone Number</label>
+                                                    <input
+                                                        type="text"
+                                                        value={partner.phone}
+                                                        onChange={e => updatePartner(idx, 'phone', e.target.value)}
+                                                        className="w-full px-3 py-2 border rounded text-sm outline-none focus:ring-1 focus:ring-green-500"
+                                                        placeholder="e.g. +1 234 567 8900"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1">Website</label>
+                                                    <input
+                                                        type="url"
+                                                        value={partner.website}
+                                                        onChange={e => updatePartner(idx, 'website', e.target.value)}
+                                                        className="w-full px-3 py-2 border rounded text-sm outline-none focus:ring-1 focus:ring-green-500"
+                                                        placeholder="e.g. https://example.com"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1">State</label>
+                                                    <input
+                                                        type="text"
+                                                        value={partner.state}
+                                                        onChange={e => updatePartner(idx, 'state', e.target.value)}
+                                                        className="w-full px-3 py-2 border rounded text-sm outline-none focus:ring-1 focus:ring-green-500"
+                                                        placeholder="e.g. Kerala"
+                                                    />
+                                                </div>
+                                                <div className="col-span-1 md:col-span-2">
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1">Location / Address</label>
+                                                    <input
+                                                        type="text"
+                                                        value={partner.location}
+                                                        onChange={e => updatePartner(idx, 'location', e.target.value)}
+                                                        className="w-full px-3 py-2 border rounded text-sm outline-none focus:ring-1 focus:ring-green-500"
+                                                        placeholder="e.g. MG Road, Kochi"
+                                                    />
+                                                </div>
                                             </div>
-                                            <label className="flex items-center gap-2 cursor-pointer mt-1">
+
+                                            <label className="flex items-center gap-2 cursor-pointer mt-2 w-max">
                                                 <input
                                                     type="checkbox"
                                                     checked={partner.isVerified}
@@ -1713,6 +1911,26 @@ export default function AddTourClient() {
                                 ))}
                             </div>
                         </div >
+
+                        {/* Related Packages */}
+                        <div className="pt-8 border-t border-gray-200 mt-8 mb-8">
+                            <h3 className="text-lg font-bold text-gray-800 mb-6">Related Packages</h3>
+                            {loadingRelated ? (
+                                <div className="text-sm text-gray-500 flex items-center gap-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div> Loading related packages...
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                                    {renderRelatedCheckboxes('Tours', tours, 'relatedTours')}
+                                    {renderRelatedCheckboxes('Sightseeing', allSightseeing, 'relatedSightseeing')}
+                                    {renderRelatedCheckboxes('Activities', allActivities, 'relatedActivities')}
+                                    {renderRelatedCheckboxes('Rentals', allRentals, 'relatedRentals')}
+                                    {renderRelatedCheckboxes('Stays', allStays, 'relatedStays')}
+                                    {renderRelatedCheckboxes('Food & Cafes', allFood, 'relatedFood')}
+                                    {renderRelatedCheckboxes('Attractions', allAttractions, 'relatedAttractions')}
+                                </div>
+                            )}
+                        </div>
 
                         <div className="pt-4 flex gap-4">
                             <button

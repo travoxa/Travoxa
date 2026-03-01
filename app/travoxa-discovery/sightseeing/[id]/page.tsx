@@ -7,9 +7,11 @@ import { SightseeingPackage } from "@/data/sightseeingData";
 import NormalHeader from "@/components/ui/NormalHeader";
 import Footor from "@/components/ui/Footor";
 import { FaClock, FaCar, FaUserFriends, FaMapMarkerAlt, FaCheckCircle, FaTimesCircle, FaWhatsapp, FaArrowLeft } from "react-icons/fa";
+import { HiBadgeCheck, HiLocationMarker, HiPhone, HiGlobeAlt } from "react-icons/hi";
 import { useState, useEffect } from "react";
 import ReviewSection from "@/components/sightseeing/ReviewSection";
 import SaveButton from "@/components/ui/SaveButton";
+import RelatedPackages from "@/components/ui/RelatedPackages";
 
 export default function SightseeingDetailPage() {
     const params = useParams();
@@ -30,10 +32,10 @@ export default function SightseeingDetailPage() {
         const fetchPackage = async () => {
             setLoading(true);
             try {
-                const res = await fetch('/api/sightseeing');
+                const res = await fetch(`/api/sightseeing/${id}`);
                 const data = await res.json();
                 if (data.success) {
-                    const foundPackage = data.data.find((p: SightseeingPackage) => p.id === id);
+                    const foundPackage = data.data;
                     if (foundPackage) {
                         setPkg(foundPackage);
                         // Set default booking type
@@ -87,6 +89,12 @@ export default function SightseeingDetailPage() {
         e.preventDefault();
         alert(`Thank you ${name}! Your request for ${pkg.title} (${bookingType === 'private' ? 'Private' : 'Shared'}) on ${bookingDate} has been received. Our team will contact you shortly.`);
         setIsBookingOpen(false);
+    };
+
+    const ensureProtocol = (url: string) => {
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return `https://${url}`;
     };
 
     return (
@@ -144,7 +152,12 @@ export default function SightseeingDetailPage() {
                     {/* Overview */}
                     <section>
                         <h2 className="text-2xl font-bold text-slate-900 mb-4 Mont flex items-center gap-2">Overview
-                            <SaveButton itemId={pkg.id} itemType="sightseeing" />
+                            <SaveButton
+                                itemId={pkg.id}
+                                itemType="sightseeing"
+                                title={pkg.title}
+                                itemLink={`/travoxa-discovery/sightseeing/${pkg.id}`}
+                            />
                         </h2>
                         <p className="text-slate-600 leading-relaxed text-lg Inter">
                             {pkg.overview}
@@ -213,6 +226,64 @@ export default function SightseeingDetailPage() {
                             </ul>
                         </div>
                     </div>
+
+                    {/* Partners Info */}
+                    {pkg.partners && pkg.partners.length > 0 && (
+                        <section className="mt-12 bg-gray-50 rounded-3xl p-8 border border-gray-100">
+                            <div className="mb-8">
+                                <h2 className="text-2xl font-bold text-gray-900">Sightseeing Partners</h2>
+                                <p className="text-gray-500 mt-1">Official service providers for this package</p>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {pkg.partners.map((partner: any, index: number) => (
+                                    <div key={index} className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                        <div className="flex items-center gap-4 mb-4">
+                                            {partner.logo ? (
+                                                <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center p-2 shrink-0 overflow-hidden">
+                                                    <img src={partner.logo} alt={partner.name} className="w-full h-full object-contain" />
+                                                </div>
+                                            ) : (
+                                                <div className="w-16 h-16 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
+                                                    <span className="text-gray-400 text-xs font-medium">No Logo</span>
+                                                </div>
+                                            )}
+                                            <div>
+                                                <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
+                                                    {partner.name}
+                                                    {partner.isVerified && <HiBadgeCheck className="text-blue-500 text-xl" title="Verified Partner" />}
+                                                </h3>
+                                                {(partner.location || partner.state) && (
+                                                    <p className="text-sm text-gray-500 flex items-start gap-1 mt-1">
+                                                        <HiLocationMarker className="text-gray-400 mt-0.5 shrink-0" />
+                                                        <span>
+                                                            {partner.location}{partner.location && partner.state ? ', ' : ''}{partner.state}
+                                                        </span>
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {(partner.phone || partner.website) && (
+                                            <div className="pt-4 border-t border-gray-100 flex flex-col gap-2">
+                                                {partner.phone && (
+                                                    <a href={`tel:${partner.phone}`} className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-600 transition-colors">
+                                                        <HiPhone className="text-gray-400" />
+                                                        <span>{partner.phone}</span>
+                                                    </a>
+                                                )}
+                                                {partner.website && (
+                                                    <a href={ensureProtocol(partner.website)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline transition-colors">
+                                                        <HiGlobeAlt className="text-gray-400" />
+                                                        <span>Visit Website</span>
+                                                    </a>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
 
                     <ReviewSection packageId={id} />
                 </div>
@@ -328,6 +399,18 @@ export default function SightseeingDetailPage() {
                     </div>
 
                 </div>
+            </div>
+
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+                <RelatedPackages
+                    tours={(pkg as any).relatedTours}
+                    sightseeing={(pkg as any).relatedSightseeing}
+                    activities={(pkg as any).relatedActivities}
+                    rentals={(pkg as any).relatedRentals}
+                    stays={(pkg as any).relatedStays}
+                    food={(pkg as any).relatedFood}
+                    attractions={(pkg as any).relatedAttractions}
+                />
             </div>
 
             <Footor />

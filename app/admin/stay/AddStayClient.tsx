@@ -12,6 +12,7 @@ interface AddStayClientProps {
     showManagementBox?: boolean;
     showListings?: boolean;
     showFormDirectly?: boolean;
+    vendorId?: string;
     onFormOpen?: () => void;
     onFormClose?: () => void;
 }
@@ -20,6 +21,7 @@ export default function AddStayClient({
     showManagementBox = true,
     showListings = true,
     showFormDirectly = false,
+    vendorId,
     onFormOpen,
     onFormClose
 }: AddStayClientProps = {}) {
@@ -33,6 +35,16 @@ export default function AddStayClient({
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [loadingStays, setLoadingStays] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
+
+    // Related Packages Data States
+    const [allTours, setAllTours] = useState<any[]>([]);
+    const [allSightseeing, setAllSightseeing] = useState<any[]>([]);
+    const [allActivities, setAllActivities] = useState<any[]>([]);
+    const [allRentals, setAllRentals] = useState<any[]>([]);
+    const [allFood, setAllFood] = useState<any[]>([]);
+    const [allAttractions, setAllAttractions] = useState<any[]>([]);
+    const [loadingRelated, setLoadingRelated] = useState(false);
 
     const DUMMY_FORM_DATA = {
         title: 'Luxury Mountain Resort',
@@ -56,6 +68,15 @@ export default function AddStayClient({
         bedrooms: 1,
         bathrooms: 1,
         isVerified: true,
+        // Related Packages
+        relatedTours: [] as string[],
+        relatedSightseeing: [] as string[],
+        relatedActivities: [] as string[],
+        relatedRentals: [] as string[],
+        relatedStays: [] as string[],
+        relatedFood: [] as string[],
+        relatedAttractions: [] as string[],
+        partners: [{ name: 'Test Partner', logo: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg', phone: '+1234567890', website: 'https://example.com', location: 'Test Location', state: 'Test State', isVerified: true }],
     };
 
     const isDev = process.env.NODE_ENV === 'development';
@@ -82,6 +103,14 @@ export default function AddStayClient({
         bedrooms: 1,
         bathrooms: 1,
         isVerified: false,
+        relatedTours: [] as string[],
+        relatedSightseeing: [] as string[],
+        relatedActivities: [] as string[],
+        relatedRentals: [] as string[],
+        relatedStays: [] as string[],
+        relatedFood: [] as string[],
+        relatedAttractions: [] as string[],
+        partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[]
     });
 
     // Temporary input states for dynamic fields
@@ -92,7 +121,8 @@ export default function AddStayClient({
     const fetchStays = async () => {
         setLoadingStays(true);
         try {
-            const res = await fetch('/api/stay');
+            const url = vendorId ? `/api/stay?vendorId=${vendorId}` : '/api/stay';
+            const res = await fetch(url);
             const data = await res.json();
             if (data.success) {
                 setStays(data.data);
@@ -104,8 +134,40 @@ export default function AddStayClient({
         }
     };
 
+    const fetchRelatedPackages = async () => {
+        setLoadingRelated(true);
+        try {
+            const [attRes, foodRes, tourRes, sightRes, actRes, rentRes] = await Promise.all([
+                fetch('/api/attractions'),
+                fetch('/api/food'),
+                fetch('/api/tours'),
+                fetch('/api/sightseeing'),
+                fetch('/api/activities'),
+                fetch('/api/rentals')
+            ]);
+            const attData = await attRes.json();
+            const foodData = await foodRes.json();
+            const tourData = await tourRes.json();
+            const sightData = await sightRes.json();
+            const actData = await actRes.json();
+            const rentData = await rentRes.json();
+
+            if (attData.success) setAllAttractions(attData.data);
+            if (foodData.success) setAllFood(foodData.data);
+            if (tourData.success) setAllTours(tourData.data);
+            if (sightData.success) setAllSightseeing(sightData.data);
+            if (actData.success) setAllActivities(actData.data);
+            if (rentData.success) setAllRentals(rentData.data);
+        } catch (error) {
+            console.error('Failed to fetch related packages:', error);
+        } finally {
+            setLoadingRelated(false);
+        }
+    };
+
     useEffect(() => {
         fetchStays();
+        fetchRelatedPackages();
     }, []);
 
     // Delete stay package
@@ -155,6 +217,29 @@ export default function AddStayClient({
         }));
     };
 
+    const addPartner = () => {
+        setFormData(prev => ({
+            ...prev,
+            partners: [...prev.partners, { name: '', logo: '', phone: '', website: '', location: '', state: '', isVerified: false }]
+        }));
+    };
+
+    const updatePartner = (index: number, field: string, value: any) => {
+        setFormData(prev => {
+            const updated = [...prev.partners];
+            updated[index] = { ...updated[index], [field]: value };
+            return { ...prev, partners: updated };
+        });
+    };
+
+    const removePartner = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            partners: prev.partners.filter((_, i) => i !== index)
+        }));
+    };
+
+
     // Handle edit
     const handleEdit = (pkg: any) => {
         setEditingId(pkg.id);
@@ -180,6 +265,14 @@ export default function AddStayClient({
             bedrooms: pkg.bedrooms,
             bathrooms: pkg.bathrooms,
             isVerified: pkg.isVerified,
+            relatedTours: pkg.relatedTours || [],
+            relatedSightseeing: pkg.relatedSightseeing || [],
+            relatedActivities: pkg.relatedActivities || [],
+            relatedRentals: pkg.relatedRentals || [],
+            relatedStays: pkg.relatedStays || [],
+            relatedFood: pkg.relatedFood || [],
+            relatedAttractions: pkg.relatedAttractions || [],
+            partners: pkg.partners || []
         });
         setShowFormInternal(true);
         setOpenMenuId(null);
@@ -199,6 +292,14 @@ export default function AddStayClient({
             maxGuests: Number(formData.maxGuests),
             bedrooms: Number(formData.bedrooms),
             bathrooms: Number(formData.bathrooms),
+            relatedTours: formData.relatedTours,
+            relatedSightseeing: formData.relatedSightseeing,
+            relatedActivities: formData.relatedActivities,
+            relatedRentals: formData.relatedRentals,
+            relatedStays: formData.relatedStays,
+            relatedFood: formData.relatedFood,
+            relatedAttractions: formData.relatedAttractions,
+            partners: formData.partners,
         };
 
         try {
@@ -241,6 +342,14 @@ export default function AddStayClient({
                 bedrooms: 1,
                 bathrooms: 1,
                 isVerified: false,
+                relatedTours: [],
+                relatedSightseeing: [],
+                relatedActivities: [],
+                relatedRentals: [],
+                relatedStays: [],
+                relatedFood: [],
+                relatedAttractions: [],
+                partners: []
             });
             setEditingId(null);
 
@@ -319,17 +428,22 @@ export default function AddStayClient({
                             <div className="flex items-center justify-between pb-2 mb-2 border-gray-200">
                                 <div className="flex-1 grid grid-cols-3 gap-4">
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Property Name</p>
-                                    <p className="text-xs font-semibold text-gray-600 uppercase">Location</p>
+                                    <p className="text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Price</p>
                                 </div>
                                 <div className="w-10"></div>
                             </div>
                             <div className="divide-y divide-gray-200">
-                                {stays.map((pkg) => (
+                                {([...stays].sort((a, b) => {
+                                    if (!sortOrder) return 0;
+                                    const stateA = a.state || '';
+                                    const stateB = b.state || '';
+                                    return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
+                                })).map((pkg) => (
                                     <div key={pkg.id} className="flex items-center justify-between py-1 hover:bg-gray-50 transition-colors">
                                         <div className="flex-1 grid grid-cols-3 gap-4">
                                             <p className="text-sm text-gray-900">{pkg.title}</p>
-                                            <p className="text-sm text-gray-900">{pkg.city}, {pkg.state}</p>
+                                            <p className="text-sm text-gray-900">{pkg.state}</p>
                                             <p className="text-sm text-gray-900">₹{pkg.price}</p>
                                         </div>
                                         <div className="relative">
@@ -442,6 +556,286 @@ export default function AddStayClient({
                                     </div>
                                 ))}
                             </div>
+                        </div>
+
+                        {/* Partners Section */}
+                        <div className="pt-8 border-t border-gray-200 mt-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-800">Stay Partners</h3>
+                                    <p className="text-sm text-gray-500">Add information about partners involved in this stay</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={addPartner}
+                                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-semibold"
+                                >
+                                    <RiAddLine size={18} />
+                                    Add Partner
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6">
+                                {formData.partners.map((partner, idx) => (
+                                    <div key={idx} className="bg-gray-50 border border-gray-200 rounded-xl p-6 relative">
+                                        <button
+                                            type="button"
+                                            onClick={() => removePartner(idx)}
+                                            className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"
+                                            title="Remove Partner"
+                                        >
+                                            <RiDeleteBinLine size={20} />
+                                        </button>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="md:col-span-2">
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.name}
+                                                    onChange={(e) => updatePartner(idx, 'name', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                                                    placeholder="e.g. Skyline Travel Agency"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Logo</label>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden shrink-0">
+                                                        {partner.logo ? (
+                                                            <img src={partner.logo} alt="Logo" className="w-full h-full object-contain" />
+                                                        ) : (
+                                                            <span className="text-xs text-gray-400">No Image</span>
+                                                        )}
+                                                    </div>
+                                                    {/* Assuming CldUploadWidget is defined elsewhere or imported */}
+                                                    {/* @ts-ignore */}
+                                                    <CldUploadWidget
+                                                        uploadPreset="travoxa"
+                                                        onSuccess={(result: any) => {
+                                                            updatePartner(idx, 'logo', result.info.secure_url);
+                                                        }}
+                                                    >
+                                                        {({ open }) => (
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => { e.preventDefault(); open(); }}
+                                                                className="px-3 py-1.5 bg-white border border-gray-300 rounded text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
+                                                            >
+                                                                <RiAddLine /> {partner.logo ? 'Change Logo' : 'Upload Logo'}
+                                                            </button>
+                                                        )}
+                                                    </CldUploadWidget>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center pt-6">
+                                                <label className="flex items-center gap-2 cursor-pointer group">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={partner.isVerified}
+                                                        onChange={(e) => updatePartner(idx, 'isVerified', e.target.checked)}
+                                                        className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                    />
+                                                    <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors flex items-center gap-1">
+                                                        Verified Partner
+                                                    </span>
+                                                </label>
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Phone Number</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.phone}
+                                                    onChange={(e) => updatePartner(idx, 'phone', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="+91..."
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Website URL</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.website}
+                                                    onChange={(e) => updatePartner(idx, 'website', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="https://..."
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">State</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.state}
+                                                    onChange={(e) => updatePartner(idx, 'state', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="State"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Location/Address</label>
+                                                <input
+                                                    type="text"
+                                                    value={partner.location}
+                                                    onChange={(e) => updatePartner(idx, 'location', e.target.value)}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="City or Full Address"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {formData.partners.length === 0 && (
+                                <div className="text-center py-8 bg-gray-50 border border-dashed border-gray-300 rounded-xl">
+                                    <p className="text-sm text-gray-500">No partners added yet</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Related Packages */}
+                        <div className="pt-8 border-t border-gray-200 mt-8 mb-8">
+                            <h3 className="text-lg font-bold text-gray-800 mb-6">Related Packages</h3>
+                            {loadingRelated ? (
+                                <div className="text-sm text-gray-500 flex items-center gap-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div> Loading related packages...
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <h4 className="font-semibold text-gray-700 mb-3">Tours</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {allTours.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                                const id = item._id || item.id;
+                                                const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                                const isChecked = formData.relatedTours.includes(id);
+                                                return (
+                                                    <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...formData.relatedTours]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, relatedTours: cur }); }} className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0" />
+                                                        <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                    </label>
+                                                );
+                                            })}
+                                            {allTours.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <h4 className="font-semibold text-gray-700 mb-3">Sightseeing</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {allSightseeing.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                                const id = item._id || item.id;
+                                                const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                                const isChecked = formData.relatedSightseeing.includes(id);
+                                                return (
+                                                    <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...formData.relatedSightseeing]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, relatedSightseeing: cur }); }} className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0" />
+                                                        <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                    </label>
+                                                );
+                                            })}
+                                            {allSightseeing.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <h4 className="font-semibold text-gray-700 mb-3">Activities</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {allActivities.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                                const id = item._id || item.id;
+                                                const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                                const isChecked = formData.relatedActivities.includes(id);
+                                                return (
+                                                    <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...formData.relatedActivities]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, relatedActivities: cur }); }} className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0" />
+                                                        <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                    </label>
+                                                );
+                                            })}
+                                            {allActivities.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <h4 className="font-semibold text-gray-700 mb-3">Rentals</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {allRentals.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                                const id = item._id || item.id;
+                                                const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                                const isChecked = formData.relatedRentals.includes(id);
+                                                return (
+                                                    <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...formData.relatedRentals]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, relatedRentals: cur }); }} className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0" />
+                                                        <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                    </label>
+                                                );
+                                            })}
+                                            {allRentals.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <h4 className="font-semibold text-gray-700 mb-3">Stays</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {stays.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                                const id = item._id || item.id;
+                                                const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                                const isChecked = formData.relatedStays.includes(id);
+                                                return (
+                                                    <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...formData.relatedStays]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, relatedStays: cur }); }} className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0" />
+                                                        <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                    </label>
+                                                );
+                                            })}
+                                            {stays.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <h4 className="font-semibold text-gray-700 mb-3">Food & Cafes</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {allFood.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                                const id = item._id || item.id;
+                                                const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                                const isChecked = formData.relatedFood.includes(id);
+                                                return (
+                                                    <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...formData.relatedFood]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, relatedFood: cur }); }} className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0" />
+                                                        <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                    </label>
+                                                );
+                                            })}
+                                            {allFood.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                        <h4 className="font-semibold text-gray-700 mb-3">Attractions</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                            {allAttractions.filter(item => item._id !== editingId && item.id !== editingId).map(item => {
+                                                const id = item._id || item.id;
+                                                const img = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
+                                                const isChecked = formData.relatedAttractions.includes(id);
+                                                return (
+                                                    <label key={id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={e => { const cur = [...formData.relatedAttractions]; if (e.target.checked) cur.push(id); else { const idx = cur.indexOf(id); if (idx > -1) cur.splice(idx, 1); } setFormData({ ...formData, relatedAttractions: cur }); }} className="w-4 h-4 text-green-600 rounded focus:ring-green-500 flex-shrink-0" />
+                                                        <img src={img} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0 bg-gray-100" />
+                                                        <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-800 line-clamp-1">{item.title || item.name}</p></div>
+                                                    </label>
+                                                );
+                                            })}
+                                            {allAttractions.length === 0 && <p className="text-xs text-gray-400 italic pb-2">No packages found.</p>}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex justify-end pt-6 border-t">

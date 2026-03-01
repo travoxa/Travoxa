@@ -122,10 +122,38 @@ const RentalSchema = new mongoose.Schema({
     googleMapLink: {
         type: String,
         required: false
-    }
+    },
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'approved'
+    },
+    // Related Packages
+    relatedTours: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tour' }],
+    relatedSightseeing: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Sightseeing' }],
+    relatedActivities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Activity' }],
+    relatedRentals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Rental' }],
+    relatedStays: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Stay' }],
+    relatedFood: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Food' }],
+    relatedAttractions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attraction' }],
+    partners: [{
+        name: String,
+        logo: String,
+        phone: String,
+        website: String,
+        location: String,
+        state: String,
+        isVerified: {
+            type: Boolean,
+            default: false
+        }
+    }]
 }, {
     timestamps: true
 });
 
 export default mongoose.models.Rental || mongoose.model('Rental', RentalSchema);
-

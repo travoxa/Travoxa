@@ -19,9 +19,11 @@ import {
     FaShieldHalved
 } from "react-icons/fa6";
 import { MdLocationOn, MdPlace, MdPhone, MdMap } from "react-icons/md";
+import { HiBadgeCheck, HiLocationMarker, HiPhone, HiGlobeAlt } from "react-icons/hi";
 import SaveButton from "@/components/ui/SaveButton";
 import { useRouter } from "next/navigation";
 import { FaArrowLeft } from "react-icons/fa";
+import RelatedPackages from "@/components/ui/RelatedPackages";
 
 export default function RentalDetailsPage() {
     const { id } = useParams();
@@ -66,6 +68,12 @@ export default function RentalDetailsPage() {
         }
     };
 
+    const ensureProtocol = (url: string) => {
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return `https://${url}`;
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -99,7 +107,12 @@ export default function RentalDetailsPage() {
                     >
                         <FaArrowLeft /> BACK
                     </button>
-                    <SaveButton itemId={rental._id || id} itemType="rental" />
+                    <SaveButton
+                        itemId={rental._id || id}
+                        itemType="rental"
+                        title={rental.name}
+                        itemLink={`/travoxa-discovery/rentals/${rental._id || id}`}
+                    />
                 </div>
 
                 {/* Header Section */}
@@ -274,6 +287,65 @@ export default function RentalDetailsPage() {
                             </div>
                         </section>
 
+                        {/* Partners Info */}
+                        {rental.partners && rental.partners.length > 0 && (
+                            <section className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                                <div className="mb-8">
+                                    <h2 className="text-xl font-bold text-slate-900 Mont">Verified Rental Partners</h2>
+                                    <p className="text-slate-500 mt-1 text-sm Inter">Meet our authorized rental service providers</p>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {rental.partners.map((partner: any, index: number) => (
+                                        <div key={index} className="bg-slate-50 rounded-2xl p-6 border border-slate-100 hover:border-emerald-200 transition-colors">
+                                            <div className="flex items-center gap-4 mb-4">
+                                                {partner.logo ? (
+                                                    <div className="w-16 h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center p-2 shrink-0 overflow-hidden">
+                                                        <img src={partner.logo} alt={partner.name} className="w-full h-full object-contain" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-16 h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center shrink-0">
+                                                        <span className="text-slate-400 text-xs font-medium uppercase tracking-tighter">No Logo</span>
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                                                        {partner.name}
+                                                        {partner.isVerified && <HiBadgeCheck className="text-blue-500 text-xl" title="Verified Partner" />}
+                                                    </h3>
+                                                    {(partner.location || partner.state) && (
+                                                        <p className="text-sm text-slate-500 flex items-start gap-1 mt-1">
+                                                            <HiLocationMarker className="text-emerald-500 mt-0.5 shrink-0" />
+                                                            <span>
+                                                                {partner.location}{partner.location && partner.state ? ', ' : ''}{partner.state}
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {(partner.phone || partner.website) && (
+                                                <div className="pt-4 border-t border-slate-200 flex flex-col gap-2">
+                                                    {partner.phone && (
+                                                        <a href={`tel:${partner.phone}`} className="flex items-center gap-2 text-sm text-slate-600 hover:text-emerald-600 transition-colors">
+                                                            <HiPhone className="text-slate-400" />
+                                                            <span>{partner.phone}</span>
+                                                        </a>
+                                                    )}
+                                                    {partner.website && (
+                                                        <a href={ensureProtocol(partner.website)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline transition-colors">
+                                                            <HiGlobeAlt className="text-slate-400" />
+                                                            <span>Visit Website</span>
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+
                     </div>
 
                     {/* RIGHT COLUMN: Booking Card */}
@@ -387,6 +459,19 @@ export default function RentalDetailsPage() {
                 </div>
 
             </div>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+                <RelatedPackages
+                    tours={rental?.relatedTours}
+                    sightseeing={rental?.relatedSightseeing}
+                    activities={rental?.relatedActivities}
+                    rentals={rental?.relatedRentals}
+                    stays={rental?.relatedStays}
+                    food={rental?.relatedFood}
+                    attractions={rental?.relatedAttractions}
+                />
+            </div>
+
             <Footor />
         </div>
     );

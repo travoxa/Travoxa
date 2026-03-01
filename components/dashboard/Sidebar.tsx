@@ -117,6 +117,24 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmi
                                     onClick={setActiveTab}
                                 />
                             )}
+                            {permissions.includes('Vendor Requests') && (
+                                <NavItem
+                                    icon={<RiFileListLine size={20} />}
+                                    label="Vendor Requests"
+                                    id="Vendor Requests"
+                                    activeTab={activeTab}
+                                    onClick={setActiveTab}
+                                />
+                            )}
+                            {permissions.includes('Listings') && (
+                                <NavItem
+                                    icon={<RiFileListLine size={20} />}
+                                    label="Listings"
+                                    id="Listings"
+                                    activeTab={activeTab}
+                                    onClick={setActiveTab}
+                                />
+                            )}
                             {permissions.includes('Team') && (
                                 <NavItem
                                     icon={<RiGroupLine size={20} />}

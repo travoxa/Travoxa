@@ -19,11 +19,31 @@ const connectDB = async () => {
     console.log('[MongoDB] Connected successfully!');
 };
 
-export async function GET() {
+export async function GET(req: Request) {
     console.log('[API/GET] Fetching all tours...');
     try {
         await connectDB();
-        const tours = await Tour.find({}).sort({ createdAt: -1 });
+
+        // Get vendorId and admin flag from URL query params
+        const { searchParams } = new URL(req.url);
+        const vendorId = searchParams.get('vendorId');
+        const admin = searchParams.get('admin');
+        const status = searchParams.get('status');
+
+        // Build query
+        const query: any = {};
+        if (vendorId) {
+            // Vendor dashboard: show all their items
+            query.vendorId = vendorId;
+        } else if (admin === 'true') {
+            // Admin dashboard: show all items, optionally filtered by status
+            if (status) query.status = status;
+        } else {
+            // Public frontend: only show approved items
+            query.status = 'approved';
+        }
+
+        const tours = await Tour.find(query).sort({ createdAt: -1 });
         console.log(`[API/GET] Found ${tours.length} tours in database`);
 
         // Map _id to id for frontend compatibility
@@ -61,7 +81,15 @@ export async function POST(req: Request) {
         }
 
         console.log('[API/POST] Validation passed, creating tour in MongoDB...');
-        const tour = await Tour.create(body);
+
+        // Ensure vendorId is provided for vendor creations
+        // If there is a vendorId, it means a vendor created it, so auto-set status to 'pending'
+        const tourData = {
+            ...body,
+            status: body.vendorId ? 'pending' : 'approved'
+        };
+
+        const tour = await Tour.create(tourData);
         console.log('[API/POST] ✓ Tour created successfully with _id:', tour._id);
 
         // Return with id field

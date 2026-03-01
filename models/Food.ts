@@ -35,26 +35,103 @@ const FoodSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please provide an overview'],
     },
-    mustTry: {
+    famousDish: {
+        type: String,
+        required: [true, 'Please provide famous dish name'],
+    },
+    distFromAttraction: {
+        type: String, // e.g. "250m away"
+    },
+    area: {
+        type: String, // Location detail
+    },
+    avgCostPerPerson: {
+        type: Number,
+        required: [true, 'Please provide average cost for one person'],
+    },
+    hygieneRating: {
+        type: Number,
+        min: 0,
+        max: 5,
+        default: 0,
+    },
+    badges: {
         type: [String],
         default: [],
     },
+    dishType: {
+        type: String,
+        enum: ['Veg', 'Non-Veg', 'Both'],
+        required: [true, 'Please provide dish type'],
+    },
+    openingTime: String,
+    closingTime: String,
+    bestTimeToVisit: String,
+    dineIn: {
+        type: Boolean,
+        default: true,
+    },
+    takeaway: {
+        type: Boolean,
+        default: true,
+    },
+    homeDelivery: {
+        type: Boolean,
+        default: false,
+    },
+    contactPerson: String,
+    phoneNumber: String,
+    whatsappNumber: String,
+    address: String,
+    attractionName: String, // For distance context
+    fullMenu: [
+        {
+            category: String,
+            items: [
+                {
+                    name: String,
+                    price: Number,
+                }
+            ]
+        }
+    ],
     image: {
         type: String,
         required: [true, 'Please provide an image'],
     },
-    rating: {
-        type: Number,
-        default: 0,
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
     },
-    reviews: {
-        type: Number,
-        default: 0,
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'approved'
     },
+    partners: [{
+        name: String,
+        logo: String,
+        phone: String,
+        website: String,
+        location: String,
+        state: String,
+        isVerified: {
+            type: Boolean,
+            default: false
+        }
+    }],
     createdAt: {
         type: Date,
         default: Date.now,
     },
+    // Related Packages
+    relatedTours: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tour' }],
+    relatedSightseeing: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Sightseeing' }],
+    relatedActivities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Activity' }],
+    relatedRentals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Rental' }],
+    relatedStays: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Stay' }],
+    relatedFood: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Food' }],
+    relatedAttractions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attraction' }]
 });
 
 export default mongoose.models.Food || mongoose.model('Food', FoodSchema);

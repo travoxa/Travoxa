@@ -64,6 +64,15 @@ export interface AttractionPackage {
         crowdLevel?: string;
         safetyScore?: number;
     };
+    partners?: {
+        name: string;
+        logo?: string;
+        phone?: string;
+        website?: string;
+        location?: string;
+        state?: string;
+        isVerified?: boolean;
+    }[];
 }
 
 export interface OpeningSlot {

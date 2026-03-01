@@ -7,7 +7,14 @@ import { FaSearch, FaMapMarkerAlt, FaUtensils, FaChevronDown } from "react-icons
 import { foodPackages } from "@/data/foodData";
 
 interface FoodHeroProps {
-    onSearch: (filters: { state: string; city: string; category: string }) => void;
+    onSearch: (filters: {
+        state: string;
+        city: string;
+        category: string;
+        dishType: string;
+        famousDish: string;
+        priceRange: string;
+    }) => void;
 }
 
 export default function FoodHero({ onSearch }: FoodHeroProps) {
@@ -19,6 +26,9 @@ export default function FoodHero({ onSearch }: FoodHeroProps) {
     const [selectedState, setSelectedState] = useState("");
     const [selectedCity, setSelectedCity] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("");
+    const [selectedDishType, setSelectedDishType] = useState("");
+    const [famousDish, setFamousDish] = useState("");
+    const [selectedPriceRange, setSelectedPriceRange] = useState("");
 
     // Initialize States from data
     useEffect(() => {
@@ -46,7 +56,10 @@ export default function FoodHero({ onSearch }: FoodHeroProps) {
         onSearch({
             state: selectedState,
             city: selectedCity,
-            category: selectedCategory
+            category: selectedCategory,
+            dishType: selectedDishType,
+            famousDish: famousDish,
+            priceRange: selectedPriceRange
         });
     };
 
@@ -75,75 +88,119 @@ export default function FoodHero({ onSearch }: FoodHeroProps) {
                 </h1>
 
                 {/* Search Bar */}
-                <div className="w-full max-w-4xl bg-white/90 backdrop-blur-sm rounded-full p-2.5 flex flex-col md:flex-row gap-1 items-center border border-slate-200 hover:border-yellow-500/30 transition-colors shadow-lg">
-
-                    {/* State Dropdown */}
-                    <div className="flex-1 w-full relative group">
-                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-yellow-500 transition-colors">
-                            <FaMapMarkerAlt size={10} />
+                <div className="w-full max-w-6xl bg-white/95 backdrop-blur-md rounded-3xl p-4 flex flex-col gap-4 border border-slate-200 shadow-2xl">
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                        {/* State Dropdown */}
+                        <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-yellow-500 transition-colors">
+                                <FaMapMarkerAlt size={10} />
+                            </div>
+                            <select
+                                value={selectedState}
+                                onChange={(e) => setSelectedState(e.target.value)}
+                                className="w-full h-11 pl-10 pr-6 rounded-xl bg-slate-50 hover:bg-white border border-slate-100 hover:border-yellow-200 text-slate-700 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-yellow-500/20 appearance-none cursor-pointer transition-all"
+                            >
+                                <option value="">Select State</option>
+                                {states.map(state => (
+                                    <option key={state} value={state}>{state}</option>
+                                ))}
+                            </select>
                         </div>
-                        <select
-                            value={selectedState}
-                            onChange={(e) => setSelectedState(e.target.value)}
-                            className="w-full h-9 pl-10 pr-6 rounded-full bg-transparent hover:bg-slate-50 border-none text-slate-700 text-xs font-light focus:outline-none focus:ring-0 appearance-none cursor-pointer transition-colors"
-                        >
-                            <option value="">Select State</option>
-                            {states.map(state => (
-                                <option key={state} value={state}>{state}</option>
-                            ))}
-                        </select>
-                        <FaChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 text-[8px] pointer-events-none" />
+
+                        {/* City Dropdown */}
+                        <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-yellow-500 transition-colors">
+                                <FaMapMarkerAlt size={10} />
+                            </div>
+                            <select
+                                value={selectedCity}
+                                onChange={(e) => setSelectedCity(e.target.value)}
+                                disabled={!selectedState}
+                                className={`w-full h-11 pl-10 pr-6 rounded-xl bg-slate-50 border border-slate-100 text-slate-700 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-yellow-500/20 appearance-none cursor-pointer transition-all ${!selectedState ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white hover:border-yellow-200'}`}
+                            >
+                                <option value="">Select City</option>
+                                {cities.map(city => (
+                                    <option key={city} value={city}>{city}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Food Type */}
+                        <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-yellow-500 transition-colors">
+                                <FaUtensils size={10} />
+                            </div>
+                            <select
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                className="w-full h-11 pl-10 pr-6 rounded-xl bg-slate-50 hover:bg-white border border-slate-100 hover:border-yellow-200 text-slate-700 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-yellow-500/20 appearance-none cursor-pointer transition-all"
+                            >
+                                <option value="">Food Type</option>
+                                {['Restaurant', 'Cafe', 'Dhaba', 'Street Food'].map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Dish Type */}
+                        <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-yellow-500 transition-colors">
+                                <FaUtensils size={10} />
+                            </div>
+                            <select
+                                value={selectedDishType}
+                                onChange={(e) => setSelectedDishType(e.target.value)}
+                                className="w-full h-11 pl-10 pr-6 rounded-xl bg-slate-50 hover:bg-white border border-slate-100 hover:border-yellow-200 text-slate-700 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-yellow-500/20 appearance-none cursor-pointer transition-all"
+                            >
+                                <option value="">Dish Type</option>
+                                <option value="Veg">Veg Only</option>
+                                <option value="Non-Veg">Non-Veg</option>
+                                <option value="Both">Both</option>
+                            </select>
+                        </div>
+
+                        {/* Budget Filter */}
+                        <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-yellow-500 transition-colors">
+                                <span className="font-bold text-[10px]">₹</span>
+                            </div>
+                            <select
+                                value={selectedPriceRange}
+                                onChange={(e) => setSelectedPriceRange(e.target.value)}
+                                className="w-full h-11 pl-10 pr-6 rounded-xl bg-slate-50 hover:bg-white border border-slate-100 hover:border-yellow-200 text-slate-700 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-yellow-500/20 appearance-none cursor-pointer transition-all"
+                            >
+                                <option value="">Budget</option>
+                                <option value="$">Budget ($)</option>
+                                <option value="$$">Moderate ($$)</option>
+                                <option value="$$$">Premium ($$$)</option>
+                                <option value="$$$$">Luxury ($$$$)</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div className="h-5 w-[1px] bg-slate-300 hidden md:block"></div>
-
-                    {/* City Dropdown */}
-                    <div className="flex-1 w-full relative group">
-                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-yellow-500 transition-colors">
-                            <FaMapMarkerAlt size={10} />
+                    <div className="flex flex-col md:flex-row gap-3">
+                        <div className="flex-1 relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-yellow-500 transition-colors">
+                                <FaSearch size={10} />
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Search by famous dish (e.g. Lassi, Thali...)"
+                                value={famousDish}
+                                onChange={(e) => setFamousDish(e.target.value)}
+                                className="w-full h-12 pl-10 pr-4 rounded-xl bg-slate-50 hover:bg-white border border-slate-100 hover:border-yellow-200 text-slate-700 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-yellow-500/20 transition-all placeholder:text-slate-400 shadow-inner"
+                            />
                         </div>
-                        <select
-                            value={selectedCity}
-                            onChange={(e) => setSelectedCity(e.target.value)}
-                            disabled={!selectedState}
-                            className={`w-full h-9 pl-10 pr-6 rounded-full bg-transparent border-none text-slate-700 text-xs font-light focus:outline-none focus:ring-0 appearance-none cursor-pointer transition-colors ${!selectedState ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50'}`}
+
+                        {/* Search Button */}
+                        <button
+                            onClick={handleSearch}
+                            className="h-12 px-8 bg-slate-900 hover:bg-yellow-600 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 uppercase tracking-widest shadow-lg hover:shadow-yellow-500/20"
                         >
-                            <option value="">Select City</option>
-                            {cities.map(city => (
-                                <option key={city} value={city}>{city}</option>
-                            ))}
-                        </select>
-                        <FaChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 text-[8px] pointer-events-none" />
+                            <FaSearch size={10} />
+                            Find Food
+                        </button>
                     </div>
-
-                    <div className="h-5 w-[1px] bg-slate-300 hidden md:block"></div>
-
-                    {/* Category (Optional) */}
-                    <div className="w-full md:w-auto relative group">
-                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-yellow-500 transition-colors">
-                            <FaUtensils size={10} />
-                        </div>
-                        <select
-                            value={selectedCategory}
-                            onChange={(e) => setSelectedCategory(e.target.value)}
-                            className="w-full md:w-48 h-9 pl-10 pr-6 rounded-full bg-transparent hover:bg-slate-50 border-none text-slate-700 text-xs font-light focus:outline-none focus:ring-0 appearance-none cursor-pointer transition-colors"
-                        >
-                            <option value="">Food Type</option>
-                            {categories.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
-                        <FaChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 text-[8px] pointer-events-none" />
-                    </div>
-
-                    {/* Search Button */}
-                    <button
-                        onClick={handleSearch}
-                        className="w-full md:w-auto h-9 px-6 bg-slate-900 hover:bg-yellow-600 text-white text-[10px] font-medium rounded-full transition-all flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wide ml-1 shadow-md"
-                    >
-                        <FaSearch size={8} />
-                        Search
-                    </button>
                 </div>
             </div>
         </div>

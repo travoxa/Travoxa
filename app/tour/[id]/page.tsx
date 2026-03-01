@@ -3,7 +3,7 @@ import NormalHeader from "@/components/ui/NormalHeader";
 import Footer from "@/components/ui/Footor";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { HiCheck, HiX, HiCalendar, HiLocationMarker, HiDownload, HiUserGroup, HiCurrencyRupee, HiChevronDown, HiChevronUp, HiBadgeCheck } from "react-icons/hi";
+import { HiCheck, HiX, HiCalendar, HiLocationMarker, HiDownload, HiUserGroup, HiCurrencyRupee, HiChevronDown, HiChevronUp, HiBadgeCheck, HiPhone, HiGlobeAlt } from "react-icons/hi";
 import { MdRestaurant, MdHotel, MdCameraAlt, MdDirectionsBus, MdLocalFireDepartment, MdHiking, MdParagliding, MdLandscape, MdTempleHindu } from "react-icons/md";
 import HeroCarousel from "@/components/tour/HeroCarousel";
 import SaveButton from "@/components/ui/SaveButton";
@@ -12,6 +12,13 @@ import BookingWidget from "@/components/tour/BookingWidget";
 
 import Tour from "@/models/Tour";
 import { connectDB } from "@/lib/mongodb";
+import Sightseeing from '@/models/Sightseeing';
+import Activity from '@/models/Activity';
+import Rental from '@/models/Rental';
+import Stay from '@/models/Stay';
+import Food from '@/models/Food';
+import Attraction from '@/models/Attraction';
+import RelatedPackages from '@/components/ui/RelatedPackages';
 
 // Helper for Highlight Icons
 const getHighlightIcon = (highlight: string) => {
@@ -48,13 +55,24 @@ async function getTourById(id: string) {
     // First try to fetch from MongoDB directly
     try {
         await connectDB();
-        const tour = await Tour.findById(id).lean();
+        // pre-register models to ensure population works
+        Sightseeing.find().limit(1); Activity.find().limit(1); Rental.find().limit(1); Stay.find().limit(1); Food.find().limit(1); Attraction.find().limit(1);
+
+        const tour = await Tour.findById(id)
+            .populate('relatedTours', 'title image _id googleRating rating location city state')
+            .populate('relatedSightseeing', 'title image _id rating location city state')
+            .populate('relatedActivities', 'title image _id rating location city state')
+            .populate('relatedRentals', 'title name image _id rating location city state')
+            .populate('relatedStays', 'title name image _id rating location city state')
+            .populate('relatedFood', 'name image _id rating location city state cuisine')
+            .populate('relatedAttractions', 'title image _id rating location city state type category')
+            .lean();
 
         if (tour) {
             console.log('[DETAIL PAGE] Found MongoDB tour with id:', id);
             // Serialize _id and dates to simple strings to pass to components
             return {
-                ...tour,
+                ...JSON.parse(JSON.stringify(tour)),
                 _id: tour._id.toString(),
                 id: tour._id.toString(),
                 createdAt: tour.createdAt ? new Date(tour.createdAt).toISOString() : undefined,
@@ -133,6 +151,7 @@ export default async function TourDetailPage({ params }: PageProps) {
                 duration={pkg.duration}
                 itemId={pkg._id ? pkg._id.toString() : pkg.id}
                 itemType="tour"
+                itemLink={`/tour/${pkg._id ? pkg._id.toString() : pkg.id}`}
                 hideControls={true}
             />
 
@@ -140,28 +159,17 @@ export default async function TourDetailPage({ params }: PageProps) {
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-12">
 
-                    {/* Partners Info */}
-                    {pkg.partners && pkg.partners.length > 0 && (
-                        <div className="flex flex-wrap gap-4">
-                            {pkg.partners.map((partner: any, idx: number) => (
-                                <div key={idx} className="inline-flex items-center gap-3 bg-white border border-gray-200 px-4 py-2 rounded-full shadow-sm">
-                                    {partner.logo && (
-                                        <img src={partner.logo} alt={partner.name} className="w-6 h-6 object-contain rounded-full" />
-                                    )}
-                                    <span className="font-semibold text-gray-800 text-sm">{partner.name}</span>
-                                    {partner.isVerified && (
-                                        <HiBadgeCheck className="text-blue-500 text-lg" title="Verified Partner" />
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
 
                     {/* Overview */}
                     <section>
                         <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                             Overview
-                            <SaveButton itemId={pkg._id ? pkg._id.toString() : pkg.id} itemType="tour" />
+                            <SaveButton
+                                itemId={pkg._id ? pkg._id.toString() : pkg.id}
+                                itemType="tour"
+                                title={pkg.title}
+                                itemLink={`/tour/${pkg._id ? pkg._id.toString() : pkg.id}`}
+                            />
                         </h2>
                         <p className="text-gray-600 leading-relaxed text-lg">
                             {pkg.overview}
@@ -320,6 +328,61 @@ export default async function TourDetailPage({ params }: PageProps) {
                                                 </div>
                                             </div>
                                         </details>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Partners Info Section */}
+                    {pkg.partners && pkg.partners.length > 0 && (
+                        <section>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-6">Our Tour Partners</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {pkg.partners.map((partner: any, idx: number) => (
+                                    <div key={idx} className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col gap-4">
+                                        <div className="flex items-center gap-4">
+                                            {partner.logo ? (
+                                                <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                                                    <img src={partner.logo} alt={partner.name} className="w-full h-full object-contain p-1" />
+                                                </div>
+                                            ) : (
+                                                <div className="w-16 h-16 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
+                                                    <span className="text-gray-400 text-xs font-medium">No Logo</span>
+                                                </div>
+                                            )}
+                                            <div>
+                                                <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
+                                                    {partner.name}
+                                                    {partner.isVerified && <HiBadgeCheck className="text-blue-500 text-xl" title="Verified Partner" />}
+                                                </h3>
+                                                {(partner.location || partner.state) && (
+                                                    <p className="text-sm text-gray-500 flex items-start gap-1 mt-1">
+                                                        <HiLocationMarker className="text-gray-400 mt-0.5 shrink-0" />
+                                                        <span>
+                                                            {partner.location}{partner.location && partner.state ? ', ' : ''}{partner.state}
+                                                        </span>
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {(partner.phone || partner.website) && (
+                                            <div className="pt-4 border-t border-gray-100 flex flex-col gap-2">
+                                                {partner.phone && (
+                                                    <a href={`tel:${partner.phone}`} className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-600 transition-colors">
+                                                        <HiPhone className="text-gray-400" />
+                                                        <span>{partner.phone}</span>
+                                                    </a>
+                                                )}
+                                                {partner.website && (
+                                                    <a href={ensureProtocol(partner.website)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline transition-colors">
+                                                        <HiGlobeAlt className="text-gray-400" />
+                                                        <span>Visit Website</span>
+                                                    </a>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -491,6 +554,18 @@ export default async function TourDetailPage({ params }: PageProps) {
                     />
                 </div>
 
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6 pb-12">
+                <RelatedPackages
+                    tours={pkg.relatedTours}
+                    sightseeing={pkg.relatedSightseeing}
+                    activities={pkg.relatedActivities}
+                    rentals={pkg.relatedRentals}
+                    stays={pkg.relatedStays}
+                    food={pkg.relatedFood}
+                    attractions={pkg.relatedAttractions}
+                />
             </div>
 
             <Footer />
