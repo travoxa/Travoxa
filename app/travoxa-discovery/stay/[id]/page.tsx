@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Header from "@/components/ui/Header";
-import Footor from "@/components/ui/Footor";
+import Footer from "@/components/ui/Footer";
 import { FaMapMarkerAlt, FaStar, FaBed, FaBath, FaUserFriends, FaWhatsapp, FaCheck, FaPhoneAlt, FaEnvelope, FaArrowLeft } from "react-icons/fa";
 import { HiBadgeCheck, HiLocationMarker, HiPhone, HiGlobeAlt } from "react-icons/hi";
 import SaveButton from "@/components/ui/SaveButton";
@@ -305,7 +305,7 @@ export default function StayDetailsPage() {
                 />
             </div>
 
-            <Footor />
+            <Footer />
         </div>
     );
 }

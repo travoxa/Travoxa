@@ -1,6 +1,6 @@
 import React from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import { FaSearch, FaTruck, FaCog, FaExclamationCircle, FaLock, FaUser, FaUsers, FaArrowRight } from 'react-icons/fa';
 import Link from 'next/link';
 
@@ -84,7 +84,7 @@ const HelpPage = () => {
                     </div>
                 </div>
             </div>
-            <Footor />
+            <Footer />
         </div>
     );
 };

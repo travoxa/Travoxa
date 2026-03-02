@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import Image from 'next/image';
 import {
     FaMapMarkerAlt, FaStar, FaRegClock, FaBolt, FaCheck, FaTimes,
@@ -366,7 +366,7 @@ const ActivityDetailsClient: React.FC<ActivityDetailsClientProps> = ({ activity 
                 />
             </div>
 
-            <Footor />
+            <Footer />
         </div>
     );
 };

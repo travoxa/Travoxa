@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FaYoutube, FaInstagram, FaFacebook, FaPenNib, FaVideo } from 'react-icons/fa';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -244,7 +244,7 @@ const TravoxaPartnersPage = () => {
                 </div>
             </section>
 
-            <Footor />
+            <Footer />
         </div>
     );
 };

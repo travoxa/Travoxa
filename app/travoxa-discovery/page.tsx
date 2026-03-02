@@ -16,7 +16,7 @@ import {
     FaChevronRight
 } from 'react-icons/fa';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Image from 'next/image';
@@ -368,7 +368,7 @@ const TravoxaDiscoveryPage = () => {
 
             </main>
 
-            <Footor />
+            <Footer />
         </div>
     );
 };

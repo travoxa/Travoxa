@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/ui/Header";
-import Footor from "@/components/ui/Footor";
+import Footer from "@/components/ui/Footer";
 import { getFirebaseAuth } from "@/lib/firebaseAuth";
 import { checkUserExistsByEmail } from "@/lib/clientUtils";
 
@@ -247,7 +247,7 @@ export default function OnboardingPage() {
             </div>
           </div>
         </div>
-        <Footor />
+        <Footer />
       </>
     );
   }
@@ -821,7 +821,7 @@ export default function OnboardingPage() {
           </div>
         </div>
       </main>
-      <Footor />
+      <Footer />
     </>
   );
 }

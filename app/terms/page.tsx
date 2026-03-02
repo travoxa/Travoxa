@@ -1,6 +1,6 @@
 import React from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 
 const TermsPage = () => {
     return (
@@ -76,7 +76,7 @@ const TermsPage = () => {
                     </div>
                 </div>
             </div>
-            <Footor />
+            <Footer />
         </div>
     );
 };

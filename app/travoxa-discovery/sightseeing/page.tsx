@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import { SightseeingPackage } from '@/data/sightseeingData';
 import SightseeingHero from '@/components/Pages/Sightseeing/SightseeingHero';
 import SightseeingFilterSidebar from '@/components/Pages/Sightseeing/SightseeingFilterSidebar';
@@ -216,7 +216,7 @@ const SightseeingPage = () => {
                 </div>
             </div>
 
-            <Footor />
+            <Footer />
         </div>
     );
 };

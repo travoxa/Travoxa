@@ -1,6 +1,6 @@
 import React from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import { FaPhone, FaEnvelope, FaCommentDots, FaQuestionCircle } from 'react-icons/fa';
 
 const SupportPage = () => {
@@ -108,7 +108,7 @@ const SupportPage = () => {
                     </div>
                 </div>
             </div>
-            <Footor />
+            <Footer />
         </div>
     );
 };

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import Link from 'next/link';
 import { FaLocationDot, FaUsers, FaSliders, FaCamera } from 'react-icons/fa6';
 import Image from 'next/image';
@@ -202,7 +202,7 @@ const LocalConnectPage = () => {
                 </div>
             </div>
 
-            <Footor />
+            <Footer />
         </div>
     );
 };

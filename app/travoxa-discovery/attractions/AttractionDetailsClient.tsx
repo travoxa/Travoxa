@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/ui/Header';
 import NormalHeader from '@/components/ui/NormalHeader';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import Image from 'next/image';
 import {
     FaMapMarkerAlt, FaStar, FaRegClock, FaCheck,
@@ -609,7 +609,7 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                 />
             </div>
 
-            <Footor />
+            <Footer />
         </div >
     );
 };

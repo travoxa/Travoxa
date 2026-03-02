@@ -8,7 +8,7 @@ import PackageCard from "@/components/Pages/Tour/PackageCard";
 import CustomTourForm from "@/components/Pages/Tour/CustomTourForm";
 import TourFilterSearch from "@/components/Pages/Tour/TourFilterSearch";
 import Header from "@/components/ui/Header";
-import Footer from "@/components/ui/Footor"; // Note: typo in original file 'Footor'
+import Footer from "@/components/ui/Footer"; // Note: typo in original file 'Footer'
 import Image from "next/image";
 import SectionLoading from "@/components/ui/components/SectionLoading";
 

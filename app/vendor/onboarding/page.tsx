@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/ui/Header";
-import Footor from "@/components/ui/Footor";
+import Footer from "@/components/ui/Footer";
 import { checkUserExistsByEmail } from "@/lib/clientUtils";
 
 interface VendorFormData {
@@ -117,7 +117,7 @@ export default function VendorOnboardingPage() {
                         </div>
                     </div>
                 </div>
-                <Footor />
+                <Footer />
             </>
         );
     }
@@ -208,7 +208,7 @@ export default function VendorOnboardingPage() {
                     </div>
                 </div>
             </main>
-            <Footor />
+            <Footer />
         </>
     );
 }

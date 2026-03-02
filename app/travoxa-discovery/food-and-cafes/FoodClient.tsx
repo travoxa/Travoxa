@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import FoodHero from '@/components/Pages/FoodAndCafes/FoodHero';
 import FoodFilterSidebar from '@/components/Pages/FoodAndCafes/FoodFilterSidebar';
 import FoodCard from '@/components/Pages/FoodAndCafes/FoodCard';
@@ -223,7 +223,7 @@ const FoodClient: React.FC<FoodClientProps> = ({ initialPackages }) => {
                 </div>
             </div>
 
-            <Footor />
+            <Footer />
         </div>
     );
 };

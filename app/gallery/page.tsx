@@ -5,7 +5,7 @@ import Image from "next/image";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import GalleryHeader from "@/components/ui/GalleryHeader";
-import Footor from "@/components/ui/Footor";
+import Footer from "@/components/ui/Footer";
 
 const GalleryPage = () => {
     useEffect(() => {
@@ -222,7 +222,7 @@ const GalleryPage = () => {
                 </div>
             </main>
 
-            <Footor />
+            <Footer />
         </div>
     );
 };
