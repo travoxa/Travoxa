@@ -521,7 +521,7 @@ export default function AddActivitiesClient({
                     ) : activities.length > 0 ? (
                         <div className="bg-white rounded-xl border border-gray-200 p-6">
                             <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Activities</h2>
-                            <div className="flex items-center justify-between pb-2 mb-2 border-gray-200">
+                            <div className="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 hidden md:flex">
                                 <div className="flex-1 grid grid-cols-4 gap-4">
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Title</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Type</p>
@@ -537,12 +537,24 @@ export default function AddActivitiesClient({
                                     const stateB = b.state || '';
                                     return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
                                 })).map((activity) => (
-                                    <div key={activity._id} className="flex items-center justify-between py-2 hover:bg-gray-50 transition-colors">
-                                        <div className="flex-1 grid grid-cols-4 gap-4">
-                                            <p className="text-sm text-gray-900 truncate pr-2">{activity.title}</p>
-                                            <p className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded w-fit">{activity.type}</p>
-                                            <p className="text-sm text-gray-900">{activity.state}</p>
-                                            <p className="text-sm text-gray-900">₹{activity.price}</p>
+                                    <div key={activity._id} className="flex flex-col md:flex-row md:items-center justify-between py-4 md:py-2 hover:bg-gray-50 transition-colors gap-3 md:gap-0">
+                                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+                                            <div>
+                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Title</p>
+                                                <p className="text-sm font-medium md:font-normal text-gray-900 truncate pr-2">{activity.title}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Type</p>
+                                                <p className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded w-fit">{activity.type}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">State</p>
+                                                <p className="text-sm text-gray-900">{activity.state}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Price</p>
+                                                <p className="text-sm text-gray-900">₹{activity.price}</p>
+                                            </div>
                                         </div>
                                         <div className="relative">
                                             <button

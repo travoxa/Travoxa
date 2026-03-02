@@ -433,7 +433,7 @@ export default function AddHelplineClient({
                     </div>
 
                     {/* Column Headers */}
-                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-gray-100">
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 hidden md:flex">
                         <div className="flex-1 grid grid-cols-4 gap-4">
                             <p className="text-xs font-semibold text-gray-500 uppercase">Service Name</p>
                             <p className="text-xs font-semibold text-gray-500 uppercase">Type</p>
@@ -455,16 +455,26 @@ export default function AddHelplineClient({
                                 const stateB = b.state || '';
                                 return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
                             })).map((h) => (
-                                <div key={h._id} className="flex items-center justify-between py-2 hover:bg-gray-50 transition-colors">
-                                    <div className="flex-1 grid grid-cols-4 gap-4 items-center">
-                                        <div className="text-sm font-medium text-gray-900">{h.serviceName}</div>
+                                <div key={h._id} className="flex flex-col md:flex-row md:items-center justify-between py-4 md:py-2 hover:bg-gray-50 transition-colors gap-3 md:gap-0">
+                                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 items-center">
                                         <div>
+                                            <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Service Name</p>
+                                            <div className="text-sm font-medium text-gray-900">{h.serviceName}</div>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Type</p>
                                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${h.emergencyType === 'Hospital' ? 'bg-red-50 text-red-600' : h.emergencyType === 'Police' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
                                                 {h.emergencyType}
                                             </span>
                                         </div>
-                                        <div className="text-sm text-gray-500">{h.state}</div>
-                                        <div className="text-sm font-medium text-rose-600">{h.phone}</div>
+                                        <div>
+                                            <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">State</p>
+                                            <div className="text-sm text-gray-500">{h.state}</div>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Phone</p>
+                                            <div className="text-sm font-medium text-rose-600">{h.phone}</div>
+                                        </div>
                                     </div>
 
                                     {/* 3-dot menu or simple action buttons - using simple buttons for now to match simplicity but following others' 3-dot style if preferred */}

@@ -34,6 +34,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
     const permissions = adminUser.permissions || [];
     const [activeTab, setActiveTab] = useState(permissions.includes('Overview') ? 'Overview' : (permissions[0] || 'Overview'))
     const [activeDiscoveryForm, setActiveDiscoveryForm] = useState<'sightseeing' | 'rentals' | 'activities' | 'attractions' | 'food' | 'stay' | 'helpline' | null>(null)
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const router = useRouter()
 
     const renderContent = () => {
@@ -52,7 +53,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
 
         if (!isAllowed) {
             return (
-                <div className="flex flex-col items-center justify-center h-[60vh] text-gray-500">
+                <div className="flex flex-col items-center justify-center h-[50vh] md:h-[60vh] text-gray-500 px-4 text-center">
                     <RiShieldCheckLine size={64} className="mb-4 opacity-20" />
                     <h2 className="text-xl font-medium Inter">Access Restricted</h2>
                     <p className="text-sm">You don't have permission to access the {activeTab} section.</p>
@@ -64,14 +65,14 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             case 'Landing':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Landing</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Landing</h1>
                     </div>
                 )
 
             case 'Tour':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Tour</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Tour</h1>
                         <AddTourClient />
                     </div>
                 )
@@ -79,7 +80,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             case 'Discovery':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Discovery</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Discovery</h1>
 
                         {/* Full-width form when active - appears at top */}
                         {activeDiscoveryForm === 'sightseeing' && hasDiscoveryPermission('Sightseeing') && (
@@ -214,7 +215,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             case 'Backpackers':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Backpackers</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Backpackers</h1>
                         <AddHostedBackpackerClient />
                     </div>
                 )
@@ -222,7 +223,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             case 'Vendor Requests':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Vendor Requests</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Vendor Requests</h1>
                         <VendorRequestsClient />
                     </div>
                 )
@@ -230,7 +231,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             case 'Team':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Team</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Team</h1>
                         <TeamManagementClient />
                     </div>
                 )
@@ -238,15 +239,15 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             case 'Overview':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Overview</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Overview</h1>
                     </div>
                 )
 
             default:
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">{activeTab}</h1>
-                        <div className="bg-white rounded-xl border border-gray-200 p-8">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">{activeTab}</h1>
+                        <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">Coming Soon</h2>
                             <p className="text-gray-600">This section is under development.</p>
                         </div>
@@ -264,12 +265,18 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                 setActiveTab={setActiveTab}
                 isAdmin={true}
                 permissions={adminUser.permissions}
+                isOpen={isSidebarOpen}
+                onClose={() => setIsSidebarOpen(false)}
             />
 
             {/* Main Content */}
-            <main className="flex-1 ml-52 p-8 lg:p-12 overflow-y-auto">
-                <div className="max-w-7xl mx-auto space-y-8">
-                    <TopBar onNavigate={setActiveTab} isAdmin={true} />
+            <main className="flex-1 md:ml-64 p-4 pt-4 md:p-8 lg:p-12 overflow-y-auto w-full transition-all duration-300">
+                <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
+                    <TopBar
+                        onNavigate={setActiveTab}
+                        isAdmin={true}
+                        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+                    />
 
                     {/* Dynamic Content Area */}
                     <div className="fade-in-up">

@@ -581,7 +581,7 @@ export default function AddSightseeingClient({
                             <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Sightseeing Packages</h2>
 
                             {/* Column Headers */}
-                            <div className="flex items-center justify-between pb-2 mb-2 border-gray-200">
+                            <div className="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 hidden md:flex">
                                 <div className="flex-1 grid grid-cols-3 gap-4">
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Package Name</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
@@ -600,12 +600,21 @@ export default function AddSightseeingClient({
                                 })).map((pkg) => (
                                     <div
                                         key={pkg.id}
-                                        className="flex items-center justify-between py-1 hover:bg-gray-50 transition-colors"
+                                        className="flex flex-col md:flex-row md:items-center justify-between py-4 md:py-1 hover:bg-gray-50 transition-colors gap-3 md:gap-0"
                                     >
-                                        <div className="flex-1 grid grid-cols-3 gap-4">
-                                            <p className="text-sm text-gray-900">{pkg.title}</p>
-                                            <p className="text-sm text-gray-900">{pkg.state}</p>
-                                            <p className="text-sm text-gray-900">₹{pkg.price}</p>
+                                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
+                                            <div>
+                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Package Name</p>
+                                                <p className="text-sm font-medium md:font-normal text-gray-900">{pkg.title}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">State</p>
+                                                <p className="text-sm text-gray-900">{pkg.state}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Price</p>
+                                                <p className="text-sm text-gray-900">₹{pkg.price}</p>
+                                            </div>
                                         </div>
 
                                         {/* 3-dot menu */}

@@ -827,7 +827,7 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                             ) : (
                                 <div className="divide-y divide-gray-200">
                                     {requests.map((req) => (
-                                        <div key={req._id} className="py-4 flex items-center justify-between">
+                                        <div key={req._id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                             <div>
                                                 <p className="font-medium text-gray-900">{req.title}</p>
                                                 <p className="text-sm text-gray-500">{req.userDetails?.name} • {req.members} Members • {req.date}</p>
@@ -888,7 +888,7 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                             <div className="bg-white rounded-xl border border-gray-200 p-6">
                                 <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Tours</h2>
 
-                                <div className="flex items-center justify-between pb-2 mb-2  border-gray-200">
+                                <div className="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 hidden md:flex">
                                     <div className="flex-1 grid grid-cols-4 gap-4">
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Tour Name</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
@@ -907,13 +907,25 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                                     })).map((tour) => (
                                         <div
                                             key={tour.id}
-                                            className="flex items-center justify-between py-1 hover:bg-gray-50 transition-colors"
+                                            className="flex flex-col md:flex-row md:items-center justify-between py-4 md:py-1 hover:bg-gray-50 transition-colors gap-3 md:gap-0"
                                         >
-                                            <div className="flex-1 grid grid-cols-4 gap-4">
-                                                <p className="text-sm text-gray-900">{tour.title}</p>
-                                                <p className="text-sm text-gray-900">{tour.state}</p>
-                                                <p className="text-sm text-gray-900">₹{tour.price}</p>
-                                                <p className="text-sm text-gray-900">{tour.minPeople && tour.maxPeople ? `${tour.minPeople} - ${tour.maxPeople}` : (tour.maxPeople || 'N/A')}</p>
+                                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+                                                <div>
+                                                    <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Tour Name</p>
+                                                    <p className="text-sm font-medium md:font-normal text-gray-900">{tour.title}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">State</p>
+                                                    <p className="text-sm text-gray-900">{tour.state}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Price</p>
+                                                    <p className="text-sm text-gray-900">₹{tour.price}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Group Size</p>
+                                                    <p className="text-sm text-gray-900">{tour.minPeople && tour.maxPeople ? `${tour.minPeople} - ${tour.maxPeople}` : (tour.maxPeople || 'N/A')}</p>
+                                                </div>
                                             </div>
 
                                             <div className="relative">
@@ -1730,7 +1742,7 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                             ) : (
                                 <div className="space-y-3">
                                     {/* Header */}
-                                    <div className="grid grid-cols-12 gap-2 text-xs font-bold text-gray-500 uppercase px-2">
+                                    <div className="grid grid-cols-12 gap-2 text-xs font-bold text-gray-500 uppercase px-2 hidden md:grid">
                                         <div className="col-span-2">People</div>
                                         <div className="col-span-4">Hotel Type</div>
                                         <div className="col-span-2">Rooms</div>
@@ -1739,8 +1751,9 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                                     </div>
 
                                     {formData.pricing.map((row, index) => (
-                                        <div key={index} className="grid grid-cols-12 gap-2 items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
-                                            <div className="col-span-2">
+                                        <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-2 items-center bg-white p-3 md:p-2 rounded-lg border border-gray-200 shadow-sm relative">
+                                            <div className="md:col-span-2">
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase md:hidden mb-1 block">People (Pax)</label>
                                                 <input
                                                     type="number"
                                                     placeholder="Pax"
@@ -1750,7 +1763,8 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                                                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                                                 />
                                             </div>
-                                            <div className="col-span-4">
+                                            <div className="md:col-span-4">
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase md:hidden mb-1 block">Hotel Type</label>
                                                 <select
                                                     value={row.hotelType}
                                                     onChange={(e) => updatePricingRow(index, 'hotelType', e.target.value)}
@@ -1760,7 +1774,8 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                                                     <option value="Premium">Premium</option>
                                                 </select>
                                             </div>
-                                            <div className="col-span-2">
+                                            <div className="md:col-span-2">
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase md:hidden mb-1 block">Rooms</label>
                                                 <input
                                                     type="number"
                                                     placeholder="Rooms"
@@ -1770,7 +1785,8 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                                                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                                                 />
                                             </div>
-                                            <div className="col-span-3">
+                                            <div className="md:col-span-3">
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase md:hidden mb-1 block">Package Price (₹)</label>
                                                 <input
                                                     type="number"
                                                     placeholder="Total"
@@ -1788,7 +1804,7 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                                                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                                                 />
                                             </div>
-                                            <div className="col-span-1 flex justify-end">
+                                            <div className="md:col-span-1 flex justify-end">
                                                 <button
                                                     type="button"
                                                     onClick={() => removePricingRow(index)}

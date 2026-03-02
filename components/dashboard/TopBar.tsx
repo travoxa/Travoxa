@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { RiSearchLine, RiArrowLeftLine, RiMapPinLine, RiUserLine, RiSettings4Line, RiShieldCheckLine, RiFileListLine, RiBarChartLine, RiNotification3Line, RiCompass3Line, RiHomeLine, RiRobotLine, RiLogoutBoxLine } from 'react-icons/ri';
+import { RiSearchLine, RiArrowLeftLine, RiMapPinLine, RiUserLine, RiSettings4Line, RiShieldCheckLine, RiFileListLine, RiBarChartLine, RiNotification3Line, RiCompass3Line, RiHomeLine, RiRobotLine, RiLogoutBoxLine, RiMenuLine } from 'react-icons/ri';
 import Notification from '@/components/dashboard/Notification';
 
 interface SearchItem {
@@ -17,9 +17,10 @@ interface TopBarProps {
     isAdmin?: boolean;
     notifications?: any[];
     onMarkAllSeen?: () => Promise<void>;
+    onToggleSidebar?: () => void;
 }
 
-const TopBar = ({ onNavigate, isAdmin = false, notifications = [], onMarkAllSeen }: TopBarProps) => {
+const TopBar = ({ onNavigate, isAdmin = false, notifications = [], onMarkAllSeen, onToggleSidebar }: TopBarProps) => {
     const router = useRouter();
     const [query, setQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
@@ -140,9 +141,18 @@ const TopBar = ({ onNavigate, isAdmin = false, notifications = [], onMarkAllSeen
     const hasUnread = notifications.some(n => !n.seen);
 
     return (
-        <div className="flex items-center justify-between mb-11 p-1 h-[50px] ">
+        <div className="flex items-center justify-between mb-8 md:mb-11 p-1 h-[50px]">
+            {/* Mobile Menu Toggle */}
+            <button
+                onClick={onToggleSidebar}
+                className="md:hidden p-2 -ml-2 text-gray-600 hover:text-black transition-colors"
+                aria-label="Toggle menu"
+            >
+                <RiMenuLine size={24} />
+            </button>
+
             {/* Search - Capsule border, aligned with content */}
-            <div className="relative w-96" ref={wrapperRef}>
+            <div className="relative w-full md:w-96 mx-2 md:mx-0" ref={wrapperRef}>
                 <RiSearchLine className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input
                     type="text"
@@ -206,10 +216,10 @@ const TopBar = ({ onNavigate, isAdmin = false, notifications = [], onMarkAllSeen
                 {isAdmin ? (
                     <button
                         onClick={() => window.location.href = '/api/admin/logout'}
-                        className="flex items-center gap-2 px-6 py-3 bg-white hover:bg-red-50 border border-red-200 text-red-500 rounded-full text-sm font-bold transition-all group"
+                        className="flex items-center gap-2 p-2 md:px-6 md:py-3 bg-transparent md:bg-white md:hover:bg-red-50 md:border md:border-red-200 text-red-500 rounded-full text-sm font-bold transition-all group"
                     >
-                        <RiLogoutBoxLine className="group-hover:translate-x-1 transition-transform" />
-                        Logout
+                        <RiLogoutBoxLine size={24} className="md:size-[18px] group-hover:translate-x-1 transition-transform" />
+                        <span className="hidden md:inline">Logout</span>
                     </button>
                 ) : (
                     <button

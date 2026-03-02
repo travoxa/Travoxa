@@ -26,9 +26,19 @@ interface SidebarProps {
     setActiveTab: (tab: string) => void;
     isAdmin?: boolean;
     permissions?: string[];
+    isOpen?: boolean;
+    onClose?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmin = false, permissions = [] }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+    user,
+    activeTab,
+    setActiveTab,
+    isAdmin = false,
+    permissions = [],
+    isOpen = false,
+    onClose
+}) => {
     const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
     const handleSignOut = async () => {
@@ -50,187 +60,246 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmi
         }
     };
 
-
     return (
-        <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-white px-6 py-8 hidden md:flex flex-col justify-between font-sans">
-            {/* Branding */}
-            <div>
-                <div className="flex items-center gap-3 mb-10 pl-2 h-[40px]">
-                    <button onClick={() => window.location.href = '/'} className="cursor-pointer">
-                        <Image
-                            src="/logo.png"
-                            alt="Travoxa"
-                            width={130}
-                            height={50}
-                            style={{ width: "auto", height: "32px" }}
-                            className="object-contain"
-                        />
-                    </button>
-                </div>
-
-                {/* Navigation */}
-                <nav className="space-y-2">
-                    {isAdmin ? (
-                        <>
-                            {permissions.includes('Overview') && (
-                                <NavItem
-                                    icon={<RiBarChartLine size={20} />}
-                                    label="Overview"
-                                    id="Overview"
-                                    activeTab={activeTab}
-                                    onClick={setActiveTab}
-                                />
-                            )}
-                            {permissions.includes('Landing') && (
-                                <NavItem
-                                    icon={<RiHomeLine size={20} />}
-                                    label="Landing"
-                                    id="Landing"
-                                    activeTab={activeTab}
-                                    onClick={setActiveTab}
-                                />
-                            )}
-                            {permissions.includes('Tour') && (
-                                <NavItem
-                                    icon={<RiCompass3Line size={20} />}
-                                    label="Tour"
-                                    id="Tour"
-                                    activeTab={activeTab}
-                                    onClick={setActiveTab}
-                                />
-                            )}
-                            {(permissions.includes('Discovery') || permissions.some(p => p.startsWith('Discovery:'))) && (
-                                <NavItem
-                                    icon={<RiMapPinLine size={20} />}
-                                    label="Discovery"
-                                    id="Discovery"
-                                    activeTab={activeTab}
-                                    onClick={setActiveTab}
-                                />
-                            )}
-                            {permissions.includes('Backpackers') && (
-                                <NavItem
-                                    icon={<RiGroupLine size={20} />}
-                                    label="Backpackers"
-                                    id="Backpackers"
-                                    activeTab={activeTab}
-                                    onClick={setActiveTab}
-                                />
-                            )}
-                            {permissions.includes('Vendor Requests') && (
-                                <NavItem
-                                    icon={<RiFileListLine size={20} />}
-                                    label="Vendor Requests"
-                                    id="Vendor Requests"
-                                    activeTab={activeTab}
-                                    onClick={setActiveTab}
-                                />
-                            )}
-                            {permissions.includes('Listings') && (
-                                <NavItem
-                                    icon={<RiFileListLine size={20} />}
-                                    label="Listings"
-                                    id="Listings"
-                                    activeTab={activeTab}
-                                    onClick={setActiveTab}
-                                />
-                            )}
-                            {permissions.includes('Team') && (
-                                <NavItem
-                                    icon={<RiGroupLine size={20} />}
-                                    label="Team"
-                                    id="Team"
-                                    activeTab={activeTab}
-                                    onClick={setActiveTab}
-                                />
-                            )}
-                        </>
-                    ) : (
-                        <>
-                            <NavItem
-                                icon={<RiUserLine size={20} />}
-                                label="Profile"
-                                id="UserProfileCard"
-                                activeTab={activeTab}
-                                onClick={setActiveTab}
-                            />
-                            <NavItem
-                                icon={<RiMapPinLine size={20} />}
-                                label="Trips"
-                                id="Trips"
-                                activeTab={activeTab}
-                                onClick={setActiveTab}
-                            />
-                            <NavItem
-                                icon={<RiPriceTagLine size={20} />}
-                                label="Saved Items"
-                                id="SavedItems"
-                                activeTab={activeTab}
-                                onClick={setActiveTab}
-                            />
-                            <NavItem
-                                icon={<RiSettings4Line size={20} />}
-                                label="Preferences"
-                                id="PreferencesCard"
-                                activeTab={activeTab}
-                                onClick={setActiveTab}
-                            />
-                            <NavItem
-                                icon={<RiShieldCheckLine size={20} />}
-                                label="Safety"
-                                id="SafetyCard"
-                                activeTab={activeTab}
-                                onClick={setActiveTab}
-                            />
-                            <NavItem
-                                icon={<RiFileListLine size={20} />}
-                                label="Activity"
-                                id="ActivityFeedCard"
-                                activeTab={activeTab}
-                                onClick={setActiveTab}
-                            />
-                            <NavItem
-                                icon={<RiBarChartLine size={20} />}
-                                label="Insights"
-                                id="InsightsCard"
-                                activeTab={activeTab}
-                                onClick={setActiveTab}
-                            />
-
-                            <button
-                                onClick={() => setShowLogoutPopup(true)}
-                                className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group text-red-500 border border-transparent hover:bg-red-50 hover:border-red-200 hover:text-red-600"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <span><RiLogoutBoxLine size={20} /></span>
-                                    <span className="text-sm font-medium">Logout</span>
-                                </div>
-                            </button>
-                        </>
-                    )}
-                </nav>
-            </div>
-
-            {/* User Profile - Only show if NOT admin */}
-            {!isAdmin && (
-                <div className="flex flex-col items-center text-center mt-auto">
-                    <div className="w-12 h-12 mx-auto mb-3 rounded-full overflow-hidden border-2 border-white bg-gray-200">
-                        {user?.image ? (
-                            <img src={user.image} alt="User" className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600 font-bold text-lg">
-                                {user?.name?.[0] || 'U'}
-                            </div>
-                        )}
-                    </div>
-                    <h4 className="text-sm font-bold text-gray-900">{user?.name || 'User'}</h4>
-                    <p className="text-xs text-gray-500 truncate w-full">{user?.email || ''}</p>
-                </div>
+        <>
+            {/* Backdrop for mobile */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm transition-opacity duration-300"
+                    onClick={onClose}
+                />
             )}
 
-            {/* Logout Confirmation Popup */}
-            {
-                showLogoutPopup && (
+            <aside className={`fixed left-0 top-0 z-50 h-screen w-64 bg-white px-6 py-8 flex flex-col justify-between font-sans transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+                {/* Branding */}
+                <div>
+                    <div className="flex items-center justify-between mb-10 pl-2">
+                        <button onClick={() => window.location.href = '/'} className="cursor-pointer">
+                            <Image
+                                src="/logo.png"
+                                alt="Travoxa"
+                                width={130}
+                                height={50}
+                                style={{ width: "auto", height: "32px" }}
+                                className="object-contain"
+                            />
+                        </button>
+                        {/* Close button for mobile */}
+                        <button
+                            onClick={onClose}
+                            className="md:hidden p-2 text-gray-500 hover:text-gray-900 transition-colors"
+                        >
+                            <RiCloseLine size={24} />
+                        </button>
+                    </div>
+
+                    {/* Navigation */}
+                    <nav className="space-y-1.5 overflow-y-auto pr-2 custom-scrollbar">
+                        {isAdmin ? (
+                            <>
+                                {permissions.includes('Overview') && (
+                                    <NavItem
+                                        icon={<RiBarChartLine size={20} />}
+                                        label="Overview"
+                                        id="Overview"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
+                                )}
+                                {permissions.includes('Landing') && (
+                                    <NavItem
+                                        icon={<RiHomeLine size={20} />}
+                                        label="Landing"
+                                        id="Landing"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
+                                )}
+                                {permissions.includes('Tour') && (
+                                    <NavItem
+                                        icon={<RiCompass3Line size={20} />}
+                                        label="Tour"
+                                        id="Tour"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
+                                )}
+                                {(permissions.includes('Discovery') || permissions.some(p => p.startsWith('Discovery:'))) && (
+                                    <NavItem
+                                        icon={<RiMapPinLine size={20} />}
+                                        label="Discovery"
+                                        id="Discovery"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
+                                )}
+                                {permissions.includes('Backpackers') && (
+                                    <NavItem
+                                        icon={<RiGroupLine size={20} />}
+                                        label="Backpackers"
+                                        id="Backpackers"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
+                                )}
+                                {permissions.includes('Vendor Requests') && (
+                                    <NavItem
+                                        icon={<RiFileListLine size={20} />}
+                                        label="Vendor Requests"
+                                        id="Vendor Requests"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
+                                )}
+                                {permissions.includes('Listings') && (
+                                    <NavItem
+                                        icon={<RiFileListLine size={20} />}
+                                        label="Listings"
+                                        id="Listings"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
+                                )}
+                                {permissions.includes('Team') && (
+                                    <NavItem
+                                        icon={<RiGroupLine size={20} />}
+                                        label="Team"
+                                        id="Team"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                <NavItem
+                                    icon={<RiUserLine size={20} />}
+                                    label="Profile"
+                                    id="UserProfileCard"
+                                    activeTab={activeTab}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+                                <NavItem
+                                    icon={<RiMapPinLine size={20} />}
+                                    label="Trips"
+                                    id="Trips"
+                                    activeTab={activeTab}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+                                <NavItem
+                                    icon={<RiPriceTagLine size={20} />}
+                                    label="Saved Items"
+                                    id="SavedItems"
+                                    activeTab={activeTab}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+                                <NavItem
+                                    icon={<RiSettings4Line size={20} />}
+                                    label="Preferences"
+                                    id="PreferencesCard"
+                                    activeTab={activeTab}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+                                <NavItem
+                                    icon={<RiShieldCheckLine size={20} />}
+                                    label="Safety"
+                                    id="SafetyCard"
+                                    activeTab={activeTab}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+                                <NavItem
+                                    icon={<RiFileListLine size={20} />}
+                                    label="Activity"
+                                    id="ActivityFeedCard"
+                                    activeTab={activeTab}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+                                <NavItem
+                                    icon={<RiBarChartLine size={20} />}
+                                    label="Insights"
+                                    id="InsightsCard"
+                                    activeTab={activeTab}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+
+                                <button
+                                    onClick={() => setShowLogoutPopup(true)}
+                                    className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group text-red-500 border border-transparent hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <span><RiLogoutBoxLine size={20} /></span>
+                                        <span className="text-sm font-medium">Logout</span>
+                                    </div>
+                                </button>
+                            </>
+                        )}
+                    </nav>
+                </div>
+
+                {/* User Profile - Only show if NOT admin */}
+                {!isAdmin && (
+                    <div className="flex flex-col items-center text-center mt-auto">
+                        <div className="w-12 h-12 mx-auto mb-3 rounded-full overflow-hidden border-2 border-white bg-gray-200">
+                            {user?.image ? (
+                                <img src={user.image} alt="User" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600 font-bold text-lg">
+                                    {user?.name?.[0] || 'U'}
+                                </div>
+                            )}
+                        </div>
+                        <h4 className="text-sm font-bold text-gray-900">{user?.name || 'User'}</h4>
+                        <p className="text-xs text-gray-500 truncate w-full">{user?.email || ''}</p>
+                    </div>
+                )}
+
+                {/* Logout Confirmation Popup */}
+                {showLogoutPopup && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
                         <div className="bg-white p-8 rounded-xl w-full max-w-lg relative text-center">
                             <button
@@ -265,9 +334,9 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, isAdmi
                             </div>
                         </div>
                     </div>
-                )
-            }
-        </aside >
+                )}
+            </aside >
+        </>
     );
 };
 
