@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { SightseeingPackage } from "@/data/sightseeingData";
 import NormalHeader from "@/components/ui/NormalHeader";
-import Footor from "@/components/ui/Footor";
+import Footer from "@/components/ui/Footer";
 import { FaClock, FaCar, FaUserFriends, FaMapMarkerAlt, FaCheckCircle, FaTimesCircle, FaWhatsapp, FaArrowLeft } from "react-icons/fa";
 import { HiBadgeCheck, HiLocationMarker, HiPhone, HiGlobeAlt } from "react-icons/hi";
 import { useState, useEffect } from "react";
@@ -413,7 +413,7 @@ export default function SightseeingDetailPage() {
                 />
             </div>
 
-            <Footor />
+            <Footer />
 
             {/* BOOKING MODAL */}
             {isBookingOpen && (

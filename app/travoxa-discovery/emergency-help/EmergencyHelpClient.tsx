@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import EmergencyCard from '@/components/Pages/Emergency/EmergencyCard';
 import { FaSearch, FaMapMarkerAlt, FaFilter, FaHospital, FaShieldAlt, FaAmbulance, FaFireExtinguisher, FaTaxi } from 'react-icons/fa';
 import AOS from 'aos';
@@ -147,7 +147,7 @@ const EmergencyHelpClient: React.FC<EmergencyHelpClientProps> = ({ initialHelpli
                 )}
             </div>
 
-            <Footor />
+            <Footer />
         </div>
     );
 };

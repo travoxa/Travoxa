@@ -1,7 +1,7 @@
 "use client";
 
 import Header from "@/components/ui/Header";
-import Footor from "@/components/ui/Footor";
+import Footer from "@/components/ui/Footer";
 import MapModule from "@/components/Maps/MapModule";
 import AiInteractionBox from "@/components/ai-trip-planner/AiInteractionBox";
 import SavedTripsList from "@/components/ai-trip-planner/SavedTripsList";
@@ -47,7 +47,7 @@ export default function AiTripPlannerPage() {
                     </div>
                 </div>
             </main>
-            <Footor />
+            <Footer />
         </>
     );
 }

@@ -9,7 +9,7 @@ import {
 } from 'react-icons/fa';
 import { HiBadgeCheck, HiLocationMarker, HiPhone, HiGlobeAlt } from "react-icons/hi";
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import { FoodPackage } from '../FoodClient';
 import SaveButton from '@/components/ui/SaveButton';
 import RelatedPackages from '@/components/ui/RelatedPackages';
@@ -456,7 +456,7 @@ export default function FoodDetailsClient({ pkg }: FoodDetailsClientProps) {
                 />
             </div>
 
-            <Footor />
+            <Footer />
         </main>
     );
 }

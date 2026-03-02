@@ -4,7 +4,7 @@ import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 import { LiaCopyrightSolid } from "react-icons/lia";
 import Link from 'next/link';
 
-const Footor = () => {
+const Footer = () => {
   return (
     <div className='mx-[12px] my-[24px] lg:m-[24px] bg-black text-white rounded-[12px] pt-[24px] lg:pt-[48px] pb-[24px] lg:pb-[48px]' >
       <div className='px-[24px] lg:px-[48px]' >
@@ -53,4 +53,4 @@ const Footor = () => {
   )
 }
 
-export default Footor
+export default Footer

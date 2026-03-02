@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -281,7 +281,7 @@ const TravoxaYatraPayload = () => {
 
 
 
-            <Footor />
+            <Footer />
         </div>
     );
 };

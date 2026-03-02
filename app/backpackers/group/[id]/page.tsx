@@ -15,7 +15,7 @@ import MemberList from "@/components/backpackers/MemberList";
 import InboundRequestsList from "@/components/backpackers/detail/InboundRequestsList";
 import { getGroupDetail } from "@/data/backpackers";
 import Header from "@/components/ui/Header";
-import Footor from "@/components/ui/Footor";
+import Footer from "@/components/ui/Footer";
 
 interface BackpackerGroupDetailPageProps {
   params: Promise<{ id: string }>;
@@ -108,7 +108,7 @@ export default async function BackpackerGroupDetailPage({ params }: BackpackerGr
           </div>
         </div>
       </main>
-      <Footor />
+      <Footer />
     </>
   );
 }

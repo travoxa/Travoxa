@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import AttractionsHero from '@/components/Pages/Attractions/AttractionsHero';
 import AttractionsFilterSidebar from '@/components/Pages/Attractions/AttractionsFilterSidebar';
 import AttractionsCard from '@/components/Pages/Attractions/AttractionsCard';
@@ -223,7 +223,7 @@ const AttractionsClient: React.FC<AttractionsClientProps> = ({ initialPackages }
                 </div>
             </div>
 
-            <Footor />
+            <Footer />
         </div>
     );
 };

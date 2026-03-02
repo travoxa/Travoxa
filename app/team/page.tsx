@@ -1,6 +1,6 @@
 "use client";
 
-import Footor from "@/components/ui/Footor";
+import Footer from "@/components/ui/Footer";
 import Header from "@/components/ui/Header";
 import MomentsSlider from "@/components/Pages/Team/MomentsSlider";
 import { useState, useEffect } from "react";
@@ -228,7 +228,7 @@ export default function TeamPage() {
                 </section>
 
             </main>
-            <Footor />
+            <Footer />
         </div>
     );
 }

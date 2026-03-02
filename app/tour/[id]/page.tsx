@@ -1,6 +1,6 @@
 import { tourData } from "@/data/tourData";
 import NormalHeader from "@/components/ui/NormalHeader";
-import Footer from "@/components/ui/Footor";
+import Footer from "@/components/ui/Footer";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { HiCheck, HiX, HiCalendar, HiLocationMarker, HiDownload, HiUserGroup, HiCurrencyRupee, HiChevronDown, HiChevronUp, HiBadgeCheck, HiPhone, HiGlobeAlt } from "react-icons/hi";

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import ActivitiesHero from '@/components/Pages/Activities/ActivitiesHero';
 import ActivitiesFilterSidebar from '@/components/Pages/Activities/ActivitiesFilterSidebar';
 import ActivitiesCard from '@/components/Pages/Activities/ActivitiesCard';
@@ -217,7 +217,7 @@ const ActivitiesClient: React.FC<ActivitiesClientProps> = ({ initialPackages }) 
                 </div>
             </div>
 
-            <Footor />
+            <Footer />
         </div>
     );
 };

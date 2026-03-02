@@ -1,7 +1,7 @@
 'use client'
 import BackpackersHome from "@/components/backpackers/BackpackersHome";
 import Header from "@/components/ui/Header";
-import Footor from "@/components/ui/Footor";
+import Footer from "@/components/ui/Footer";
 import { useState } from "react";
 import LoginRequiredPopup from "@/components/ui/LoginRequiredPopup";
 import { route } from "@/lib/route";
@@ -44,7 +44,7 @@ export default function BackpackersPage() {
           )}
         </div>
       </main>
-      <Footor />
+      <Footer />
 
       <LoginRequiredPopup
         isOpen={showLoginPopup}

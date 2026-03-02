@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from 'next/link';
-import Footor from "@/components/ui/Footor";
+import Footer from "@/components/ui/Footer";
 import Header from "@/components/ui/Header";
 import { LuSparkles, LuMap, LuShieldCheck, LuUser } from "react-icons/lu";
 import { FaHiking, FaMapMarkedAlt, FaHandsHelping, FaHome, FaLeaf, FaCamera, FaCampground } from 'react-icons/fa';
@@ -241,7 +241,7 @@ export default function AboutPage() {
                 </section>
 
             </main>
-            <Footor />
+            <Footer />
         </div>
     );
 }

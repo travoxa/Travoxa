@@ -85,7 +85,15 @@ export default function Hero() {
 
   return (
     <div className="w-full flex justify-center items-center px-[12px] py-[12px]" >
-      <div className="w-full h-[47vh] lg:h-[97vh] bg-center bg-cover bg-no-repeat rounded-[12px] relative" style={{ backgroundImage: `url('/hero-bg.jpg')` }} >
+      <div className="w-full h-[47vh] lg:h-[97vh] bg-center bg-cover bg-no-repeat rounded-[12px] relative overflow-hidden" >
+        <Image
+          src="/hero-bg.jpg"
+          alt="Travoxa Hero Background"
+          fill
+          priority
+          className="object-cover"
+          sizes="100vw"
+        />
         {/* Overlay for better text visibility if needed */}
         <div className="absolute inset-0 bg-black/10 rounded-[12px]"></div>
 
