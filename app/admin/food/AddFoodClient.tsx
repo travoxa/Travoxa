@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { RiDeleteBinLine, RiAddLine, RiCloseLine, RiMoreLine, RiEditLine } from 'react-icons/ri';
+import { RiDeleteBinLine, RiAddLine, RiCloseLine, RiMoreLine, RiEditLine, RiTimeLine } from 'react-icons/ri';
 import { CldUploadWidget } from 'next-cloudinary';
 import { INDIA_STATES, getCitiesForState } from '@/data/indiaStatesAndCities';
 
@@ -14,7 +14,19 @@ interface AddFoodClientProps {
     onFormClose?: () => void;
 }
 
+const INITIAL_OPENING_HOURS = {
+    monday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    tuesday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    wednesday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    thursday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    friday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    saturday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    sunday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    specialTimings: []
+};
+
 export default function AddFoodClient({
+
     showManagementBox = true,
     showListings = true,
     showFormDirectly = false,
@@ -34,6 +46,9 @@ export default function AddFoodClient({
     const [editingId, setEditingId] = useState<string | null>(null);
     const [availableCities, setAvailableCities] = useState<string[]>([]);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
+    const [openingHoursMode, setOpeningHoursMode] = useState<'simple' | 'advanced'>('simple');
+    const [simpleHours, setSimpleHours] = useState({ start: '09:00', end: '21:00' });
+
 
     // Related Packages Data States
     const [allTours, setAllTours] = useState<any[]>([]);
@@ -89,7 +104,9 @@ export default function AddFoodClient({
         area: 'Old Manali',
         hygieneRating: 4.5,
         badges: ['Travoxa Recommended', 'Premium'],
+        openingHoursExtended: INITIAL_OPENING_HOURS,
         fullMenu: [
+
             {
                 category: 'Main Course',
                 items: [{ name: 'Grilled Trout', price: 550 }]
@@ -113,7 +130,9 @@ export default function AddFoodClient({
         hygieneRating: 0,
         badges: [] as string[],
         dishType: 'Both',
+        openingHoursExtended: INITIAL_OPENING_HOURS,
         openingTime: '',
+
         closingTime: '',
         bestTimeToVisit: '',
         dineIn: true,
@@ -266,6 +285,96 @@ export default function AddFoodClient({
         }));
     };
 
+    const addOpeningSlot = (day: string) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            openingHoursExtended: {
+                ...prev.openingHoursExtended,
+                [day]: {
+                    ...prev.openingHoursExtended[day],
+                    slots: [...prev.openingHoursExtended[day].slots, { start: '09:00 AM', end: '06:00 PM' }]
+                }
+            }
+        }));
+    };
+
+    const removeOpeningSlot = (day: string, index: number) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            openingHoursExtended: {
+                ...prev.openingHoursExtended,
+                [day]: {
+                    ...prev.openingHoursExtended[day],
+                    slots: prev.openingHoursExtended[day].slots.filter((_: any, i: number) => i !== index)
+                }
+            }
+        }));
+    };
+
+    const updateOpeningSlot = (day: string, index: number, field: 'start' | 'end', value: string) => {
+        setFormData((prev: any) => {
+            const newSlots = [...prev.openingHoursExtended[day].slots];
+            newSlots[index] = { ...newSlots[index], [field]: value };
+            return {
+                ...prev,
+                openingHoursExtended: {
+                    ...prev.openingHoursExtended,
+                    [day]: { ...prev.openingHoursExtended[day], slots: newSlots }
+                }
+            };
+        });
+    };
+
+    const toggleDayClosed = (day: string) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            openingHoursExtended: {
+                ...prev.openingHoursExtended,
+                [day]: { ...prev.openingHoursExtended[day], isClosed: !prev.openingHoursExtended[day].isClosed }
+            }
+        }));
+    };
+
+    const copyOpeningHours = (fromDay: string, targetType: 'all' | 'weekdays' | 'weekends') => {
+        const sourceDay = formData.openingHoursExtended[fromDay as keyof typeof formData.openingHoursExtended];
+        const newOpeningHours = { ...formData.openingHoursExtended };
+
+        const daysToUpdate = [];
+        if (targetType === 'all') {
+            daysToUpdate.push('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
+        } else if (targetType === 'weekdays') {
+            daysToUpdate.push('monday', 'tuesday', 'wednesday', 'thursday', 'friday');
+        } else if (targetType === 'weekends') {
+            daysToUpdate.push('saturday', 'sunday');
+        }
+
+        daysToUpdate.forEach(day => {
+            newOpeningHours[day as keyof typeof newOpeningHours] = JSON.parse(JSON.stringify(sourceDay));
+        });
+
+        setFormData(prev => ({
+            ...prev,
+            openingHoursExtended: newOpeningHours
+        }));
+    };
+
+    const applySimpleHours = (start: string, end: string) => {
+        setFormData(prev => ({
+            ...prev,
+            openingHoursExtended: {
+                ...prev.openingHoursExtended,
+                monday: { slots: [{ start, end }], isClosed: false, note: '' },
+                tuesday: { slots: [{ start, end }], isClosed: false, note: '' },
+                wednesday: { slots: [{ start, end }], isClosed: false, note: '' },
+                thursday: { slots: [{ start, end }], isClosed: false, note: '' },
+                friday: { slots: [{ start, end }], isClosed: false, note: '' },
+                saturday: { slots: [{ start, end }], isClosed: false, note: '' },
+                sunday: { slots: [{ start, end }], isClosed: false, note: '' },
+            }
+        }));
+    };
+
+
     const addPartner = () => {
         setFormData(prev => ({
             ...prev,
@@ -366,7 +475,9 @@ export default function AddFoodClient({
             whatsappNumber: food.whatsappNumber || '',
             address: food.address || '',
             attractionName: food.attractionName || '',
+            openingHoursExtended: food.openingHoursExtended || INITIAL_OPENING_HOURS,
             fullMenu: food.fullMenu || [],
+
             relatedTours: food.relatedTours || [],
             relatedSightseeing: food.relatedSightseeing || [],
             relatedActivities: food.relatedActivities || [],
@@ -456,8 +567,10 @@ export default function AddFoodClient({
                 relatedStays: [],
                 relatedFood: [],
                 relatedAttractions: [],
+                openingHoursExtended: INITIAL_OPENING_HOURS,
                 partners: []
             });
+
             setEditingId(null);
             fetchFood();
 
@@ -827,38 +940,160 @@ export default function AddFoodClient({
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Opening Time</label>
-                                <input
-                                    type="text"
-                                    value={formData.openingTime}
-                                    onChange={e => setFormData({ ...formData, openingTime: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. 9:00 AM"
-                                />
+                        {/* Opening Hours Extended */}
+                        <div className="space-y-6 border-t pt-8">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-md font-bold text-gray-800 flex items-center gap-2">
+                                    <RiTimeLine className="text-green-500" /> Opening Hours
+                                </h3>
+                                <div className="flex bg-gray-100 p-1 rounded-lg">
+                                    <button
+                                        type="button"
+                                        onClick={() => setOpeningHoursMode('simple')}
+                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${openingHoursMode === 'simple' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                    >
+                                        Simple
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setOpeningHoursMode('advanced')}
+                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${openingHoursMode === 'advanced' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                    >
+                                        Advanced
+                                    </button>
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Closing Time</label>
-                                <input
-                                    type="text"
-                                    value={formData.closingTime}
-                                    onChange={e => setFormData({ ...formData, closingTime: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. 10:00 PM"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Best Time to Visit</label>
-                                <input
-                                    type="text"
-                                    value={formData.bestTimeToVisit}
-                                    onChange={e => setFormData({ ...formData, bestTimeToVisit: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. For dinner"
-                                />
-                            </div>
+
+                            {openingHoursMode === 'simple' ? (
+                                <div className="p-6 bg-green-50 rounded-xl border border-green-100 space-y-4">
+                                    <p className="text-xs text-green-600 font-medium italic">Apply the same timing to all days of the week.</p>
+                                    <div className="flex items-center gap-4">
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-green-400 mb-1">Opens at</label>
+                                            <input
+                                                type="time"
+                                                value={simpleHours.start}
+                                                onChange={e => {
+                                                    setSimpleHours({ ...simpleHours, start: e.target.value });
+                                                    applySimpleHours(e.target.value, simpleHours.end);
+                                                }}
+                                                className="px-3 py-2 border rounded-lg text-sm bg-white"
+                                            />
+                                        </div>
+                                        <div className="text-green-300 pt-5">→</div>
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-green-400 mb-1">Closes at</label>
+                                            <input
+                                                type="time"
+                                                value={simpleHours.end}
+                                                onChange={e => {
+                                                    setSimpleHours({ ...simpleHours, end: e.target.value });
+                                                    applySimpleHours(simpleHours.start, e.target.value);
+                                                }}
+                                                className="px-3 py-2 border rounded-lg text-sm bg-white"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-green-400 mb-1">Best Time to Visit</label>
+                                            <input
+                                                type="text"
+                                                value={formData.bestTimeToVisit}
+                                                onChange={e => setFormData({ ...formData, bestTimeToVisit: e.target.value })}
+                                                className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm bg-white min-w-[200px]"
+                                                placeholder="e.g. For dinner"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-4">
+                                    {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => {
+                                        const daySchedule = (formData.openingHoursExtended as any)[day];
+                                        return (
+                                            <div key={day} className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                                <div className="w-full md:w-64 flex items-center justify-between pr-0 md:pr-4 border-b md:border-b-0 md:border-r border-gray-200 pb-3 md:pb-0">
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-sm font-bold capitalize text-slate-700">{day}</span>
+                                                        <div className="flex gap-1.5 mt-1">
+                                                            <button type="button" onClick={() => copyOpeningHours(day, 'all')} title="Copy to All Days" className="text-[10px] bg-green-50 hover:bg-green-600 text-green-600 hover:text-white px-2 py-0.5 rounded-md font-bold transition-all border border-green-100 shadow-sm">All</button>
+                                                            <button type="button" onClick={() => copyOpeningHours(day, 'weekdays')} title="Copy to Weekdays" className="text-[10px] bg-green-50 hover:bg-green-600 text-green-600 hover:text-white px-2 py-0.5 rounded-md font-bold transition-all border border-green-100 shadow-sm">W/D</button>
+                                                            <button type="button" onClick={() => copyOpeningHours(day, 'weekends')} title="Copy to Weekends" className="text-[10px] bg-green-50 hover:bg-green-600 text-green-600 hover:text-white px-2 py-0.5 rounded-md font-bold transition-all border border-green-100 shadow-sm">W/E</button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-[10px] uppercase font-bold text-gray-400">{!daySchedule.isClosed ? 'Open' : 'Closed'}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => toggleDayClosed(day)}
+                                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${!daySchedule.isClosed ? 'bg-green-600' : 'bg-gray-200'}`}
+                                                        >
+                                                            <span
+                                                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${!daySchedule.isClosed ? 'translate-x-6' : 'translate-x-1'}`}
+                                                            />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {!daySchedule.isClosed ? (
+                                                    <div className="flex-1 space-y-3 md:space-y-2">
+                                                        {daySchedule.slots.map((slot: any, sIdx: number) => (
+                                                            <div key={sIdx} className="grid grid-cols-1 sm:flex sm:items-center gap-2 bg-white md:bg-transparent p-2 md:p-0 rounded-lg border md:border-0 border-gray-200">
+                                                                <div className="flex items-center gap-2 flex-1">
+                                                                    <div className="flex-1">
+                                                                        <label className="text-[10px] font-bold text-gray-400 uppercase sm:hidden block mb-1">Start</label>
+                                                                        <input
+                                                                            type="time"
+                                                                            value={slot.start}
+                                                                            onChange={(e) => updateOpeningSlot(day, sIdx, 'start', e.target.value)}
+                                                                            className="w-full px-2 py-1 border rounded text-xs"
+                                                                        />
+                                                                    </div>
+                                                                    <span className="text-gray-400 pt-4 sm:pt-0">to</span>
+                                                                    <div className="flex-1">
+                                                                        <label className="text-[10px] font-bold text-gray-400 uppercase sm:hidden block mb-1">End</label>
+                                                                        <input
+                                                                            type="time"
+                                                                            value={slot.end}
+                                                                            onChange={(e) => updateOpeningSlot(day, sIdx, 'end', e.target.value)}
+                                                                            className="w-full px-2 py-1 border rounded text-xs"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <button type="button" onClick={() => removeOpeningSlot(day, sIdx)} className="text-red-500 hover:bg-red-50 p-1.5 rounded self-end flex items-center justify-center border border-red-100 sm:border-0 sm:mt-0 mt-2">
+                                                                    <RiDeleteBinLine size={14} className="sm:mr-0 mr-1" />
+                                                                    <span className="sm:hidden text-xs font-bold uppercase">Remove Slot</span>
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                        <button type="button" onClick={() => addOpeningSlot(day)} className="text-[10px] text-green-600 font-bold hover:underline flex items-center gap-1 mt-1">
+                                                            <RiAddLine /> Add Slot
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex-1 flex items-center gap-3">
+                                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Closed</span>
+                                                        <input
+                                                            type="text"
+                                                            value={daySchedule.note || ''}
+                                                            onChange={(e) => setFormData((prev: any) => ({
+                                                                ...prev,
+                                                                openingHoursExtended: {
+                                                                    ...prev.openingHoursExtended,
+                                                                    [day]: { ...prev.openingHoursExtended[day], note: e.target.value }
+                                                                }
+                                                            }))}
+                                                            className="flex-1 px-3 py-1.5 border rounded text-xs bg-white italic"
+                                                            placeholder="Note (e.g. Weekly Holiday)"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
+
 
                         <div className="flex flex-wrap gap-8 py-4 px-6 bg-gray-50 rounded-xl">
                             <label className="flex items-center gap-2 cursor-pointer">

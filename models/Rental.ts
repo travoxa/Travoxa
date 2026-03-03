@@ -45,7 +45,7 @@ const RentalSchema = new mongoose.Schema({
     },
     image: {
         type: String,
-        required: [true, 'Please provide an image']
+        required: false,
     },
     verified: {
         type: Boolean,

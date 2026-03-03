@@ -1,5 +1,17 @@
 import mongoose from 'mongoose';
 
+const OpeningSlotSchema = new mongoose.Schema({
+    start: String,
+    end: String,
+}, { _id: false });
+
+const DailyScheduleSchema = new mongoose.Schema({
+    slots: { type: [OpeningSlotSchema], default: [] },
+    isClosed: { type: Boolean, default: false },
+    note: String,
+}, { _id: false });
+
+
 const FoodSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -66,6 +78,22 @@ const FoodSchema = new mongoose.Schema({
     },
     openingTime: String,
     closingTime: String,
+    openingHoursExtended: {
+        monday: DailyScheduleSchema,
+        tuesday: DailyScheduleSchema,
+        wednesday: DailyScheduleSchema,
+        thursday: DailyScheduleSchema,
+        friday: DailyScheduleSchema,
+        saturday: DailyScheduleSchema,
+        sunday: DailyScheduleSchema,
+        specialTimings: [{
+            date: Date,
+            slots: [OpeningSlotSchema],
+            isClosed: Boolean,
+            note: String
+        }]
+    },
+
     bestTimeToVisit: String,
     dineIn: {
         type: Boolean,
@@ -97,7 +125,7 @@ const FoodSchema = new mongoose.Schema({
     ],
     image: {
         type: String,
-        required: [true, 'Please provide an image'],
+        required: false,
     },
     vendorId: {
         type: mongoose.Schema.Types.ObjectId,
