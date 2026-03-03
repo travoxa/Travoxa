@@ -40,16 +40,19 @@ export interface AttractionPackage {
         sunday: DailySchedule;
         specialTimings?: SpecialTiming[];
     };
-    entryPricing?: { category: string; price: number }[];
+    entryPricing?: { category: string; price: number; minPrice?: number; maxPrice?: number; notes?: string }[];
     additionalCharges?: { item: string; priceRange?: string; note?: string }[];
     howToReach?: {
         type: string;
         station?: string;
         distance?: string;
         fare?: string;
+        minFare?: number;
+        maxFare?: number;
         time?: string;
         availability?: string;
         fareRange?: string;
+        routeNote?: string;
     }[];
     nearbyAttractions?: any[];
     nearbyFood?: any[];

@@ -37,7 +37,7 @@ export default function RentalCard({ item }: RentalCardProps) {
             {/* Image Section */}
             <div className="relative h-56 overflow-hidden bg-slate-50">
                 <Image
-                    src={item.image}
+                    src={item.image || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop"}
                     alt={item.name}
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-700"

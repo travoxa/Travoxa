@@ -33,8 +33,8 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
 
     // Handle both string and array formats for image (MongoDB returns array)
     const imageUrl = Array.isArray(pkg.image)
-        ? (pkg.image[0] || '/placeholder.jpg')
-        : (pkg.image || '/placeholder.jpg');
+        ? (pkg.image[0] || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop')
+        : (pkg.image || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop');
 
     const handleShare = (e: React.MouseEvent) => {
         e.stopPropagation();

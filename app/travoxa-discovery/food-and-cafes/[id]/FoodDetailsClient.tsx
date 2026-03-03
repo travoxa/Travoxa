@@ -45,7 +45,7 @@ export default function FoodDetailsClient({ pkg }: FoodDetailsClientProps) {
             {/* Hero Section */}
             <section className="relative h-[65vh] w-full overflow-hidden">
                 <Image
-                    src={pkg.image}
+                    src={pkg.image || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop"}
                     alt={pkg.title}
                     fill
                     className="object-cover"

@@ -14,13 +14,13 @@ interface AddAttractionsClientProps {
 }
 
 const INITIAL_OPENING_HOURS = {
-    monday: { slots: [] as any[], isClosed: false, note: '' },
-    tuesday: { slots: [] as any[], isClosed: false, note: '' },
-    wednesday: { slots: [] as any[], isClosed: false, note: '' },
-    thursday: { slots: [] as any[], isClosed: false, note: '' },
-    friday: { slots: [] as any[], isClosed: false, note: '' },
-    saturday: { slots: [] as any[], isClosed: false, note: '' },
-    sunday: { slots: [] as any[], isClosed: false, note: '' },
+    monday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    tuesday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    wednesday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    thursday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    friday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    saturday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    sunday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
     specialTimings: [] as any[]
 };
 
@@ -46,6 +46,8 @@ export default function AddAttractionsClient({
     const [allRentals, setAllRentals] = useState<any[]>([]);
     const [allStays, setAllStays] = useState<any[]>([]);
     const [loadingRelated, setLoadingRelated] = useState(false);
+    const [allHelplines, setAllHelplines] = useState<any[]>([]);
+    const [loadingHelplines, setLoadingHelplines] = useState(false);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [loadingAttractions, setLoadingAttractions] = useState(true);
@@ -68,9 +70,9 @@ export default function AddAttractionsClient({
         categoryTags: [] as string[],
         googleRating: '',
         openingHoursExtended: INITIAL_OPENING_HOURS,
-        entryPricing: [] as { category: string; price: string }[],
+        entryPricing: [] as { category: string; minPrice: string; maxPrice: string; notes: string; price?: string }[],
         additionalCharges: [] as { item: string; priceRange: string; note: string }[],
-        howToReach: [] as any[],
+        howToReach: [] as { type: string; station: string; distance: string; minFare: string; maxFare: string; time: string; availability: string; routeNote: string; customType?: string; fare?: string }[],
         relatedTours: [] as string[],
         relatedSightseeing: [] as string[],
         relatedActivities: [] as string[],
@@ -120,17 +122,17 @@ export default function AddAttractionsClient({
             specialTimings: []
         },
         entryPricing: [
-            { category: 'Indian Citizen', price: '50' },
-            { category: 'Foreigner', price: '1100' },
-            { category: 'SAARC/BIMSTEC', price: '540' }
+            { category: 'Indian Citizen', minPrice: '50', maxPrice: '50', notes: '' },
+            { category: 'Foreigner', minPrice: '1100', maxPrice: '1100', notes: '' },
+            { category: 'SAARC/BIMSTEC', minPrice: '540', maxPrice: '540', notes: '' }
         ],
         additionalCharges: [
             { item: 'Mausoleum Entry', priceRange: '200', note: 'Optional for main dome' },
             { item: 'Professional Guide', priceRange: '500-1000', note: 'Approximate cost' }
         ],
         howToReach: [
-            { type: 'Train', station: 'Agra Cantt', distance: '6km', fare: '₹50-200', time: '15 mins', availability: 'Frequent' },
-            { type: 'Bus', station: 'Idgah Bus Stand', distance: '5km', fare: '₹20-50', time: '20 mins' }
+            { type: 'Train', station: 'Agra Cantt', distance: '6km', minFare: '50', maxFare: '200', time: '15 mins', availability: 'Frequent', routeNote: 'Faster than bus' },
+            { type: 'Bus', station: 'Idgah Bus Stand', distance: '5km', minFare: '20', maxFare: '50', time: '20 mins', availability: 'Frequent', routeNote: '' }
         ],
         relatedTours: [],
         relatedSightseeing: [],
@@ -220,6 +222,28 @@ export default function AddAttractionsClient({
             setLoadingRelated(false);
         }
     };
+
+    const fetchHelplines = async (city: string) => {
+        if (!city) return;
+        setLoadingHelplines(true);
+        try {
+            const res = await fetch(`/api/helplines?city=${city}&status=approved`);
+            const data = await res.json();
+            if (data.success) {
+                setAllHelplines(data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch helplines:', error);
+        } finally {
+            setLoadingHelplines(false);
+        }
+    };
+
+    useEffect(() => {
+        if (formData.city) {
+            fetchHelplines(formData.city);
+        }
+    }, [formData.city]);
 
     useEffect(() => {
         fetchAttractions();
@@ -321,9 +345,32 @@ export default function AddAttractionsClient({
         }));
     };
 
+    const copyOpeningHours = (fromDay: string, targetType: 'all' | 'weekdays' | 'weekends') => {
+        const sourceDay = formData.openingHoursExtended[fromDay as keyof typeof formData.openingHoursExtended];
+        const newOpeningHours = { ...formData.openingHoursExtended };
+
+        const daysToUpdate = [];
+        if (targetType === 'all') {
+            daysToUpdate.push('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
+        } else if (targetType === 'weekdays') {
+            daysToUpdate.push('monday', 'tuesday', 'wednesday', 'thursday', 'friday');
+        } else if (targetType === 'weekends') {
+            daysToUpdate.push('saturday', 'sunday');
+        }
+
+        daysToUpdate.forEach(day => {
+            newOpeningHours[day as keyof typeof newOpeningHours] = JSON.parse(JSON.stringify(sourceDay));
+        });
+
+        setFormData(prev => ({
+            ...prev,
+            openingHoursExtended: newOpeningHours
+        }));
+    };
+
     // Lists Helpers
     const addPricingRow = () => {
-        setFormData(prev => ({ ...prev, entryPricing: [...prev.entryPricing, { category: '', price: '' }] }));
+        setFormData(prev => ({ ...prev, entryPricing: [...prev.entryPricing, { category: '', minPrice: '', maxPrice: '', notes: '' }] }));
     };
 
     const removePricingRow = (idx: number) => {
@@ -355,7 +402,7 @@ export default function AddAttractionsClient({
     };
 
     const addReachStep = () => {
-        setFormData(prev => ({ ...prev, howToReach: [...prev.howToReach, { type: 'Metro', station: '', distance: '', fare: '', time: '', availability: '', fareRange: '' }] }));
+        setFormData(prev => ({ ...prev, howToReach: [...prev.howToReach, { type: 'Metro', station: '', distance: '', minFare: '', maxFare: '', time: '', availability: '', routeNote: '' }] }));
     };
 
     const removeReachStep = (idx: number) => {
@@ -443,9 +490,9 @@ export default function AddAttractionsClient({
             categoryTags: attraction.categoryTags || [],
             googleRating: attraction.googleRating?.toString() || '',
             openingHoursExtended: attraction.openingHoursExtended || INITIAL_OPENING_HOURS,
-            entryPricing: attraction.entryPricing ? attraction.entryPricing.map((p: any) => ({ category: p.category, price: p.price?.toString() || '' })) : [],
+            entryPricing: attraction.entryPricing ? attraction.entryPricing.map((p: any) => ({ category: p.category, minPrice: (p.minPrice || p.price)?.toString() || '', maxPrice: (p.maxPrice || p.price)?.toString() || '', notes: p.notes || '' })) : [],
             additionalCharges: attraction.additionalCharges || [],
-            howToReach: attraction.howToReach || [],
+            howToReach: attraction.howToReach ? attraction.howToReach.map((r: any) => ({ ...r, minFare: r.minFare?.toString() || '', maxFare: r.maxFare?.toString() || '' })) : [],
             relatedTours: attraction.relatedTours || [],
             relatedSightseeing: attraction.relatedSightseeing || [],
             relatedActivities: attraction.relatedActivities || [],
@@ -469,7 +516,7 @@ export default function AddAttractionsClient({
         setError('');
         setSuccess('');
 
-        const filteredPricing = formData.entryPricing.filter(p => p.category.trim() !== '' || p.price.trim() !== '');
+        const filteredPricing = formData.entryPricing.filter(p => p.category.trim() !== '' || (p.minPrice || p.price)?.trim() !== '');
         const filteredCharges = formData.additionalCharges.filter(c => c.item.trim() !== '' || c.priceRange.trim() !== '' || c.note.trim() !== '');
         const filteredHowToReach = formData.howToReach.filter(r => r.station.trim() !== '');
         const filteredPartners = formData.partners.filter(p => p.name.trim() !== '');
@@ -477,10 +524,10 @@ export default function AddAttractionsClient({
         const payload: any = {
             ...formData,
             googleRating: Number(formData.googleRating),
-            entryFee: filteredPricing.length > 0 ? Number(filteredPricing[0].price) : 0,
-            entryPricing: filteredPricing.map(p => ({ ...p, price: Number(p.price) })),
+            entryFee: filteredPricing.length > 0 ? Number(filteredPricing[0].minPrice || filteredPricing[0].price || 0) : 0,
+            entryPricing: filteredPricing.map(p => ({ ...p, minPrice: Number(p.minPrice || p.price), maxPrice: Number(p.maxPrice || p.price) })),
             additionalCharges: filteredCharges,
-            howToReach: filteredHowToReach,
+            howToReach: filteredHowToReach.map(r => ({ ...r, minFare: Number(r.minFare), maxFare: Number(r.maxFare) })),
             partners: filteredPartners,
             travelInformation: {
                 ...formData.travelInformation,
@@ -975,8 +1022,15 @@ export default function AddAttractionsClient({
                                         const daySchedule = (formData.openingHoursExtended as any)[day];
                                         return (
                                             <div key={day} className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
-                                                <div className="w-full md:w-48 flex items-center justify-between pr-0 md:pr-4 border-b md:border-b-0 md:border-r border-gray-200 pb-3 md:pb-0">
-                                                    <span className="text-sm font-bold capitalize text-slate-700">{day}</span>
+                                                <div className="w-full md:w-64 flex items-center justify-between pr-0 md:pr-4 border-b md:border-b-0 md:border-r border-gray-200 pb-3 md:pb-0">
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-sm font-bold capitalize text-slate-700">{day}</span>
+                                                        <div className="flex gap-1.5 mt-1">
+                                                            <button type="button" onClick={() => copyOpeningHours(day, 'all')} title="Copy to All Days" className="text-[10px] bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-2 py-0.5 rounded-md font-bold transition-all border border-blue-100 shadow-sm">All</button>
+                                                            <button type="button" onClick={() => copyOpeningHours(day, 'weekdays')} title="Copy to Weekdays" className="text-[10px] bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-2 py-0.5 rounded-md font-bold transition-all border border-blue-100 shadow-sm">W/D</button>
+                                                            <button type="button" onClick={() => copyOpeningHours(day, 'weekends')} title="Copy to Weekends" className="text-[10px] bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-2 py-0.5 rounded-md font-bold transition-all border border-blue-100 shadow-sm">W/E</button>
+                                                        </div>
+                                                    </div>
                                                     <div className="flex items-center gap-3">
                                                         <span className="text-[10px] uppercase font-bold text-gray-400">{!daySchedule.isClosed ? 'Open' : 'Closed'}</span>
                                                         <button
@@ -1057,13 +1111,15 @@ export default function AddAttractionsClient({
                             </h3>
                             <div className="space-y-4">
                                 <div className="grid grid-cols-12 gap-2 text-[10px] font-bold text-gray-500 uppercase px-2 hidden md:grid">
-                                    <div className="col-span-8">Category</div>
-                                    <div className="col-span-3">Price (₹)</div>
+                                    <div className="col-span-4">Category</div>
+                                    <div className="col-span-2">Min (₹)</div>
+                                    <div className="col-span-2">Max (₹)</div>
+                                    <div className="col-span-3">Notes</div>
                                     <div className="col-span-1"></div>
                                 </div>
                                 {formData.entryPricing.map((row, idx) => (
                                     <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-2 items-center bg-emerald-50/50 p-3 md:p-2 rounded-lg border border-emerald-100">
-                                        <div className="col-span-1 md:col-span-8">
+                                        <div className="col-span-1 md:col-span-4">
                                             <label className="text-[10px] font-bold text-emerald-600 uppercase md:hidden mb-1 block">Category</label>
                                             <input
                                                 type="text"
@@ -1077,22 +1133,53 @@ export default function AddAttractionsClient({
                                                 placeholder="Category (e.g. Adult, Child)"
                                             />
                                         </div>
-                                        <div className="col-span-1 md:col-span-3">
-                                            <label className="text-[10px] font-bold text-emerald-600 uppercase md:hidden mb-1 block">Price (₹)</label>
+                                        <div className="col-span-1 md:col-span-2">
+                                            <label className="text-[10px] font-bold text-emerald-600 uppercase md:hidden mb-1 block">Min (₹)</label>
                                             <div className="relative">
                                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">₹</span>
                                                 <input
-                                                    type="text"
-                                                    value={row.price}
+                                                    type="number"
+                                                    value={row.minPrice}
                                                     onChange={e => {
                                                         const newPricing = [...formData.entryPricing];
-                                                        newPricing[idx].price = e.target.value;
+                                                        newPricing[idx].minPrice = e.target.value;
                                                         setFormData({ ...formData, entryPricing: newPricing });
                                                     }}
                                                     className="w-full pl-6 pr-3 py-1.5 border rounded text-sm outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
-                                                    placeholder="Price"
+                                                    placeholder="Min"
                                                 />
                                             </div>
+                                        </div>
+                                        <div className="col-span-1 md:col-span-2">
+                                            <label className="text-[10px] font-bold text-emerald-600 uppercase md:hidden mb-1 block">Max (₹)</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">₹</span>
+                                                <input
+                                                    type="number"
+                                                    value={row.maxPrice}
+                                                    onChange={e => {
+                                                        const newPricing = [...formData.entryPricing];
+                                                        newPricing[idx].maxPrice = e.target.value;
+                                                        setFormData({ ...formData, entryPricing: newPricing });
+                                                    }}
+                                                    className="w-full pl-6 pr-3 py-1.5 border rounded text-sm outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                                                    placeholder="Max"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="col-span-1 md:col-span-3">
+                                            <label className="text-[10px] font-bold text-emerald-600 uppercase md:hidden mb-1 block">Notes</label>
+                                            <input
+                                                type="text"
+                                                value={row.notes}
+                                                onChange={e => {
+                                                    const newPricing = [...formData.entryPricing];
+                                                    newPricing[idx].notes = e.target.value;
+                                                    setFormData({ ...formData, entryPricing: newPricing });
+                                                }}
+                                                className="w-full px-3 py-1.5 border rounded text-sm outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                                                placeholder="Notes"
+                                            />
                                         </div>
                                         <div className="col-span-1 md:col-span-1 flex justify-end">
                                             <button type="button" onClick={() => removePricingRow(idx)} className="text-red-500 p-1.5 hover:bg-red-50 rounded border border-red-100 md:border-0 w-full md:w-auto flex items-center justify-center gap-2">
@@ -1212,14 +1299,33 @@ export default function AddAttractionsClient({
                                                         }}
                                                         className="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-pink-500 outline-none transition-all"
                                                     >
-                                                        <option value="Train">Train</option>
-                                                        <option value="Bus">Bus</option>
                                                         <option value="Metro">Metro</option>
-                                                        <option value="Taxi">Taxi</option>
+                                                        <option value="Bus">Bus</option>
                                                         <option value="Auto">Auto</option>
+                                                        <option value="Taxi">Taxi</option>
+                                                        <option value="Cab">Cab</option>
+                                                        <option value="Train">Train</option>
+                                                        <option value="Flight">Flight</option>
                                                         <option value="Walk">Walk</option>
+                                                        <option value="Custom">Custom</option>
                                                     </select>
                                                 </div>
+                                                {step.type === 'Custom' && (
+                                                    <div className="space-y-1">
+                                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Custom Type</label>
+                                                        <input
+                                                            type="text"
+                                                            value={step.customType || ''}
+                                                            onChange={e => {
+                                                                const newReach = [...formData.howToReach];
+                                                                (newReach[idx] as any).customType = e.target.value;
+                                                                setFormData({ ...formData, howToReach: newReach });
+                                                            }}
+                                                            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none transition-all"
+                                                            placeholder="Type transport"
+                                                        />
+                                                    </div>
+                                                )}
                                                 <div className="space-y-1 md:col-span-2">
                                                     <label className="text-[10px] font-bold text-slate-400 uppercase">Station / Point Name</label>
                                                     <input
@@ -1249,21 +1355,52 @@ export default function AddAttractionsClient({
                                                     />
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Fare / Cost</label>
-                                                    <div className="relative">
-                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">₹</span>
-                                                        <input
-                                                            type="text"
-                                                            value={step.fare}
-                                                            onChange={e => {
-                                                                const newReach = [...formData.howToReach];
-                                                                newReach[idx].fare = e.target.value;
-                                                                setFormData({ ...formData, howToReach: newReach });
-                                                            }}
-                                                            className="w-full pl-6 pr-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none transition-all"
-                                                            placeholder="e.g. 50"
-                                                        />
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Fare Range (Min - Max)</label>
+                                                    <div className="flex items-center gap-1">
+                                                        <div className="relative flex-1">
+                                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">₹</span>
+                                                            <input
+                                                                type="text"
+                                                                value={step.minFare}
+                                                                onChange={e => {
+                                                                    const newReach = [...formData.howToReach];
+                                                                    newReach[idx].minFare = e.target.value;
+                                                                    setFormData({ ...formData, howToReach: newReach });
+                                                                }}
+                                                                className="w-full pl-5 pr-2 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none transition-all"
+                                                                placeholder="Min"
+                                                            />
+                                                        </div>
+                                                        <span className="text-gray-400 text-xs">-</span>
+                                                        <div className="relative flex-1">
+                                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">₹</span>
+                                                            <input
+                                                                type="text"
+                                                                value={step.maxFare}
+                                                                onChange={e => {
+                                                                    const newReach = [...formData.howToReach];
+                                                                    newReach[idx].maxFare = e.target.value;
+                                                                    setFormData({ ...formData, howToReach: newReach });
+                                                                }}
+                                                                className="w-full pl-5 pr-2 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none transition-all"
+                                                                placeholder="Max"
+                                                            />
+                                                        </div>
                                                     </div>
+                                                </div>
+                                                <div className="space-y-1 md:col-span-2">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Route Notes (Optional)</label>
+                                                    <input
+                                                        type="text"
+                                                        value={step.routeNote}
+                                                        onChange={e => {
+                                                            const newReach = [...formData.howToReach];
+                                                            newReach[idx].routeNote = e.target.value;
+                                                            setFormData({ ...formData, howToReach: newReach });
+                                                        }}
+                                                        className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none transition-all"
+                                                        placeholder="e.g. Best for avoiding traffic"
+                                                    />
                                                 </div>
                                                 <div className="space-y-1">
                                                     <label className="text-[10px] font-bold text-slate-400 uppercase">Time</label>
@@ -1496,7 +1633,33 @@ export default function AddAttractionsClient({
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div className="space-y-3 p-4 bg-red-50/50 rounded-xl border border-red-100">
-                                    <label className="text-xs font-bold text-red-600 uppercase flex items-center gap-1"><RiHotelLine /> Hospital</label>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <label className="text-xs font-bold text-red-600 uppercase flex items-center gap-1"><RiHotelLine /> Hospital</label>
+                                        <select
+                                            className="text-[10px] bg-white border border-red-200 rounded px-1 outline-none focus:ring-1 focus:ring-red-400"
+                                            onChange={(e) => {
+                                                const selected = allHelplines.find(h => h._id === e.target.value);
+                                                if (selected) {
+                                                    setFormData({
+                                                        ...formData,
+                                                        emergencyInfo: {
+                                                            ...formData.emergencyInfo,
+                                                            hospital: {
+                                                                name: selected.serviceName,
+                                                                distance: '',
+                                                                mapLink: selected.googleMapLink || ''
+                                                            }
+                                                        }
+                                                    });
+                                                }
+                                            }}
+                                        >
+                                            <option value="">Link Existing...</option>
+                                            {allHelplines.filter(h => h.emergencyType === 'Hospital').map(h => (
+                                                <option key={h._id} value={h._id}>{h.serviceName}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                     <input
                                         type="text"
                                         value={formData.emergencyInfo.hospital?.name}
@@ -1520,7 +1683,33 @@ export default function AddAttractionsClient({
                                     />
                                 </div>
                                 <div className="space-y-3 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
-                                    <label className="text-xs font-bold text-blue-600 uppercase flex items-center gap-1">Police Station</label>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <label className="text-xs font-bold text-blue-600 uppercase flex items-center gap-1">Police Station</label>
+                                        <select
+                                            className="text-[10px] bg-white border border-blue-200 rounded px-1 outline-none focus:ring-1 focus:ring-blue-400"
+                                            onChange={(e) => {
+                                                const selected = allHelplines.find(h => h._id === e.target.value);
+                                                if (selected) {
+                                                    setFormData({
+                                                        ...formData,
+                                                        emergencyInfo: {
+                                                            ...formData.emergencyInfo,
+                                                            police: {
+                                                                name: selected.serviceName,
+                                                                distance: '',
+                                                                mapLink: selected.googleMapLink || ''
+                                                            }
+                                                        }
+                                                    });
+                                                }
+                                            }}
+                                        >
+                                            <option value="">Link Existing...</option>
+                                            {allHelplines.filter(h => h.emergencyType === 'Police').map(h => (
+                                                <option key={h._id} value={h._id}>{h.serviceName}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                     <input
                                         type="text"
                                         value={formData.emergencyInfo.police?.name}
