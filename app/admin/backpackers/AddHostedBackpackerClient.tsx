@@ -315,8 +315,7 @@ export default function AddHostedBackpackerClient({
                 <>
                     {/* Create Button - Top */}
                     {showManagementBox && (
-                        <div className="bg-white rounded-xl border border-gray-200 p-8">
-                            <h2 className="text-lg font-medium text-gray-800 mb-4">Backpackers Management</h2>
+                        <div className="flex justify-start mb-6">
                             <button
                                 onClick={() => {
                                     if (onFormOpen) {
@@ -325,198 +324,203 @@ export default function AddHostedBackpackerClient({
                                         setShowFormInternal(true);
                                     }
                                 }}
-                                className="px-6 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all"
+                                className="px-6 py-2 bg-black text-white rounded-md text-sm font-light hover:bg-gray-800 transition-all"
                             >
-                                Create New Hosted Trip
+                                Create New Backpacker
                             </button>
                         </div>
                     )}
 
                     {/* Listings */}
                     {showListings && (loadingGroups ? (
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Hosted Trips</h2>
-                            <div className="space-y-3">
+                        <div className="w-full">
+                            <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-6 px-1">Existing Hosted Trips</h2>
+                            <div className="space-y-4">
                                 {[1, 2, 3].map((i) => (
-                                    <div key={i} className="flex items-center justify-between py-3 animate-pulse">
-                                        <div className="h-4 bg-gray-200 rounded w-full"></div>
-                                    </div>
+                                    <div key={i} className="h-16 bg-gray-50 border border-gray-100 rounded-lg animate-pulse"></div>
                                 ))}
                             </div>
                         </div>
                     ) : (
-                        <>
-                            <div className="bg-white rounded-xl border border-gray-200 p-6">
-                                <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Hosted Trips</h2>
-
-                                <div className="flex items-center justify-between pb-2 mb-2 border-gray-200">
-                                    <div className="flex-1 grid grid-cols-3 gap-4">
+                        <div className="space-y-8">
+                            {/* Existing Hosted Trips */}
+                            <div className="w-full">
+                                <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-6 px-1">Existing Hosted Trips</h2>
+                                <div className="border border-gray-100 rounded-lg overflow-hidden">
+                                    <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4">
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Group Name</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Destination</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Start Date</p>
                                     </div>
-                                    <div className="w-10"></div>
-                                </div>
-
-                                <div className="divide-y divide-gray-200">
-                                    {groups.length > 0 ? groups.map((group) => (
-                                        <div key={group.id} className="flex items-center justify-between py-1 hover:bg-gray-50 transition-colors">
-                                            <div className="flex-1 grid grid-cols-3 gap-4">
-                                                <p className="text-sm text-gray-900 truncate pr-2">{group.groupName}</p>
-                                                <p className="text-sm text-gray-900">{group.destination}</p>
-                                                <p className="text-sm text-gray-900">{new Date(group.startDate).toLocaleDateString()}</p>
-                                            </div>
-
-                                            <div className="relative">
-                                                <button
-                                                    onClick={() => setOpenMenuId(openMenuId === group.id ? null : group.id)}
-                                                    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-                                                >
-                                                    <RiMoreLine className="text-gray-600" size={20} />
-                                                </button>
-
-                                                {openMenuId === group.id && (
-                                                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                                        <button
-                                                            onClick={() => {
-                                                                alert('Edit not implemented yet');
-                                                                setOpenMenuId(null);
-                                                            }}
-                                                            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center gap-2 text-sm"
-                                                        >
-                                                            <RiEditLine size={16} />
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                handleDelete(group.id);
-                                                                setOpenMenuId(null);
-                                                            }}
-                                                            className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2 text-sm"
-                                                        >
-                                                            <RiDeleteBinLine size={16} />
-                                                            Delete
-                                                        </button>
+                                    <div className="divide-y divide-gray-100 bg-white">
+                                        {groups.length > 0 ? groups.map((group) => (
+                                            <div key={group.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-gray-50/50 transition-colors gap-3 md:gap-0">
+                                                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Group Name</p>
+                                                        <p className="text-xs md:text-sm font-medium text-gray-900 truncate pr-2">{group.groupName}</p>
                                                     </div>
-                                                )}
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Destination</p>
+                                                        <p className="text-xs md:text-sm text-gray-600">{group.destination}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Start Date</p>
+                                                        <p className="text-[10px] md:text-sm text-gray-500">{new Date(group.startDate).toLocaleDateString()}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="relative flex justify-end">
+                                                    <button
+                                                        onClick={() => setOpenMenuId(openMenuId === group.id ? null : group.id)}
+                                                        className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                                                    >
+                                                        <RiMoreLine className="text-gray-600" size={18} />
+                                                    </button>
+                                                    {openMenuId === group.id && (
+                                                        <div className="absolute right-0 mt-8 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden">
+                                                            <button
+                                                                onClick={() => {
+                                                                    alert('Edit not implemented yet');
+                                                                    setOpenMenuId(null);
+                                                                }}
+                                                                className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-xs"
+                                                            >
+                                                                <RiEditLine size={14} /> Edit
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    handleDelete(group.id);
+                                                                    setOpenMenuId(null);
+                                                                }}
+                                                                className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2 text-xs"
+                                                            >
+                                                                <RiDeleteBinLine size={14} /> Delete
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                    )) : (
-                                        <p className="text-gray-500 text-sm italic">No hosted trips found.</p>
-                                    )}
+                                        )) : (
+                                            <div className="py-8 text-left px-4 text-gray-500 text-sm">No hosted trips found.</div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-xl border border-gray-200 p-6 mt-6">
-                                <h2 className="text-lg font-medium text-gray-800 mb-6 flex items-center gap-2">
+                            {/* Unverified Community Trips */}
+                            <div className="w-full">
+                                <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-6 px-1 flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-amber-500"></span>
                                     Unverified Community Trips
-                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-600 ml-2">{unverifiedCommunityGroups.length}</span>
+                                    <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full text-gray-600 font-normal">{unverifiedCommunityGroups.length}</span>
                                 </h2>
-
-                                <div className="divide-y divide-gray-200">
-                                    {unverifiedCommunityGroups.length > 0 ? unverifiedCommunityGroups.map((group) => (
-                                        <div key={group.id} className="flex items-center justify-between py-3 hover:bg-gray-50 transition-colors px-2 rounded-lg">
-                                            <div className="flex-1 grid grid-cols-3 gap-4">
-                                                <div className="pr-4">
-                                                    <p className="text-sm font-medium text-gray-900">{group.groupName}</p>
-                                                    <p className="text-xs text-gray-500">by {group.hostProfile?.name}</p>
+                                <div className="border border-gray-100 rounded-lg overflow-hidden">
+                                    <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4">
+                                        <p className="text-xs font-semibold text-gray-600 uppercase">Trip Info</p>
+                                        <p className="text-xs font-semibold text-gray-600 uppercase">Destination</p>
+                                        <p className="text-xs font-semibold text-gray-600 uppercase">Date</p>
+                                    </div>
+                                    <div className="divide-y divide-gray-100 bg-white">
+                                        {unverifiedCommunityGroups.length > 0 ? unverifiedCommunityGroups.map((group) => (
+                                            <div key={group.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-gray-50/50 transition-colors gap-3 md:gap-0">
+                                                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Trip Name</p>
+                                                        <p className="text-xs md:text-sm font-medium text-gray-900">{group.groupName}</p>
+                                                        <p className="text-[10px] text-gray-400">by {group.hostProfile?.name}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Destination</p>
+                                                        <p className="text-xs md:text-sm text-gray-600">{group.destination}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Start Date</p>
+                                                        <p className="text-[10px] md:text-sm text-gray-500">{new Date(group.startDate).toLocaleDateString()}</p>
+                                                    </div>
                                                 </div>
-                                                <p className="text-sm text-gray-900">{group.destination}</p>
-                                                <p className="text-sm text-gray-900">{new Date(group.startDate).toLocaleDateString()}</p>
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button onClick={() => setViewingGroup(group)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors" title="View Details">
+                                                        <RiEyeLine size={18} />
+                                                    </button>
+                                                    <button onClick={() => handleVerify(group.id)} className="p-2 text-green-600 hover:bg-green-50 rounded-full transition-colors" title="Verify">
+                                                        <RiCheckLine size={18} />
+                                                    </button>
+                                                    <button onClick={() => handleDelete(group.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors" title="Delete">
+                                                        <RiDeleteBinLine size={18} />
+                                                    </button>
+                                                </div>
                                             </div>
-
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={() => setViewingGroup(group)}
-                                                    className="p-2 text-gray-600 hover:bg-gray-200 rounded-full transition-colors"
-                                                    title="View Details"
-                                                >
-                                                    <RiEyeLine size={20} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleVerify(group.id)}
-                                                    className="p-2 text-green-600 hover:bg-green-50 rounded-full transition-colors"
-                                                    title="Verify"
-                                                >
-                                                    <RiCheckLine size={20} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(group.id)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                                                    title="Delete"
-                                                >
-                                                    <RiDeleteBinLine size={20} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )) : (
-                                        <p className="text-gray-500 text-sm italic py-4">No unverified trips pending.</p>
-                                    )}
+                                        )) : (
+                                            <div className="py-8 text-left px-4 text-gray-500 text-sm">No unverified trips pending.</div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-xl border border-gray-200 p-6 mt-6">
-                                <h2 className="text-lg font-medium text-gray-800 mb-6">Verified Community Trips</h2>
-
-                                <div className="flex items-center justify-between pb-2 mb-2 border-gray-200">
-                                    <div className="flex-1 grid grid-cols-3 gap-4">
+                            {/* Verified Community Trips */}
+                            <div className="w-full">
+                                <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-6 px-1">Verified Community Trips</h2>
+                                <div className="border border-gray-100 rounded-lg overflow-hidden">
+                                    <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4">
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Group Name</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Destination</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Start Date</p>
                                     </div>
-                                    <div className="w-10"></div>
-                                </div>
-
-                                <div className="divide-y divide-gray-200">
-                                    {verifiedCommunityGroups.length > 0 ? verifiedCommunityGroups.map((group) => (
-                                        <div key={group.id} className="flex items-center justify-between py-1 hover:bg-gray-50 transition-colors">
-                                            <div className="flex-1 grid grid-cols-3 gap-4">
-                                                <p className="text-sm text-gray-900 truncate pr-2">{group.groupName}</p>
-                                                <p className="text-sm text-gray-900">{group.destination}</p>
-                                                <p className="text-sm text-gray-900">{new Date(group.startDate).toLocaleDateString()}</p>
-                                            </div>
-
-                                            <div className="relative">
-                                                <button
-                                                    onClick={() => setOpenMenuId(openMenuId === group.id ? null : group.id)}
-                                                    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-                                                >
-                                                    <RiMoreLine className="text-gray-600" size={20} />
-                                                </button>
-
-                                                {openMenuId === group.id && (
-                                                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                                        <button
-                                                            onClick={() => {
-                                                                alert('Edit not implemented yet');
-                                                                setOpenMenuId(null);
-                                                            }}
-                                                            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center gap-2 text-sm"
-                                                        >
-                                                            <RiEditLine size={16} />
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                handleDelete(group.id);
-                                                                setOpenMenuId(null);
-                                                            }}
-                                                            className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2 text-sm"
-                                                        >
-                                                            <RiDeleteBinLine size={16} />
-                                                            Delete
-                                                        </button>
+                                    <div className="divide-y divide-gray-100 bg-white">
+                                        {verifiedCommunityGroups.length > 0 ? verifiedCommunityGroups.map((group) => (
+                                            <div key={group.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-gray-50/50 transition-colors gap-3 md:gap-0">
+                                                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Group Name</p>
+                                                        <p className="text-xs md:text-sm font-medium text-gray-900 truncate pr-2">{group.groupName}</p>
                                                     </div>
-                                                )}
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Destination</p>
+                                                        <p className="text-xs md:text-sm text-gray-600">{group.destination}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Start Date</p>
+                                                        <p className="text-[10px] md:text-sm text-gray-500">{new Date(group.startDate).toLocaleDateString()}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="relative flex justify-end">
+                                                    <button
+                                                        onClick={() => setOpenMenuId(openMenuId === group.id ? null : group.id)}
+                                                        className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                                                    >
+                                                        <RiMoreLine className="text-gray-600" size={18} />
+                                                    </button>
+                                                    {openMenuId === group.id && (
+                                                        <div className="absolute right-0 mt-8 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden">
+                                                            <button
+                                                                onClick={() => {
+                                                                    alert('Edit not implemented yet');
+                                                                    setOpenMenuId(null);
+                                                                }}
+                                                                className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-xs"
+                                                            >
+                                                                <RiEditLine size={14} /> Edit
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    handleDelete(group.id);
+                                                                    setOpenMenuId(null);
+                                                                }}
+                                                                className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2 text-xs"
+                                                            >
+                                                                <RiDeleteBinLine size={14} /> Delete
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                    )) : (
-                                        <p className="text-gray-500 text-sm italic">No community trips found.</p>
-                                    )}
+                                        )) : (
+                                            <div className="py-8 text-left px-4 text-gray-500 text-sm">No community trips found.</div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </>
+                        </div>
                     ))}
                 </>
             ) : (

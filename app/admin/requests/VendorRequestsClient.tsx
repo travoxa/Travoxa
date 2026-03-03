@@ -89,66 +89,78 @@ export default function VendorRequestsClient() {
         }
     };
 
-    if (loading) return <div className="text-center p-8">Loading pending requests...</div>;
+    if (loading) return (
+        <div className="w-full">
+            <h3 className="text-sm md:text-lg font-medium text-gray-800 mb-6 px-1">Pending Vendor Listings</h3>
+            <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-16 bg-gray-50 border border-gray-100 rounded-lg animate-pulse"></div>
+                ))}
+            </div>
+        </div>
+    );
 
     return (
-        <div className="bg-white rounded-xl border border-gray-200">
-            <div className="px-6 py-5 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800">Pending Vendor Listings</h3>
-                <p className="text-sm text-gray-500">Review newly created listings by vendors before they go live.</p>
+        <div className="w-full">
+            <div className="mb-6 px-1">
+                <h3 className="text-sm md:text-lg font-medium text-gray-800">Pending Vendor Listings</h3>
+                <p className="text-[10px] md:text-sm text-gray-500">Review newly created listings by vendors before they go live.</p>
             </div>
 
-            {requests.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                    No pending vendor requests at this time.
+            <div className="border border-gray-100 rounded-lg overflow-hidden">
+                <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-4 gap-4">
+                    <p className="text-xs font-semibold text-gray-600 uppercase">Listing Name</p>
+                    <p className="text-xs font-semibold text-gray-600 uppercase">Category</p>
+                    <p className="text-xs font-semibold text-gray-600 uppercase">Date Submitted</p>
+                    <p className="text-xs font-semibold text-gray-600 uppercase text-right">Actions</p>
                 </div>
-            ) : (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left text-gray-500">
-                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
-                            <tr>
-                                <th className="px-6 py-3">Listing Name</th>
-                                <th className="px-6 py-3">Category</th>
-                                <th className="px-6 py-3">Vendor ID</th>
-                                <th className="px-6 py-3">Date Submitted</th>
-                                <th className="px-6 py-3 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {requests.map((item) => (
-                                <tr key={item.id} className="bg-white border-b hover:bg-gray-50">
-                                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                                        {item.title}
-                                    </td>
-                                    <td className="px-6 py-4 capitalize">
-                                        {item.collectionType} ({item.type})
-                                    </td>
-                                    <td className="px-6 py-4 font-mono text-xs text-gray-400">
-                                        {item.vendorId}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        {new Date(item.createdAt).toLocaleDateString()}
-                                    </td>
-                                    <td className="px-6 py-4 text-right space-x-2">
+
+                <div className="divide-y divide-gray-100 bg-white">
+                    {requests.length === 0 ? (
+                        <div className="py-8 text-left px-4 text-gray-500 text-sm">
+                            No pending vendor requests at this time.
+                        </div>
+                    ) : (
+                        requests.map((item) => (
+                            <div key={item.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-gray-50/50 transition-colors gap-3 md:gap-0">
+                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 items-center">
+                                    <div>
+                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Listing Name</p>
+                                        <p className="text-xs md:text-sm font-medium text-gray-900">{item.title}</p>
+                                        <p className="text-[10px] text-gray-400 font-mono mt-0.5 md:hidden">Vendor: {item.vendorId}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Category</p>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs md:text-sm text-gray-700 capitalize">{item.collectionType}</span>
+                                            <span className="text-[10px] text-gray-400">({item.type})</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Date Submitted</p>
+                                        <p className="text-[10px] md:text-sm text-gray-900">{new Date(item.createdAt).toLocaleDateString()}</p>
+                                        <p className="text-[10px] text-gray-400 hidden md:block font-mono mt-0.5">ID: {item.vendorId}</p>
+                                    </div>
+                                    <div className="flex items-center justify-end gap-2">
                                         <button
                                             onClick={() => handleAction(item, 'approved')}
-                                            className="px-3 py-1.5 bg-green-50 text-green-600 rounded-md hover:bg-green-100 font-medium"
+                                            className="px-3 py-1.5 bg-green-50 text-green-600 rounded-md hover:bg-green-100 text-[10px] md:text-xs font-medium transition-colors"
                                         >
                                             Approve
                                         </button>
                                         <button
                                             onClick={() => handleAction(item, 'rejected')}
-                                            className="px-3 py-1.5 bg-red-50 text-red-600 rounded-md hover:bg-red-100 font-medium"
+                                            className="px-3 py-1.5 bg-red-50 text-red-600 rounded-md hover:bg-red-100 text-[10px] md:text-xs font-medium transition-colors"
                                         >
                                             Reject
                                         </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
-            )}
+            </div>
         </div>
     );
 }

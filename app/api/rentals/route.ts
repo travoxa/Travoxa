@@ -32,13 +32,38 @@ export async function GET(req: Request) {
             query.status = 'approved';
         }
 
-        const rentals = await Rental.find(query);
+        // 1. Try direct DB query
+        let rentals = await Rental.find(query).sort({ createdAt: -1 });
+
+        // 2. SELF-HEALING & FALLBACK
+        // If direct query fails for public page, but documents actually exist
+        if (rentals.length === 0 && !vendorId && admin !== 'true') {
+            const allRentalsRaw = await Rental.find({}).sort({ createdAt: -1 });
+            const approvedRentals = allRentalsRaw.filter(rental => rental.status === 'approved');
+
+            if (approvedRentals.length > 0) {
+                console.log(`[API/RENTALS] ! Direct query failed but found ${approvedRentals.length} approved items via fallback.`);
+                rentals = approvedRentals;
+
+                // Attempt to "Self-Heal" by re-saving
+                allRentalsRaw.forEach(async (rental) => {
+                    try {
+                        await Rental.findByIdAndUpdate(rental._id, { status: rental.status });
+                    } catch (e) {
+                        // Ignore errors during healing
+                    }
+                });
+            }
+        }
 
         // Map MongoDB _id to id for frontend
-        const rentalsWithId = rentals.map(rental => ({
-            ...rental.toObject(),
-            id: rental._id.toString(),
-        }));
+        const rentalsWithId = rentals.map(rental => {
+            const rentalObj = (rental as any).toObject ? (rental as any).toObject() : rental;
+            return {
+                ...rentalObj,
+                id: (rentalObj._id || rentalObj.id).toString(),
+            };
+        });
 
         return NextResponse.json({ success: true, data: rentalsWithId });
     } catch (error: any) {

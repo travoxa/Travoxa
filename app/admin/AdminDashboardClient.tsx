@@ -48,8 +48,11 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             return permissions.includes(`Discovery:${subSection}`);
         };
 
-        // Check if current tab is allowed
-        const isAllowed = permissions.includes(activeTab) || (activeTab === 'Discovery' && hasDiscoveryPermission());
+        // For backwards compatibility or default routing, we can still allow 'Discovery'
+        // If 'Discovery' is the active tab but it's now split, we might want to default to the first available one
+        const isAllowed = permissions.includes(activeTab) ||
+            (activeTab === 'Discovery' && hasDiscoveryPermission()) ||
+            (activeTab.startsWith('Discovery:') && hasDiscoveryPermission(activeTab.split(':')[1]));
 
         if (!isAllowed) {
             return (
@@ -77,138 +80,67 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                     </div>
                 )
 
-            case 'Discovery':
+            case 'Discovery:Sightseeing':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Discovery</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Sightseeing</h1>
+                        <AddSightseeingClient showManagementBox={true} showListings={true} />
+                    </div>
+                )
 
-                        {/* Full-width form when active - appears at top */}
-                        {activeDiscoveryForm === 'sightseeing' && hasDiscoveryPermission('Sightseeing') && (
-                            <AddSightseeingClient
-                                showManagementBox={false}
-                                showListings={false}
-                                showFormDirectly={true}
-                                onFormClose={() => setActiveDiscoveryForm(null)}
-                            />
-                        )}
+            case 'Discovery:Rentals':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Rentals</h1>
+                        <AddRentalsClient showManagementBox={true} showListings={true} />
+                    </div>
+                )
 
-                        {activeDiscoveryForm === 'rentals' && hasDiscoveryPermission('Rentals') && (
-                            <AddRentalsClient
-                                showManagementBox={false}
-                                showListings={false}
-                                showFormDirectly={true}
-                                onFormClose={() => setActiveDiscoveryForm(null)}
-                            />
-                        )}
+            case 'Discovery:Activities':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Activities</h1>
+                        <AddActivitiesClient showManagementBox={true} showListings={true} />
+                    </div>
+                )
 
-                        {activeDiscoveryForm === 'activities' && hasDiscoveryPermission('Activities') && (
-                            <AddActivitiesClient
-                                showManagementBox={false}
-                                showListings={false}
-                                showFormDirectly={true}
-                                onFormClose={() => setActiveDiscoveryForm(null)}
-                            />
-                        )}
+            case 'Discovery:Attractions':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Attractions</h1>
+                        <AddAttractionsClient showManagementBox={true} showListings={true} />
+                    </div>
+                )
 
-                        {activeDiscoveryForm === 'attractions' && hasDiscoveryPermission('Attractions') && (
-                            <AddAttractionsClient
-                                showManagementBox={false}
-                                showListings={false}
-                                showFormDirectly={true}
-                                onFormClose={() => setActiveDiscoveryForm(null)}
-                            />
-                        )}
+            case 'Discovery:Food':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Food & Cafes</h1>
+                        <AddFoodClient showManagementBox={true} showListings={true} />
+                    </div>
+                )
 
-                        {activeDiscoveryForm === 'food' && hasDiscoveryPermission('Food') && (
-                            <AddFoodClient
-                                showManagementBox={false}
-                                showListings={false}
-                                showFormDirectly={true}
-                                onFormClose={() => setActiveDiscoveryForm(null)}
-                            />
-                        )}
+            case 'Discovery:Stay':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Stay</h1>
+                        <AddStayClient showManagementBox={true} showListings={true} />
+                    </div>
+                )
 
-                        {activeDiscoveryForm === 'stay' && hasDiscoveryPermission('Stay') && (
-                            <AddStayClient
-                                showManagementBox={false}
-                                showListings={false}
-                                showFormDirectly={true}
-                                onFormClose={() => setActiveDiscoveryForm(null)}
-                            />
-                        )}
+            case 'Discovery:Emergency':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Emergency Setup</h1>
+                        <AddHelplineClient showManagementBox={true} showListings={true} />
+                    </div>
+                )
 
-                        {activeDiscoveryForm === 'helpline' && hasDiscoveryPermission('Emergency') && (
-                            <AddHelplineClient
-                                showManagementBox={false}
-                                showListings={false}
-                                showFormDirectly={true}
-                                onFormClose={() => setActiveDiscoveryForm(null)}
-                            />
-                        )}
-
-                        {/* Row 1: Management Boxes - Side by Side (hidden when form is open) */}
-                        {!activeDiscoveryForm && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                                {hasDiscoveryPermission('Sightseeing') && (
-                                    <AddSightseeingClient
-                                        showManagementBox={true}
-                                        showListings={false}
-                                        onFormOpen={() => setActiveDiscoveryForm('sightseeing')}
-                                    />
-                                )}
-                                {hasDiscoveryPermission('Rentals') && (
-                                    <AddRentalsClient
-                                        showManagementBox={true}
-                                        showListings={false}
-                                        onFormOpen={() => setActiveDiscoveryForm('rentals')}
-                                    />
-                                )}
-                                {hasDiscoveryPermission('Activities') && (
-                                    <AddActivitiesClient
-                                        showManagementBox={true}
-                                        showListings={false}
-                                        onFormOpen={() => setActiveDiscoveryForm('activities')}
-                                    />
-                                )}
-                                {hasDiscoveryPermission('Attractions') && (
-                                    <AddAttractionsClient
-                                        showManagementBox={true}
-                                        showListings={false}
-                                        onFormOpen={() => setActiveDiscoveryForm('attractions')}
-                                    />
-                                )}
-                                {hasDiscoveryPermission('Food') && (
-                                    <AddFoodClient
-                                        showManagementBox={true}
-                                        showListings={false}
-                                        onFormOpen={() => setActiveDiscoveryForm('food')}
-                                    />
-                                )}
-                                {hasDiscoveryPermission('Stay') && (
-                                    <AddStayClient
-                                        showManagementBox={true}
-                                        showListings={false}
-                                        onFormOpen={() => setActiveDiscoveryForm('stay')}
-                                    />
-                                )}
-                                {hasDiscoveryPermission('Emergency') && (
-                                    <AddHelplineClient
-                                        showManagementBox={true}
-                                        showListings={false}
-                                        onFormOpen={() => setActiveDiscoveryForm('helpline')}
-                                    />
-                                )}
-                            </div>
-                        )}
-
-                        {/* Row 2: Listings */}
-                        {hasDiscoveryPermission('Sightseeing') && <AddSightseeingClient showManagementBox={false} showListings={true} />}
-                        {hasDiscoveryPermission('Rentals') && <AddRentalsClient showManagementBox={false} showListings={true} />}
-                        {hasDiscoveryPermission('Activities') && <AddActivitiesClient showManagementBox={false} showListings={true} />}
-                        {hasDiscoveryPermission('Attractions') && <AddAttractionsClient showManagementBox={false} showListings={true} />}
-                        {hasDiscoveryPermission('Food') && <AddFoodClient showManagementBox={false} showListings={true} />}
-                        {hasDiscoveryPermission('Stay') && <AddStayClient showManagementBox={false} showListings={true} />}
-                        {hasDiscoveryPermission('Emergency') && <AddHelplineClient showManagementBox={false} showListings={true} />}
+            case 'Discovery': // Fallback if needed, though they should route to specific ones now
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Discovery Overview</h1>
+                        <p className="text-gray-600">Please select a specific Discovery category from the sidebar menu.</p>
                     </div>
                 )
 

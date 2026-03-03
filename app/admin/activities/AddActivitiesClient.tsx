@@ -493,8 +493,7 @@ export default function AddActivitiesClient({
             {!showForm ? (
                 <>
                     {showManagementBox && (
-                        <div className="bg-white rounded-xl border border-gray-200 p-8">
-                            <h2 className="text-lg font-light text-gray-800 mb-4">Activities</h2>
+                        <div className="flex justify-start mb-6">
                             <button
                                 onClick={() => {
                                     if (onFormOpen) {
@@ -503,98 +502,105 @@ export default function AddActivitiesClient({
                                         setShowFormInternal(true);
                                     }
                                 }}
-                                className="px-6 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all"
+                                className="px-3 py-1.5 md:px-6 md:py-2 bg-black text-white rounded-md text-[10px] md:text-sm font-light hover:bg-gray-800 transition-all"
                             >
-                                Create
+                                Create New Activity
                             </button>
                         </div>
                     )}
 
                     {showListings && (loadingActivities ? (
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <div className="animate-pulse space-y-4">
-                                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                                <div className="h-10 bg-gray-200 rounded w-full"></div>
-                                <div className="h-10 bg-gray-200 rounded w-full"></div>
+                        <div className="w-full">
+                            <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-6 px-1">Existing Activities</h2>
+                            <div className="animate-pulse space-y-3">
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="flex items-center justify-between py-3 border-b border-gray-100">
+                                        <div className="flex-1 grid grid-cols-4 gap-4">
+                                            <div className="h-4 bg-gray-100 rounded w-3/4"></div>
+                                            <div className="h-4 bg-gray-100 rounded w-1/2"></div>
+                                            <div className="h-4 bg-gray-100 rounded w-1/3"></div>
+                                            <div className="h-4 bg-gray-100 rounded w-1/4"></div>
+                                        </div>
+                                        <div className="w-10 h-4 bg-gray-100 rounded"></div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     ) : activities.length > 0 ? (
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Activities</h2>
-                            <div className="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 hidden md:flex">
-                                <div className="flex-1 grid grid-cols-4 gap-4">
+                        <div className="w-full">
+                            <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-4 px-1">Existing Activities</h2>
+
+                            <div className="border border-gray-100 rounded-lg overflow-hidden">
+                                <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-4 gap-4">
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Title</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Type</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Price</p>
                                 </div>
-                                <div className="w-10"></div>
-                            </div>
-                            <div className="divide-y divide-gray-200">
-                                {([...activities].sort((a, b) => {
-                                    if (!sortOrder) return 0;
-                                    const stateA = a.state || '';
-                                    const stateB = b.state || '';
-                                    return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
-                                })).map((activity) => (
-                                    <div key={activity._id} className="flex flex-col md:flex-row md:items-center justify-between py-4 md:py-2 hover:bg-gray-50 transition-colors gap-3 md:gap-0">
-                                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-                                            <div>
-                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Title</p>
-                                                <p className="text-sm font-medium md:font-normal text-gray-900 truncate pr-2">{activity.title}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Type</p>
-                                                <p className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded w-fit">{activity.type}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">State</p>
-                                                <p className="text-sm text-gray-900">{activity.state}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Price</p>
-                                                <p className="text-sm text-gray-900">₹{activity.price}</p>
-                                            </div>
-                                        </div>
-                                        <div className="relative">
-                                            <button
-                                                onClick={() => setOpenMenuId(openMenuId === activity._id ? null : activity._id)}
-                                                className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-                                            >
-                                                <RiMoreLine className="text-gray-600" size={20} />
-                                            </button>
-                                            {openMenuId === activity._id && (
-                                                <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                                    <button
-                                                        onClick={() => {
-                                                            setOpenMenuId(null);
-                                                            handleEdit(activity);
-                                                        }}
-                                                        className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center gap-2 text-sm"
-                                                    >
-                                                        <RiEditLine size={16} /> Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setOpenMenuId(null);
-                                                            handleDelete(activity._id);
-                                                        }}
-                                                        className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2 text-sm"
-                                                    >
-                                                        <RiDeleteBinLine size={16} /> Delete
-                                                    </button>
+
+                                <div className="divide-y divide-gray-100 bg-white">
+                                    {([...activities].sort((a, b) => {
+                                        if (!sortOrder) return 0;
+                                        const stateA = a.state || '';
+                                        const stateB = b.state || '';
+                                        return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
+                                    })).map((activity) => (
+                                        <div key={activity._id} className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-gray-50/50 transition-colors gap-3 md:gap-0">
+                                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Title</p>
+                                                    <p className="text-xs md:text-sm font-medium md:font-normal text-gray-900 truncate pr-2">{activity.title}</p>
                                                 </div>
-                                            )}
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Type</p>
+                                                    <p className="text-[10px] md:text-xs text-gray-600 bg-gray-100 px-1.5 py-0.5 md:px-2 md:py-1 rounded w-fit">{activity.type}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">State</p>
+                                                    <p className="text-[10px] md:text-sm text-gray-900">{activity.state}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Price</p>
+                                                    <p className="text-[10px] md:text-sm text-gray-900">₹{activity.price}</p>
+                                                </div>
+                                            </div>
+                                            <div className="relative">
+                                                <button
+                                                    onClick={() => setOpenMenuId(openMenuId === activity._id ? null : activity._id)}
+                                                    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                                                >
+                                                    <RiMoreLine className="text-gray-600" size={20} />
+                                                </button>
+                                                {openMenuId === activity._id && (
+                                                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                                                        <button
+                                                            onClick={() => {
+                                                                setOpenMenuId(null);
+                                                                handleEdit(activity);
+                                                            }}
+                                                            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center gap-2 text-sm"
+                                                        >
+                                                            <RiEditLine size={16} /> Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                setOpenMenuId(null);
+                                                                handleDelete(activity._id);
+                                                            }}
+                                                            className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2 text-sm"
+                                                        >
+                                                            <RiDeleteBinLine size={16} /> Delete
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-white rounded-xl border border-gray-200 p-8 text-left">
-                            <h2 className="text-lg font-light text-gray-800 mb-2">No Activities Yet</h2>
-                            <p className="text-gray-600 text-sm">Create your first activity to get started.</p>
-                        </div>
+                        <div className="py-8 text-left px-1 text-gray-500 text-sm">No activities found.</div>
                     ))}
                 </>
             ) : (

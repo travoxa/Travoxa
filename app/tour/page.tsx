@@ -39,9 +39,9 @@ function TourContent() {
 
                 const res = await fetch('/api/tours');
                 const data = await res.json();
+
                 if (data.success) {
                     // Combine static and dynamic tours
-                    // Map dynamic tours to match TourPackage interface if needed
                     const combined = [...data.data, ...tourData];
                     setAllPackages(combined);
 
@@ -49,12 +49,7 @@ function TourContent() {
                     const priceParam = searchParams.get("priceRange");
                     const queryParam = searchParams.get("searchQuery");
 
-                    if (priceParam || queryParam) {
-                        // Filters will be applied by the next useEffect dependent on searchParams
-                        // But we need to make sure handleFilter uses the updated 'allPackages'
-                        // Implementation detail: handleFilter currently uses tourData directly.
-                        // We need to refactor handleFilter to use 'allPackages' state.
-                    } else {
+                    if (!priceParam && !queryParam) {
                         setFilteredPackages(combined);
                     }
                 }

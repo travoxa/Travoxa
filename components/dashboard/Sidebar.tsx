@@ -13,7 +13,14 @@ import {
     RiHomeLine,
     RiCompass3Line,
     RiGroupLine,
-    RiPriceTagLine
+    RiPriceTagLine,
+    RiCameraLensLine,
+    RiCarWashingLine,
+    RiRunLine,
+    RiBuilding2Line,
+    RiRestaurantLine,
+    RiHotelLine,
+    RiHeartPulseLine
 } from 'react-icons/ri';
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
@@ -74,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {/* Branding */}
                 <div>
                     <div className="flex items-center justify-between mb-10 pl-2">
-                        <button onClick={() => window.location.href = '/'} className="cursor-pointer">
+                        <button onClick={() => window.location.href = '/'} className="cursor-pointer hidden md:block">
                             <Image
                                 src="/logo.png"
                                 alt="Travoxa"
@@ -134,16 +141,95 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     />
                                 )}
                                 {(permissions.includes('Discovery') || permissions.some(p => p.startsWith('Discovery:'))) && (
-                                    <NavItem
-                                        icon={<RiMapPinLine size={20} />}
-                                        label="Discovery"
-                                        id="Discovery"
-                                        activeTab={activeTab}
-                                        onClick={(id) => {
-                                            setActiveTab(id);
-                                            if (onClose) onClose();
-                                        }}
-                                    />
+                                    <>
+                                        <div className="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                            Discovery
+                                        </div>
+                                        {(permissions.includes('Discovery') || permissions.includes('Discovery:Sightseeing')) && (
+                                            <SubNavItem
+                                                icon={<RiCameraLensLine size={18} />}
+                                                label="Sightseeing"
+                                                id="Discovery:Sightseeing"
+                                                activeTab={activeTab}
+                                                onClick={(id) => {
+                                                    setActiveTab(id);
+                                                    if (onClose) onClose();
+                                                }}
+                                            />
+                                        )}
+                                        {(permissions.includes('Discovery') || permissions.includes('Discovery:Rentals')) && (
+                                            <SubNavItem
+                                                icon={<RiCarWashingLine size={18} />}
+                                                label="Rentals"
+                                                id="Discovery:Rentals"
+                                                activeTab={activeTab}
+                                                onClick={(id) => {
+                                                    setActiveTab(id);
+                                                    if (onClose) onClose();
+                                                }}
+                                            />
+                                        )}
+                                        {(permissions.includes('Discovery') || permissions.includes('Discovery:Activities')) && (
+                                            <SubNavItem
+                                                icon={<RiRunLine size={18} />}
+                                                label="Activities"
+                                                id="Discovery:Activities"
+                                                activeTab={activeTab}
+                                                onClick={(id) => {
+                                                    setActiveTab(id);
+                                                    if (onClose) onClose();
+                                                }}
+                                            />
+                                        )}
+                                        {(permissions.includes('Discovery') || permissions.includes('Discovery:Attractions')) && (
+                                            <SubNavItem
+                                                icon={<RiBuilding2Line size={18} />}
+                                                label="Attractions"
+                                                id="Discovery:Attractions"
+                                                activeTab={activeTab}
+                                                onClick={(id) => {
+                                                    setActiveTab(id);
+                                                    if (onClose) onClose();
+                                                }}
+                                            />
+                                        )}
+                                        {(permissions.includes('Discovery') || permissions.includes('Discovery:Food')) && (
+                                            <SubNavItem
+                                                icon={<RiRestaurantLine size={18} />}
+                                                label="Food & Cafes"
+                                                id="Discovery:Food"
+                                                activeTab={activeTab}
+                                                onClick={(id) => {
+                                                    setActiveTab(id);
+                                                    if (onClose) onClose();
+                                                }}
+                                            />
+                                        )}
+                                        {(permissions.includes('Discovery') || permissions.includes('Discovery:Stay')) && (
+                                            <SubNavItem
+                                                icon={<RiHotelLine size={18} />}
+                                                label="Stay"
+                                                id="Discovery:Stay"
+                                                activeTab={activeTab}
+                                                onClick={(id) => {
+                                                    setActiveTab(id);
+                                                    if (onClose) onClose();
+                                                }}
+                                            />
+                                        )}
+                                        {(permissions.includes('Discovery') || permissions.includes('Discovery:Emergency')) && (
+                                            <SubNavItem
+                                                icon={<RiHeartPulseLine size={18} />}
+                                                label="Emergency"
+                                                id="Discovery:Emergency"
+                                                activeTab={activeTab}
+                                                onClick={(id) => {
+                                                    setActiveTab(id);
+                                                    if (onClose) onClose();
+                                                }}
+                                            />
+                                        )}
+                                    </>
                                 )}
                                 {permissions.includes('Backpackers') && (
                                     <NavItem
@@ -269,11 +355,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                                 <button
                                     onClick={() => setShowLogoutPopup(true)}
-                                    className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group text-red-500 border border-transparent hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+                                    className="w-full flex items-center justify-between px-4 py-2 md:py-3 rounded-xl transition-all duration-200 group text-red-500 border border-transparent hover:bg-red-50 hover:border-red-200 hover:text-red-600"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <span><RiLogoutBoxLine size={20} /></span>
-                                        <span className="text-sm font-medium">Logout</span>
+                                        <span className="hidden md:inline"><RiLogoutBoxLine size={20} /></span>
+                                        <span className="md:hidden"><RiLogoutBoxLine size={14} /></span>
+                                        <span className="text-[11px] md:text-sm font-medium">Logout</span>
                                     </div>
                                 </button>
                             </>
@@ -357,14 +444,46 @@ const NavItem = ({
     return (
         <button
             onClick={() => onClick(id)}
-            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group border ${active
+            className={`w-full flex items-center justify-between px-4 py-2 md:py-3 rounded-xl transition-all duration-200 group border ${active
                 ? 'bg-gray-50 border-gray-200 text-gray-900 font-semibold'
                 : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-200 hover:text-gray-900'
                 }`}
         >
             <div className="flex items-center gap-3">
-                <span>{icon}</span>
-                <span className="text-sm font-medium">{label}</span>
+                <span className="hidden md:inline">{icon}</span>
+                <span className="md:hidden">{icon && typeof icon === 'object' && 'props' in icon ? { ...icon, props: { ...icon.props, size: 14 } } : icon}</span>
+                <span className="text-[11px] md:text-sm font-medium">{label}</span>
+            </div>
+        </button>
+    );
+};
+
+const SubNavItem = ({
+    icon,
+    label,
+    id,
+    activeTab,
+    onClick
+}: {
+    icon: any,
+    label: string,
+    id: string,
+    activeTab: string,
+    onClick: (id: string) => void
+}) => {
+    const active = activeTab === id;
+    return (
+        <button
+            onClick={() => onClick(id)}
+            className={`w-full flex items-center justify-between pl-8 pr-4 py-1.5 md:py-2.5 rounded-xl transition-all duration-200 group border ${active
+                ? 'bg-gray-50 border-gray-100 text-gray-900 font-medium'
+                : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-100 hover:text-gray-800'
+                }`}
+        >
+            <div className="flex items-center gap-3 opacity-90 group-hover:opacity-100">
+                <span className="hidden md:inline">{icon}</span>
+                <span className="md:hidden">{icon && typeof icon === 'object' && 'props' in icon ? { ...icon, props: { ...icon.props, size: 12 } } : icon}</span>
+                <span className="text-[10px] md:text-xs font-light">{label}</span>
             </div>
         </button>
     );

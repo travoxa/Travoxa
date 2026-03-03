@@ -6,13 +6,9 @@ import EmergencyHelpClient from './EmergencyHelpClient';
 export const dynamic = 'force-dynamic';
 
 const serializeConfig = (doc: any) => {
-    return {
-        ...doc,
-        _id: doc._id.toString(),
-        id: doc._id.toString(),
-        createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : null,
-        lastUpdated: doc.lastUpdated ? new Date(doc.lastUpdated).toISOString() : null,
-    };
+    const serialized = JSON.parse(JSON.stringify(doc));
+    serialized.id = serialized._id;
+    return serialized;
 };
 
 export default async function EmergencyHelpPage() {
