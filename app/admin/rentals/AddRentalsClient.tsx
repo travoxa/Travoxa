@@ -342,6 +342,7 @@ export default function AddRentalsClient({
             relatedFood: formData.relatedFood,
             relatedAttractions: formData.relatedAttractions,
             partners: formData.partners,
+            ...(vendorId && { vendorId })
         };
 
         try {
@@ -485,8 +486,7 @@ export default function AddRentalsClient({
                 <>
                     {/* Create Button - Top */}
                     {showManagementBox && (
-                        <div className="bg-white rounded-xl border border-gray-200 p-8">
-                            <h2 className="text-lg font-light text-gray-800 mb-4">Rentals</h2>
+                        <div className="flex justify-start mb-6">
                             <button
                                 onClick={() => {
                                     if (onFormOpen) {
@@ -495,9 +495,9 @@ export default function AddRentalsClient({
                                         setShowFormInternal(true);
                                     }
                                 }}
-                                className="px-6 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all"
+                                className="px-3 py-1.5 md:px-6 md:py-2 bg-black text-white rounded-md text-[10px] md:text-sm font-light hover:bg-gray-800 transition-all"
                             >
-                                Create
+                                Create New Rental
                             </button>
                         </div>
                     )}
@@ -520,8 +520,8 @@ export default function AddRentalsClient({
                                     </div>
                                 </div>
                             ) : rentals.length > 0 ? (
-                                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                                    <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Rentals</h2>
+                                <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-6">
+                                    <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-3 md:mb-6">Existing Rentals</h2>
 
                                     {/* Column Headers */}
                                     <div className="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 hidden md:flex">
@@ -548,20 +548,20 @@ export default function AddRentalsClient({
                                             >
                                                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                                                     <div>
-                                                        <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Name</p>
-                                                        <p className="text-sm font-medium md:font-normal text-gray-900">{rental.name}</p>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Name</p>
+                                                        <p className="text-xs md:text-sm font-medium md:font-normal text-gray-900">{rental.name}</p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Type</p>
-                                                        <p className="text-sm text-gray-900">{rental.type}</p>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Type</p>
+                                                        <p className="text-[10px] md:text-sm text-gray-900">{rental.type}</p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">State</p>
-                                                        <p className="text-sm text-gray-900">{rental.state}</p>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">State</p>
+                                                        <p className="text-[10px] md:text-sm text-gray-900">{rental.state}</p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Price</p>
-                                                        <p className="text-sm text-gray-900">₹{rental.price}/day</p>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Price</p>
+                                                        <p className="text-[10px] md:text-sm text-gray-900">₹{rental.price}/day</p>
                                                     </div>
                                                 </div>
 
@@ -604,9 +604,9 @@ export default function AddRentalsClient({
                                     </div>
                                 </div>
                             ) : (
-                                <div className="bg-white rounded-xl border border-gray-200 p-8 text-left">
-                                    <h2 className="text-lg font-medium text-gray-800 mb-2">No Rentals Yet</h2>
-                                    <p className="text-gray-600 text-sm">Create your first rental to get started.</p>
+                                <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-8 text-left">
+                                    <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-1 md:mb-2">No Rentals Yet</h2>
+                                    <p className="text-gray-600 text-[10px] md:text-sm">Create your first rental to get started.</p>
                                 </div>
                             )}
                         </>

@@ -22,7 +22,7 @@ export default async function AdminPage() {
             image: null,
             id: 'admin',
             role: 'Super Admin',
-            permissions: ['Overview', 'Landing', 'Tour', 'Discovery', 'Backpackers', 'Team', 'Vendor Requests', 'Emergency'] // All permissions
+            permissions: ['Overview', 'Landing', 'Tour', 'Discovery', 'Backpackers', 'Team', 'Vendor Requests', 'Discovery:Emergency', 'Listings', 'Other'] // All permissions
         }
     } else {
         // Team Member - Fetch from DB

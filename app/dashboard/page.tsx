@@ -24,6 +24,11 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
+  // Redirect vendors to the vendor dashboard
+  if (dbUser.role === 'vendor') {
+    redirect('/vendor');
+  }
+
   // Fetch groups created by this user, joined by this user, or requested by this user
   const userId = dbUser._id.toString();
 

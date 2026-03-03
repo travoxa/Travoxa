@@ -159,6 +159,11 @@ const AttractionSchema = new mongoose.Schema({
             default: false
         }
     }],
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'approved'
+    },
     createdAt: {
         type: Date,
         default: Date.now,
