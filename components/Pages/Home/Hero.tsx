@@ -103,7 +103,7 @@ export default function Hero() {
 
           {/* Subtitle */}
           <p className="text-center text-sm md:text-lg lg:text-2xl text-white font-medium Mont tracking-wide mt-2 mb-6 md:mb-12 drop-shadow-md" data-aos="fade-up" data-aos-delay="100">
-            Your AI-Powered Travel Companion.
+            Dil Se Bana Travel Partner.
           </p>
 
           {/* Refined Search Bar Component */}

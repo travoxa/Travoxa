@@ -39,6 +39,11 @@ export interface IUser extends Document {
     businessType: string;
     address: string;
     taxId?: string;
+    instagram?: string;
+    facebook?: string;
+    twitter?: string;
+    googleBusiness?: string;
+    youtube?: string;
   };
   notifications: {
     senderId: string;
@@ -191,6 +196,11 @@ const userSchema = new Schema<IUser>({
     businessType: { type: String, trim: true },
     address: { type: String, trim: true },
     taxId: { type: String, trim: true },
+    instagram: { type: String, trim: true },
+    facebook: { type: String, trim: true },
+    twitter: { type: String, trim: true },
+    googleBusiness: { type: String, trim: true },
+    youtube: { type: String, trim: true },
   },
   createdAt: {
     type: Date,

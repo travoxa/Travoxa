@@ -67,7 +67,10 @@ export default function AddTourClient({
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
     const [activeTab, setActiveTab] = useState<'tours' | 'requests'>('tours');
     const [requests, setRequests] = useState<any[]>([]);
+    const [customRequests, setCustomRequests] = useState<any[]>([]);
     const [loadingRequests, setLoadingRequests] = useState(false);
+    const [loadingCustomRequests, setLoadingCustomRequests] = useState(false);
+    const [requestTab, setRequestTab] = useState<'standard' | 'custom'>('standard');
 
     // Related Packages Data States
     const [allSightseeing, setAllSightseeing] = useState<any[]>([]);
@@ -228,6 +231,21 @@ export default function AddTourClient({
         }
     };
 
+    const fetchCustomRequests = async () => {
+        setLoadingCustomRequests(true);
+        try {
+            const res = await fetch('/api/tours/custom-request');
+            const data = await res.json();
+            if (data.success) {
+                setCustomRequests(data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch custom requests:', error);
+        } finally {
+            setLoadingCustomRequests(false);
+        }
+    };
+
     const fetchRelatedPackages = async () => {
         setLoadingRelated(true);
         try {
@@ -262,12 +280,22 @@ export default function AddTourClient({
     useEffect(() => {
         fetchTours();
         fetchRequests();
+        fetchCustomRequests();
         fetchRelatedPackages();
     }, []);
 
-    const handleRequestAction = async (requestId: string, status: 'approved' | 'rejected') => {
+    const handleRequestAction = async (requestId: string, status: 'approved' | 'rejected', type: 'standard' | 'custom' = 'standard') => {
         try {
-            const res = await fetch('/api/tours/request', {
+            const endpoint = type === 'standard' ? '/api/tours/request' : '/api/tours/custom-request'; // Note: custom-request needs PUT implement if we want status update
+            // Actually, let's keep it simple for now and only handle standard requests for status update
+            // OR I can implement PUT for custom-request as well.
+
+            if (type === 'custom') {
+                alert('Status update for custom requests is coming soon.');
+                return;
+            }
+
+            const res = await fetch(endpoint, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ requestId, status })
@@ -276,9 +304,11 @@ export default function AddTourClient({
 
             if (data.success) {
                 // Update local state
-                setRequests(prev => prev.map(req =>
-                    req._id === requestId ? { ...req, status } : req
-                ));
+                if (type === 'standard') {
+                    setRequests(prev => prev.map(req =>
+                        req._id === requestId ? { ...req, status } : req
+                    ));
+                }
                 alert(`Request ${status} successfully`);
             } else {
                 alert(data.error || 'Failed to update status');
@@ -827,9 +857,12 @@ export default function AddTourClient({
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('requests')}
-                                    className={`px-3 py-1.5 md:px-4 md:py-2 rounded-md text-[10px] md:text-sm font-medium transition-all ${activeTab === 'requests' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`px-3 py-1.5 md:px-4 md:py-2 rounded-md text-[10px] md:text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'requests' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
                                 >
-                                    Enquiry Requests
+                                    Enquiries & Custom Trips
+                                    {(requests.some(r => r.status === 'pending') || customRequests.some(r => r.status === 'pending')) && (
+                                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                                    )}
                                 </button>
                             </div>
                         </div>
@@ -837,64 +870,146 @@ export default function AddTourClient({
 
                     {activeTab === 'requests' ? (
                         <div className="w-full">
-                            <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-4 px-1">Tour Enquiries</h2>
-                            {loadingRequests ? (
-                                <div className="py-8 text-center text-gray-500">Loading requests...</div>
-                            ) : requests.length === 0 ? (
-                                <div className="py-8 text-left px-1 text-gray-500 text-sm">No enquiries found.</div>
-                            ) : (
-                                <div className="border border-gray-100 rounded-lg overflow-hidden">
-                                    <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-4 gap-4">
-                                        <p className="text-xs font-semibold text-gray-600 uppercase">Tour Name</p>
-                                        <p className="text-xs font-semibold text-gray-600 uppercase">User Details</p>
-                                        <p className="text-xs font-semibold text-gray-600 uppercase">Status</p>
-                                        <p className="text-xs font-semibold text-gray-600 uppercase text-right">Actions</p>
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-sm md:text-lg font-medium text-gray-800 px-1">Enquiries & Custom Trips</h2>
+                                <div className="flex bg-gray-100 p-1 rounded-lg">
+                                    <button
+                                        onClick={() => setRequestTab('standard')}
+                                        className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${requestTab === 'standard' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}
+                                    >
+                                        Standard Enquiries
+                                    </button>
+                                    <button
+                                        onClick={() => setRequestTab('custom')}
+                                        className={`px-3 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${requestTab === 'custom' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}
+                                    >
+                                        Custom Trip Requests
+                                        {customRequests.some(r => r.status === 'pending') && (
+                                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {requestTab === 'standard' ? (
+                                loadingRequests ? (
+                                    <div className="py-8 text-center text-gray-500">Loading enquiries...</div>
+                                ) : requests.length === 0 ? (
+                                    <div className="py-8 text-left px-1 text-gray-500 text-sm">No standard enquiries found.</div>
+                                ) : (
+                                    <div className="border border-gray-100 rounded-lg overflow-hidden">
+                                        <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-4 gap-4">
+                                            <p className="text-xs font-semibold text-gray-600 uppercase">Tour Name</p>
+                                            <p className="text-xs font-semibold text-gray-600 uppercase">User Details</p>
+                                            <p className="text-xs font-semibold text-gray-600 uppercase">Status</p>
+                                            <p className="text-xs font-semibold text-gray-600 uppercase text-right">Actions</p>
+                                        </div>
+                                        <div className="divide-y divide-gray-100 bg-white">
+                                            {requests.map((req) => (
+                                                <div key={req._id} className="p-4 flex flex-col md:grid md:grid-cols-4 md:items-center gap-4 hover:bg-gray-50/50 transition-colors">
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Tour Name</p>
+                                                        <p className="font-medium text-gray-900 text-sm">{req.title}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">User Details</p>
+                                                        <p className="text-sm text-gray-600 Inter">{req.userDetails?.name}</p>
+                                                        <p className="text-[10px] text-gray-400">{req.members} Members • {req.date}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Status</p>
+                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium capitalize inline-flex w-fit ${req.status === 'approved' ? 'bg-green-50 text-green-700' :
+                                                            req.status === 'rejected' ? 'bg-red-50 text-red-700' :
+                                                                'bg-yellow-50 text-yellow-700'
+                                                            }`}>
+                                                            {req.status}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        {req.status === 'pending' && (
+                                                            <div className="flex items-center gap-1">
+                                                                <button
+                                                                    onClick={() => handleRequestAction(req._id, 'approved', 'standard')}
+                                                                    className="p-1.5 bg-green-50 text-green-600 rounded hover:bg-green-100 transition-colors"
+                                                                    title="Approve"
+                                                                >
+                                                                    <RiCheckLine size={16} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleRequestAction(req._id, 'rejected', 'standard')}
+                                                                    className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
+                                                                    title="Reject"
+                                                                >
+                                                                    <RiCloseLine size={16} />
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <div className="divide-y divide-gray-100 bg-white">
-                                        {requests.map((req) => (
-                                            <div key={req._id} className="p-4 flex flex-col md:grid md:grid-cols-4 md:items-center gap-4 hover:bg-gray-50/50 transition-colors">
-                                                <div>
-                                                    <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Tour Name</p>
-                                                    <p className="font-medium text-gray-900 text-sm">{req.title}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">User Details</p>
-                                                    <p className="text-sm text-gray-600 Inter">{req.userDetails?.name}</p>
-                                                    <p className="text-[10px] text-gray-400">{req.members} Members • {req.date}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Status</p>
-                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium capitalize inline-flex w-fit ${req.status === 'approved' ? 'bg-green-50 text-green-700' :
-                                                        req.status === 'rejected' ? 'bg-red-50 text-red-700' :
-                                                            'bg-yellow-50 text-yellow-700'
-                                                        }`}>
+                                )
+                            ) : (
+                                loadingCustomRequests ? (
+                                    <div className="py-8 text-center text-gray-500">Loading custom requests...</div>
+                                ) : customRequests.length === 0 ? (
+                                    <div className="py-8 text-left px-1 text-gray-500 text-sm">No custom trip requests found.</div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {customRequests.map((req) => (
+                                            <div key={req._id} className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <h3 className="font-bold text-lg text-gray-900">{req.destination}</h3>
+                                                        <p className="text-xs text-gray-400 capitalize">{req.tripType} Trip • {req.budget} Budget</p>
+                                                    </div>
+                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium capitalize ${req.status === 'pending' ? 'bg-yellow-50 text-yellow-700' : 'bg-green-50 text-green-700'}`}>
                                                         {req.status}
                                                     </span>
                                                 </div>
-                                                <div className="flex items-center justify-end gap-2">
-                                                    {req.status === 'pending' && (
-                                                        <div className="flex items-center gap-1">
-                                                            <button
-                                                                onClick={() => handleRequestAction(req._id, 'approved')}
-                                                                className="p-1.5 bg-green-50 text-green-600 rounded hover:bg-green-100 transition-colors"
-                                                                title="Approve"
-                                                            >
-                                                                <RiCheckLine size={16} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleRequestAction(req._id, 'rejected')}
-                                                                className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
-                                                                title="Reject"
-                                                            >
-                                                                <RiCloseLine size={16} />
-                                                            </button>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase">Travel Details</p>
+                                                        <div className="space-y-1">
+                                                            <p className="text-sm text-gray-600"><span className="font-medium">Departure:</span> {req.departurePlace}</p>
+                                                            <p className="text-sm text-gray-600"><span className="font-medium">Date:</span> {req.startDate || 'flexible'}</p>
+                                                            <p className="text-sm text-gray-600"><span className="font-medium">Duration:</span> {req.duration}</p>
+                                                            <p className="text-sm text-gray-600"><span className="font-medium">Group Size:</span> {req.groupSize}</p>
                                                         </div>
-                                                    )}
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase">Preferences</p>
+                                                        <div className="space-y-1">
+                                                            <p className="text-sm text-gray-600"><span className="font-medium">Accommodation:</span> {req.accommodationPreference || 'Not specified'}</p>
+                                                            <p className="text-sm text-gray-600"><span className="font-medium">Meals:</span> {req.mealPlan && req.mealPlan.length > 0 ? req.mealPlan.join(', ') : 'Not specified'}</p>
+                                                            {req.pickupLocation && <p className="text-sm text-gray-600"><span className="font-medium">Pickup:</span> {req.pickupLocation}</p>}
+                                                            {req.dropLocation && <p className="text-sm text-gray-600"><span className="font-medium">Drop:</span> {req.dropLocation}</p>}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase">Requester Info</p>
+                                                        <div className="space-y-1">
+                                                            <p className="text-sm text-gray-800 font-medium">{req.userId?.name || 'Unknown User'}</p>
+                                                            <p className="text-xs text-gray-500">{req.userId?.email || 'No email'}</p>
+                                                            <p className="text-xs text-gray-500">{req.userId?.phone || 'No phone'}</p>
+                                                        </div>
+                                                    </div>
                                                 </div>
+
+                                                {req.additionalNotes && (
+                                                    <div className="bg-gray-50 rounded-lg p-3 mt-2">
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Additional Notes</p>
+                                                        <p className="text-sm text-gray-600 leading-relaxed italic">"{req.additionalNotes}"</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
-                                </div>
+                                )
                             )}
                         </div>
                     ) : (

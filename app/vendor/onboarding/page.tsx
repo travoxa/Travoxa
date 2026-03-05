@@ -12,6 +12,11 @@ interface VendorFormData {
     businessType: string;
     address: string;
     taxId: string;
+    instagram?: string;
+    facebook?: string;
+    twitter?: string;
+    googleBusiness?: string;
+    youtube?: string;
 }
 
 export default function VendorOnboardingPage() {
@@ -26,6 +31,11 @@ export default function VendorOnboardingPage() {
         businessType: "",
         address: "",
         taxId: "",
+        instagram: "",
+        facebook: "",
+        twitter: "",
+        googleBusiness: "",
+        youtube: "",
     });
 
     useEffect(() => {
@@ -192,6 +202,63 @@ export default function VendorOnboardingPage() {
                                     value={formData.taxId}
                                     onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
                                     placeholder="e.g. GSTIN or equivalent"
+                                />
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="text-sm font-medium text-black/70">Instagram (Optional)</label>
+                                    <input
+                                        type="text"
+                                        className="mt-2 w-full rounded-[8px] border border-black/20 bg-white px-4 py-3 text-black placeholder-black/60 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/40"
+                                        value={formData.instagram}
+                                        onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+                                        placeholder="Instagram profile URL"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-black/70">Facebook (Optional)</label>
+                                    <input
+                                        type="text"
+                                        className="mt-2 w-full rounded-[8px] border border-black/20 bg-white px-4 py-3 text-black placeholder-black/60 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/40"
+                                        value={formData.facebook}
+                                        onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
+                                        placeholder="Facebook page URL"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="text-sm font-medium text-black/70">Twitter / X (Optional)</label>
+                                    <input
+                                        type="text"
+                                        className="mt-2 w-full rounded-[8px] border border-black/20 bg-white px-4 py-3 text-black placeholder-black/60 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/40"
+                                        value={formData.twitter}
+                                        onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
+                                        placeholder="Twitter profile URL"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-black/70">YouTube (Optional)</label>
+                                    <input
+                                        type="text"
+                                        className="mt-2 w-full rounded-[8px] border border-black/20 bg-white px-4 py-3 text-black placeholder-black/60 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/40"
+                                        value={formData.youtube}
+                                        onChange={(e) => setFormData({ ...formData, youtube: e.target.value })}
+                                        placeholder="YouTube channel URL"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium text-black/70">Google Business Profile (Optional)</label>
+                                <input
+                                    type="text"
+                                    className="mt-2 w-full rounded-[8px] border border-black/20 bg-white px-4 py-3 text-black placeholder-black/60 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/40"
+                                    value={formData.googleBusiness}
+                                    onChange={(e) => setFormData({ ...formData, googleBusiness: e.target.value })}
+                                    placeholder="Google Business Profile URL"
                                 />
                             </div>
                         </div>

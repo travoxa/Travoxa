@@ -86,8 +86,8 @@ export default function NormalHeader({ backgroundColor = "bg-white", logoHeight 
             ],
         },
         {
-            label: "Nestloop",
-            path: "/contact",
+            label: "Travoxa Circle",
+            path: "/travoxa-circle",
             dropdown: [],
         },
     ];

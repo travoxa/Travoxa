@@ -25,6 +25,11 @@ interface VendorDashboardClientProps {
             businessName: string
             businessType: string
             address?: string
+            instagram?: string
+            facebook?: string
+            twitter?: string
+            googleBusiness?: string
+            youtube?: string
         }
     }
 }
@@ -38,7 +43,12 @@ const VendorDashboardClient: React.FC<VendorDashboardClientProps> = ({ vendorUse
     const [editForm, setEditForm] = useState({
         businessName: vendorUser.vendorDetails?.businessName || '',
         businessType: vendorUser.vendorDetails?.businessType || '',
-        address: vendorUser.vendorDetails?.address || ''
+        address: vendorUser.vendorDetails?.address || '',
+        instagram: vendorUser.vendorDetails?.instagram || '',
+        facebook: vendorUser.vendorDetails?.facebook || '',
+        twitter: vendorUser.vendorDetails?.twitter || '',
+        googleBusiness: vendorUser.vendorDetails?.googleBusiness || '',
+        youtube: vendorUser.vendorDetails?.youtube || ''
     });
 
     const router = useRouter()
@@ -139,6 +149,61 @@ const VendorDashboardClient: React.FC<VendorDashboardClientProps> = ({ vendorUse
                                 value={editForm.address}
                                 onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
                                 placeholder="Enter business address"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Instagram Profile</label>
+                            <input
+                                type="text"
+                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                                value={editForm.instagram}
+                                onChange={(e) => setEditForm({ ...editForm, instagram: e.target.value })}
+                                placeholder="https://instagram.com/yourprofile"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Facebook Page</label>
+                            <input
+                                type="text"
+                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                                value={editForm.facebook}
+                                onChange={(e) => setEditForm({ ...editForm, facebook: e.target.value })}
+                                placeholder="https://facebook.com/yourpage"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Twitter (X) Profile</label>
+                            <input
+                                type="text"
+                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                                value={editForm.twitter}
+                                onChange={(e) => setEditForm({ ...editForm, twitter: e.target.value })}
+                                placeholder="https://twitter.com/yourprofile"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">YouTube Channel</label>
+                            <input
+                                type="text"
+                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                                value={editForm.youtube}
+                                onChange={(e) => setEditForm({ ...editForm, youtube: e.target.value })}
+                                placeholder="https://youtube.com/yourchannel"
+                            />
+                        </div>
+
+                        <div className="space-y-2 md:col-span-2">
+                            <label className="text-sm font-medium text-gray-700">Google Business Profile</label>
+                            <input
+                                type="text"
+                                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                                value={editForm.googleBusiness}
+                                onChange={(e) => setEditForm({ ...editForm, googleBusiness: e.target.value })}
+                                placeholder="Link to your Google Business Profile"
                             />
                         </div>
                     </div>

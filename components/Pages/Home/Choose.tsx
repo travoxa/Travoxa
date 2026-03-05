@@ -9,7 +9,10 @@ import {
   RiCheckboxLine,
   RiNotification3Line,
   RiShieldCheckLine,
-  RiShakeHandsLine
+  RiShakeHandsLine,
+  RiCompass3Line,
+  RiCupLine,
+  RiGroupLine,
 } from "react-icons/ri";
 import { FaPaperPlane, FaMagic, FaUser, FaClock, FaMapMarkedAlt, FaCheckCircle, FaStar } from "react-icons/fa";
 import Link from "next/link";
@@ -21,7 +24,47 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 // Feature content data with icons
+// Feature content data with icons
 const featureData = [
+  {
+    icon: RiCompass3Line,
+    title: "Tour",
+    description: "Handpicked tour packages for unforgettable memories.",
+    bullets: [
+      "Curated packages",
+      "Expert guides",
+      "Family friendly",
+      "Adventure picks"
+    ],
+    isLocked: false,
+    path: "/tour"
+  },
+  {
+    icon: RiCupLine,
+    title: "Discovery",
+    description: "Explore hidden gems, sightseeing, and local flavors.",
+    bullets: [
+      "Sightseeing",
+      "Local rentals",
+      "Food & Cafes",
+      "Attractions"
+    ],
+    isLocked: false,
+    path: "/travoxa-discovery"
+  },
+  {
+    icon: RiGroupLine,
+    title: "Backpackers",
+    description: "Group adventures for like-minded travelers.",
+    bullets: [
+      "Join groups",
+      "Split costs",
+      "Shared memories",
+      "Safety first"
+    ],
+    isLocked: false,
+    path: "/backpackers"
+  },
   {
     icon: RiDiceLine,
     title: "Mystery Trip",
@@ -31,7 +74,8 @@ const featureData = [
       "Curated reveals",
       "Budget-aligned",
       "Thrill factor"
-    ]
+    ],
+    isLocked: true
   },
   {
     icon: RiMapPinLine,
@@ -42,7 +86,8 @@ const featureData = [
       "Local hotspots",
       "Walking tours",
       "Hidden gems"
-    ]
+    ],
+    isLocked: true
   },
   {
     icon: RiLeafLine,
@@ -53,7 +98,8 @@ const featureData = [
       "Carbon tracking",
       "Nature-first",
       "Ethical guides"
-    ]
+    ],
+    isLocked: true
   },
   {
     icon: RiMap2Line,
@@ -64,7 +110,8 @@ const featureData = [
       "Cultural icons",
       "Offline mode",
       "Rich details"
-    ]
+    ],
+    isLocked: true
   },
   {
     icon: RiBookLine,
@@ -75,7 +122,8 @@ const featureData = [
       "Daily logs",
       "Smart tagging",
       "Shareable content"
-    ]
+    ],
+    isLocked: true
   },
   {
     icon: RiCheckboxLine,
@@ -86,7 +134,8 @@ const featureData = [
       "Activity-based",
       "Essential alerts",
       "Customizable"
-    ]
+    ],
+    isLocked: true
   },
   {
     icon: RiNotification3Line,
@@ -97,7 +146,8 @@ const featureData = [
       "Flight tracking",
       "Weather warnings",
       "Safety pings"
-    ]
+    ],
+    isLocked: true
   },
   {
     icon: RiShieldCheckLine,
@@ -108,7 +158,8 @@ const featureData = [
       "Health tips",
       "Emergency info",
       "Live updates"
-    ]
+    ],
+    isLocked: true
   },
   {
     icon: RiShakeHandsLine,
@@ -119,7 +170,8 @@ const featureData = [
       "Language aid",
       "Cultural exchange",
       "Community events"
-    ]
+    ],
+    isLocked: true
   }
 ];
 
@@ -128,6 +180,8 @@ interface Feature {
   description: string;
   bullets: string[];
   icon: React.ElementType;
+  isLocked?: boolean;
+  path?: string;
 }
 
 const Choose = () => {
@@ -321,11 +375,11 @@ const Choose = () => {
           WHY CHOOSE US
         </p>
         <h2 className=" text-[56px] lg:text-[68px] Mont font-light leading-[1.1] mb-[20px] bg-gradient-to-r from-black to-gray-600 bg-clip-text text-transparent">
-          What’s Coming Next.
+          Explore Our Features.
         </h2>
         <p className="Mont text-[22px] text-gray-600 leading-[1.6] max-w-5xl mx-auto ">
           Every trip tells a story, and we help you write yours beautifully.
-          From smart planning to real-time guidance, we combine intelligence with human care.
+          Discover our active sections and see what’s coming soon.
         </p>
       </div>
 
@@ -518,7 +572,8 @@ const Choose = () => {
               return (
                 <div
                   key={absoluteIndex}
-                  className={`bg-white rounded-[12px] border border-gray-100 hover:shadow-xl hover:shadow-gray-200/60 hover:-translate-y-[3px] transition-all duration-300 flex flex-col group relative overflow-hidden ${isBig
+                  onClick={() => !feature.isLocked && feature.path && router.push(feature.path)}
+                  className={`bg-white rounded-[12px] border border-gray-100 ${!feature.isLocked ? 'cursor-pointer hover:border-[#4da528]/50' : ''} hover:shadow-xl hover:shadow-gray-200/60 hover:-translate-y-[3px] transition-all duration-300 flex flex-col group relative overflow-hidden ${isBig
                     ? 'flex-[1.6] p-[32px] min-h-[256px]'
                     : 'flex-[1] p-[24px] min-h-[208px]'
                     }`}
@@ -530,42 +585,44 @@ const Choose = () => {
                   <feature.icon className="absolute -bottom-8 -right-8 text-[200px] text-[#4da528] opacity-10 pointer-events-none group-hover:scale-105 group-hover:opacity-15 transition-all duration-500" />
 
                   {/* Masking Overlay */}
-                  <div className="absolute inset-0 bg-white/40 backdrop-blur-md z-20 flex flex-col items-center justify-center p-6 text-center">
-                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg mb-4">
-                      {/* <span className="text-2xl">🔒</span> */}
-                      <span className="inline-block w-6 h-6">
-                        <img
-                          src="/lock.png"
-                          alt="Lock"
-                          className="w-full h-full object-contain"
-                        />
-                      </span>
+                  {feature.isLocked && (
+                    <div className="absolute inset-0 bg-white/40 backdrop-blur-md z-20 flex flex-col items-center justify-center p-6 text-center">
+                      <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg mb-4">
+                        {/* <span className="text-2xl">🔒</span> */}
+                        <span className="inline-block w-6 h-6">
+                          <img
+                            src="/lock.png"
+                            alt="Lock"
+                            className="w-full h-full object-contain"
+                          />
+                        </span>
+                      </div>
+                      <p className="text-black font-semibold Inter text-sm mb-1 uppercase tracking-wider">
+                        Coming Soon
+                      </p>
+                      <p className="text-gray-800 text-[11px] Inter font-medium max-w-[180px]">
+                        This feature will be unlocked after official launch.
+                      </p>
+                      <div className="mt-4 px-3 py-1 bg-black/5 rounded-full border border-black/10">
+                        <p className="text-[10px] text-gray-500 Inter italic">Currently under development</p>
+                      </div>
                     </div>
-                    <p className="text-black font-semibold Inter text-sm mb-1 uppercase tracking-wider">
-                      Coming Soon
-                    </p>
-                    <p className="text-gray-800 text-[11px] Inter font-medium max-w-[180px]">
-                      This feature will be unlocked after official launch.
-                    </p>
-                    <div className="mt-4 px-3 py-1 bg-black/5 rounded-full border border-black/10">
-                      <p className="text-[10px] text-gray-500 Inter italic">Currently under development</p>
-                    </div>
-                  </div>
+                  )}
 
-                  {/* Title - Blurred */}
-                  <h3 className={`font-medium Mont leading-[1.2] text-gray-900 relative z-10 blur-[4px] ${isBig ? 'text-[26px]' : 'text-[20px]'
+                  {/* Title - Conditionally Blurred */}
+                  <h3 className={`font-medium Mont leading-[1.2] text-gray-900 relative z-10 ${feature.isLocked ? 'blur-[4px]' : ''} ${isBig ? 'text-[26px]' : 'text-[20px]'
                     }`}>
                     {feature.title}
                   </h3>
 
-                  {/* Description - Blurred */}
-                  <p className={`text-gray-600 leading-[1.5] font-light mt-[6px] Inter relative z-10 blur-[4px] ${isBig ? 'text-[15px]' : 'text-[13px]'
+                  {/* Description - Conditionally Blurred */}
+                  <p className={`text-gray-600 leading-[1.5] font-light mt-[6px] Inter relative z-10 ${feature.isLocked ? 'blur-[4px]' : ''} ${isBig ? 'text-[15px]' : 'text-[13px]'
                     }`}>
                     {feature.description}
                   </p>
 
-                  {/* Feature Bullets - Blurred */}
-                  <div className={`grid grid-cols-2 gap-x-[10px] gap-y-[6px] mt-[10px] relative z-10 blur-[4px] ${isBig ? 'text-[13px]' : 'text-[11px]'
+                  {/* Feature Bullets - Conditionally Blurred */}
+                  <div className={`grid grid-cols-2 gap-x-[10px] gap-y-[6px] mt-[10px] relative z-10 ${feature.isLocked ? 'blur-[4px]' : ''} ${isBig ? 'text-[13px]' : 'text-[11px]'
                     }`}>
                     {feature.bullets.slice(0, 4).map((bullet, bulletIndex) => (
                       <div key={bulletIndex} className="flex items-center gap-[5px]">
@@ -582,7 +639,7 @@ const Choose = () => {
                   <div className="mt-auto pt-[12px] flex items-center justify-between border-t border-gray-100 relative z-10">
                     <button className={`bg-black text-white font-bold Mont rounded-full hover:shadow-lg transition-all duration-300 transform ${isBig ? 'text-[12px] px-[16px] py-[6px]' : 'text-[10px] px-[12px] py-[5px]'
                       }`}>
-                      Coming Soon 🚀
+                      {feature.isLocked ? 'Coming Soon 🚀' : 'Explore Now'}
                     </button>
                     {/* Progress Line - Compact */}
                     <div className="flex items-center gap-[4px] opacity-60">
@@ -604,38 +661,41 @@ const Choose = () => {
         {featureData.map((feature, index) => (
           <div
             key={index}
-            className="bg-white rounded-[12px] p-4 border border-gray-100 shadow-md relative overflow-hidden group aspect-square flex flex-col justify-between"
+            onClick={() => !feature.isLocked && feature.path && router.push(feature.path)}
+            className={`bg-white rounded-[12px] p-4 border border-gray-100 ${!feature.isLocked ? 'cursor-pointer' : ''} shadow-md relative overflow-hidden group aspect-square flex flex-col justify-between`}
           >
             {/* Masking Overlay */}
-            <div className="absolute inset-0 bg-white/40 backdrop-blur-md z-20 flex flex-col items-center justify-center p-3 text-center">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg mb-2">
-                <span className="text-lg">🔒</span>
+            {feature.isLocked && (
+              <div className="absolute inset-0 bg-white/40 backdrop-blur-md z-20 flex flex-col items-center justify-center p-3 text-center">
+                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg mb-2">
+                  <span className="text-lg">🔒</span>
+                </div>
+                <p className="text-black font-semibold Inter text-[10px] mb-0.5 uppercase tracking-wider">
+                  Coming Soon
+                </p>
+                <p className="text-gray-800 text-[8px] Inter font-medium leading-tight">
+                  Unlocked after launch
+                </p>
               </div>
-              <p className="text-black font-semibold Inter text-[10px] mb-0.5 uppercase tracking-wider">
-                Coming Soon
-              </p>
-              <p className="text-gray-800 text-[8px] Inter font-medium leading-tight">
-                Unlocked after launch
-              </p>
-            </div>
+            )}
 
-            {/* Background Icon - Blurred */}
-            <feature.icon className="absolute -bottom-4 -right-4 text-[80px] text-[#4da528] opacity-10 pointer-events-none blur-[2px]" />
+            {/* Background Icon - Conditionally Blurred */}
+            <feature.icon className={`absolute -bottom-4 -right-4 text-[80px] text-[#4da528] opacity-10 pointer-events-none ${feature.isLocked ? 'blur-[2px]' : ''}`} />
 
-            {/* Title only - Blurred */}
-            <h3 className="text-[14px] font-medium Mont leading-[1.2] relative z-10 blur-[3px]">
+            {/* Title only - Conditionally Blurred */}
+            <h3 className={`text-[14px] font-medium Mont leading-[1.2] relative z-10 ${feature.isLocked ? 'blur-[3px]' : ''}`}>
               {feature.title}
             </h3>
 
-            {/* Icon centered - Blurred */}
-            <div className="flex-1 flex items-center justify-center relative z-10 blur-[3px]">
+            {/* Icon centered - Conditionally Blurred */}
+            <div className={`flex-1 flex items-center justify-center relative z-10 ${feature.isLocked ? 'blur-[3px]' : ''}`}>
               <feature.icon className="text-[36px] text-[#4da528] opacity-80" />
             </div>
 
-            {/* Small See More button -> Coming Soon */}
+            {/* Small See More button -> Coming Soon / Explore */}
             <div className="relative z-10">
               <button className="bg-black text-white text-[9px] font-bold Mont px-[10px] py-[4px] rounded-full">
-                Coming Soon 🚀
+                {feature.isLocked ? 'Coming Soon 🚀' : 'Explore Now'}
               </button>
             </div>
           </div>
