@@ -12,7 +12,7 @@ export async function PUT(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { businessName, businessType, address } = body;
+        const { businessName, businessType, address, instagram, facebook, twitter, googleBusiness, youtube } = body;
 
         if (!businessName || !businessType) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -34,6 +34,11 @@ export async function PUT(req: NextRequest) {
                 businessName,
                 businessType,
                 address,
+                instagram,
+                facebook,
+                twitter,
+                googleBusiness,
+                youtube,
             }
         };
 

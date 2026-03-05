@@ -37,6 +37,11 @@ export default async function VendorDashboard() {
             businessName: dbUser.vendorDetails.businessName || '',
             businessType: dbUser.vendorDetails.businessType || '',
             address: dbUser.vendorDetails.address || '',
+            instagram: dbUser.vendorDetails.instagram || '',
+            facebook: dbUser.vendorDetails.facebook || '',
+            twitter: dbUser.vendorDetails.twitter || '',
+            googleBusiness: dbUser.vendorDetails.googleBusiness || '',
+            youtube: dbUser.vendorDetails.youtube || '',
         }
     }
 

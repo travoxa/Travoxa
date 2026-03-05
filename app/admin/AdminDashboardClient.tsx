@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from '@/components/dashboard/Sidebar'
 import TopBar from '@/components/dashboard/TopBar'
 import { useRouter } from 'next/navigation'
@@ -21,6 +21,8 @@ import AddFoodClient from '@/app/admin/food/AddFoodClient'
 import AddStayClient from '@/app/admin/stay/AddStayClient'
 import AddHelplineClient from '@/app/admin/helpline/AddHelplineClient'
 import VendorRequestsClient from '@/app/admin/requests/VendorRequestsClient'
+import TourRequestsClient from '@/app/admin/tour/TourRequestsClient'
+import VendorTourApprovalClient from '@/app/admin/tour/VendorTourApprovalClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -35,7 +37,33 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
     const [activeTab, setActiveTab] = useState(permissions.includes('Overview') ? 'Overview' : (permissions[0] || 'Overview'))
     const [activeDiscoveryForm, setActiveDiscoveryForm] = useState<'sightseeing' | 'rentals' | 'activities' | 'attractions' | 'food' | 'stay' | 'helpline' | null>(null)
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+    const [hasPendingTour, setHasPendingTour] = useState(false)
     const router = useRouter()
+
+    useEffect(() => {
+        const checkPendingRequests = async () => {
+            try {
+                const [standardRes, customRes] = await Promise.all([
+                    fetch('/api/tours/request'),
+                    fetch('/api/tours/custom-request')
+                ]);
+                const standardData = await standardRes.json();
+                const customData = await customRes.json();
+
+                const hasPendingStandard = standardData.success && standardData.data.some((req: any) => req.status === 'pending');
+                const hasPendingCustom = customData.success && customData.data.some((req: any) => req.status === 'pending');
+
+                setHasPendingTour(hasPendingStandard || hasPendingCustom);
+            } catch (error) {
+                console.error('Error checking pending requests:', error);
+            }
+        };
+
+        checkPendingRequests();
+        // Check every 5 minutes
+        const interval = setInterval(checkPendingRequests, 5 * 60 * 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     const renderContent = () => {
         const permissions = adminUser.permissions || [];
@@ -48,11 +76,21 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             return permissions.includes(`Discovery:${subSection}`);
         };
 
+        const hasTourPermission = (subSection?: string) => {
+            if (permissions.includes('Tour')) return true;
+            if (!subSection) {
+                return permissions.some(p => p.startsWith('Tour:'));
+            }
+            return permissions.includes(`Tour:${subSection}`);
+        };
+
         // For backwards compatibility or default routing, we can still allow 'Discovery'
         // If 'Discovery' is the active tab but it's now split, we might want to default to the first available one
         const isAllowed = permissions.includes(activeTab) ||
             (activeTab === 'Discovery' && hasDiscoveryPermission()) ||
-            (activeTab.startsWith('Discovery:') && hasDiscoveryPermission(activeTab.split(':')[1]));
+            (activeTab.startsWith('Discovery:') && hasDiscoveryPermission(activeTab.split(':')[1])) ||
+            (activeTab === 'Tour' && hasTourPermission()) ||
+            (activeTab.startsWith('Tour:') && hasTourPermission(activeTab.split(':')[1]));
 
         if (!isAllowed) {
             return (
@@ -72,11 +110,28 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                     </div>
                 )
 
-            case 'Tour':
+            case 'Tour:All':
+            case 'Tour': // For backwards compatibility
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Tour</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">All Tours</h1>
                         <AddTourClient />
+                    </div>
+                )
+
+            case 'Tour:Requests':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Tour Requests</h1>
+                        <TourRequestsClient />
+                    </div>
+                )
+
+            case 'Tour:VendorTours':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Vendor Tour Submissions</h1>
+                        <VendorTourApprovalClient />
                     </div>
                 )
 
@@ -199,6 +254,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                 permissions={adminUser.permissions}
                 isOpen={isSidebarOpen}
                 onClose={() => setIsSidebarOpen(false)}
+                hasPendingTour={hasPendingTour}
             />
 
             {/* Main Content */}

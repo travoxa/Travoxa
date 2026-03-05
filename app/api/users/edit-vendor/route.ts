@@ -11,7 +11,12 @@ export async function POST(request: NextRequest) {
             businessName,
             businessType,
             address,
-            taxId
+            taxId,
+            instagram,
+            facebook,
+            twitter,
+            googleBusiness,
+            youtube
         } = body;
 
         if (!email || !businessName || !businessType || !address) {
@@ -25,7 +30,12 @@ export async function POST(request: NextRequest) {
             businessName,
             businessType,
             address,
-            taxId: taxId || ""
+            taxId: taxId || "",
+            instagram: instagram || "",
+            facebook: facebook || "",
+            twitter: twitter || "",
+            googleBusiness: googleBusiness || "",
+            youtube: youtube || ""
         };
 
         const exists = await checkUserExists(email);

@@ -35,6 +35,7 @@ interface SidebarProps {
     permissions?: string[];
     isOpen?: boolean;
     onClose?: () => void;
+    hasPendingTour?: boolean;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -44,7 +45,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     isAdmin = false,
     permissions = [],
     isOpen = false,
-    onClose
+    onClose,
+    hasPendingTour = false
 }) => {
     const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
@@ -128,17 +130,49 @@ const Sidebar: React.FC<SidebarProps> = ({
                                         }}
                                     />
                                 )}
-                                {permissions.includes('Tour') && (
-                                    <NavItem
-                                        icon={<RiCompass3Line size={20} />}
-                                        label="Tour"
-                                        id="Tour"
-                                        activeTab={activeTab}
-                                        onClick={(id) => {
-                                            setActiveTab(id);
-                                            if (onClose) onClose();
-                                        }}
-                                    />
+                                {(permissions.includes('Tour') || permissions.some(p => p.startsWith('Tour:'))) && (
+                                    <>
+                                        <div className="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                            Tour
+                                        </div>
+                                        {(permissions.includes('Tour') || permissions.includes('Tour:All')) && (
+                                            <SubNavItem
+                                                icon={<RiCompass3Line size={18} />}
+                                                label="All Tours"
+                                                id="Tour:All"
+                                                activeTab={activeTab}
+                                                onClick={(id) => {
+                                                    setActiveTab(id);
+                                                    if (onClose) onClose();
+                                                }}
+                                            />
+                                        )}
+                                        {(permissions.includes('Tour') || permissions.includes('Tour:Requests')) && (
+                                            <SubNavItem
+                                                icon={<RiFileListLine size={18} />}
+                                                label="Requests"
+                                                id="Tour:Requests"
+                                                activeTab={activeTab}
+                                                onClick={(id) => {
+                                                    setActiveTab(id);
+                                                    if (onClose) onClose();
+                                                }}
+                                            />
+                                        )}
+                                        {(permissions.includes('Tour') || permissions.includes('Tour:VendorTours')) && (
+                                            <SubNavItem
+                                                icon={<RiCompass3Line size={18} />}
+                                                label="Vendor Tours"
+                                                id="Tour:VendorTours"
+                                                activeTab={activeTab}
+                                                showDot={hasPendingTour}
+                                                onClick={(id) => {
+                                                    setActiveTab(id);
+                                                    if (onClose) onClose();
+                                                }}
+                                            />
+                                        )}
+                                    </>
                                 )}
                                 {(permissions.includes('Discovery') || permissions.some(p => p.startsWith('Discovery:'))) && (
                                     <>
@@ -432,13 +466,15 @@ const NavItem = ({
     label,
     id,
     activeTab,
-    onClick
+    onClick,
+    showDot
 }: {
     icon: any,
     label: string,
     id: string,
     activeTab: string,
-    onClick: (id: string) => void
+    onClick: (id: string) => void,
+    showDot?: boolean
 }) => {
     const active = activeTab === id;
     return (
@@ -453,6 +489,9 @@ const NavItem = ({
                 <span className="hidden md:inline">{icon}</span>
                 <span className="md:hidden">{icon && typeof icon === 'object' && 'props' in icon ? { ...icon, props: { ...icon.props, size: 14 } } : icon}</span>
                 <span className="text-[11px] md:text-sm font-medium">{label}</span>
+                {showDot && (
+                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                )}
             </div>
         </button>
     );
@@ -463,13 +502,15 @@ const SubNavItem = ({
     label,
     id,
     activeTab,
-    onClick
+    onClick,
+    showDot
 }: {
     icon: any,
     label: string,
     id: string,
     activeTab: string,
-    onClick: (id: string) => void
+    onClick: (id: string) => void,
+    showDot?: boolean
 }) => {
     const active = activeTab === id;
     return (
@@ -484,6 +525,9 @@ const SubNavItem = ({
                 <span className="hidden md:inline">{icon}</span>
                 <span className="md:hidden">{icon && typeof icon === 'object' && 'props' in icon ? { ...icon, props: { ...icon.props, size: 12 } } : icon}</span>
                 <span className="text-[10px] md:text-xs font-light">{label}</span>
+                {showDot && (
+                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                )}
             </div>
         </button>
     );

@@ -9,7 +9,17 @@ export interface ICustomTourRequest extends Document {
     tripType: "Family" | "Friends" | "Couple" | "Solo" | "Corporate" | "Other";
     budget: "Budget" | "Standard" | "Premium" | "Luxury";
     startDate?: string;
+    departurePlace: string;
+    pickupLocation?: string;
+    dropLocation?: string;
+    accommodationPreference?: "Standard" | "Premium" | "Luxury" | "Not Required";
+    mealPlan?: string[];
     additionalNotes?: string;
+    userDetails: {
+        name: string;
+        email: string;
+        phone: string;
+    };
     status: "pending" | "reviewed" | "contacted" | "closed";
     createdAt: Date;
     updatedAt: Date;
@@ -48,9 +58,34 @@ const customTourRequestSchema = new Schema<ICustomTourRequest>({
     startDate: {
         type: String,
     },
+    departurePlace: {
+        type: String,
+        required: [true, "Departure place is required"],
+        trim: true,
+    },
+    pickupLocation: {
+        type: String,
+        trim: true,
+    },
+    dropLocation: {
+        type: String,
+        trim: true,
+    },
+    accommodationPreference: {
+        type: String,
+        enum: ["Standard", "Premium", "Luxury", "Not Required"],
+    },
+    mealPlan: {
+        type: [String],
+    },
     additionalNotes: {
         type: String,
         trim: true,
+    },
+    userDetails: {
+        name: { type: String, required: true },
+        email: { type: String, required: true },
+        phone: { type: String, required: true },
     },
     status: {
         type: String,

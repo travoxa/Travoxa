@@ -99,8 +99,8 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
     //   ],
     // },
     {
-      label: "Nestloop",
-      path: "/contact",
+      label: "Travoxa Circle",
+      path: "/travoxa-circle",
       dropdown: [],
     },
   ];

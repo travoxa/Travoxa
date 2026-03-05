@@ -71,26 +71,26 @@ export async function GET(req: Request) {
         // Parse query params to check for specific tour requests
         const { searchParams } = new URL(req.url);
         const tourId = searchParams.get('tourId');
+        const isAdmin = searchParams.get('admin') === 'true';
 
         let query: any = {};
 
-        // If tourId is provided (Admin fetching requests for a specific tour)
-        // For simplicity, we assume if you can see the admin page you can see requests.
-        // In a real app, we'd check admin role.
-        // Here, we'll check if the user is an admin or trying to see their own requests.
-
-        // Assuming basic role check or open for now based on context (admin dashboard handles auth).
-        // Let's implement basic filtering.
-
-        if (tourId) {
-            // Admin view for specific tour
+        if (isAdmin) {
+            // Admin view - return all or filter by tourId if provided
+            if (tourId) {
+                query = { tourId };
+            }
+        } else if (tourId) {
+            // Specific tour (could be admin or just filtered user view)
             query = { tourId };
         } else {
             // User view for their own requests
             query = { userId: user._id };
         }
 
-        const requests = await TourRequest.find(query).sort({ createdAt: -1 });
+        const requests = await TourRequest.find(query)
+            .populate('tourId', 'title location price overview duration itinerary highlights inclusions exclusions cancellationPolicy image pricing availabilityBatches minPeople maxPeople locationMapLink pickupLocation pickupMapLink dropLocation dropMapLink partners brochureUrl totalSlots bookedSlots bookingAmount earlyBirdDiscount meals vendorId status')
+            .sort({ createdAt: -1 });
 
         return NextResponse.json({ success: true, data: requests });
 
