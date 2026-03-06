@@ -327,14 +327,14 @@ export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                         </div>
                     ) : (
-                        <div className="border border-gray-100 rounded-lg overflow-hidden">
-                            <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4">
+                        <div className="border border-gray-100 rounded-lg overflow-visible">
+                            <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4 rounded-t-lg">
                                 <p className="text-xs font-semibold text-gray-500 uppercase">Member</p>
                                 <p className="text-xs font-semibold text-gray-500 uppercase">Role</p>
                                 <p className="text-xs font-semibold text-gray-500 uppercase text-right">Actions</p>
                             </div>
 
-                            <div className="divide-y divide-gray-100 bg-white">
+                            <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
                                 {members.length === 0 ? (
                                     <div className="py-12 text-center text-gray-500">
                                         <p className="text-sm">No team members found. Add one to get started.</p>

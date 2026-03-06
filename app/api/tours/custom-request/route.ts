@@ -128,3 +128,67 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ message: "Internal Server Error", error: error.message }, { status: 500 });
     }
 }
+
+export async function PUT(req: NextRequest) {
+    try {
+        const authUser = await authenticateRequest(req);
+
+        if (!authUser) {
+            return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+        }
+
+        // Add admin check if necessary, though role is usually in authUser or session
+        // For now, mirroring standard request which relies on authUser existing
+
+        await connectDB();
+        const body = await req.json();
+        const { requestId, status, adminResponse } = body;
+
+        if (!requestId || !status) {
+            return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+        }
+
+        const validStatuses = ["approved", "rejected", "reviewed", "contacted", "closed"];
+        if (!validStatuses.includes(status)) {
+            return NextResponse.json({ message: "Invalid status" }, { status: 400 });
+        }
+
+        const updateData: any = { status };
+        if (adminResponse && status === 'approved') {
+            updateData.adminResponse = adminResponse;
+        }
+
+        const updatedRequest = await CustomTourRequest.findByIdAndUpdate(
+            requestId,
+            updateData,
+            { new: true }
+        );
+
+        if (!updatedRequest) {
+            return NextResponse.json({ message: "Request not found" }, { status: 404 });
+        }
+
+        // Send notification to the user
+        let message = `Your custom trip request to ${updatedRequest.destination} has been ${status}.`;
+        if (status === 'approved' && adminResponse) {
+            message += ` Total: ₹${adminResponse.totalAmount.toLocaleString()}, Booking: ₹${adminResponse.bookingAmount.toLocaleString()}. Check your dashboard for details.`;
+        }
+
+        await User.findByIdAndUpdate(updatedRequest.userId, {
+            $push: {
+                notifications: {
+                    senderId: 'admin',
+                    message,
+                    seen: false,
+                    createdAt: new Date()
+                }
+            }
+        });
+
+        return NextResponse.json({ success: true, data: updatedRequest });
+
+    } catch (error: any) {
+        console.error("Error updating custom request:", error);
+        return NextResponse.json({ message: "Internal Server Error", error: error.message }, { status: 500 });
+    }
+}

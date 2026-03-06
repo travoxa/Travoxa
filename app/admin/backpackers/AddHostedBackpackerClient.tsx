@@ -318,6 +318,28 @@ export default function AddHostedBackpackerClient({
                         <div className="flex justify-start mb-6">
                             <button
                                 onClick={() => {
+                                    setEditingId(null);
+                                    setFormData({
+                                        groupName: '',
+                                        startLocation: '',
+                                        endLocation: '',
+                                        startDate: '',
+                                        endDate: '',
+                                        maxMembers: 10,
+                                        tripType: 'trek',
+                                        budgetRange: '₹25k - ₹40k',
+                                        pickupLocation: '',
+                                        accommodationType: 'Hostels',
+                                        minAge: 18,
+                                        genderPreference: 'any',
+                                        trekkingExperience: 'beginner',
+                                        mandatoryRules: 'Travel respectfully\nCarry govt ID proofs',
+                                        planOverview: '',
+                                        itinerary: 'Day 1: Arrival meetup\nDay 2: Local exploration',
+                                        activities: 'Sunrise hike,Food crawl,Open-mic night',
+                                        estimatedCosts: 'stay:20000\ntransport:8000\nfood:6000',
+                                        coverImage: ''
+                                    });
                                     if (onFormOpen) {
                                         onFormOpen();
                                     } else {
@@ -346,13 +368,13 @@ export default function AddHostedBackpackerClient({
                             {/* Existing Hosted Trips */}
                             <div className="w-full">
                                 <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-6 px-1">Existing Hosted Trips</h2>
-                                <div className="border border-gray-100 rounded-lg overflow-hidden">
-                                    <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4">
+                                <div className="border border-gray-100 rounded-lg overflow-visible">
+                                    <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4 rounded-t-lg">
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Group Name</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Destination</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Start Date</p>
                                     </div>
-                                    <div className="divide-y divide-gray-100 bg-white">
+                                    <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
                                         {groups.length > 0 ? groups.map((group) => (
                                             <div key={group.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-gray-50/50 transition-colors gap-3 md:gap-0">
                                                 <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
@@ -414,13 +436,13 @@ export default function AddHostedBackpackerClient({
                                     Unverified Community Trips
                                     <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full text-gray-600 font-normal">{unverifiedCommunityGroups.length}</span>
                                 </h2>
-                                <div className="border border-gray-100 rounded-lg overflow-hidden">
-                                    <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4">
+                                <div className="border border-gray-100 rounded-lg overflow-visible">
+                                    <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4 rounded-t-lg">
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Trip Info</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Destination</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Date</p>
                                     </div>
-                                    <div className="divide-y divide-gray-100 bg-white">
+                                    <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
                                         {unverifiedCommunityGroups.length > 0 ? unverifiedCommunityGroups.map((group) => (
                                             <div key={group.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-gray-50/50 transition-colors gap-3 md:gap-0">
                                                 <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
@@ -460,13 +482,13 @@ export default function AddHostedBackpackerClient({
                             {/* Verified Community Trips */}
                             <div className="w-full">
                                 <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-6 px-1">Verified Community Trips</h2>
-                                <div className="border border-gray-100 rounded-lg overflow-hidden">
-                                    <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4">
+                                <div className="border border-gray-100 rounded-lg overflow-visible">
+                                    <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4 rounded-t-lg">
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Group Name</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Destination</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Start Date</p>
                                     </div>
-                                    <div className="divide-y divide-gray-100 bg-white">
+                                    <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
                                         {verifiedCommunityGroups.length > 0 ? verifiedCommunityGroups.map((group) => (
                                             <div key={group.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-gray-50/50 transition-colors gap-3 md:gap-0">
                                                 <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
@@ -532,6 +554,28 @@ export default function AddHostedBackpackerClient({
                             } else {
                                 setShowFormInternal(false);
                             }
+                            setEditingId(null);
+                            setFormData({
+                                groupName: '',
+                                startLocation: '',
+                                endLocation: '',
+                                startDate: '',
+                                endDate: '',
+                                maxMembers: 10,
+                                tripType: 'trek',
+                                budgetRange: '₹25k - ₹40k',
+                                pickupLocation: '',
+                                accommodationType: 'Hostels',
+                                minAge: 18,
+                                genderPreference: 'any',
+                                trekkingExperience: 'beginner',
+                                mandatoryRules: 'Travel respectfully\nCarry govt ID proofs',
+                                planOverview: '',
+                                itinerary: 'Day 1: Arrival meetup\nDay 2: Local exploration',
+                                activities: 'Sunrise hike,Food crawl,Open-mic night',
+                                estimatedCosts: 'stay:20000\ntransport:8000\nfood:6000',
+                                coverImage: ''
+                            });
                         }}
                         className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
                     >

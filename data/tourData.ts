@@ -48,6 +48,12 @@ export interface TourPackage {
         state?: string;
         isVerified?: boolean;
     }[];
+    vendorId?: string | {
+        _id: string;
+        vendorDetails?: {
+            businessName: string;
+        };
+    };
 }
 
 // No static tour data - all tours come from MongoDB

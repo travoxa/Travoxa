@@ -107,15 +107,15 @@ export default function VendorRequestsClient() {
                 <p className="text-[10px] md:text-sm text-gray-500">Review newly created listings by vendors before they go live.</p>
             </div>
 
-            <div className="border border-gray-100 rounded-lg overflow-hidden">
-                <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-4 gap-4">
+            <div className="border border-gray-100 rounded-lg overflow-visible">
+                <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-4 gap-4 rounded-t-lg">
                     <p className="text-xs font-semibold text-gray-600 uppercase">Listing Name</p>
                     <p className="text-xs font-semibold text-gray-600 uppercase">Category</p>
                     <p className="text-xs font-semibold text-gray-600 uppercase">Date Submitted</p>
                     <p className="text-xs font-semibold text-gray-600 uppercase text-right">Actions</p>
                 </div>
 
-                <div className="divide-y divide-gray-100 bg-white">
+                <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
                     {requests.length === 0 ? (
                         <div className="py-8 text-left px-4 text-gray-500 text-sm">
                             No pending vendor requests at this time.

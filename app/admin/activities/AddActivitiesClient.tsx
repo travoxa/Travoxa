@@ -606,6 +606,56 @@ export default function AddActivitiesClient({
                         <div className="flex justify-start mb-6">
                             <button
                                 onClick={() => {
+                                    setEditingId(null);
+                                    setFormData(isDev ? DUMMY_FORM_DATA : {
+                                        title: '',
+                                        state: '',
+                                        city: '',
+                                        location: { name: '', mapLink: '' },
+                                        pickupPoint: '',
+                                        dropPoint: '',
+                                        type: '',
+                                        customType: '',
+                                        difficultyLevel: 'Easy',
+                                        durationValue: '',
+                                        durationUnit: 'Hours',
+                                        bestMonths: { start: '', end: '' },
+                                        bestTimeOfDay: '',
+                                        suitableFor: [] as string[],
+                                        season: [] as string[],
+                                        ageLimit: { min: 0, max: 0 },
+                                        groupSize: { min: 1, max: 10 },
+                                        fitnessLevel: 'Medium',
+                                        maxPeople: '',
+                                        price: '',
+                                        priceType: 'per_person',
+                                        includes: [] as string[],
+                                        overview: '',
+                                        highlights: [] as string[],
+                                        inclusions: [] as string[],
+                                        exclusions: [] as string[],
+                                        image: '',
+                                        safetyLevel: '',
+                                        permitRequired: false,
+                                        bookingRequired: false,
+                                        popularityLevel: '',
+                                        localOrganizer: '',
+                                        verifiedByTravoxa: false,
+                                        weatherDependency: false,
+                                        medicalRestrictions: { exists: false, details: '' },
+                                        photographyAllowed: false,
+                                        droneAllowed: false,
+                                        parkingAvailable: false,
+                                        openingHoursExtended: INITIAL_OPENING_HOURS,
+                                        relatedTours: [] as string[],
+                                        relatedSightseeing: [] as string[],
+                                        relatedActivities: [] as string[],
+                                        relatedRentals: [] as string[],
+                                        relatedStays: [] as string[],
+                                        relatedFood: [] as string[],
+                                        relatedAttractions: [] as string[],
+                                        partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[],
+                                    });
                                     if (onFormOpen) {
                                         onFormOpen();
                                     } else {
@@ -640,15 +690,15 @@ export default function AddActivitiesClient({
                         <div className="w-full">
                             <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-4 px-1">Existing Activities</h2>
 
-                            <div className="border border-gray-100 rounded-lg overflow-hidden">
-                                <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-4 gap-4">
+                            <div className="border border-gray-100 rounded-lg overflow-visible">
+                                <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-4 gap-4 rounded-t-lg">
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Title</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Type</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Price</p>
                                 </div>
 
-                                <div className="divide-y divide-gray-100 bg-white">
+                                <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
                                     {([...activities].sort((a, b) => {
                                         if (!sortOrder) return 0;
                                         const stateA = a.state || '';
@@ -722,6 +772,56 @@ export default function AddActivitiesClient({
                             } else {
                                 setShowFormInternal(false);
                             }
+                            setEditingId(null);
+                            setFormData(isDev ? DUMMY_FORM_DATA : {
+                                title: '',
+                                state: '',
+                                city: '',
+                                location: { name: '', mapLink: '' },
+                                pickupPoint: '',
+                                dropPoint: '',
+                                type: '',
+                                customType: '',
+                                difficultyLevel: 'Easy',
+                                durationValue: '',
+                                durationUnit: 'Hours',
+                                bestMonths: { start: '', end: '' },
+                                bestTimeOfDay: '',
+                                suitableFor: [] as string[],
+                                season: [] as string[],
+                                ageLimit: { min: 0, max: 0 },
+                                groupSize: { min: 1, max: 10 },
+                                fitnessLevel: 'Medium',
+                                maxPeople: '',
+                                price: '',
+                                priceType: 'per_person',
+                                includes: [] as string[],
+                                overview: '',
+                                highlights: [] as string[],
+                                inclusions: [] as string[],
+                                exclusions: [] as string[],
+                                image: '',
+                                safetyLevel: '',
+                                permitRequired: false,
+                                bookingRequired: false,
+                                popularityLevel: '',
+                                localOrganizer: '',
+                                verifiedByTravoxa: false,
+                                weatherDependency: false,
+                                medicalRestrictions: { exists: false, details: '' },
+                                photographyAllowed: false,
+                                droneAllowed: false,
+                                parkingAvailable: false,
+                                openingHoursExtended: INITIAL_OPENING_HOURS,
+                                relatedTours: [] as string[],
+                                relatedSightseeing: [] as string[],
+                                relatedActivities: [] as string[],
+                                relatedRentals: [] as string[],
+                                relatedStays: [] as string[],
+                                relatedFood: [] as string[],
+                                relatedAttractions: [] as string[],
+                                partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[],
+                            });
                         }}
                         className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
                     >
@@ -1427,7 +1527,8 @@ export default function AddActivitiesClient({
                         </div>
                     </form>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }

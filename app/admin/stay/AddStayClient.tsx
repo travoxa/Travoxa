@@ -428,6 +428,38 @@ export default function AddStayClient({
                         <div className="flex justify-start mb-6">
                             <button
                                 onClick={() => {
+                                    setEditingId(null);
+                                    setFormData(isDev ? DUMMY_FORM_DATA : {
+                                        title: '',
+                                        city: '',
+                                        state: '',
+                                        location: '',
+                                        type: 'Hotel',
+                                        price: '',
+                                        priceType: 'per_night',
+                                        rating: 0,
+                                        reviews: 0,
+                                        overview: '',
+                                        amenities: [] as string[],
+                                        images: [] as string[],
+                                        coverImage: '',
+                                        contactPhone: '',
+                                        contactEmail: '',
+                                        checkInTime: '12:00 PM',
+                                        checkOutTime: '11:00 AM',
+                                        maxGuests: 2,
+                                        bedrooms: 1,
+                                        bathrooms: 1,
+                                        isVerified: false,
+                                        relatedTours: [] as string[],
+                                        relatedSightseeing: [] as string[],
+                                        relatedActivities: [] as string[],
+                                        relatedRentals: [] as string[],
+                                        relatedStays: [] as string[],
+                                        relatedFood: [] as string[],
+                                        relatedAttractions: [] as string[],
+                                        partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[]
+                                    });
                                     if (onFormOpen) {
                                         onFormOpen();
                                     } else {
@@ -461,14 +493,14 @@ export default function AddStayClient({
                         <div className="w-full">
                             <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-4 px-1">Existing Stay Packages</h2>
 
-                            <div className="border border-gray-100 rounded-lg overflow-hidden">
-                                <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4">
+                            <div className="border border-gray-100 rounded-lg overflow-visible">
+                                <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4 rounded-t-lg">
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Property Name</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Price</p>
                                 </div>
 
-                                <div className="divide-y divide-gray-100 bg-white">
+                                <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
                                     {([...stays].sort((a, b) => {
                                         if (!sortOrder) return 0;
                                         const stateA = a.state || '';
@@ -516,7 +548,45 @@ export default function AddStayClient({
                 </>
             ) : (
                 <div className="bg-white rounded-xl border border-gray-200 p-8 relative">
-                    <button onClick={() => { if (onFormClose) { onFormClose(); } else { setShowFormInternal(false); } }} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all">
+                    <button onClick={() => {
+                        if (onFormClose) {
+                            onFormClose();
+                        } else {
+                            setShowFormInternal(false);
+                        }
+                        setEditingId(null);
+                        setFormData(isDev ? DUMMY_FORM_DATA : {
+                            title: '',
+                            city: '',
+                            state: '',
+                            location: '',
+                            type: 'Hotel',
+                            price: '',
+                            priceType: 'per_night',
+                            rating: 0,
+                            reviews: 0,
+                            overview: '',
+                            amenities: [] as string[],
+                            images: [] as string[],
+                            coverImage: '',
+                            contactPhone: '',
+                            contactEmail: '',
+                            checkInTime: '12:00 PM',
+                            checkOutTime: '11:00 AM',
+                            maxGuests: 2,
+                            bedrooms: 1,
+                            bathrooms: 1,
+                            isVerified: false,
+                            relatedTours: [] as string[],
+                            relatedSightseeing: [] as string[],
+                            relatedActivities: [] as string[],
+                            relatedRentals: [] as string[],
+                            relatedStays: [] as string[],
+                            relatedFood: [] as string[],
+                            relatedAttractions: [] as string[],
+                            partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[]
+                        });
+                    }} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all">
                         <RiCloseLine size={24} />
                     </button>
                     <h2 className="text-lg font-medium text-gray-800 mb-6">{editingId ? 'Edit' : 'Create New'} Stay Package</h2>
