@@ -26,6 +26,14 @@ export default function TourRequestsClient() {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'custom' | 'travoxa' | 'vendor'>('custom');
     const [selectedPackage, setSelectedPackage] = useState<any>(null);
+    const [showApprovalModal, setShowApprovalModal] = useState(false);
+    const [approvalData, setApprovalData] = useState({
+        requestId: '',
+        totalAmount: 0,
+        bookingAmount: 0,
+        priceBreakdown: [{ label: '', amount: 0 }],
+        adminNotes: ''
+    });
 
     const fetchRequests = async () => {
         setLoading(true);
@@ -85,17 +93,30 @@ export default function TourRequestsClient() {
         fetchRequests();
     }, []);
 
-    const handleAction = async (requestId: string, type: 'Standard' | 'Custom', newStatus: 'approved' | 'rejected') => {
+    const handleAction = async (requestId: string, type: 'Standard' | 'Custom', newStatus: 'approved' | 'rejected', extraData?: any) => {
+        if (type === 'Custom' && newStatus === 'approved' && !extraData) {
+            setApprovalData({
+                requestId,
+                totalAmount: 0,
+                bookingAmount: 0,
+                priceBreakdown: [{ label: '', amount: 0 }],
+                adminNotes: ''
+            });
+            setShowApprovalModal(true);
+            return;
+        }
+
         try {
             const endpoint = type === 'Standard' ? '/api/tours/request' : '/api/tours/custom-request';
             const res = await fetch(endpoint, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ requestId, status: newStatus })
+                body: JSON.stringify({ requestId, status: newStatus, adminResponse: extraData })
             });
 
             if (res.ok) {
                 setRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: newStatus } : r));
+                setShowApprovalModal(false);
             } else {
                 alert("Failed to update status");
             }
@@ -104,8 +125,18 @@ export default function TourRequestsClient() {
         }
     };
 
+    const handleApprovalSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        handleAction(approvalData.requestId, 'Custom', 'approved', {
+            totalAmount: approvalData.totalAmount,
+            bookingAmount: approvalData.bookingAmount,
+            priceBreakdown: approvalData.priceBreakdown.filter(p => p.label && p.amount > 0),
+            adminNotes: approvalData.adminNotes
+        });
+    };
+
     const RequestList = ({ items, emptyMessage }: { items: Request[], emptyMessage: string }) => (
-        <div className="bg-white border border-gray-100 rounded-xl overflow-hidden overflow-x-auto shadow-sm">
+        <div className="bg-white border border-gray-100 rounded-xl overflow-hidden overflow-x-auto">
             {items.length === 0 ? (
                 <div className="p-12 text-center">
                     <RiFileListLine size={48} className="mx-auto text-gray-200 mb-4" />
@@ -191,8 +222,6 @@ export default function TourRequestsClient() {
         </div>
     );
 
-    if (loading) return <div className="animate-pulse space-y-4">{[1, 2, 3].map(i => <div key={i} className="h-20 bg-gray-50 rounded-xl" />)}</div>;
-
     const sortedRequests = useMemo(() => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -243,6 +272,8 @@ export default function TourRequestsClient() {
             (type === 'vendor' && r.type === 'Standard' && r.isVendorTour)
         )).length;
     };
+
+    if (loading) return <div className="animate-pulse space-y-4">{[1, 2, 3].map(i => <div key={i} className="h-20 bg-gray-50 rounded-xl" />)}</div>;
 
     return (
         <div className="space-y-6">
@@ -590,6 +621,128 @@ export default function TourRequestsClient() {
                                 </div>
                             )}
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Approval Modal */}
+            {showApprovalModal && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-[32px] w-full max-w-2xl overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-300 border border-white/20">
+                        <div className="p-8 border-b border-gray-100 flex items-center justify-between">
+                            <h3 className="text-xl font-black text-gray-900">Approve Custom Request</h3>
+                            <button onClick={() => setShowApprovalModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-400">
+                                <RiCloseLine size={24} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleApprovalSubmit} className="p-8 space-y-6 overflow-y-auto max-h-[70vh] custom-scrollbar">
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Amount (₹)</label>
+                                    <div className="relative">
+                                        <RiMoneyDollarCircleLine className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                        <input
+                                            type="number"
+                                            required
+                                            placeholder="0"
+                                            value={approvalData.totalAmount || ''}
+                                            onChange={(e) => setApprovalData({ ...approvalData, totalAmount: Number(e.target.value) })}
+                                            className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-gray-50 border border-gray-100 focus:bg-white focus:border-blue-500 transition-all font-bold text-gray-900 outline-none"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Booking Amount (₹)</label>
+                                    <div className="relative">
+                                        <RiCheckLine className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                        <input
+                                            type="number"
+                                            required
+                                            placeholder="0"
+                                            value={approvalData.bookingAmount || ''}
+                                            onChange={(e) => setApprovalData({ ...approvalData, bookingAmount: Number(e.target.value) })}
+                                            className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-gray-50 border border-gray-100 focus:bg-white focus:border-blue-500 transition-all font-bold text-gray-900 outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Price Breakdown (Usage Details)</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setApprovalData({ ...approvalData, priceBreakdown: [...approvalData.priceBreakdown, { label: '', amount: 0 }] })}
+                                        className="text-[10px] font-black text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors uppercase tracking-wider border border-blue-100"
+                                    >
+                                        + Add Line Item
+                                    </button>
+                                </div>
+                                <div className="space-y-3">
+                                    {approvalData.priceBreakdown.map((item, idx) => (
+                                        <div key={idx} className="flex gap-3 group animate-in slide-in-from-top-2 duration-200">
+                                            <input
+                                                placeholder="e.g. Premium Hotel, Private SUV"
+                                                value={item.label}
+                                                onChange={(e) => {
+                                                    const newBreakdown = [...approvalData.priceBreakdown];
+                                                    newBreakdown[idx].label = e.target.value;
+                                                    setApprovalData({ ...approvalData, priceBreakdown: newBreakdown });
+                                                }}
+                                                className="flex-1 px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 text-sm focus:bg-white focus:border-blue-500 outline-none transition-all"
+                                            />
+                                            <div className="relative w-32">
+                                                <input
+                                                    type="number"
+                                                    placeholder="Amount"
+                                                    value={item.amount || ''}
+                                                    onChange={(e) => {
+                                                        const newBreakdown = [...approvalData.priceBreakdown];
+                                                        newBreakdown[idx].amount = Number(e.target.value);
+                                                        setApprovalData({ ...approvalData, priceBreakdown: newBreakdown });
+                                                    }}
+                                                    className="w-full pl-4 pr-4 py-3 rounded-2xl bg-gray-50 border border-gray-100 text-sm font-bold focus:bg-white focus:border-blue-500 outline-none transition-all"
+                                                />
+                                            </div>
+                                            {approvalData.priceBreakdown.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setApprovalData({ ...approvalData, priceBreakdown: approvalData.priceBreakdown.filter((_, i) => i !== idx) })}
+                                                    className="p-3 text-red-500 hover:bg-red-50 rounded-2xl flex-shrink-0 transition-colors"
+                                                >
+                                                    <RiCloseLine size={20} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Admin Notes / Special Instructions</label>
+                                <textarea
+                                    rows={4}
+                                    value={approvalData.adminNotes}
+                                    onChange={(e) => setApprovalData({ ...approvalData, adminNotes: e.target.value })}
+                                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:bg-white focus:border-blue-500 transition-all text-sm resize-none outline-none leading-relaxed"
+                                    placeholder="Briefly describe the inclusions or any special arrangements made for this custom trip..."
+                                />
+                            </div>
+
+                            <div className="pt-4">
+                                <button
+                                    type="submit"
+                                    className="w-full bg-gray-900 text-white font-black py-5 rounded-[24px] hover:bg-black transition-all shadow-2xl shadow-gray-200 active:scale-[0.98] flex items-center justify-center gap-3"
+                                >
+                                    <RiCheckLine size={20} className="text-green-400" />
+                                    <span>Confirm Approval & Send Itinerary</span>
+                                </button>
+                                <p className="text-[10px] text-gray-400 text-center mt-4">
+                                    By confirming, an automated notification will be sent to the user with these details.
+                                </p>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

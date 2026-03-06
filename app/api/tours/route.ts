@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import Tour from '@/models/Tour';
+import User from '@/lib/models/User';
 
 // Helper to connect to DB
 const connectDB = async () => {
@@ -34,12 +35,16 @@ export async function GET(req: Request) {
         }
 
         // 1. Try direct DB query
-        let tours = await Tour.find(query).sort({ createdAt: -1 });
+        let tours = await Tour.find(query)
+            .populate('vendorId', 'vendorDetails.businessName')
+            .sort({ createdAt: -1 });
 
         // 2. SELF-HEALING & FALLBACK
         // If direct query fails for public page, but documents actually exist
         if (tours.length === 0 && !vendorId && admin !== 'true') {
-            const allTours = await Tour.find({}).sort({ createdAt: -1 });
+            const allTours = await Tour.find({})
+                .populate('vendorId', 'vendorDetails.businessName')
+                .sort({ createdAt: -1 });
             const approvedTours = allTours.filter(t => t.status === 'approved');
 
             if (approvedTours.length > 0) {

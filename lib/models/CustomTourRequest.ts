@@ -20,7 +20,13 @@ export interface ICustomTourRequest extends Document {
         email: string;
         phone: string;
     };
-    status: "pending" | "reviewed" | "contacted" | "closed";
+    status: "pending" | "reviewed" | "contacted" | "approved" | "rejected" | "closed";
+    adminResponse?: {
+        totalAmount: number;
+        bookingAmount: number;
+        priceBreakdown: { label: string; amount: number }[];
+        adminNotes: string;
+    };
     createdAt: Date;
     updatedAt: Date;
 }
@@ -89,8 +95,17 @@ const customTourRequestSchema = new Schema<ICustomTourRequest>({
     },
     status: {
         type: String,
-        enum: ["pending", "reviewed", "contacted", "closed"],
+        enum: ["pending", "reviewed", "contacted", "approved", "rejected", "closed"],
         default: "pending",
+    },
+    adminResponse: {
+        totalAmount: { type: Number },
+        bookingAmount: { type: Number },
+        priceBreakdown: [{
+            label: { type: String },
+            amount: { type: Number }
+        }],
+        adminNotes: { type: String }
     },
     createdAt: {
         type: Date,

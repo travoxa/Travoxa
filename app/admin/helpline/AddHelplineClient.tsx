@@ -219,6 +219,8 @@ export default function AddHelplineClient({
                 <div className="flex justify-start mb-6">
                     <button
                         onClick={() => {
+                            setEditingId(null);
+                            setForm(initialForm);
                             if (onFormOpen) {
                                 onFormOpen();
                             } else {
@@ -436,15 +438,15 @@ export default function AddHelplineClient({
                         </button>
                     </div>
 
-                    <div className="border border-gray-100 rounded-lg overflow-hidden">
-                        <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-4 gap-4">
+                    <div className="border border-gray-100 rounded-lg overflow-visible">
+                        <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-4 gap-4 rounded-t-lg">
                             <p className="text-xs font-semibold text-gray-500 uppercase">Service Name</p>
                             <p className="text-xs font-semibold text-gray-500 uppercase">Type</p>
                             <p className="text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
                             <p className="text-xs font-semibold text-gray-500 uppercase">Phone</p>
                         </div>
 
-                        <div className="divide-y divide-gray-100 bg-white">
+                        <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
                             {loading ? (
                                 <div className="py-8 text-center text-gray-400 text-sm">Loading helplines...</div>
                             ) : helplines.length === 0 ? (

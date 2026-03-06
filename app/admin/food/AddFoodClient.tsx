@@ -606,6 +606,83 @@ export default function AddFoodClient({
                         <div className="flex justify-start mb-6">
                             <button
                                 onClick={() => {
+                                    setEditingId(null);
+                                    setFormData(isDev ? {
+                                        ...DUMMY_FORM_DATA,
+                                        avgCost: DUMMY_FORM_DATA.avgCost.toString(),
+                                        avgCostPerPerson: '600',
+                                        dishType: 'Both',
+                                        openingTime: '10:00 AM',
+                                        closingTime: '11:00 PM',
+                                        bestTimeToVisit: 'Evening',
+                                        dineIn: true,
+                                        takeaway: true,
+                                        homeDelivery: false,
+                                        contactPerson: 'Rahul Sharma',
+                                        phoneNumber: '9876543210',
+                                        whatsappNumber: '9876543210',
+                                        address: 'Old Manali, Near Manalsu River',
+                                        attractionName: 'Manalsu River',
+                                        famousDish: 'Trout Fish',
+                                        distFromAttraction: '50m',
+                                        area: 'Old Manali',
+                                        hygieneRating: 4.5,
+                                        badges: ['Travoxa Recommended', 'Premium'],
+                                        openingHoursExtended: INITIAL_OPENING_HOURS,
+                                        fullMenu: [
+                                            {
+                                                category: 'Main Course',
+                                                items: [{ name: 'Grilled Trout', price: 550 }]
+                                            }
+                                        ],
+                                        relatedTours: [] as string[],
+                                        relatedSightseeing: [] as string[],
+                                        relatedActivities: [] as string[],
+                                        relatedRentals: [] as string[],
+                                        relatedStays: [] as string[],
+                                        relatedFood: [] as string[],
+                                        relatedAttractions: [] as string[],
+                                        partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[],
+                                    } : {
+                                        title: '',
+                                        city: '',
+                                        state: '',
+                                        type: '',
+                                        priceRange: '$',
+                                        avgCost: '',
+                                        avgCostPerPerson: '',
+                                        overview: '',
+                                        mustTry: [] as string[],
+                                        cuisine: [] as string[],
+                                        image: '',
+                                        famousDish: '',
+                                        distFromAttraction: '',
+                                        area: '',
+                                        hygieneRating: 0,
+                                        badges: [] as string[],
+                                        dishType: 'Both',
+                                        openingHoursExtended: INITIAL_OPENING_HOURS,
+                                        openingTime: '',
+                                        closingTime: '',
+                                        bestTimeToVisit: '',
+                                        dineIn: true,
+                                        takeaway: true,
+                                        homeDelivery: false,
+                                        contactPerson: '',
+                                        phoneNumber: '',
+                                        whatsappNumber: '',
+                                        address: '',
+                                        attractionName: '',
+                                        fullMenu: [] as { category: string, items: { name: string, price: number }[] }[],
+                                        relatedTours: [] as string[],
+                                        relatedSightseeing: [] as string[],
+                                        relatedActivities: [] as string[],
+                                        relatedRentals: [] as string[],
+                                        relatedStays: [] as string[],
+                                        relatedFood: [] as string[],
+                                        relatedAttractions: [] as string[],
+                                        partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[]
+                                    });
                                     if (onFormOpen) {
                                         onFormOpen();
                                     } else {
@@ -639,14 +716,14 @@ export default function AddFoodClient({
                         <div className="w-full">
                             <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-4 px-1">Existing Food Items</h2>
 
-                            <div className="border border-gray-100 rounded-lg overflow-hidden">
-                                <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4">
+                            <div className="border border-gray-100 rounded-lg overflow-visible">
+                                <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4 rounded-t-lg">
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Title</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Avg Cost</p>
                                 </div>
 
-                                <div className="divide-y divide-gray-100 bg-white">
+                                <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
                                     {([...foodItems].sort((a, b) => {
                                         if (!sortOrder) return 0;
                                         const stateA = a.state || '';
@@ -716,6 +793,83 @@ export default function AddFoodClient({
                             } else {
                                 setShowFormInternal(false);
                             }
+                            setEditingId(null);
+                            setFormData(isDev ? {
+                                ...DUMMY_FORM_DATA,
+                                avgCost: DUMMY_FORM_DATA.avgCost.toString(),
+                                avgCostPerPerson: '600',
+                                dishType: 'Both',
+                                openingTime: '10:00 AM',
+                                closingTime: '11:00 PM',
+                                bestTimeToVisit: 'Evening',
+                                dineIn: true,
+                                takeaway: true,
+                                homeDelivery: false,
+                                contactPerson: 'Rahul Sharma',
+                                phoneNumber: '9876543210',
+                                whatsappNumber: '9876543210',
+                                address: 'Old Manali, Near Manalsu River',
+                                attractionName: 'Manalsu River',
+                                famousDish: 'Trout Fish',
+                                distFromAttraction: '50m',
+                                area: 'Old Manali',
+                                hygieneRating: 4.5,
+                                badges: ['Travoxa Recommended', 'Premium'],
+                                openingHoursExtended: INITIAL_OPENING_HOURS,
+                                fullMenu: [
+                                    {
+                                        category: 'Main Course',
+                                        items: [{ name: 'Grilled Trout', price: 550 }]
+                                    }
+                                ],
+                                relatedTours: [] as string[],
+                                relatedSightseeing: [] as string[],
+                                relatedActivities: [] as string[],
+                                relatedRentals: [] as string[],
+                                relatedStays: [] as string[],
+                                relatedFood: [] as string[],
+                                relatedAttractions: [] as string[],
+                                partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[],
+                            } : {
+                                title: '',
+                                city: '',
+                                state: '',
+                                type: '',
+                                priceRange: '$',
+                                avgCost: '',
+                                avgCostPerPerson: '',
+                                overview: '',
+                                mustTry: [] as string[],
+                                cuisine: [] as string[],
+                                image: '',
+                                famousDish: '',
+                                distFromAttraction: '',
+                                area: '',
+                                hygieneRating: 0,
+                                badges: [] as string[],
+                                dishType: 'Both',
+                                openingHoursExtended: INITIAL_OPENING_HOURS,
+                                openingTime: '',
+                                closingTime: '',
+                                bestTimeToVisit: '',
+                                dineIn: true,
+                                takeaway: true,
+                                homeDelivery: false,
+                                contactPerson: '',
+                                phoneNumber: '',
+                                whatsappNumber: '',
+                                address: '',
+                                attractionName: '',
+                                fullMenu: [] as { category: string, items: { name: string, price: number }[] }[],
+                                relatedTours: [] as string[],
+                                relatedSightseeing: [] as string[],
+                                relatedActivities: [] as string[],
+                                relatedRentals: [] as string[],
+                                relatedStays: [] as string[],
+                                relatedFood: [] as string[],
+                                relatedAttractions: [] as string[],
+                                partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[]
+                            });
                         }}
                         className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
                     >

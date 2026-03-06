@@ -489,6 +489,45 @@ export default function AddRentalsClient({
                         <div className="flex justify-start mb-6">
                             <button
                                 onClick={() => {
+                                    setEditingId(null);
+                                    setFormData(isDev ? DUMMY_FORM_DATA : {
+                                        name: '',
+                                        type: 'Scooter',
+                                        model: YEAR_OPTIONS[0].toString(),
+                                        rating: '',
+                                        reviews: '',
+                                        mileage: '',
+                                        seats: '',
+                                        fuel: 'Petrol',
+                                        helmet: 'Helmet Included',
+                                        price: '',
+                                        image: '',
+                                        verified: false,
+                                        state: '',
+                                        city: '',
+                                        whatsapp: '',
+                                        mapLocation: { lat: '', lng: '' },
+                                        rentalServiceName: '',
+                                        vehicleCondition: '',
+                                        hourlyPrice: '',
+                                        weeklyPrice: '',
+                                        securityDeposit: '',
+                                        extraKmCharge: '',
+                                        perDayKmLimit: '',
+                                        minAge: '',
+                                        documentsRequired: '',
+                                        fuelPolicy: '',
+                                        lateReturnCharges: '',
+                                        googleMapLink: '',
+                                        relatedTours: [] as string[],
+                                        relatedSightseeing: [] as string[],
+                                        relatedActivities: [] as string[],
+                                        relatedRentals: [] as string[],
+                                        relatedStays: [] as string[],
+                                        relatedFood: [] as string[],
+                                        relatedAttractions: [] as string[],
+                                        partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[],
+                                    });
                                     if (onFormOpen) {
                                         onFormOpen();
                                     } else {
@@ -622,6 +661,45 @@ export default function AddRentalsClient({
                             } else {
                                 setShowFormInternal(false);
                             }
+                            setEditingId(null);
+                            setFormData(isDev ? DUMMY_FORM_DATA : {
+                                name: '',
+                                type: 'Scooter',
+                                model: YEAR_OPTIONS[0].toString(),
+                                rating: '',
+                                reviews: '',
+                                mileage: '',
+                                seats: '',
+                                fuel: 'Petrol',
+                                helmet: 'Helmet Included',
+                                price: '',
+                                image: '',
+                                verified: false,
+                                state: '',
+                                city: '',
+                                whatsapp: '',
+                                mapLocation: { lat: '', lng: '' },
+                                rentalServiceName: '',
+                                vehicleCondition: '',
+                                hourlyPrice: '',
+                                weeklyPrice: '',
+                                securityDeposit: '',
+                                extraKmCharge: '',
+                                perDayKmLimit: '',
+                                minAge: '',
+                                documentsRequired: '',
+                                fuelPolicy: '',
+                                lateReturnCharges: '',
+                                googleMapLink: '',
+                                relatedTours: [] as string[],
+                                relatedSightseeing: [] as string[],
+                                relatedActivities: [] as string[],
+                                relatedRentals: [] as string[],
+                                relatedStays: [] as string[],
+                                relatedFood: [] as string[],
+                                relatedAttractions: [] as string[],
+                                partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[],
+                            });
                         }}
                         className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
                     >
