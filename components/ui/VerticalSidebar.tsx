@@ -14,7 +14,7 @@ import {
 import { route } from "@/lib/route";
 
 export default function VerticalSidebar() {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const pathname = usePathname();
     const [isExpanded, setIsExpanded] = useState(false);
     const [hoverProgress, setHoverProgress] = useState(0);
@@ -58,10 +58,10 @@ export default function VerticalSidebar() {
 
     // Fetch saved items when expanded
     useEffect(() => {
-        if (isExpanded && session) {
+        if (isExpanded && status === "authenticated" && session?.user?.id) {
             fetchSavedItems();
         }
-    }, [isExpanded, session]);
+    }, [isExpanded, session?.user?.id, status]);
 
     const fetchSavedItems = async () => {
         setIsLoading(true);

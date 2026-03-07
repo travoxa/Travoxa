@@ -22,14 +22,14 @@ export default function SaveButton({
     isSmall = false,
     activeColor = "bg-emerald-600"
 }: SaveButtonProps) {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const router = useRouter();
     const [isSaved, setIsSaved] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     // Check initial save status
     useEffect(() => {
-        if (session?.user) {
+        if (status === "authenticated" && session?.user?.id) {
             const checkStatus = async () => {
                 try {
                     const res = await fetch(`/api/save?itemId=${itemId}&itemType=${itemType}`);
@@ -43,7 +43,7 @@ export default function SaveButton({
             };
             checkStatus();
         }
-    }, [itemId, itemType, session]);
+    }, [itemId, itemType, session?.user?.id, status]);
 
     const handleToggleSave = async (e: React.MouseEvent) => {
         e.preventDefault();

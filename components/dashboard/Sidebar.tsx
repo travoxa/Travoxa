@@ -35,7 +35,9 @@ interface SidebarProps {
     permissions?: string[];
     isOpen?: boolean;
     onClose?: () => void;
-    hasPendingTour?: boolean;
+    hasPendingTourRequests?: boolean;
+    hasPendingVendorTours?: boolean;
+    hasPendingVendorRequests?: boolean;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -46,7 +48,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     permissions = [],
     isOpen = false,
     onClose,
-    hasPendingTour = false
+    hasPendingTourRequests = false,
+    hasPendingVendorTours = false,
+    hasPendingVendorRequests = false
 }) => {
     const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
@@ -79,332 +83,336 @@ const Sidebar: React.FC<SidebarProps> = ({
                 />
             )}
 
-            <aside className={`fixed left-0 top-0 z-50 h-screen w-64 bg-white px-6 py-8 flex flex-col justify-between font-sans transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+            <aside className={`fixed left-0 top-0 z-50 h-screen w-64 bg-white px-6 py-8 flex flex-col font-sans transition-transform duration-300 ease-in-out overflow-hidden ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
                 {/* Branding */}
-                <div>
-                    <div className="flex items-center justify-between mb-10 pl-2">
-                        <button onClick={() => window.location.href = '/'} className="cursor-pointer hidden md:block">
-                            <Image
-                                src="/logo.png"
-                                alt="Travoxa"
-                                width={130}
-                                height={50}
-                                style={{ width: "auto", height: "32px" }}
-                                className="object-contain"
-                            />
-                        </button>
-                        {/* Close button for mobile */}
-                        <button
-                            onClick={onClose}
-                            className="md:hidden p-2 text-gray-500 hover:text-gray-900 transition-colors"
-                        >
-                            <RiCloseLine size={24} />
-                        </button>
-                    </div>
-
-                    {/* Navigation */}
-                    <nav className="space-y-1.5 overflow-y-auto pr-2 custom-scrollbar">
-                        {isAdmin ? (
-                            <>
-                                {permissions.includes('Overview') && (
-                                    <NavItem
-                                        icon={<RiBarChartLine size={20} />}
-                                        label="Overview"
-                                        id="Overview"
-                                        activeTab={activeTab}
-                                        onClick={(id) => {
-                                            setActiveTab(id);
-                                            if (onClose) onClose();
-                                        }}
-                                    />
-                                )}
-                                {permissions.includes('Landing') && (
-                                    <NavItem
-                                        icon={<RiHomeLine size={20} />}
-                                        label="Landing"
-                                        id="Landing"
-                                        activeTab={activeTab}
-                                        onClick={(id) => {
-                                            setActiveTab(id);
-                                            if (onClose) onClose();
-                                        }}
-                                    />
-                                )}
-                                {(permissions.includes('Tour') || permissions.some(p => p.startsWith('Tour:'))) && (
-                                    <>
-                                        <div className="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                                            Tour
-                                        </div>
-                                        {(permissions.includes('Tour') || permissions.includes('Tour:All')) && (
-                                            <SubNavItem
-                                                icon={<RiCompass3Line size={18} />}
-                                                label="All Tours"
-                                                id="Tour:All"
-                                                activeTab={activeTab}
-                                                onClick={(id) => {
-                                                    setActiveTab(id);
-                                                    if (onClose) onClose();
-                                                }}
-                                            />
-                                        )}
-                                        {(permissions.includes('Tour') || permissions.includes('Tour:Requests')) && (
-                                            <SubNavItem
-                                                icon={<RiFileListLine size={18} />}
-                                                label="Requests"
-                                                id="Tour:Requests"
-                                                activeTab={activeTab}
-                                                onClick={(id) => {
-                                                    setActiveTab(id);
-                                                    if (onClose) onClose();
-                                                }}
-                                            />
-                                        )}
-                                        {(permissions.includes('Tour') || permissions.includes('Tour:VendorTours')) && (
-                                            <SubNavItem
-                                                icon={<RiCompass3Line size={18} />}
-                                                label="Vendor Tours"
-                                                id="Tour:VendorTours"
-                                                activeTab={activeTab}
-                                                showDot={hasPendingTour}
-                                                onClick={(id) => {
-                                                    setActiveTab(id);
-                                                    if (onClose) onClose();
-                                                }}
-                                            />
-                                        )}
-                                    </>
-                                )}
-                                {(permissions.includes('Discovery') || permissions.some(p => p.startsWith('Discovery:'))) && (
-                                    <>
-                                        <div className="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                                            Discovery
-                                        </div>
-                                        {(permissions.includes('Discovery') || permissions.includes('Discovery:Sightseeing')) && (
-                                            <SubNavItem
-                                                icon={<RiCameraLensLine size={18} />}
-                                                label="Sightseeing"
-                                                id="Discovery:Sightseeing"
-                                                activeTab={activeTab}
-                                                onClick={(id) => {
-                                                    setActiveTab(id);
-                                                    if (onClose) onClose();
-                                                }}
-                                            />
-                                        )}
-                                        {(permissions.includes('Discovery') || permissions.includes('Discovery:Rentals')) && (
-                                            <SubNavItem
-                                                icon={<RiCarWashingLine size={18} />}
-                                                label="Rentals"
-                                                id="Discovery:Rentals"
-                                                activeTab={activeTab}
-                                                onClick={(id) => {
-                                                    setActiveTab(id);
-                                                    if (onClose) onClose();
-                                                }}
-                                            />
-                                        )}
-                                        {(permissions.includes('Discovery') || permissions.includes('Discovery:Activities')) && (
-                                            <SubNavItem
-                                                icon={<RiRunLine size={18} />}
-                                                label="Activities"
-                                                id="Discovery:Activities"
-                                                activeTab={activeTab}
-                                                onClick={(id) => {
-                                                    setActiveTab(id);
-                                                    if (onClose) onClose();
-                                                }}
-                                            />
-                                        )}
-                                        {(permissions.includes('Discovery') || permissions.includes('Discovery:Attractions')) && (
-                                            <SubNavItem
-                                                icon={<RiBuilding2Line size={18} />}
-                                                label="Attractions"
-                                                id="Discovery:Attractions"
-                                                activeTab={activeTab}
-                                                onClick={(id) => {
-                                                    setActiveTab(id);
-                                                    if (onClose) onClose();
-                                                }}
-                                            />
-                                        )}
-                                        {(permissions.includes('Discovery') || permissions.includes('Discovery:Food')) && (
-                                            <SubNavItem
-                                                icon={<RiRestaurantLine size={18} />}
-                                                label="Food & Cafes"
-                                                id="Discovery:Food"
-                                                activeTab={activeTab}
-                                                onClick={(id) => {
-                                                    setActiveTab(id);
-                                                    if (onClose) onClose();
-                                                }}
-                                            />
-                                        )}
-                                        {(permissions.includes('Discovery') || permissions.includes('Discovery:Stay')) && (
-                                            <SubNavItem
-                                                icon={<RiHotelLine size={18} />}
-                                                label="Stay"
-                                                id="Discovery:Stay"
-                                                activeTab={activeTab}
-                                                onClick={(id) => {
-                                                    setActiveTab(id);
-                                                    if (onClose) onClose();
-                                                }}
-                                            />
-                                        )}
-                                        {(permissions.includes('Discovery') || permissions.includes('Discovery:Emergency')) && (
-                                            <SubNavItem
-                                                icon={<RiHeartPulseLine size={18} />}
-                                                label="Emergency"
-                                                id="Discovery:Emergency"
-                                                activeTab={activeTab}
-                                                onClick={(id) => {
-                                                    setActiveTab(id);
-                                                    if (onClose) onClose();
-                                                }}
-                                            />
-                                        )}
-                                    </>
-                                )}
-                                {permissions.includes('Backpackers') && (
-                                    <NavItem
-                                        icon={<RiGroupLine size={20} />}
-                                        label="Backpackers"
-                                        id="Backpackers"
-                                        activeTab={activeTab}
-                                        onClick={(id) => {
-                                            setActiveTab(id);
-                                            if (onClose) onClose();
-                                        }}
-                                    />
-                                )}
-                                {permissions.includes('Vendor Requests') && (
-                                    <NavItem
-                                        icon={<RiFileListLine size={20} />}
-                                        label="Vendor Requests"
-                                        id="Vendor Requests"
-                                        activeTab={activeTab}
-                                        onClick={(id) => {
-                                            setActiveTab(id);
-                                            if (onClose) onClose();
-                                        }}
-                                    />
-                                )}
-                                {permissions.includes('Listings') && (
-                                    <NavItem
-                                        icon={<RiFileListLine size={20} />}
-                                        label="Listings"
-                                        id="Listings"
-                                        activeTab={activeTab}
-                                        onClick={(id) => {
-                                            setActiveTab(id);
-                                            if (onClose) onClose();
-                                        }}
-                                    />
-                                )}
-                                {permissions.includes('Team') && (
-                                    <NavItem
-                                        icon={<RiGroupLine size={20} />}
-                                        label="Team"
-                                        id="Team"
-                                        activeTab={activeTab}
-                                        onClick={(id) => {
-                                            setActiveTab(id);
-                                            if (onClose) onClose();
-                                        }}
-                                    />
-                                )}
-                            </>
-                        ) : (
-                            <>
-                                <NavItem
-                                    icon={<RiUserLine size={20} />}
-                                    label="Profile"
-                                    id="UserProfileCard"
-                                    activeTab={activeTab}
-                                    onClick={(id) => {
-                                        setActiveTab(id);
-                                        if (onClose) onClose();
-                                    }}
-                                />
-                                <NavItem
-                                    icon={<RiMapPinLine size={20} />}
-                                    label="Trips"
-                                    id="Trips"
-                                    activeTab={activeTab}
-                                    onClick={(id) => {
-                                        setActiveTab(id);
-                                        if (onClose) onClose();
-                                    }}
-                                />
-                                <NavItem
-                                    icon={<RiPriceTagLine size={20} />}
-                                    label="Saved Items"
-                                    id="SavedItems"
-                                    activeTab={activeTab}
-                                    onClick={(id) => {
-                                        setActiveTab(id);
-                                        if (onClose) onClose();
-                                    }}
-                                />
-                                <NavItem
-                                    icon={<RiSettings4Line size={20} />}
-                                    label="Preferences"
-                                    id="PreferencesCard"
-                                    activeTab={activeTab}
-                                    onClick={(id) => {
-                                        setActiveTab(id);
-                                        if (onClose) onClose();
-                                    }}
-                                />
-                                <NavItem
-                                    icon={<RiShieldCheckLine size={20} />}
-                                    label="Safety"
-                                    id="SafetyCard"
-                                    activeTab={activeTab}
-                                    onClick={(id) => {
-                                        setActiveTab(id);
-                                        if (onClose) onClose();
-                                    }}
-                                />
-                                <NavItem
-                                    icon={<RiFileListLine size={20} />}
-                                    label="Activity"
-                                    id="ActivityFeedCard"
-                                    activeTab={activeTab}
-                                    onClick={(id) => {
-                                        setActiveTab(id);
-                                        if (onClose) onClose();
-                                    }}
-                                />
-                                <NavItem
-                                    icon={<RiBarChartLine size={20} />}
-                                    label="Insights"
-                                    id="InsightsCard"
-                                    activeTab={activeTab}
-                                    onClick={(id) => {
-                                        setActiveTab(id);
-                                        if (onClose) onClose();
-                                    }}
-                                />
-
-                                <button
-                                    onClick={() => setShowLogoutPopup(true)}
-                                    className="w-full flex items-center justify-between px-4 py-2 md:py-3 rounded-xl transition-all duration-200 group text-red-500 border border-transparent hover:bg-red-50 hover:border-red-200 hover:text-red-600"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <span className="hidden md:inline"><RiLogoutBoxLine size={20} /></span>
-                                        <span className="md:hidden"><RiLogoutBoxLine size={14} /></span>
-                                        <span className="text-[11px] md:text-sm font-medium">Logout</span>
-                                    </div>
-                                </button>
-                            </>
-                        )}
-                    </nav>
+                <div className="flex items-center justify-between mb-10 pl-2 shrink-0">
+                    <button onClick={() => window.location.href = '/'} className="cursor-pointer hidden md:block">
+                        <Image
+                            src="/logo.png"
+                            alt="Travoxa"
+                            width={130}
+                            height={50}
+                            style={{ width: "auto", height: "32px" }}
+                            className="object-contain"
+                        />
+                    </button>
+                    {/* Close button for mobile */}
+                    <button
+                        onClick={onClose}
+                        className="md:hidden p-2 text-gray-500 hover:text-gray-900 transition-colors"
+                    >
+                        <RiCloseLine size={24} />
+                    </button>
                 </div>
 
+                {/* Navigation - Scrollable Area */}
+                <nav className="flex-1 min-h-0 space-y-1.5 overflow-y-auto pr-2 pb-32 custom-sidebar scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    <style jsx>{`
+                        .custom-sidebar::-webkit-scrollbar {
+                            display: none;
+                        }
+                    `}</style>
+                    {isAdmin ? (
+                        <>
+                            {permissions.includes('Overview') && (
+                                <NavItem
+                                    icon={<RiBarChartLine size={20} />}
+                                    label="Overview"
+                                    id="Overview"
+                                    activeTab={activeTab}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+                            )}
+                            {permissions.includes('Landing') && (
+                                <NavItem
+                                    icon={<RiHomeLine size={20} />}
+                                    label="Landing"
+                                    id="Landing"
+                                    activeTab={activeTab}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+                            )}
+                            {(permissions.includes('Tour') || permissions.some(p => p.startsWith('Tour:'))) && (
+                                <>
+                                    <div className="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        Tour
+                                    </div>
+                                    {(permissions.includes('Tour') || permissions.includes('Tour:All')) && (
+                                        <SubNavItem
+                                            icon={<RiCompass3Line size={18} />}
+                                            label="All Tours"
+                                            id="Tour:All"
+                                            activeTab={activeTab}
+                                            onClick={(id) => {
+                                                setActiveTab(id);
+                                                if (onClose) onClose();
+                                            }}
+                                        />
+                                    )}
+                                    {(permissions.includes('Tour') || permissions.includes('Tour:Requests')) && (
+                                        <SubNavItem
+                                            icon={<RiFileListLine size={18} />}
+                                            label="Requests"
+                                            id="Tour:Requests"
+                                            activeTab={activeTab}
+                                            showDot={hasPendingTourRequests}
+                                            onClick={(id) => {
+                                                setActiveTab(id);
+                                                if (onClose) onClose();
+                                            }}
+                                        />
+                                    )}
+                                    {(permissions.includes('Tour') || permissions.includes('Tour:VendorTours')) && (
+                                        <SubNavItem
+                                            icon={<RiCompass3Line size={18} />}
+                                            label="Vendor Tours"
+                                            id="Tour:VendorTours"
+                                            activeTab={activeTab}
+                                            showDot={hasPendingVendorTours}
+                                            onClick={(id) => {
+                                                setActiveTab(id);
+                                                if (onClose) onClose();
+                                            }}
+                                        />
+                                    )}
+                                </>
+                            )}
+                            {(permissions.includes('Discovery') || permissions.some(p => p.startsWith('Discovery:'))) && (
+                                <>
+                                    <div className="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        Discovery
+                                    </div>
+                                    {(permissions.includes('Discovery') || permissions.includes('Discovery:Sightseeing')) && (
+                                        <SubNavItem
+                                            icon={<RiCameraLensLine size={18} />}
+                                            label="Sightseeing"
+                                            id="Discovery:Sightseeing"
+                                            activeTab={activeTab}
+                                            onClick={(id) => {
+                                                setActiveTab(id);
+                                                if (onClose) onClose();
+                                            }}
+                                        />
+                                    )}
+                                    {(permissions.includes('Discovery') || permissions.includes('Discovery:Rentals')) && (
+                                        <SubNavItem
+                                            icon={<RiCarWashingLine size={18} />}
+                                            label="Rentals"
+                                            id="Discovery:Rentals"
+                                            activeTab={activeTab}
+                                            onClick={(id) => {
+                                                setActiveTab(id);
+                                                if (onClose) onClose();
+                                            }}
+                                        />
+                                    )}
+                                    {(permissions.includes('Discovery') || permissions.includes('Discovery:Activities')) && (
+                                        <SubNavItem
+                                            icon={<RiRunLine size={18} />}
+                                            label="Activities"
+                                            id="Discovery:Activities"
+                                            activeTab={activeTab}
+                                            onClick={(id) => {
+                                                setActiveTab(id);
+                                                if (onClose) onClose();
+                                            }}
+                                        />
+                                    )}
+                                    {(permissions.includes('Discovery') || permissions.includes('Discovery:Attractions')) && (
+                                        <SubNavItem
+                                            icon={<RiBuilding2Line size={18} />}
+                                            label="Attractions"
+                                            id="Discovery:Attractions"
+                                            activeTab={activeTab}
+                                            onClick={(id) => {
+                                                setActiveTab(id);
+                                                if (onClose) onClose();
+                                            }}
+                                        />
+                                    )}
+                                    {(permissions.includes('Discovery') || permissions.includes('Discovery:Food')) && (
+                                        <SubNavItem
+                                            icon={<RiRestaurantLine size={18} />}
+                                            label="Food & Cafes"
+                                            id="Discovery:Food"
+                                            activeTab={activeTab}
+                                            onClick={(id) => {
+                                                setActiveTab(id);
+                                                if (onClose) onClose();
+                                            }}
+                                        />
+                                    )}
+                                    {(permissions.includes('Discovery') || permissions.includes('Discovery:Stay')) && (
+                                        <SubNavItem
+                                            icon={<RiHotelLine size={18} />}
+                                            label="Stay"
+                                            id="Discovery:Stay"
+                                            activeTab={activeTab}
+                                            onClick={(id) => {
+                                                setActiveTab(id);
+                                                if (onClose) onClose();
+                                            }}
+                                        />
+                                    )}
+                                    {(permissions.includes('Discovery') || permissions.includes('Discovery:Emergency')) && (
+                                        <SubNavItem
+                                            icon={<RiHeartPulseLine size={18} />}
+                                            label="Emergency"
+                                            id="Discovery:Emergency"
+                                            activeTab={activeTab}
+                                            onClick={(id) => {
+                                                setActiveTab(id);
+                                                if (onClose) onClose();
+                                            }}
+                                        />
+                                    )}
+                                </>
+                            )}
+                            {permissions.includes('Backpackers') && (
+                                <NavItem
+                                    icon={<RiGroupLine size={20} />}
+                                    label="Backpackers"
+                                    id="Backpackers"
+                                    activeTab={activeTab}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+                            )}
+                            {permissions.includes('Vendor Requests') && (
+                                <NavItem
+                                    icon={<RiFileListLine size={20} />}
+                                    label="Vendor Requests"
+                                    id="Vendor Requests"
+                                    activeTab={activeTab}
+                                    showDot={hasPendingVendorRequests}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+                            )}
+                            {permissions.includes('Listings') && (
+                                <NavItem
+                                    icon={<RiFileListLine size={20} />}
+                                    label="Listings"
+                                    id="Listings"
+                                    activeTab={activeTab}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+                            )}
+                            {permissions.includes('Team') && (
+                                <NavItem
+                                    icon={<RiGroupLine size={20} />}
+                                    label="Team"
+                                    id="Team"
+                                    activeTab={activeTab}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <NavItem
+                                icon={<RiUserLine size={20} />}
+                                label="Profile"
+                                id="UserProfileCard"
+                                activeTab={activeTab}
+                                onClick={(id) => {
+                                    setActiveTab(id);
+                                    if (onClose) onClose();
+                                }}
+                            />
+                            <NavItem
+                                icon={<RiMapPinLine size={20} />}
+                                label="Trips"
+                                id="Trips"
+                                activeTab={activeTab}
+                                onClick={(id) => {
+                                    setActiveTab(id);
+                                    if (onClose) onClose();
+                                }}
+                            />
+                            <NavItem
+                                icon={<RiPriceTagLine size={20} />}
+                                label="Saved Items"
+                                id="SavedItems"
+                                activeTab={activeTab}
+                                onClick={(id) => {
+                                    setActiveTab(id);
+                                    if (onClose) onClose();
+                                }}
+                            />
+                            <NavItem
+                                icon={<RiSettings4Line size={20} />}
+                                label="Preferences"
+                                id="PreferencesCard"
+                                activeTab={activeTab}
+                                onClick={(id) => {
+                                    setActiveTab(id);
+                                    if (onClose) onClose();
+                                }}
+                            />
+                            <NavItem
+                                icon={<RiShieldCheckLine size={20} />}
+                                label="Safety"
+                                id="SafetyCard"
+                                activeTab={activeTab}
+                                onClick={(id) => {
+                                    setActiveTab(id);
+                                    if (onClose) onClose();
+                                }}
+                            />
+                            <NavItem
+                                icon={<RiFileListLine size={20} />}
+                                label="Activity"
+                                id="ActivityFeedCard"
+                                activeTab={activeTab}
+                                onClick={(id) => {
+                                    setActiveTab(id);
+                                    if (onClose) onClose();
+                                }}
+                            />
+                            <NavItem
+                                icon={<RiBarChartLine size={20} />}
+                                label="Insights"
+                                id="InsightsCard"
+                                activeTab={activeTab}
+                                onClick={(id) => {
+                                    setActiveTab(id);
+                                    if (onClose) onClose();
+                                }}
+                            />
+
+                            <button
+                                onClick={() => setShowLogoutPopup(true)}
+                                className="w-full flex items-center justify-between px-4 py-2 md:py-3 rounded-xl transition-all duration-200 group text-red-500 border border-transparent hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="hidden md:inline"><RiLogoutBoxLine size={20} /></span>
+                                    <span className="md:hidden"><RiLogoutBoxLine size={14} /></span>
+                                    <span className="text-[11px] md:text-sm font-medium">Logout</span>
+                                </div>
+                            </button>
+                        </>
+                    )}
+                </nav>
                 {/* User Profile - Only show if NOT admin */}
                 {!isAdmin && (
-                    <div className="flex flex-col items-center text-center mt-auto">
+                    <div className="flex flex-col items-center text-center mt-auto pt-4 shrink-0 border-t border-gray-100">
                         <div className="w-12 h-12 mx-auto mb-3 rounded-full overflow-hidden border-2 border-white bg-gray-200">
                             {user?.image ? (
                                 <img src={user.image} alt="User" className="w-full h-full object-cover" />

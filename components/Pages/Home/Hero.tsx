@@ -87,11 +87,11 @@ export default function Hero() {
     <div className="w-full flex justify-center items-center px-[12px] py-[12px]" >
       <div className="w-full h-[47vh] lg:h-[97vh] bg-center bg-cover bg-no-repeat rounded-[12px] relative overflow-hidden" >
         <Image
-          src="/hero-bg.jpg"
+          src="https://res.cloudinary.com/dta29uych/image/upload/v1772911288/895_uemkuk.jpg"
           alt="Travoxa Hero Background"
           fill
           priority
-          className="object-cover"
+          className="object-cover -scale-x-100"
           sizes="100vw"
         />
         {/* Overlay for better text visibility if needed */}
@@ -99,11 +99,11 @@ export default function Hero() {
 
         <div className="relative z-10 flex flex-col items-center justify-center h-full pt-16 md:pt-0">
           {/* Title */}
-          <p className="text-center text-[14vw] md:text-[12vw] lg:text-[14vw] font-bold text-white Mont tracking-wider text-shadow-blue-400 leading-none drop-shadow-lg" data-aos="fade-down">TRAVOXA</p>
+          <p className="text-center text-[8vw] md:text-[6vw] lg:text-[6vw] font-light text-white Mont tracking-wider leading-none [text-shadow:2px_4px_8px_rgba(0,0,0,0.8)]" data-aos="fade-down">DIL SE BANA TRAVEL PARTNER.</p>
 
           {/* Subtitle */}
-          <p className="text-center text-sm md:text-lg lg:text-2xl text-white font-medium Mont tracking-wide mt-2 mb-6 md:mb-12 drop-shadow-md" data-aos="fade-up" data-aos-delay="100">
-            Dil Se Bana Travel Partner.
+          <p className="text-center text-sm md:text-lg lg:text-3xl text-emerald-400 font-medium Mont tracking-wider mt-2 mb-6 md:mb-12 uppercase [text-shadow:1px_2px_4px_rgba(0,0,0,0.8)]" data-aos="fade-up" data-aos-delay="100">
+            TRAVOXA
           </p>
 
           {/* Refined Search Bar Component */}
@@ -205,10 +205,7 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Bottom Text */}
-          <p className="mt-12 text-center text-sm lg:text-base text-white/90 font-medium Inter drop-shadow-md max-w-2xl px-4 hidden lg:block">
-            Plan smarter with Travoxa AI, find groups with Backpackers Club, or discover budget-friendly destinations.
-          </p>
+
         </div>
       </div>
     </div>
