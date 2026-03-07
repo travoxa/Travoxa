@@ -37,12 +37,15 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
     const [activeTab, setActiveTab] = useState(permissions.includes('Overview') ? 'Overview' : (permissions[0] || 'Overview'))
     const [activeDiscoveryForm, setActiveDiscoveryForm] = useState<'sightseeing' | 'rentals' | 'activities' | 'attractions' | 'food' | 'stay' | 'helpline' | null>(null)
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-    const [hasPendingTour, setHasPendingTour] = useState(false)
+    const [hasPendingTourRequests, setHasPendingTourRequests] = useState(false)
+    const [hasPendingVendorTours, setHasPendingVendorTours] = useState(false)
+    const [hasPendingVendorRequests, setHasPendingVendorRequests] = useState(false)
     const router = useRouter()
 
     useEffect(() => {
         const checkPendingRequests = async () => {
             try {
+                // 1. Check Tour Requests (Standard & Custom)
                 const [standardRes, customRes] = await Promise.all([
                     fetch('/api/tours/request'),
                     fetch('/api/tours/custom-request')
@@ -52,8 +55,22 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
 
                 const hasPendingStandard = standardData.success && standardData.data.some((req: any) => req.status === 'pending');
                 const hasPendingCustom = customData.success && customData.data.some((req: any) => req.status === 'pending');
+                setHasPendingTourRequests(hasPendingStandard || hasPendingCustom);
 
-                setHasPendingTour(hasPendingStandard || hasPendingCustom);
+                // 2. Check Vendor Tours
+                const vendorToursRes = await fetch('/api/tours?admin=true&status=pending');
+                const vendorToursData = await vendorToursRes.json();
+                setHasPendingVendorTours(vendorToursData.success && vendorToursData.data.length > 0);
+
+                // 3. Check Other Vendor Requests
+                const otherCollections = ['activities', 'rentals', 'sightseeing', 'stay', 'food'];
+                const otherRes = await Promise.all(
+                    otherCollections.map(col => fetch(`/api/${col}?admin=true&status=pending`))
+                );
+                const otherData = await Promise.all(otherRes.map(res => res.json()));
+                const hasAnyOtherPending = otherData.some(d => d.success && d.data.length > 0);
+                setHasPendingVendorRequests(hasAnyOtherPending);
+
             } catch (error) {
                 console.error('Error checking pending requests:', error);
             }
@@ -254,7 +271,9 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                 permissions={adminUser.permissions}
                 isOpen={isSidebarOpen}
                 onClose={() => setIsSidebarOpen(false)}
-                hasPendingTour={hasPendingTour}
+                hasPendingTourRequests={hasPendingTourRequests}
+                hasPendingVendorTours={hasPendingVendorTours}
+                hasPendingVendorRequests={hasPendingVendorRequests}
             />
 
             {/* Main Content */}
