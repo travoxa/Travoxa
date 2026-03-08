@@ -1,6 +1,6 @@
 import GroupCreateForm from "@/components/backpackers/GroupCreateForm";
 import Header from "@/components/ui/Header";
-import Footor from "@/components/ui/Footor";
+import Footer from "@/components/ui/Footer";
 
 export default function CreateBackpackerGroupPage() {
   return (
@@ -22,7 +22,7 @@ export default function CreateBackpackerGroupPage() {
           <GroupCreateForm />
         </div>
       </main>
-      <Footor />
+      <Footer />
     </>
   );
 }

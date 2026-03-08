@@ -19,7 +19,7 @@ import SafetyCard from '@/components/dashboard/SafetyCard';
 import ActivityFeedCard from '@/components/dashboard/ActivityFeedCard';
 import InsightsCard from '@/components/dashboard/InsightsCard';
 import Notification from '@/components/dashboard/Notification';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import SavedItemsCard from '@/components/dashboard/SavedItemsCard';
 
 interface DashboardClientProps {
@@ -213,7 +213,7 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user, createdGroups =
 
                 </div>
                 <div className="mt-12 md:hidden">
-                    <Footor />
+                    <Footer />
                 </div>
             </main>
         </div>

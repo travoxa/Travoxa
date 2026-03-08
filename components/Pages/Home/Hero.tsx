@@ -85,7 +85,15 @@ export default function Hero() {
 
   return (
     <div className="w-full flex justify-center items-center px-[12px] py-[12px]" >
-      <div className="w-full h-[47vh] lg:h-[97vh] bg-center bg-cover bg-no-repeat rounded-[12px] relative" style={{ backgroundImage: `url('/hero-bg.jpg')` }} >
+      <div className="w-full h-[47vh] lg:h-[97vh] bg-center bg-cover bg-no-repeat rounded-[12px] relative overflow-hidden" >
+        <Image
+          src="https://res.cloudinary.com/dta29uych/image/upload/v1772911288/895_uemkuk.jpg"
+          alt="Travoxa Hero Background"
+          fill
+          priority
+          className="object-cover -scale-x-100"
+          sizes="100vw"
+        />
         {/* Overlay for better text visibility if needed */}
         <div className="absolute inset-0 bg-black/10 rounded-[12px]"></div>
 
@@ -95,7 +103,7 @@ export default function Hero() {
 
           {/* Subtitle */}
           <p className="text-center text-sm md:text-lg lg:text-2xl text-white font-medium Mont tracking-wide mt-2 mb-6 md:mb-12 drop-shadow-md" data-aos="fade-up" data-aos-delay="100">
-            Your AI-Powered Travel Companion.
+            Dil Se Bana Travel Partner.
           </p>
 
           {/* Refined Search Bar Component */}
@@ -114,7 +122,7 @@ export default function Hero() {
                   onFocus={() => setShowQueryDropdown(true)}
                   onKeyDown={handleKeyDown}
                   placeholder="Search..."
-                  className="w-full bg-transparent border-none outline-none text-slate-700 placeholder-slate-400 text-[10px] md:text-xs font-medium focus:ring-0 p-0"
+                  className="w-full bg-transparent border-none theme-none outline-none text-slate-700 placeholder-slate-400 text-[10px] md:text-xs font-medium focus:ring-0 p-0"
                 />
 
                 {/* Query Dropdown */}
@@ -198,7 +206,7 @@ export default function Hero() {
           </div>
 
           {/* Bottom Text */}
-          <p className="mt-12 text-center text-sm lg:text-base text-white/90 font-medium Inter drop-shadow-md max-w-2xl px-4 hidden lg:block">
+          <p className="mt-12 text-center text-sm lg:text-base text-white/90 font-medium Inter [text-shadow:1px_1px_4px_rgba(0,0,0,0.8)] max-w-2xl px-4 hidden lg:block">
             Plan smarter with Travoxa AI, find groups with Backpackers Club, or discover budget-friendly destinations.
           </p>
         </div>

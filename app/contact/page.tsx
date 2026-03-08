@@ -1,6 +1,6 @@
 "use client";
 
-import Footor from "@/components/ui/Footor";
+import Footer from "@/components/ui/Footer";
 import Header from "@/components/ui/Header";
 import { useState } from "react";
 import { IoPaperPlane } from "react-icons/io5";
@@ -168,7 +168,7 @@ export default function ContactPage() {
                     </div>
                 </div>
             </main>
-            <Footor />
+            <Footer />
         </div>
     );
 }

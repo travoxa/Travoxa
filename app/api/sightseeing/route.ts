@@ -33,13 +33,38 @@ export async function GET(req: Request) {
             query.status = 'approved';
         }
 
-        const packages = await Sightseeing.find(query).sort({ createdAt: -1 });
+        // 1. Try direct DB query
+        let packages = await Sightseeing.find(query).sort({ createdAt: -1 });
+
+        // 2. SELF-HEALING & FALLBACK
+        // If direct query fails for public page, but documents actually exist
+        if (packages.length === 0 && !vendorId && admin !== 'true') {
+            const allPackagesRaw = await Sightseeing.find({}).sort({ createdAt: -1 });
+            const approvedPackages = allPackagesRaw.filter(pkg => pkg.status === 'approved');
+
+            if (approvedPackages.length > 0) {
+                console.log(`[API/SIGHTSEEING] ! Direct query failed but found ${approvedPackages.length} approved items via fallback.`);
+                packages = approvedPackages;
+
+                // Attempt to "Self-Heal" by re-saving
+                allPackagesRaw.forEach(async (pkg) => {
+                    try {
+                        await Sightseeing.findByIdAndUpdate(pkg._id, { status: pkg.status });
+                    } catch (e) {
+                        // Ignore errors during healing
+                    }
+                });
+            }
+        }
 
         // Map _id to id for frontend compatibility
-        const packagesWithId = packages.map(pkg => ({
-            ...pkg.toObject(),
-            id: pkg._id.toString(),
-        }));
+        const packagesWithId = packages.map(pkg => {
+            const pkgObj = (pkg as any).toObject ? (pkg as any).toObject() : pkg;
+            return {
+                ...pkgObj,
+                id: (pkgObj._id || pkgObj.id).toString(),
+            };
+        });
 
         return NextResponse.json({ success: true, data: packagesWithId });
     } catch (error) {

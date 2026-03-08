@@ -16,14 +16,20 @@ const ReachOptionSchema = new mongoose.Schema({
     station: String,
     distance: String,
     fare: String,
+    minFare: Number,
+    maxFare: Number,
     time: String,
     availability: String,
     fareRange: String,
+    routeNote: String,
 }, { _id: false });
 
 const EntryPriceSchema = new mongoose.Schema({
     category: { type: String, required: true }, // Adult, Child, Foreigner, Camera, etc.
-    price: { type: Number, required: true }
+    price: { type: Number },
+    minPrice: Number,
+    maxPrice: Number,
+    notes: String,
 }, { _id: false });
 
 const ExtraChargeSchema = new mongoose.Schema({
@@ -72,7 +78,7 @@ const AttractionSchema = new mongoose.Schema({
     },
     image: {
         type: String,
-        required: [true, 'Please provide an image'],
+        required: false,
     },
     rating: {
         type: Number,
@@ -159,6 +165,11 @@ const AttractionSchema = new mongoose.Schema({
             default: false
         }
     }],
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'approved'
+    },
     createdAt: {
         type: Date,
         default: Date.now,

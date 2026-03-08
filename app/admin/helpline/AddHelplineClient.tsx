@@ -49,6 +49,7 @@ interface AddHelplineClientProps {
     showManagementBox?: boolean;
     showListings?: boolean;
     showFormDirectly?: boolean;
+    vendorId?: string;
     onFormOpen?: () => void;
     onFormClose?: () => void;
 }
@@ -57,6 +58,7 @@ export default function AddHelplineClient({
     showManagementBox = true,
     showListings = true,
     showFormDirectly = false,
+    vendorId,
     onFormOpen,
     onFormClose,
 }: AddHelplineClientProps) {
@@ -92,7 +94,8 @@ export default function AddHelplineClient({
 
     const fetchHelplines = async () => {
         try {
-            const res = await fetch("/api/helplines");
+            const url = vendorId ? `/api/helplines?vendorId=${vendorId}` : "/api/helplines";
+            const res = await fetch(url);
             const data = await res.json();
             if (data.success) {
                 setHelplines(data.data);
@@ -115,6 +118,7 @@ export default function AddHelplineClient({
         const payload = {
             ...form,
             languageSupport: form.languageSupport.split(",").map((s) => s.trim()),
+            ...(vendorId && { vendorId })
         };
 
         try {
@@ -209,25 +213,27 @@ export default function AddHelplineClient({
         alert("Dummy data added!");
     };
 
-    if (showManagementBox) {
-        return (
-            <div className="bg-white rounded-xl border border-gray-200 p-8">
-                <h2 className="text-lg font-light text-gray-800 mb-4 Inter">Helplines</h2>
-                <button
-                    onClick={() => {
-                        setShowForm(true);
-                        if (onFormOpen) onFormOpen();
-                    }}
-                    className="px-6 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all"
-                >
-                    Create
-                </button>
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-8">
+            {showManagementBox && (
+                <div className="flex justify-start mb-6">
+                    <button
+                        onClick={() => {
+                            setEditingId(null);
+                            setForm(initialForm);
+                            if (onFormOpen) {
+                                onFormOpen();
+                            } else {
+                                setShowForm(true); // Changed setShowFormInternal to setShowForm
+                            }
+                        }}
+                        className="px-6 py-2 bg-black text-white rounded-md text-sm font-light hover:bg-gray-800 transition-all"
+                    >
+                        Create New Helpline
+                    </button>
+                </div>
+            )}
+
             {showForm && (
                 <div className="bg-white rounded-xl border border-gray-200 p-8 relative">
                     {/* Close Button */}
@@ -421,64 +427,71 @@ export default function AddHelplineClient({
             )}
 
             {showListings && (
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-lg font-medium text-gray-800">Existing Helpline Packages</h2>
+                <div className="w-full">
+                    <div className="flex justify-between items-center mb-6 px-1">
+                        <h2 className="text-sm md:text-lg font-medium text-gray-800">Existing Helpline Packages</h2>
                         <button
                             onClick={prepopulateData}
-                            className="text-xs bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-light"
+                            className="text-[10px] md:text-xs bg-gray-100 px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-gray-200 transition-colors font-light"
                         >
                             Prepopulate Dummy Data
                         </button>
                     </div>
 
-                    {/* Column Headers */}
-                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-gray-100">
-                        <div className="flex-1 grid grid-cols-4 gap-4">
+                    <div className="border border-gray-100 rounded-lg overflow-visible">
+                        <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-4 gap-4 rounded-t-lg">
                             <p className="text-xs font-semibold text-gray-500 uppercase">Service Name</p>
                             <p className="text-xs font-semibold text-gray-500 uppercase">Type</p>
                             <p className="text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
                             <p className="text-xs font-semibold text-gray-500 uppercase">Phone</p>
                         </div>
-                        <div className="w-10"></div>
-                    </div>
 
-                    <div className="divide-y divide-gray-200">
-                        {loading ? (
-                            <div className="py-8 text-center text-gray-400 text-sm">Loading helplines...</div>
-                        ) : helplines.length === 0 ? (
-                            <div className="py-8 text-center text-gray-400 text-sm">No helplines found. Add one above.</div>
-                        ) : (
-                            ([...helplines].sort((a, b) => {
-                                if (!sortOrder) return 0;
-                                const stateA = a.state || '';
-                                const stateB = b.state || '';
-                                return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
-                            })).map((h) => (
-                                <div key={h._id} className="flex items-center justify-between py-2 hover:bg-gray-50 transition-colors">
-                                    <div className="flex-1 grid grid-cols-4 gap-4 items-center">
-                                        <div className="text-sm font-medium text-gray-900">{h.serviceName}</div>
-                                        <div>
-                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${h.emergencyType === 'Hospital' ? 'bg-red-50 text-red-600' : h.emergencyType === 'Police' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
-                                                {h.emergencyType}
-                                            </span>
+                        <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
+                            {loading ? (
+                                <div className="py-8 text-center text-gray-400 text-sm">Loading helplines...</div>
+                            ) : helplines.length === 0 ? (
+                                <div className="py-8 text-left px-4 text-gray-500 text-sm">No helplines found. Add one above.</div>
+                            ) : (
+                                ([...helplines].sort((a, b) => {
+                                    if (!sortOrder) return 0;
+                                    const stateA = a.state || '';
+                                    const stateB = b.state || '';
+                                    return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
+                                })).map((h) => (
+                                    <div key={h._id} className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-gray-50/50 transition-colors gap-3 md:gap-0">
+                                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 items-center">
+                                            <div>
+                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Service Name</p>
+                                                <div className="text-sm font-medium text-gray-900">{h.serviceName}</div>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Type</p>
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${h.emergencyType === 'Hospital' ? 'bg-red-50 text-red-600' : h.emergencyType === 'Police' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
+                                                    {h.emergencyType}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">State</p>
+                                                <div className="text-[10px] md:text-sm text-gray-500">{h.state}</div>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Phone</p>
+                                                <div className="text-[10px] md:text-sm font-medium text-rose-600">{h.phone}</div>
+                                            </div>
                                         </div>
-                                        <div className="text-sm text-gray-500">{h.state}</div>
-                                        <div className="text-sm font-medium text-rose-600">{h.phone}</div>
-                                    </div>
 
-                                    {/* 3-dot menu or simple action buttons - using simple buttons for now to match simplicity but following others' 3-dot style if preferred */}
-                                    <div className="flex items-center gap-2">
-                                        <button onClick={() => handleEdit(h)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-colors">
-                                            <RiEditLine size={18} />
-                                        </button>
-                                        <button onClick={() => handleDelete(h._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors">
-                                            <RiDeleteBinLine size={18} />
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={() => handleEdit(h)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-colors">
+                                                <RiEditLine size={18} />
+                                            </button>
+                                            <button onClick={() => handleDelete(h._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors">
+                                                <RiDeleteBinLine size={18} />
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            )
-                            ))}
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

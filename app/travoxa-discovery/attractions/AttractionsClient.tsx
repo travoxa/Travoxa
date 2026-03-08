@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import AttractionsHero from '@/components/Pages/Attractions/AttractionsHero';
 import AttractionsFilterSidebar from '@/components/Pages/Attractions/AttractionsFilterSidebar';
 import AttractionsCard from '@/components/Pages/Attractions/AttractionsCard';
@@ -40,16 +40,19 @@ export interface AttractionPackage {
         sunday: DailySchedule;
         specialTimings?: SpecialTiming[];
     };
-    entryPricing?: { category: string; price: number }[];
+    entryPricing?: { category: string; price: number; minPrice?: number; maxPrice?: number; notes?: string }[];
     additionalCharges?: { item: string; priceRange?: string; note?: string }[];
     howToReach?: {
         type: string;
         station?: string;
         distance?: string;
         fare?: string;
+        minFare?: number;
+        maxFare?: number;
         time?: string;
         availability?: string;
         fareRange?: string;
+        routeNote?: string;
     }[];
     nearbyAttractions?: any[];
     nearbyFood?: any[];
@@ -223,7 +226,7 @@ const AttractionsClient: React.FC<AttractionsClientProps> = ({ initialPackages }
                 </div>
             </div>
 
-            <Footor />
+            <Footer />
         </div>
     );
 };

@@ -17,7 +17,7 @@ const AttractionsCard: React.FC<AttractionsCardProps> = ({ pkg }) => {
                 {/* Image Container */}
                 <div className="relative h-56 overflow-hidden">
                     <Image
-                        src={pkg.image}
+                        src={pkg.image || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop"}
                         alt={pkg.title}
                         fill
                         className="object-cover group-hover:scale-110 transition-transform duration-700"

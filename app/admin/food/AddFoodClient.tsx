@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { RiDeleteBinLine, RiAddLine, RiCloseLine, RiMoreLine, RiEditLine } from 'react-icons/ri';
+import { RiDeleteBinLine, RiAddLine, RiCloseLine, RiMoreLine, RiEditLine, RiTimeLine } from 'react-icons/ri';
 import { CldUploadWidget } from 'next-cloudinary';
 import { INDIA_STATES, getCitiesForState } from '@/data/indiaStatesAndCities';
 
@@ -14,7 +14,19 @@ interface AddFoodClientProps {
     onFormClose?: () => void;
 }
 
+const INITIAL_OPENING_HOURS = {
+    monday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    tuesday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    wednesday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    thursday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    friday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    saturday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    sunday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    specialTimings: []
+};
+
 export default function AddFoodClient({
+
     showManagementBox = true,
     showListings = true,
     showFormDirectly = false,
@@ -34,6 +46,9 @@ export default function AddFoodClient({
     const [editingId, setEditingId] = useState<string | null>(null);
     const [availableCities, setAvailableCities] = useState<string[]>([]);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
+    const [openingHoursMode, setOpeningHoursMode] = useState<'simple' | 'advanced'>('simple');
+    const [simpleHours, setSimpleHours] = useState({ start: '09:00', end: '21:00' });
+
 
     // Related Packages Data States
     const [allTours, setAllTours] = useState<any[]>([]);
@@ -89,7 +104,9 @@ export default function AddFoodClient({
         area: 'Old Manali',
         hygieneRating: 4.5,
         badges: ['Travoxa Recommended', 'Premium'],
+        openingHoursExtended: INITIAL_OPENING_HOURS,
         fullMenu: [
+
             {
                 category: 'Main Course',
                 items: [{ name: 'Grilled Trout', price: 550 }]
@@ -113,7 +130,9 @@ export default function AddFoodClient({
         hygieneRating: 0,
         badges: [] as string[],
         dishType: 'Both',
+        openingHoursExtended: INITIAL_OPENING_HOURS,
         openingTime: '',
+
         closingTime: '',
         bestTimeToVisit: '',
         dineIn: true,
@@ -266,6 +285,96 @@ export default function AddFoodClient({
         }));
     };
 
+    const addOpeningSlot = (day: string) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            openingHoursExtended: {
+                ...prev.openingHoursExtended,
+                [day]: {
+                    ...prev.openingHoursExtended[day],
+                    slots: [...prev.openingHoursExtended[day].slots, { start: '09:00 AM', end: '06:00 PM' }]
+                }
+            }
+        }));
+    };
+
+    const removeOpeningSlot = (day: string, index: number) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            openingHoursExtended: {
+                ...prev.openingHoursExtended,
+                [day]: {
+                    ...prev.openingHoursExtended[day],
+                    slots: prev.openingHoursExtended[day].slots.filter((_: any, i: number) => i !== index)
+                }
+            }
+        }));
+    };
+
+    const updateOpeningSlot = (day: string, index: number, field: 'start' | 'end', value: string) => {
+        setFormData((prev: any) => {
+            const newSlots = [...prev.openingHoursExtended[day].slots];
+            newSlots[index] = { ...newSlots[index], [field]: value };
+            return {
+                ...prev,
+                openingHoursExtended: {
+                    ...prev.openingHoursExtended,
+                    [day]: { ...prev.openingHoursExtended[day], slots: newSlots }
+                }
+            };
+        });
+    };
+
+    const toggleDayClosed = (day: string) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            openingHoursExtended: {
+                ...prev.openingHoursExtended,
+                [day]: { ...prev.openingHoursExtended[day], isClosed: !prev.openingHoursExtended[day].isClosed }
+            }
+        }));
+    };
+
+    const copyOpeningHours = (fromDay: string, targetType: 'all' | 'weekdays' | 'weekends') => {
+        const sourceDay = formData.openingHoursExtended[fromDay as keyof typeof formData.openingHoursExtended];
+        const newOpeningHours = { ...formData.openingHoursExtended };
+
+        const daysToUpdate = [];
+        if (targetType === 'all') {
+            daysToUpdate.push('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
+        } else if (targetType === 'weekdays') {
+            daysToUpdate.push('monday', 'tuesday', 'wednesday', 'thursday', 'friday');
+        } else if (targetType === 'weekends') {
+            daysToUpdate.push('saturday', 'sunday');
+        }
+
+        daysToUpdate.forEach(day => {
+            newOpeningHours[day as keyof typeof newOpeningHours] = JSON.parse(JSON.stringify(sourceDay));
+        });
+
+        setFormData(prev => ({
+            ...prev,
+            openingHoursExtended: newOpeningHours
+        }));
+    };
+
+    const applySimpleHours = (start: string, end: string) => {
+        setFormData(prev => ({
+            ...prev,
+            openingHoursExtended: {
+                ...prev.openingHoursExtended,
+                monday: { slots: [{ start, end }], isClosed: false, note: '' },
+                tuesday: { slots: [{ start, end }], isClosed: false, note: '' },
+                wednesday: { slots: [{ start, end }], isClosed: false, note: '' },
+                thursday: { slots: [{ start, end }], isClosed: false, note: '' },
+                friday: { slots: [{ start, end }], isClosed: false, note: '' },
+                saturday: { slots: [{ start, end }], isClosed: false, note: '' },
+                sunday: { slots: [{ start, end }], isClosed: false, note: '' },
+            }
+        }));
+    };
+
+
     const addPartner = () => {
         setFormData(prev => ({
             ...prev,
@@ -366,7 +475,9 @@ export default function AddFoodClient({
             whatsappNumber: food.whatsappNumber || '',
             address: food.address || '',
             attractionName: food.attractionName || '',
+            openingHoursExtended: food.openingHoursExtended || INITIAL_OPENING_HOURS,
             fullMenu: food.fullMenu || [],
+
             relatedTours: food.relatedTours || [],
             relatedSightseeing: food.relatedSightseeing || [],
             relatedActivities: food.relatedActivities || [],
@@ -399,6 +510,7 @@ export default function AddFoodClient({
             relatedFood: formData.relatedFood,
             relatedAttractions: formData.relatedAttractions,
             partners: formData.partners,
+            ...(vendorId && { vendorId })
         };
 
         try {
@@ -455,8 +567,10 @@ export default function AddFoodClient({
                 relatedStays: [],
                 relatedFood: [],
                 relatedAttractions: [],
+                openingHoursExtended: INITIAL_OPENING_HOURS,
                 partners: []
             });
+
             setEditingId(null);
             fetchFood();
 
@@ -489,101 +603,185 @@ export default function AddFoodClient({
             {!showForm ? (
                 <>
                     {showManagementBox && (
-                        <div className="bg-white rounded-xl border border-gray-200 p-8">
-                            <h2 className="text-lg font-light text-gray-800 mb-4">Food & Cafes</h2>
+                        <div className="flex justify-start mb-6">
                             <button
                                 onClick={() => {
+                                    setEditingId(null);
+                                    setFormData(isDev ? {
+                                        ...DUMMY_FORM_DATA,
+                                        avgCost: DUMMY_FORM_DATA.avgCost.toString(),
+                                        avgCostPerPerson: '600',
+                                        dishType: 'Both',
+                                        openingTime: '10:00 AM',
+                                        closingTime: '11:00 PM',
+                                        bestTimeToVisit: 'Evening',
+                                        dineIn: true,
+                                        takeaway: true,
+                                        homeDelivery: false,
+                                        contactPerson: 'Rahul Sharma',
+                                        phoneNumber: '9876543210',
+                                        whatsappNumber: '9876543210',
+                                        address: 'Old Manali, Near Manalsu River',
+                                        attractionName: 'Manalsu River',
+                                        famousDish: 'Trout Fish',
+                                        distFromAttraction: '50m',
+                                        area: 'Old Manali',
+                                        hygieneRating: 4.5,
+                                        badges: ['Travoxa Recommended', 'Premium'],
+                                        openingHoursExtended: INITIAL_OPENING_HOURS,
+                                        fullMenu: [
+                                            {
+                                                category: 'Main Course',
+                                                items: [{ name: 'Grilled Trout', price: 550 }]
+                                            }
+                                        ],
+                                        relatedTours: [] as string[],
+                                        relatedSightseeing: [] as string[],
+                                        relatedActivities: [] as string[],
+                                        relatedRentals: [] as string[],
+                                        relatedStays: [] as string[],
+                                        relatedFood: [] as string[],
+                                        relatedAttractions: [] as string[],
+                                        partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[],
+                                    } : {
+                                        title: '',
+                                        city: '',
+                                        state: '',
+                                        type: '',
+                                        priceRange: '$',
+                                        avgCost: '',
+                                        avgCostPerPerson: '',
+                                        overview: '',
+                                        mustTry: [] as string[],
+                                        cuisine: [] as string[],
+                                        image: '',
+                                        famousDish: '',
+                                        distFromAttraction: '',
+                                        area: '',
+                                        hygieneRating: 0,
+                                        badges: [] as string[],
+                                        dishType: 'Both',
+                                        openingHoursExtended: INITIAL_OPENING_HOURS,
+                                        openingTime: '',
+                                        closingTime: '',
+                                        bestTimeToVisit: '',
+                                        dineIn: true,
+                                        takeaway: true,
+                                        homeDelivery: false,
+                                        contactPerson: '',
+                                        phoneNumber: '',
+                                        whatsappNumber: '',
+                                        address: '',
+                                        attractionName: '',
+                                        fullMenu: [] as { category: string, items: { name: string, price: number }[] }[],
+                                        relatedTours: [] as string[],
+                                        relatedSightseeing: [] as string[],
+                                        relatedActivities: [] as string[],
+                                        relatedRentals: [] as string[],
+                                        relatedStays: [] as string[],
+                                        relatedFood: [] as string[],
+                                        relatedAttractions: [] as string[],
+                                        partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[]
+                                    });
                                     if (onFormOpen) {
                                         onFormOpen();
                                     } else {
                                         setShowFormInternal(true);
                                     }
                                 }}
-                                className="px-6 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all"
+                                className="px-3 py-1.5 md:px-6 md:py-2 bg-black text-white rounded-md text-[10px] md:text-sm font-light hover:bg-gray-800 transition-all"
                             >
-                                Create
+                                Create New Food & Cafe
                             </button>
                         </div>
                     )}
 
                     {showListings && (loadingFood ? (
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Food Items</h2>
+                        <div className="w-full">
+                            <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-6 px-1">Existing Food Items</h2>
                             <div className="space-y-3">
                                 {[1, 2, 3].map((i) => (
-                                    <div key={i} className="flex items-center justify-between py-3 animate-pulse">
+                                    <div key={i} className="flex items-center justify-between py-3 border-b border-gray-100 animate-pulse">
                                         <div className="flex-1 grid grid-cols-3 gap-4">
-                                            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                                            <div className="h-4 bg-gray-100 rounded w-3/4"></div>
+                                            <div className="h-4 bg-gray-100 rounded w-1/2"></div>
+                                            <div className="h-4 bg-gray-100 rounded w-1/3"></div>
                                         </div>
+                                        <div className="w-10 h-4 bg-gray-100 rounded"></div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     ) : foodItems.length > 0 ? (
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Food Items</h2>
-                            <div className="flex items-center justify-between pb-2 mb-2 border-gray-200">
-                                <div className="flex-1 grid grid-cols-3 gap-4">
+                        <div className="w-full">
+                            <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-4 px-1">Existing Food Items</h2>
+
+                            <div className="border border-gray-100 rounded-lg overflow-visible">
+                                <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4 rounded-t-lg">
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Title</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Avg Cost</p>
                                 </div>
-                                <div className="w-10"></div>
-                            </div>
-                            <div className="divide-y divide-gray-200">
-                                {([...foodItems].sort((a, b) => {
-                                    if (!sortOrder) return 0;
-                                    const stateA = a.state || '';
-                                    const stateB = b.state || '';
-                                    return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
-                                })).map((food) => (
-                                    <div key={food._id} className="flex items-center justify-between py-1 hover:bg-gray-50 transition-colors">
-                                        <div className="flex-1 grid grid-cols-3 gap-4">
-                                            <p className="text-sm text-gray-900">{food.title}</p>
-                                            <p className="text-sm text-gray-900">{food.state}</p>
-                                            <p className="text-sm text-gray-900">₹{food.avgCost}</p>
-                                        </div>
-                                        <div className="relative">
-                                            <button
-                                                onClick={() => setOpenMenuId(openMenuId === food._id ? null : food._id)}
-                                                className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-                                            >
-                                                <RiMoreLine className="text-gray-600" size={20} />
-                                            </button>
-                                            {openMenuId === food._id && (
-                                                <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                                    <button
-                                                        onClick={() => {
-                                                            setOpenMenuId(null);
-                                                            handleEdit(food);
-                                                        }}
-                                                        className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center gap-2 text-sm"
-                                                    >
-                                                        <RiEditLine size={16} /> Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setOpenMenuId(null);
-                                                            handleDelete(food._id);
-                                                        }}
-                                                        className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2 text-sm"
-                                                    >
-                                                        <RiDeleteBinLine size={16} /> Delete
-                                                    </button>
+
+                                <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
+                                    {([...foodItems].sort((a, b) => {
+                                        if (!sortOrder) return 0;
+                                        const stateA = a.state || '';
+                                        const stateB = b.state || '';
+                                        return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
+                                    })).map((food) => (
+                                        <div key={food._id} className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-gray-50/50 transition-colors gap-3 md:gap-0">
+                                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Title</p>
+                                                    <p className="text-xs md:text-sm font-medium md:font-normal text-gray-900">{food.title}</p>
                                                 </div>
-                                            )}
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">State</p>
+                                                    <p className="text-[10px] md:text-sm text-gray-900">{food.state}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Avg Cost</p>
+                                                    <p className="text-[10px] md:text-sm text-gray-900">₹{food.avgCost}</p>
+                                                </div>
+                                            </div>
+                                            <div className="relative">
+                                                <button
+                                                    onClick={() => setOpenMenuId(openMenuId === food._id ? null : food._id)}
+                                                    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                                                >
+                                                    <RiMoreLine className="text-gray-600" size={20} />
+                                                </button>
+                                                {openMenuId === food._id && (
+                                                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                                                        <button
+                                                            onClick={() => {
+                                                                setOpenMenuId(null);
+                                                                handleEdit(food);
+                                                            }}
+                                                            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center gap-2 text-sm"
+                                                        >
+                                                            <RiEditLine size={16} /> Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                setOpenMenuId(null);
+                                                                handleDelete(food._id);
+                                                            }}
+                                                            className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2 text-sm"
+                                                        >
+                                                            <RiDeleteBinLine size={16} /> Delete
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-white rounded-xl border border-gray-200 p-8 text-left">
-                            <h2 className="text-lg font-light text-gray-800 mb-2">No Food Items Yet</h2>
-                            <p className="text-gray-600 text-sm">Create your first food item to get started.</p>
-                        </div>
+                        <div className="py-8 text-left px-1 text-gray-500 text-sm">No food items found.</div>
                     ))}
                 </>
             ) : (
@@ -595,6 +793,83 @@ export default function AddFoodClient({
                             } else {
                                 setShowFormInternal(false);
                             }
+                            setEditingId(null);
+                            setFormData(isDev ? {
+                                ...DUMMY_FORM_DATA,
+                                avgCost: DUMMY_FORM_DATA.avgCost.toString(),
+                                avgCostPerPerson: '600',
+                                dishType: 'Both',
+                                openingTime: '10:00 AM',
+                                closingTime: '11:00 PM',
+                                bestTimeToVisit: 'Evening',
+                                dineIn: true,
+                                takeaway: true,
+                                homeDelivery: false,
+                                contactPerson: 'Rahul Sharma',
+                                phoneNumber: '9876543210',
+                                whatsappNumber: '9876543210',
+                                address: 'Old Manali, Near Manalsu River',
+                                attractionName: 'Manalsu River',
+                                famousDish: 'Trout Fish',
+                                distFromAttraction: '50m',
+                                area: 'Old Manali',
+                                hygieneRating: 4.5,
+                                badges: ['Travoxa Recommended', 'Premium'],
+                                openingHoursExtended: INITIAL_OPENING_HOURS,
+                                fullMenu: [
+                                    {
+                                        category: 'Main Course',
+                                        items: [{ name: 'Grilled Trout', price: 550 }]
+                                    }
+                                ],
+                                relatedTours: [] as string[],
+                                relatedSightseeing: [] as string[],
+                                relatedActivities: [] as string[],
+                                relatedRentals: [] as string[],
+                                relatedStays: [] as string[],
+                                relatedFood: [] as string[],
+                                relatedAttractions: [] as string[],
+                                partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[],
+                            } : {
+                                title: '',
+                                city: '',
+                                state: '',
+                                type: '',
+                                priceRange: '$',
+                                avgCost: '',
+                                avgCostPerPerson: '',
+                                overview: '',
+                                mustTry: [] as string[],
+                                cuisine: [] as string[],
+                                image: '',
+                                famousDish: '',
+                                distFromAttraction: '',
+                                area: '',
+                                hygieneRating: 0,
+                                badges: [] as string[],
+                                dishType: 'Both',
+                                openingHoursExtended: INITIAL_OPENING_HOURS,
+                                openingTime: '',
+                                closingTime: '',
+                                bestTimeToVisit: '',
+                                dineIn: true,
+                                takeaway: true,
+                                homeDelivery: false,
+                                contactPerson: '',
+                                phoneNumber: '',
+                                whatsappNumber: '',
+                                address: '',
+                                attractionName: '',
+                                fullMenu: [] as { category: string, items: { name: string, price: number }[] }[],
+                                relatedTours: [] as string[],
+                                relatedSightseeing: [] as string[],
+                                relatedActivities: [] as string[],
+                                relatedRentals: [] as string[],
+                                relatedStays: [] as string[],
+                                relatedFood: [] as string[],
+                                relatedAttractions: [] as string[],
+                                partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[]
+                            });
                         }}
                         className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
                     >
@@ -819,38 +1094,160 @@ export default function AddFoodClient({
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Opening Time</label>
-                                <input
-                                    type="text"
-                                    value={formData.openingTime}
-                                    onChange={e => setFormData({ ...formData, openingTime: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. 9:00 AM"
-                                />
+                        {/* Opening Hours Extended */}
+                        <div className="space-y-6 border-t pt-8">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-md font-bold text-gray-800 flex items-center gap-2">
+                                    <RiTimeLine className="text-green-500" /> Opening Hours
+                                </h3>
+                                <div className="flex bg-gray-100 p-1 rounded-lg">
+                                    <button
+                                        type="button"
+                                        onClick={() => setOpeningHoursMode('simple')}
+                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${openingHoursMode === 'simple' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                    >
+                                        Simple
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setOpeningHoursMode('advanced')}
+                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${openingHoursMode === 'advanced' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                    >
+                                        Advanced
+                                    </button>
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Closing Time</label>
-                                <input
-                                    type="text"
-                                    value={formData.closingTime}
-                                    onChange={e => setFormData({ ...formData, closingTime: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. 10:00 PM"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Best Time to Visit</label>
-                                <input
-                                    type="text"
-                                    value={formData.bestTimeToVisit}
-                                    onChange={e => setFormData({ ...formData, bestTimeToVisit: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. For dinner"
-                                />
-                            </div>
+
+                            {openingHoursMode === 'simple' ? (
+                                <div className="p-6 bg-green-50 rounded-xl border border-green-100 space-y-4">
+                                    <p className="text-xs text-green-600 font-medium italic">Apply the same timing to all days of the week.</p>
+                                    <div className="flex items-center gap-4">
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-green-400 mb-1">Opens at</label>
+                                            <input
+                                                type="time"
+                                                value={simpleHours.start}
+                                                onChange={e => {
+                                                    setSimpleHours({ ...simpleHours, start: e.target.value });
+                                                    applySimpleHours(e.target.value, simpleHours.end);
+                                                }}
+                                                className="px-3 py-2 border rounded-lg text-sm bg-white"
+                                            />
+                                        </div>
+                                        <div className="text-green-300 pt-5">→</div>
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-green-400 mb-1">Closes at</label>
+                                            <input
+                                                type="time"
+                                                value={simpleHours.end}
+                                                onChange={e => {
+                                                    setSimpleHours({ ...simpleHours, end: e.target.value });
+                                                    applySimpleHours(simpleHours.start, e.target.value);
+                                                }}
+                                                className="px-3 py-2 border rounded-lg text-sm bg-white"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] uppercase font-bold text-green-400 mb-1">Best Time to Visit</label>
+                                            <input
+                                                type="text"
+                                                value={formData.bestTimeToVisit}
+                                                onChange={e => setFormData({ ...formData, bestTimeToVisit: e.target.value })}
+                                                className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm bg-white min-w-[200px]"
+                                                placeholder="e.g. For dinner"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-4">
+                                    {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => {
+                                        const daySchedule = (formData.openingHoursExtended as any)[day];
+                                        return (
+                                            <div key={day} className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                                <div className="w-full md:w-64 flex items-center justify-between pr-0 md:pr-4 border-b md:border-b-0 md:border-r border-gray-200 pb-3 md:pb-0">
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-sm font-bold capitalize text-slate-700">{day}</span>
+                                                        <div className="flex gap-1.5 mt-1">
+                                                            <button type="button" onClick={() => copyOpeningHours(day, 'all')} title="Copy to All Days" className="text-[10px] bg-green-50 hover:bg-green-600 text-green-600 hover:text-white px-2 py-0.5 rounded-md font-bold transition-all border border-green-100 shadow-sm">All</button>
+                                                            <button type="button" onClick={() => copyOpeningHours(day, 'weekdays')} title="Copy to Weekdays" className="text-[10px] bg-green-50 hover:bg-green-600 text-green-600 hover:text-white px-2 py-0.5 rounded-md font-bold transition-all border border-green-100 shadow-sm">W/D</button>
+                                                            <button type="button" onClick={() => copyOpeningHours(day, 'weekends')} title="Copy to Weekends" className="text-[10px] bg-green-50 hover:bg-green-600 text-green-600 hover:text-white px-2 py-0.5 rounded-md font-bold transition-all border border-green-100 shadow-sm">W/E</button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-[10px] uppercase font-bold text-gray-400">{!daySchedule.isClosed ? 'Open' : 'Closed'}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => toggleDayClosed(day)}
+                                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${!daySchedule.isClosed ? 'bg-green-600' : 'bg-gray-200'}`}
+                                                        >
+                                                            <span
+                                                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${!daySchedule.isClosed ? 'translate-x-6' : 'translate-x-1'}`}
+                                                            />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {!daySchedule.isClosed ? (
+                                                    <div className="flex-1 space-y-3 md:space-y-2">
+                                                        {daySchedule.slots.map((slot: any, sIdx: number) => (
+                                                            <div key={sIdx} className="grid grid-cols-1 sm:flex sm:items-center gap-2 bg-white md:bg-transparent p-2 md:p-0 rounded-lg border md:border-0 border-gray-200">
+                                                                <div className="flex items-center gap-2 flex-1">
+                                                                    <div className="flex-1">
+                                                                        <label className="text-[10px] font-bold text-gray-400 uppercase sm:hidden block mb-1">Start</label>
+                                                                        <input
+                                                                            type="time"
+                                                                            value={slot.start}
+                                                                            onChange={(e) => updateOpeningSlot(day, sIdx, 'start', e.target.value)}
+                                                                            className="w-full px-2 py-1 border rounded text-xs"
+                                                                        />
+                                                                    </div>
+                                                                    <span className="text-gray-400 pt-4 sm:pt-0">to</span>
+                                                                    <div className="flex-1">
+                                                                        <label className="text-[10px] font-bold text-gray-400 uppercase sm:hidden block mb-1">End</label>
+                                                                        <input
+                                                                            type="time"
+                                                                            value={slot.end}
+                                                                            onChange={(e) => updateOpeningSlot(day, sIdx, 'end', e.target.value)}
+                                                                            className="w-full px-2 py-1 border rounded text-xs"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <button type="button" onClick={() => removeOpeningSlot(day, sIdx)} className="text-red-500 hover:bg-red-50 p-1.5 rounded self-end flex items-center justify-center border border-red-100 sm:border-0 sm:mt-0 mt-2">
+                                                                    <RiDeleteBinLine size={14} className="sm:mr-0 mr-1" />
+                                                                    <span className="sm:hidden text-xs font-bold uppercase">Remove Slot</span>
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                        <button type="button" onClick={() => addOpeningSlot(day)} className="text-[10px] text-green-600 font-bold hover:underline flex items-center gap-1 mt-1">
+                                                            <RiAddLine /> Add Slot
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex-1 flex items-center gap-3">
+                                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Closed</span>
+                                                        <input
+                                                            type="text"
+                                                            value={daySchedule.note || ''}
+                                                            onChange={(e) => setFormData((prev: any) => ({
+                                                                ...prev,
+                                                                openingHoursExtended: {
+                                                                    ...prev.openingHoursExtended,
+                                                                    [day]: { ...prev.openingHoursExtended[day], note: e.target.value }
+                                                                }
+                                                            }))}
+                                                            className="flex-1 px-3 py-1.5 border rounded text-xs bg-white italic"
+                                                            placeholder="Note (e.g. Weekly Holiday)"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
+
 
                         <div className="flex flex-wrap gap-8 py-4 px-6 bg-gray-50 rounded-xl">
                             <label className="flex items-center gap-2 cursor-pointer">
@@ -932,39 +1329,48 @@ export default function AddFoodClient({
                                         </button>
                                     </div>
 
-                                    <div className="grid grid-cols-1 gap-3 pl-4 border-l-2 border-gray-200">
+                                    <div className="space-y-3 pl-0 md:pl-4 border-l-0 md:border-l-2 border-gray-200">
                                         {cat.items.map((item, itemIdx) => (
-                                            <div key={itemIdx} className="flex items-center gap-3">
-                                                <input
-                                                    type="text"
-                                                    value={item.name}
-                                                    onChange={e => updateMenuItem(catIdx, itemIdx, 'name', e.target.value)}
-                                                    placeholder="Dish Name"
-                                                    className="flex-1 px-3 py-1.5 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-xs"
-                                                />
-                                                <div className="relative w-28">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">₹</span>
+                                            <div key={itemIdx} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center bg-white md:bg-transparent p-3 md:p-0 rounded-lg border md:border-0 border-gray-100 shadow-sm md:shadow-none">
+                                                <div className="sm:col-span-8">
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase sm:hidden block mb-1">Dish Name</label>
                                                     <input
-                                                        type="number"
-                                                        value={item.price}
-                                                        onChange={e => updateMenuItem(catIdx, itemIdx, 'price', Number(e.target.value))}
-                                                        className="w-full pl-6 pr-3 py-1.5 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-xs"
-                                                        placeholder="Price"
+                                                        type="text"
+                                                        value={item.name}
+                                                        onChange={e => updateMenuItem(catIdx, itemIdx, 'name', e.target.value)}
+                                                        placeholder="Dish Name"
+                                                        className="w-full px-3 py-1.5 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-xs"
                                                     />
                                                 </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeMenuItem(catIdx, itemIdx)}
-                                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-white rounded-lg transition-all"
-                                                >
-                                                    <RiCloseLine size={16} />
-                                                </button>
+                                                <div className="sm:col-span-3">
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase sm:hidden block mb-1">Price</label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">₹</span>
+                                                        <input
+                                                            type="number"
+                                                            value={item.price}
+                                                            onChange={e => updateMenuItem(catIdx, itemIdx, 'price', Number(e.target.value))}
+                                                            className="w-full pl-6 pr-3 py-1.5 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-xs"
+                                                            placeholder="Price"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="sm:col-span-1 flex justify-end">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeMenuItem(catIdx, itemIdx)}
+                                                        className="p-1.5 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all border border-red-50 sm:border-0 w-full sm:w-auto flex items-center justify-center gap-2"
+                                                    >
+                                                        <RiCloseLine size={16} />
+                                                        <span className="sm:hidden text-xs font-bold uppercase">Remove Item</span>
+                                                    </button>
+                                                </div>
                                             </div>
                                         ))}
                                         <button
                                             type="button"
                                             onClick={() => addMenuItem(catIdx)}
-                                            className="w-full py-2 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 hover:border-green-300 hover:text-green-500 text-[10px] font-bold transition-all uppercase tracking-wider"
+                                            className="w-full py-2.5 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 hover:border-green-300 hover:text-green-500 text-[10px] font-bold transition-all uppercase tracking-wider bg-white/50"
                                         >
                                             + Add Item to {cat.category || 'Category'}
                                         </button>
@@ -1084,7 +1490,7 @@ export default function AddFoodClient({
                                             <RiDeleteBinLine size={20} />
                                         </button>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4">
                                             <div className="md:col-span-2">
                                                 <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Name</label>
                                                 <input
@@ -1096,91 +1502,95 @@ export default function AddFoodClient({
                                                 />
                                             </div>
 
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Logo</label>
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden shrink-0">
-                                                        {partner.logo ? (
-                                                            <img src={partner.logo} alt="Logo" className="w-full h-full object-contain" />
-                                                        ) : (
-                                                            <span className="text-xs text-gray-400">No Image</span>
-                                                        )}
+                                            <div className="space-y-4 md:space-y-0 md:flex md:items-center md:gap-8">
+                                                <div className="flex-1">
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Logo</label>
+                                                    <div className="flex items-center gap-4 bg-white p-3 rounded-lg border border-gray-100">
+                                                        <div className="w-16 h-16 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                                                            {partner.logo ? (
+                                                                <img src={partner.logo} alt="Logo" className="w-full h-full object-contain" />
+                                                            ) : (
+                                                                <span className="text-[10px] text-gray-400 uppercase font-bold text-center px-1">No Logo</span>
+                                                            )}
+                                                        </div>
+                                                        <CldUploadWidget
+                                                            uploadPreset="travoxa"
+                                                            onSuccess={(result: any) => {
+                                                                updatePartner(idx, 'logo', result.info.secure_url);
+                                                            }}
+                                                        >
+                                                            {({ open }) => (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => { e.preventDefault(); open(); }}
+                                                                    className="px-3 py-1.5 bg-gray-50 border border-gray-300 rounded text-xs font-bold hover:bg-gray-100 transition-colors flex items-center gap-2"
+                                                                >
+                                                                    <RiAddLine /> {partner.logo ? 'Change' : 'Upload'}
+                                                                </button>
+                                                            )}
+                                                        </CldUploadWidget>
                                                     </div>
-                                                    <CldUploadWidget
-                                                        uploadPreset="travoxa"
-                                                        onSuccess={(result: any) => {
-                                                            updatePartner(idx, 'logo', result.info.secure_url);
-                                                        }}
-                                                    >
-                                                        {({ open }) => (
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => { e.preventDefault(); open(); }}
-                                                                className="px-3 py-1.5 bg-white border border-gray-300 rounded text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
-                                                            >
-                                                                <RiAddLine /> {partner.logo ? 'Change Logo' : 'Upload Logo'}
-                                                            </button>
-                                                        )}
-                                                    </CldUploadWidget>
+                                                </div>
+
+                                                <div className="flex items-center pt-2 md:pt-6">
+                                                    <label className="flex items-center gap-3 cursor-pointer group bg-white px-4 py-2 rounded-lg border border-gray-100 hover:border-blue-200 transition-all w-full md:w-auto">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={partner.isVerified}
+                                                            onChange={(e) => updatePartner(idx, 'isVerified', e.target.checked)}
+                                                            className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                        />
+                                                        <span className="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
+                                                            Verified
+                                                        </span>
+                                                    </label>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center pt-6">
-                                                <label className="flex items-center gap-2 cursor-pointer group">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:contents">
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Phone Number</label>
                                                     <input
-                                                        type="checkbox"
-                                                        checked={partner.isVerified}
-                                                        onChange={(e) => updatePartner(idx, 'isVerified', e.target.checked)}
-                                                        className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                        type="text"
+                                                        value={partner.phone}
+                                                        onChange={(e) => updatePartner(idx, 'phone', e.target.value)}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                        placeholder="+91..."
                                                     />
-                                                    <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors flex items-center gap-1">
-                                                        Verified Partner
-                                                    </span>
-                                                </label>
-                                            </div>
+                                                </div>
 
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Phone Number</label>
-                                                <input
-                                                    type="text"
-                                                    value={partner.phone}
-                                                    onChange={(e) => updatePartner(idx, 'phone', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                                    placeholder="+91..."
-                                                />
-                                            </div>
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Website URL</label>
+                                                    <input
+                                                        type="text"
+                                                        value={partner.website}
+                                                        onChange={(e) => updatePartner(idx, 'website', e.target.value)}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                        placeholder="https://..."
+                                                    />
+                                                </div>
 
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Website URL</label>
-                                                <input
-                                                    type="text"
-                                                    value={partner.website}
-                                                    onChange={(e) => updatePartner(idx, 'website', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                                    placeholder="https://..."
-                                                />
-                                            </div>
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">State</label>
+                                                    <input
+                                                        type="text"
+                                                        value={partner.state}
+                                                        onChange={(e) => updatePartner(idx, 'state', e.target.value)}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                        placeholder="State"
+                                                    />
+                                                </div>
 
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">State</label>
-                                                <input
-                                                    type="text"
-                                                    value={partner.state}
-                                                    onChange={(e) => updatePartner(idx, 'state', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                                    placeholder="State"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Location/Address</label>
-                                                <input
-                                                    type="text"
-                                                    value={partner.location}
-                                                    onChange={(e) => updatePartner(idx, 'location', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                                    placeholder="City or Full Address"
-                                                />
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Location/Address</label>
+                                                    <input
+                                                        type="text"
+                                                        value={partner.location}
+                                                        onChange={(e) => updatePartner(idx, 'location', e.target.value)}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                        placeholder="City or Full Address"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

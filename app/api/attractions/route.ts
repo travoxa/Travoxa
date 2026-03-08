@@ -3,10 +3,25 @@ import mongoose from 'mongoose';
 import { connectDB } from '@/lib/mongodb';
 import Attraction from '@/models/Attraction';
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
         await connectDB();
-        const attractions = await Attraction.find({});
+
+        const { searchParams } = new URL(req.url);
+        const vendorId = searchParams.get('vendorId');
+        const admin = searchParams.get('admin');
+        const status = searchParams.get('status');
+
+        const query: any = {};
+        if (vendorId) {
+            query.vendorId = vendorId;
+        } else if (admin === 'true') {
+            if (status) query.status = status;
+        } else {
+            query.status = 'approved';
+        }
+
+        const attractions = await Attraction.find(query).sort({ createdAt: -1 });
         return NextResponse.json({ success: true, data: attractions }, { status: 200 });
     } catch (error: any) {
         return NextResponse.json({ success: false, error: error.message }, { status: 400 });
@@ -24,7 +39,12 @@ export async function POST(req: Request) {
             delete mongoose.models.Attraction;
         }
 
-        const attraction = await Attraction.create(body);
+        const attractionData = {
+            ...body,
+            status: body.vendorId ? 'pending' : 'approved'
+        };
+
+        const attraction = await Attraction.create(attractionData);
         console.log('Created Attraction:', JSON.stringify(attraction, null, 2));
         return NextResponse.json({ success: true, data: attraction }, { status: 201 });
     } catch (error: any) {

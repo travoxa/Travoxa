@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/ui/Header';
 import NormalHeader from '@/components/ui/NormalHeader';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import Image from 'next/image';
 import {
     FaMapMarkerAlt, FaStar, FaRegClock, FaCheck,
@@ -96,17 +96,13 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
 
             {/* HERO SECTION */}
             <div className="relative h-[65vh]  w-full bg-slate-900">
-                {attraction.image ? (
-                    <Image
-                        src={attraction.image}
-                        alt={attraction.title}
-                        fill
-                        className="object-cover opacity-80"
-                        priority
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold">IMAGE NOT AVAILABLE</div>
-                )}
+                <Image
+                    src={attraction.image || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop"}
+                    alt={attraction.title}
+                    fill
+                    className="object-cover opacity-80"
+                    priority
+                />
 
                 <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
 
@@ -293,9 +289,16 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                                 <div className="space-y-3">
                                     {(attraction.entryPricing && attraction.entryPricing.length > 0) ? (
                                         attraction.entryPricing.map((p, idx) => (
-                                            <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                                <span className="text-gray-600 font-semibold text-sm">{p.category}</span>
-                                                <span className="text-lg font-bold text-gray-900">₹{p.price}</span>
+                                            <div key={idx} className="flex flex-col p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-gray-600 font-semibold text-sm">{p.category}</span>
+                                                    <span className="text-lg font-bold text-gray-900">
+                                                        {p.minPrice && p.maxPrice && p.minPrice !== p.maxPrice
+                                                            ? `₹${p.minPrice} – ₹${p.maxPrice}`
+                                                            : `₹${p.minPrice || p.price}`}
+                                                    </span>
+                                                </div>
+                                                {p.notes && <p className="text-[10px] text-gray-400 mt-1 italic">{p.notes}</p>}
                                             </div>
                                         ))
                                     ) : (
@@ -342,10 +345,17 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                                                     <span className="text-xs bg-emerald-50 text-emerald-700 font-bold px-3 py-1 rounded-full">{step.time}</span>
                                                 </div>
                                             </div>
-                                            <p className="text-gray-500 text-sm font-medium flex items-center gap-2">
-                                                Approx Fare: <span className="text-gray-900 font-bold">{step.fare || step.fareRange || 'N/A'}</span>
-                                                {step.availability && <span className="bg-gray-200 text-gray-600 px-2 py-0.5 rounded text-[10px] uppercase font-bold ml-2">{step.availability}</span>}
-                                            </p>
+                                            <div className="flex flex-col gap-1">
+                                                <p className="text-gray-500 text-sm font-medium flex items-center gap-2">
+                                                    Approx Fare: <span className="text-gray-900 font-bold">
+                                                        {step.minFare && step.maxFare && step.minFare !== step.maxFare
+                                                            ? `₹${step.minFare} – ₹${step.maxFare}`
+                                                            : (step.minFare || step.fare || step.fareRange || 'N/A')}
+                                                    </span>
+                                                    {step.availability && <span className="bg-gray-200 text-gray-600 px-2 py-0.5 rounded text-[10px] uppercase font-bold ml-2">{step.availability}</span>}
+                                                </p>
+                                                {step.routeNote && <p className="text-[11px] text-gray-400 italic">{step.routeNote}</p>}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -609,7 +619,7 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                 />
             </div>
 
-            <Footor />
+            <Footer />
         </div >
     );
 };

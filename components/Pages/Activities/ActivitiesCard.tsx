@@ -22,16 +22,12 @@ const ActivitiesCard: React.FC<ActivitiesCardProps> = ({ pkg }) => {
             <div className="group bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300 h-full flex flex-col">
                 {/* Image Container */}
                 <div className="relative h-56 overflow-hidden">
-                    {pkg.image ? (
-                        <Image
-                            src={pkg.image}
-                            alt={pkg.title}
-                            fill
-                            className="object-cover group-hover:scale-110 transition-transform duration-700"
-                        />
-                    ) : (
-                        <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">No Image</div>
-                    )}
+                    <Image
+                        src={pkg.image || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop"}
+                        alt={pkg.title}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
 
                     {/* Rating & Save Badge */}
                     <div className="absolute top-3 right-3 flex flex-col items-end gap-2">

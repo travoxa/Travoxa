@@ -86,8 +86,8 @@ export default function NormalHeader({ backgroundColor = "bg-white", logoHeight 
             ],
         },
         {
-            label: "Nestloop",
-            path: "/contact",
+            label: "Travoxa Circle",
+            path: "/travoxa-circle",
             dropdown: [],
         },
     ];
@@ -196,7 +196,7 @@ export default function NormalHeader({ backgroundColor = "bg-white", logoHeight 
                     </nav>
 
                     {/* RIGHT SECTION (DESKTOP) */}
-                    {!session?.user?.email ?
+                    {!(session?.user?.email && session?.user?.role === 'user') ?
                         <button
 
                             onClick={() => routeTo('/login')}
@@ -289,7 +289,7 @@ export default function NormalHeader({ backgroundColor = "bg-white", logoHeight 
                         </div>
                     ))}
 
-                    {!session?.user?.email ?
+                    {!(session?.user?.email && session?.user?.role === 'user') ?
                         <button
 
                             onClick={() => routeTo('/login')}

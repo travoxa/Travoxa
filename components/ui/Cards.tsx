@@ -1,15 +1,16 @@
 // components/Card.tsx
 import { HiArrowRight } from "react-icons/hi2";
+import Image from "next/image";
 
 interface CardProps {
   name: string;
   description: string;
   image: string;
   index: number;
-  price:string
+  price: string
 }
 
-export default function Card({ name, description, image, index ,price}: CardProps) {
+export default function Card({ name, description, image, index, price }: CardProps) {
   return (
     <div
       className={`
@@ -21,10 +22,13 @@ export default function Card({ name, description, image, index ,price}: CardProp
     >
       {/* Image Section */}
       <div className="h-[220px] relative overflow-hidden">
-        <div
-          className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-          style={{ backgroundImage: `url(${image})` }}
-        ></div>
+        <Image
+          src={image}
+          alt={name}
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-110"
+          sizes="(max-width: 768px) 300px, 350px"
+        />
         {/* Rating Mock */}
         <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
           <span>★</span> 4.8

@@ -1,5 +1,5 @@
 import React from 'react';
-import {FaUtensils, FaUsers, FaShareAlt } from 'react-icons/fa';
+import { FaUtensils, FaUsers, FaShareAlt } from 'react-icons/fa';
 import Image from 'next/image';
 import { FoodPackage } from '@/app/travoxa-discovery/food-and-cafes/FoodClient';
 import SaveButton from '@/components/ui/SaveButton';
@@ -21,7 +21,7 @@ const FoodCard: React.FC<FoodCardProps> = ({ pkg }) => {
             <div className="relative h-64 overflow-hidden">
 
                 <Image
-                    src={pkg.image}
+                    src={pkg.image || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop"}
                     alt={pkg.title}
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-1000"
@@ -34,10 +34,10 @@ const FoodCard: React.FC<FoodCardProps> = ({ pkg }) => {
                             key={idx}
                             className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider backdrop-blur-md shadow-sm flex items-center gap-1.5
                             ${badge === 'Verified by Travoxa' ? 'bg-emerald-500/90 text-white' :
-                                badge === 'Travoxa Recommended' ? 'bg-yellow-500/90 text-white' :
-                                badge === 'Premium' ? 'bg-slate-900/90 text-white' :
-                                badge === 'Budget Friendly' ? 'bg-sky-500/90 text-white' :
-                                'bg-white/90 text-slate-900'}`}
+                                    badge === 'Travoxa Recommended' ? 'bg-yellow-500/90 text-white' :
+                                        badge === 'Premium' ? 'bg-slate-900/90 text-white' :
+                                            badge === 'Budget Friendly' ? 'bg-sky-500/90 text-white' :
+                                                'bg-white/90 text-slate-900'}`}
                         >
                             {badge === 'Verified by Travoxa' && <FaCheckCircle />}
                             {badge === 'Travoxa Recommended' && <FaStar />}
@@ -78,13 +78,12 @@ const FoodCard: React.FC<FoodCardProps> = ({ pkg }) => {
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                         <span
-                            className={`w-2 h-2 rounded-full ${
-                                pkg.dishType === 'Veg'
+                            className={`w-2 h-2 rounded-full ${pkg.dishType === 'Veg'
                                     ? 'bg-green-500'
                                     : pkg.dishType === 'Non-Veg'
-                                    ? 'bg-red-500'
-                                    : 'bg-yellow-500'
-                            }`}
+                                        ? 'bg-red-500'
+                                        : 'bg-yellow-500'
+                                }`}
                         />
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                             {pkg.category} • {pkg.dishType}

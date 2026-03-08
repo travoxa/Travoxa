@@ -342,6 +342,7 @@ export default function AddRentalsClient({
             relatedFood: formData.relatedFood,
             relatedAttractions: formData.relatedAttractions,
             partners: formData.partners,
+            ...(vendorId && { vendorId })
         };
 
         try {
@@ -485,19 +486,57 @@ export default function AddRentalsClient({
                 <>
                     {/* Create Button - Top */}
                     {showManagementBox && (
-                        <div className="bg-white rounded-xl border border-gray-200 p-8">
-                            <h2 className="text-lg font-light text-gray-800 mb-4">Rentals</h2>
+                        <div className="flex justify-start mb-6">
                             <button
                                 onClick={() => {
+                                    setEditingId(null);
+                                    setFormData(isDev ? DUMMY_FORM_DATA : {
+                                        name: '',
+                                        type: 'Scooter',
+                                        model: YEAR_OPTIONS[0].toString(),
+                                        rating: '',
+                                        reviews: '',
+                                        mileage: '',
+                                        seats: '',
+                                        fuel: 'Petrol',
+                                        helmet: 'Helmet Included',
+                                        price: '',
+                                        image: '',
+                                        verified: false,
+                                        state: '',
+                                        city: '',
+                                        whatsapp: '',
+                                        mapLocation: { lat: '', lng: '' },
+                                        rentalServiceName: '',
+                                        vehicleCondition: '',
+                                        hourlyPrice: '',
+                                        weeklyPrice: '',
+                                        securityDeposit: '',
+                                        extraKmCharge: '',
+                                        perDayKmLimit: '',
+                                        minAge: '',
+                                        documentsRequired: '',
+                                        fuelPolicy: '',
+                                        lateReturnCharges: '',
+                                        googleMapLink: '',
+                                        relatedTours: [] as string[],
+                                        relatedSightseeing: [] as string[],
+                                        relatedActivities: [] as string[],
+                                        relatedRentals: [] as string[],
+                                        relatedStays: [] as string[],
+                                        relatedFood: [] as string[],
+                                        relatedAttractions: [] as string[],
+                                        partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[],
+                                    });
                                     if (onFormOpen) {
                                         onFormOpen();
                                     } else {
                                         setShowFormInternal(true);
                                     }
                                 }}
-                                className="px-6 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all"
+                                className="px-3 py-1.5 md:px-6 md:py-2 bg-black text-white rounded-md text-[10px] md:text-sm font-light hover:bg-gray-800 transition-all"
                             >
-                                Create
+                                Create New Rental
                             </button>
                         </div>
                     )}
@@ -520,11 +559,11 @@ export default function AddRentalsClient({
                                     </div>
                                 </div>
                             ) : rentals.length > 0 ? (
-                                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                                    <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Rentals</h2>
+                                <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-6">
+                                    <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-3 md:mb-6">Existing Rentals</h2>
 
                                     {/* Column Headers */}
-                                    <div className="flex items-center justify-between pb-2 mb-2 border-gray-200">
+                                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 hidden md:flex">
                                         <div className="flex-1 grid grid-cols-4 gap-4">
                                             <p className="text-xs font-semibold text-gray-600 uppercase">Name</p>
                                             <p className="text-xs font-semibold text-gray-600 uppercase">Type</p>
@@ -544,13 +583,25 @@ export default function AddRentalsClient({
                                         })).map((rental) => (
                                             <div
                                                 key={rental.id}
-                                                className="flex items-center justify-between py-1 hover:bg-gray-50 transition-colors"
+                                                className="flex flex-col md:flex-row md:items-center justify-between py-4 md:py-1 hover:bg-gray-50 transition-colors gap-3 md:gap-0"
                                             >
-                                                <div className="flex-1 grid grid-cols-4 gap-4">
-                                                    <p className="text-sm text-gray-900">{rental.name}</p>
-                                                    <p className="text-sm text-gray-900">{rental.type}</p>
-                                                    <p className="text-sm text-gray-900">{rental.state}</p>
-                                                    <p className="text-sm text-gray-900">₹{rental.price}/day</p>
+                                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Name</p>
+                                                        <p className="text-xs md:text-sm font-medium md:font-normal text-gray-900">{rental.name}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Type</p>
+                                                        <p className="text-[10px] md:text-sm text-gray-900">{rental.type}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">State</p>
+                                                        <p className="text-[10px] md:text-sm text-gray-900">{rental.state}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Price</p>
+                                                        <p className="text-[10px] md:text-sm text-gray-900">₹{rental.price}/day</p>
+                                                    </div>
                                                 </div>
 
                                                 {/* 3-dot menu */}
@@ -592,9 +643,9 @@ export default function AddRentalsClient({
                                     </div>
                                 </div>
                             ) : (
-                                <div className="bg-white rounded-xl border border-gray-200 p-8 text-left">
-                                    <h2 className="text-lg font-medium text-gray-800 mb-2">No Rentals Yet</h2>
-                                    <p className="text-gray-600 text-sm">Create your first rental to get started.</p>
+                                <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-8 text-left">
+                                    <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-1 md:mb-2">No Rentals Yet</h2>
+                                    <p className="text-gray-600 text-[10px] md:text-sm">Create your first rental to get started.</p>
                                 </div>
                             )}
                         </>
@@ -610,6 +661,45 @@ export default function AddRentalsClient({
                             } else {
                                 setShowFormInternal(false);
                             }
+                            setEditingId(null);
+                            setFormData(isDev ? DUMMY_FORM_DATA : {
+                                name: '',
+                                type: 'Scooter',
+                                model: YEAR_OPTIONS[0].toString(),
+                                rating: '',
+                                reviews: '',
+                                mileage: '',
+                                seats: '',
+                                fuel: 'Petrol',
+                                helmet: 'Helmet Included',
+                                price: '',
+                                image: '',
+                                verified: false,
+                                state: '',
+                                city: '',
+                                whatsapp: '',
+                                mapLocation: { lat: '', lng: '' },
+                                rentalServiceName: '',
+                                vehicleCondition: '',
+                                hourlyPrice: '',
+                                weeklyPrice: '',
+                                securityDeposit: '',
+                                extraKmCharge: '',
+                                perDayKmLimit: '',
+                                minAge: '',
+                                documentsRequired: '',
+                                fuelPolicy: '',
+                                lateReturnCharges: '',
+                                googleMapLink: '',
+                                relatedTours: [] as string[],
+                                relatedSightseeing: [] as string[],
+                                relatedActivities: [] as string[],
+                                relatedRentals: [] as string[],
+                                relatedStays: [] as string[],
+                                relatedFood: [] as string[],
+                                relatedAttractions: [] as string[],
+                                partners: [] as { name: string; logo: string; phone: string; website: string; location: string; state: string; isVerified: boolean }[],
+                            });
                         }}
                         className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
                     >
@@ -1057,7 +1147,7 @@ export default function AddRentalsClient({
                                             <RiDeleteBinLine size={20} />
                                         </button>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4">
                                             <div className="md:col-span-2">
                                                 <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Name</label>
                                                 <input
@@ -1069,91 +1159,95 @@ export default function AddRentalsClient({
                                                 />
                                             </div>
 
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Logo</label>
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden shrink-0">
-                                                        {partner.logo ? (
-                                                            <img src={partner.logo} alt="Logo" className="w-full h-full object-contain" />
-                                                        ) : (
-                                                            <span className="text-xs text-gray-400">No Image</span>
-                                                        )}
+                                            <div className="space-y-4 md:space-y-0 md:flex md:items-center md:gap-8">
+                                                <div className="flex-1">
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Logo</label>
+                                                    <div className="flex items-center gap-4 bg-white p-3 rounded-lg border border-gray-100">
+                                                        <div className="w-16 h-16 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                                                            {partner.logo ? (
+                                                                <img src={partner.logo} alt="Logo" className="w-full h-full object-contain" />
+                                                            ) : (
+                                                                <span className="text-[10px] text-gray-400 uppercase font-bold text-center px-1">No Logo</span>
+                                                            )}
+                                                        </div>
+                                                        <CldUploadWidget
+                                                            uploadPreset="travoxa"
+                                                            onSuccess={(result: any) => {
+                                                                updatePartner(idx, 'logo', result.info.secure_url);
+                                                            }}
+                                                        >
+                                                            {({ open }) => (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => { e.preventDefault(); open(); }}
+                                                                    className="px-3 py-1.5 bg-gray-50 border border-gray-300 rounded text-xs font-bold hover:bg-gray-100 transition-colors flex items-center gap-2"
+                                                                >
+                                                                    <RiAddLine /> {partner.logo ? 'Change' : 'Upload'}
+                                                                </button>
+                                                            )}
+                                                        </CldUploadWidget>
                                                     </div>
-                                                    <CldUploadWidget
-                                                        uploadPreset="travoxa"
-                                                        onSuccess={(result: any) => {
-                                                            updatePartner(idx, 'logo', result.info.secure_url);
-                                                        }}
-                                                    >
-                                                        {({ open }) => (
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => { e.preventDefault(); open(); }}
-                                                                className="px-3 py-1.5 bg-white border border-gray-300 rounded text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
-                                                            >
-                                                                <RiAddLine /> {partner.logo ? 'Change Logo' : 'Upload Logo'}
-                                                            </button>
-                                                        )}
-                                                    </CldUploadWidget>
+                                                </div>
+
+                                                <div className="flex items-center pt-2 md:pt-6">
+                                                    <label className="flex items-center gap-3 cursor-pointer group bg-white px-4 py-2 rounded-lg border border-gray-100 hover:border-blue-200 transition-all w-full md:w-auto">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={partner.isVerified}
+                                                            onChange={(e) => updatePartner(idx, 'isVerified', e.target.checked)}
+                                                            className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                        />
+                                                        <span className="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
+                                                            Verified
+                                                        </span>
+                                                    </label>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center pt-6">
-                                                <label className="flex items-center gap-2 cursor-pointer group">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:contents">
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Phone Number</label>
                                                     <input
-                                                        type="checkbox"
-                                                        checked={partner.isVerified}
-                                                        onChange={(e) => updatePartner(idx, 'isVerified', e.target.checked)}
-                                                        className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                        type="text"
+                                                        value={partner.phone}
+                                                        onChange={(e) => updatePartner(idx, 'phone', e.target.value)}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                        placeholder="+91..."
                                                     />
-                                                    <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors flex items-center gap-1">
-                                                        Verified Partner
-                                                    </span>
-                                                </label>
-                                            </div>
+                                                </div>
 
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Phone Number</label>
-                                                <input
-                                                    type="text"
-                                                    value={partner.phone}
-                                                    onChange={(e) => updatePartner(idx, 'phone', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                                    placeholder="+91..."
-                                                />
-                                            </div>
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Website URL</label>
+                                                    <input
+                                                        type="text"
+                                                        value={partner.website}
+                                                        onChange={(e) => updatePartner(idx, 'website', e.target.value)}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                        placeholder="https://..."
+                                                    />
+                                                </div>
 
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Website URL</label>
-                                                <input
-                                                    type="text"
-                                                    value={partner.website}
-                                                    onChange={(e) => updatePartner(idx, 'website', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                                    placeholder="https://..."
-                                                />
-                                            </div>
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">State</label>
+                                                    <input
+                                                        type="text"
+                                                        value={partner.state}
+                                                        onChange={(e) => updatePartner(idx, 'state', e.target.value)}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                        placeholder="State"
+                                                    />
+                                                </div>
 
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">State</label>
-                                                <input
-                                                    type="text"
-                                                    value={partner.state}
-                                                    onChange={(e) => updatePartner(idx, 'state', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                                    placeholder="State"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Location/Address</label>
-                                                <input
-                                                    type="text"
-                                                    value={partner.location}
-                                                    onChange={(e) => updatePartner(idx, 'location', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                                    placeholder="City or Full Address"
-                                                />
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Location/Address</label>
+                                                    <input
+                                                        type="text"
+                                                        value={partner.location}
+                                                        onChange={(e) => updatePartner(idx, 'location', e.target.value)}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                        placeholder="City or Full Address"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

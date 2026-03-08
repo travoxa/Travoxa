@@ -1,5 +1,17 @@
 import mongoose from 'mongoose';
 
+const OpeningSlotSchema = new mongoose.Schema({
+    start: String,
+    end: String,
+}, { _id: false });
+
+const DailyScheduleSchema = new mongoose.Schema({
+    slots: { type: [OpeningSlotSchema], default: [] },
+    isClosed: { type: Boolean, default: false },
+    note: String,
+}, { _id: false });
+
+
 const ActivitySchema = new mongoose.Schema({
     title: {
         type: String,
@@ -44,6 +56,22 @@ const ActivitySchema = new mongoose.Schema({
         end: String,
     },
     bestTimeOfDay: String, // Morning/Evening
+    openingHoursExtended: {
+        monday: DailyScheduleSchema,
+        tuesday: DailyScheduleSchema,
+        wednesday: DailyScheduleSchema,
+        thursday: DailyScheduleSchema,
+        friday: DailyScheduleSchema,
+        saturday: DailyScheduleSchema,
+        sunday: DailyScheduleSchema,
+        specialTimings: [{
+            date: Date,
+            slots: [OpeningSlotSchema],
+            isClosed: Boolean,
+            note: String
+        }]
+    },
+
 
     // Suitability & Requirements
     suitableFor: [String], // Solo, Couple, Family, Friends, Kids
@@ -97,7 +125,7 @@ const ActivitySchema = new mongoose.Schema({
     },
     image: {
         type: String,
-        required: [true, 'Please provide an image'],
+        required: false,
     },
 
     // Safety & Policies

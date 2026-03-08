@@ -8,18 +8,19 @@ interface AddAttractionsClientProps {
     showManagementBox?: boolean;
     showListings?: boolean;
     showFormDirectly?: boolean;
+    vendorId?: string;
     onFormOpen?: () => void;
     onFormClose?: () => void;
 }
 
 const INITIAL_OPENING_HOURS = {
-    monday: { slots: [] as any[], isClosed: false, note: '' },
-    tuesday: { slots: [] as any[], isClosed: false, note: '' },
-    wednesday: { slots: [] as any[], isClosed: false, note: '' },
-    thursday: { slots: [] as any[], isClosed: false, note: '' },
-    friday: { slots: [] as any[], isClosed: false, note: '' },
-    saturday: { slots: [] as any[], isClosed: false, note: '' },
-    sunday: { slots: [] as any[], isClosed: false, note: '' },
+    monday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    tuesday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    wednesday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    thursday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    friday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    saturday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
+    sunday: { slots: [{ start: '09:00 AM', end: '09:00 PM' }], isClosed: false, note: '' },
     specialTimings: [] as any[]
 };
 
@@ -27,6 +28,7 @@ export default function AddAttractionsClient({
     showManagementBox = true,
     showListings = true,
     showFormDirectly = false,
+    vendorId,
     onFormOpen,
     onFormClose
 }: AddAttractionsClientProps = {}) {
@@ -44,6 +46,8 @@ export default function AddAttractionsClient({
     const [allRentals, setAllRentals] = useState<any[]>([]);
     const [allStays, setAllStays] = useState<any[]>([]);
     const [loadingRelated, setLoadingRelated] = useState(false);
+    const [allHelplines, setAllHelplines] = useState<any[]>([]);
+    const [loadingHelplines, setLoadingHelplines] = useState(false);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [loadingAttractions, setLoadingAttractions] = useState(true);
@@ -66,9 +70,9 @@ export default function AddAttractionsClient({
         categoryTags: [] as string[],
         googleRating: '',
         openingHoursExtended: INITIAL_OPENING_HOURS,
-        entryPricing: [] as { category: string; price: string }[],
+        entryPricing: [] as { category: string; minPrice: string; maxPrice: string; notes: string; price?: string }[],
         additionalCharges: [] as { item: string; priceRange: string; note: string }[],
-        howToReach: [] as any[],
+        howToReach: [] as { type: string; station: string; distance: string; minFare: string; maxFare: string; time: string; availability: string; routeNote: string; customType?: string; fare?: string }[],
         relatedTours: [] as string[],
         relatedSightseeing: [] as string[],
         relatedActivities: [] as string[],
@@ -118,17 +122,17 @@ export default function AddAttractionsClient({
             specialTimings: []
         },
         entryPricing: [
-            { category: 'Indian Citizen', price: '50' },
-            { category: 'Foreigner', price: '1100' },
-            { category: 'SAARC/BIMSTEC', price: '540' }
+            { category: 'Indian Citizen', minPrice: '50', maxPrice: '50', notes: '' },
+            { category: 'Foreigner', minPrice: '1100', maxPrice: '1100', notes: '' },
+            { category: 'SAARC/BIMSTEC', minPrice: '540', maxPrice: '540', notes: '' }
         ],
         additionalCharges: [
             { item: 'Mausoleum Entry', priceRange: '200', note: 'Optional for main dome' },
             { item: 'Professional Guide', priceRange: '500-1000', note: 'Approximate cost' }
         ],
         howToReach: [
-            { type: 'Train', station: 'Agra Cantt', distance: '6km', fare: '₹50-200', time: '15 mins', availability: 'Frequent' },
-            { type: 'Bus', station: 'Idgah Bus Stand', distance: '5km', fare: '₹20-50', time: '20 mins' }
+            { type: 'Train', station: 'Agra Cantt', distance: '6km', minFare: '50', maxFare: '200', time: '15 mins', availability: 'Frequent', routeNote: 'Faster than bus' },
+            { type: 'Bus', station: 'Idgah Bus Stand', distance: '5km', minFare: '20', maxFare: '50', time: '20 mins', availability: 'Frequent', routeNote: '' }
         ],
         relatedTours: [],
         relatedSightseeing: [],
@@ -183,8 +187,9 @@ export default function AddAttractionsClient({
         setLoadingAttractions(true);
         setLoadingRelated(true);
         try {
+            const attUrl = vendorId ? `/api/attractions?vendorId=${vendorId}` : '/api/attractions';
             const [attRes, foodRes, tourRes, sightRes, actRes, rentRes, stayRes] = await Promise.all([
-                fetch('/api/attractions'),
+                fetch(attUrl),
                 fetch('/api/food'),
                 fetch('/api/tours'),
                 fetch('/api/sightseeing'),
@@ -217,6 +222,28 @@ export default function AddAttractionsClient({
             setLoadingRelated(false);
         }
     };
+
+    const fetchHelplines = async (city: string) => {
+        if (!city) return;
+        setLoadingHelplines(true);
+        try {
+            const res = await fetch(`/api/helplines?city=${city}&status=approved`);
+            const data = await res.json();
+            if (data.success) {
+                setAllHelplines(data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch helplines:', error);
+        } finally {
+            setLoadingHelplines(false);
+        }
+    };
+
+    useEffect(() => {
+        if (formData.city) {
+            fetchHelplines(formData.city);
+        }
+    }, [formData.city]);
 
     useEffect(() => {
         fetchAttractions();
@@ -318,9 +345,32 @@ export default function AddAttractionsClient({
         }));
     };
 
+    const copyOpeningHours = (fromDay: string, targetType: 'all' | 'weekdays' | 'weekends') => {
+        const sourceDay = formData.openingHoursExtended[fromDay as keyof typeof formData.openingHoursExtended];
+        const newOpeningHours = { ...formData.openingHoursExtended };
+
+        const daysToUpdate = [];
+        if (targetType === 'all') {
+            daysToUpdate.push('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
+        } else if (targetType === 'weekdays') {
+            daysToUpdate.push('monday', 'tuesday', 'wednesday', 'thursday', 'friday');
+        } else if (targetType === 'weekends') {
+            daysToUpdate.push('saturday', 'sunday');
+        }
+
+        daysToUpdate.forEach(day => {
+            newOpeningHours[day as keyof typeof newOpeningHours] = JSON.parse(JSON.stringify(sourceDay));
+        });
+
+        setFormData(prev => ({
+            ...prev,
+            openingHoursExtended: newOpeningHours
+        }));
+    };
+
     // Lists Helpers
     const addPricingRow = () => {
-        setFormData(prev => ({ ...prev, entryPricing: [...prev.entryPricing, { category: '', price: '' }] }));
+        setFormData(prev => ({ ...prev, entryPricing: [...prev.entryPricing, { category: '', minPrice: '', maxPrice: '', notes: '' }] }));
     };
 
     const removePricingRow = (idx: number) => {
@@ -352,7 +402,7 @@ export default function AddAttractionsClient({
     };
 
     const addReachStep = () => {
-        setFormData(prev => ({ ...prev, howToReach: [...prev.howToReach, { type: 'Metro', station: '', distance: '', fare: '', time: '', availability: '', fareRange: '' }] }));
+        setFormData(prev => ({ ...prev, howToReach: [...prev.howToReach, { type: 'Metro', station: '', distance: '', minFare: '', maxFare: '', time: '', availability: '', routeNote: '' }] }));
     };
 
     const removeReachStep = (idx: number) => {
@@ -440,9 +490,9 @@ export default function AddAttractionsClient({
             categoryTags: attraction.categoryTags || [],
             googleRating: attraction.googleRating?.toString() || '',
             openingHoursExtended: attraction.openingHoursExtended || INITIAL_OPENING_HOURS,
-            entryPricing: attraction.entryPricing ? attraction.entryPricing.map((p: any) => ({ category: p.category, price: p.price?.toString() || '' })) : [],
+            entryPricing: attraction.entryPricing ? attraction.entryPricing.map((p: any) => ({ category: p.category, minPrice: (p.minPrice || p.price)?.toString() || '', maxPrice: (p.maxPrice || p.price)?.toString() || '', notes: p.notes || '' })) : [],
             additionalCharges: attraction.additionalCharges || [],
-            howToReach: attraction.howToReach || [],
+            howToReach: attraction.howToReach ? attraction.howToReach.map((r: any) => ({ ...r, minFare: r.minFare?.toString() || '', maxFare: r.maxFare?.toString() || '' })) : [],
             relatedTours: attraction.relatedTours || [],
             relatedSightseeing: attraction.relatedSightseeing || [],
             relatedActivities: attraction.relatedActivities || [],
@@ -466,15 +516,24 @@ export default function AddAttractionsClient({
         setError('');
         setSuccess('');
 
+        const filteredPricing = formData.entryPricing.filter(p => p.category.trim() !== '' || (p.minPrice || p.price)?.trim() !== '');
+        const filteredCharges = formData.additionalCharges.filter(c => c.item.trim() !== '' || c.priceRange.trim() !== '' || c.note.trim() !== '');
+        const filteredHowToReach = formData.howToReach.filter(r => r.station.trim() !== '');
+        const filteredPartners = formData.partners.filter(p => p.name.trim() !== '');
+
         const payload: any = {
             ...formData,
             googleRating: Number(formData.googleRating),
-            entryFee: formData.entryPricing && formData.entryPricing.length > 0 ? Number(formData.entryPricing[0].price) : 0,
-            entryPricing: formData.entryPricing.map(p => ({ ...p, price: Number(p.price) })),
+            entryFee: filteredPricing.length > 0 ? Number(filteredPricing[0].minPrice || filteredPricing[0].price || 0) : 0,
+            entryPricing: filteredPricing.map(p => ({ ...p, minPrice: Number(p.minPrice || p.price), maxPrice: Number(p.maxPrice || p.price) })),
+            additionalCharges: filteredCharges,
+            howToReach: filteredHowToReach.map(r => ({ ...r, minFare: Number(r.minFare), maxFare: Number(r.maxFare) })),
+            partners: filteredPartners,
             travelInformation: {
                 ...formData.travelInformation,
                 safetyScore: Number(formData.travelInformation.safetyScore)
-            }
+            },
+            ...(vendorId && { vendorId })
         };
 
         // Sync legacy openingHours string if empty
@@ -540,101 +599,110 @@ export default function AddAttractionsClient({
             {!showForm ? (
                 <>
                     {showManagementBox && (
-                        <div className="bg-white rounded-xl border border-gray-200 p-8">
-                            <h2 className="text-lg font-light text-gray-800 mb-4">Attractions</h2>
+                        <div className="flex justify-start mb-6">
                             <button
                                 onClick={() => {
+                                    setEditingId(null);
+                                    setFormData(isDev ? DUMMY_FORM_DATA : INITIAL_FORM_STATE);
                                     if (onFormOpen) {
                                         onFormOpen();
                                     } else {
                                         setShowFormInternal(true);
                                     }
                                 }}
-                                className="px-6 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all"
+                                className="px-3 py-1.5 md:px-6 md:py-2 bg-black text-white rounded-md text-[10px] md:text-sm font-light hover:bg-gray-800 transition-all"
                             >
-                                Create
+                                Create New Attraction
                             </button>
                         </div>
                     )}
 
                     {showListings && (loadingAttractions ? (
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Attractions</h2>
+                        <div className="w-full">
+                            <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-6 px-1">Existing Attractions</h2>
                             <div className="space-y-3">
                                 {[1, 2, 3].map((i) => (
-                                    <div key={i} className="flex items-center justify-between py-3 animate-pulse">
+                                    <div key={i} className="flex items-center justify-between py-3 animate-pulse border-b border-gray-100">
                                         <div className="flex-1 grid grid-cols-3 gap-4">
-                                            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                                            <div className="h-4 bg-gray-100 rounded w-3/4"></div>
+                                            <div className="h-4 bg-gray-100 rounded w-1/2"></div>
+                                            <div className="h-4 bg-gray-100 rounded w-1/3"></div>
                                         </div>
+                                        <div className="w-10 h-4 bg-gray-100 rounded"></div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     ) : attractions.length > 0 ? (
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Attractions</h2>
-                            <div className="flex items-center justify-between pb-2 mb-2 border-gray-200">
-                                <div className="flex-1 grid grid-cols-3 gap-4">
+                        <div className="w-full">
+                            <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-4 px-1">Existing Attractions</h2>
+
+                            <div className="border border-gray-100 rounded-lg overflow-visible">
+                                <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4 rounded-t-lg">
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Title</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
                                     <p className="text-xs font-semibold text-gray-600 uppercase">Entry Fee</p>
                                 </div>
-                                <div className="w-10"></div>
-                            </div>
-                            <div className="divide-y divide-gray-200">
-                                {([...attractions].sort((a, b) => {
-                                    if (!sortOrder) return 0;
-                                    const stateA = a.state || '';
-                                    const stateB = b.state || '';
-                                    return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
-                                })).map((attraction) => (
-                                    <div key={attraction._id} className="flex items-center justify-between py-1 hover:bg-gray-50 transition-colors">
-                                        <div className="flex-1 grid grid-cols-3 gap-4">
-                                            <p className="text-sm text-gray-900">{attraction.title}</p>
-                                            <p className="text-sm text-gray-900">{attraction.state}</p>
-                                            <p className="text-sm text-gray-900">₹{attraction.entryFee}</p>
-                                        </div>
-                                        <div className="relative">
-                                            <button
-                                                onClick={() => setOpenMenuId(openMenuId === attraction._id ? null : attraction._id)}
-                                                className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-                                            >
-                                                <RiMoreLine className="text-gray-600" size={20} />
-                                            </button>
-                                            {openMenuId === attraction._id && (
-                                                <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                                    <button
-                                                        onClick={() => {
-                                                            setOpenMenuId(null);
-                                                            handleEdit(attraction);
-                                                        }}
-                                                        className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center gap-2 text-sm"
-                                                    >
-                                                        <RiEditLine size={16} /> Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setOpenMenuId(null);
-                                                            handleDelete(attraction._id);
-                                                        }}
-                                                        className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2 text-sm"
-                                                    >
-                                                        <RiDeleteBinLine size={16} /> Delete
-                                                    </button>
+
+                                <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
+                                    {([...attractions].sort((a, b) => {
+                                        if (!sortOrder) return 0;
+                                        const stateA = a.state || '';
+                                        const stateB = b.state || '';
+                                        return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
+                                    })).map((attraction) => (
+                                        <div key={attraction._id} className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-gray-50/50 transition-colors gap-3 md:gap-0">
+                                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Title</p>
+                                                    <p className="text-xs md:text-sm font-medium md:font-normal text-gray-900">{attraction.title}</p>
                                                 </div>
-                                            )}
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">State</p>
+                                                    <p className="text-[10px] md:text-sm text-gray-900">{attraction.state}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Entry Fee</p>
+                                                    <p className="text-[10px] md:text-sm text-gray-900">₹{attraction.entryFee}</p>
+                                                </div>
+                                            </div>
+                                            <div className="relative">
+                                                <button
+                                                    onClick={() => setOpenMenuId(openMenuId === attraction._id ? null : attraction._id)}
+                                                    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                                                >
+                                                    <RiMoreLine className="text-gray-600" size={20} />
+                                                </button>
+                                                {openMenuId === attraction._id && (
+                                                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                                                        <button
+                                                            onClick={() => {
+                                                                setOpenMenuId(null);
+                                                                handleEdit(attraction);
+                                                            }}
+                                                            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center gap-2 text-sm"
+                                                        >
+                                                            <RiEditLine size={16} /> Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                setOpenMenuId(null);
+                                                                handleDelete(attraction._id);
+                                                            }}
+                                                            className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2 text-sm"
+                                                        >
+                                                            <RiDeleteBinLine size={16} /> Delete
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-white rounded-xl border border-gray-200 p-8 text-left">
-                            <h2 className="text-lg font-light text-gray-800 mb-2">No Attractions Yet</h2>
-                            <p className="text-gray-600 text-sm">Create your first attraction to get started.</p>
-                        </div>
+                        <div className="py-8 text-left px-1 text-gray-500 text-sm">No attractions found.</div>
                     ))}
                 </>
             ) : (
@@ -646,6 +714,8 @@ export default function AddAttractionsClient({
                             } else {
                                 setShowFormInternal(false);
                             }
+                            setEditingId(null);
+                            setFormData(isDev ? DUMMY_FORM_DATA : INITIAL_FORM_STATE);
                         }}
                         className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
                     >
@@ -956,40 +1026,61 @@ export default function AddAttractionsClient({
                                         const daySchedule = (formData.openingHoursExtended as any)[day];
                                         return (
                                             <div key={day} className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
-                                                <div className="w-48 flex items-center justify-between pr-4 border-r border-gray-200">
-                                                    <span className="text-sm font-bold capitalize text-slate-700">{day}</span>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => toggleDayClosed(day)}
-                                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${!daySchedule.isClosed ? 'bg-blue-600' : 'bg-gray-200'}`}
-                                                    >
-                                                        <span
-                                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${!daySchedule.isClosed ? 'translate-x-6' : 'translate-x-1'}`}
-                                                        />
-                                                    </button>
+                                                <div className="w-full md:w-64 flex items-center justify-between pr-0 md:pr-4 border-b md:border-b-0 md:border-r border-gray-200 pb-3 md:pb-0">
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-sm font-bold capitalize text-slate-700">{day}</span>
+                                                        <div className="flex gap-1.5 mt-1">
+                                                            <button type="button" onClick={() => copyOpeningHours(day, 'all')} title="Copy to All Days" className="text-[10px] bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-2 py-0.5 rounded-md font-bold transition-all border border-blue-100 shadow-sm">All</button>
+                                                            <button type="button" onClick={() => copyOpeningHours(day, 'weekdays')} title="Copy to Weekdays" className="text-[10px] bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-2 py-0.5 rounded-md font-bold transition-all border border-blue-100 shadow-sm">W/D</button>
+                                                            <button type="button" onClick={() => copyOpeningHours(day, 'weekends')} title="Copy to Weekends" className="text-[10px] bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-2 py-0.5 rounded-md font-bold transition-all border border-blue-100 shadow-sm">W/E</button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-[10px] uppercase font-bold text-gray-400">{!daySchedule.isClosed ? 'Open' : 'Closed'}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => toggleDayClosed(day)}
+                                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${!daySchedule.isClosed ? 'bg-blue-600' : 'bg-gray-200'}`}
+                                                        >
+                                                            <span
+                                                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${!daySchedule.isClosed ? 'translate-x-6' : 'translate-x-1'}`}
+                                                            />
+                                                        </button>
+                                                    </div>
                                                 </div>
 
                                                 {!daySchedule.isClosed ? (
-                                                    <div className="flex-1 space-y-2">
+                                                    <div className="flex-1 space-y-3 md:space-y-2">
                                                         {daySchedule.slots.map((slot: any, sIdx: number) => (
-                                                            <div key={sIdx} className="flex items-center gap-2">
-                                                                <input
-                                                                    type="time"
-                                                                    value={slot.start}
-                                                                    onChange={(e) => updateOpeningSlot(day, sIdx, 'start', e.target.value)}
-                                                                    className="px-2 py-1 border rounded text-xs"
-                                                                />
-                                                                <span className="text-gray-400">to</span>
-                                                                <input
-                                                                    type="time"
-                                                                    value={slot.end}
-                                                                    onChange={(e) => updateOpeningSlot(day, sIdx, 'end', e.target.value)}
-                                                                    className="px-2 py-1 border rounded text-xs"
-                                                                />
-                                                                <button type="button" onClick={() => removeOpeningSlot(day, sIdx)} className="text-red-500 hover:bg-red-50 p-1 rounded"><RiDeleteBinLine size={14} /></button>
+                                                            <div key={sIdx} className="grid grid-cols-1 sm:flex sm:items-center gap-2 bg-white md:bg-transparent p-2 md:p-0 rounded-lg border md:border-0 border-gray-200">
+                                                                <div className="flex items-center gap-2 flex-1">
+                                                                    <div className="flex-1">
+                                                                        <label className="text-[10px] font-bold text-gray-400 uppercase sm:hidden block mb-1">Start</label>
+                                                                        <input
+                                                                            type="time"
+                                                                            value={slot.start}
+                                                                            onChange={(e) => updateOpeningSlot(day, sIdx, 'start', e.target.value)}
+                                                                            className="w-full px-2 py-1 border rounded text-xs"
+                                                                        />
+                                                                    </div>
+                                                                    <span className="text-gray-400 pt-4 sm:pt-0">to</span>
+                                                                    <div className="flex-1">
+                                                                        <label className="text-[10px] font-bold text-gray-400 uppercase sm:hidden block mb-1">End</label>
+                                                                        <input
+                                                                            type="time"
+                                                                            value={slot.end}
+                                                                            onChange={(e) => updateOpeningSlot(day, sIdx, 'end', e.target.value)}
+                                                                            className="w-full px-2 py-1 border rounded text-xs"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <button type="button" onClick={() => removeOpeningSlot(day, sIdx)} className="text-red-500 hover:bg-red-50 p-1.5 rounded self-end flex items-center justify-center border border-red-100 sm:border-0 sm:mt-0 mt-2">
+                                                                    <RiDeleteBinLine size={14} className="sm:mr-0 mr-1" />
+                                                                    <span className="sm:hidden text-xs font-bold uppercase">Remove Slot</span>
+                                                                </button>
                                                             </div>
                                                         ))}
-                                                        <button type="button" onClick={() => addOpeningSlot(day)} className="text-[10px] text-blue-600 font-bold hover:underline flex items-center gap-1">
+                                                        <button type="button" onClick={() => addOpeningSlot(day)} className="text-[10px] text-blue-600 font-bold hover:underline flex items-center gap-1 mt-1">
                                                             <RiAddLine /> Add Slot
                                                         </button>
                                                     </div>
@@ -1022,10 +1113,18 @@ export default function AddAttractionsClient({
                             <h3 className="text-md font-bold text-gray-800 flex items-center gap-2">
                                 <RiPriceTag3Line className="text-emerald-500" /> Entry Pricing Table
                             </h3>
-                            <div className="space-y-3">
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-12 gap-2 text-[10px] font-bold text-gray-500 uppercase px-2 hidden md:grid">
+                                    <div className="col-span-4">Category</div>
+                                    <div className="col-span-2">Min (₹)</div>
+                                    <div className="col-span-2">Max (₹)</div>
+                                    <div className="col-span-3">Notes</div>
+                                    <div className="col-span-1"></div>
+                                </div>
                                 {formData.entryPricing.map((row, idx) => (
-                                    <div key={idx} className="flex gap-4 items-center bg-emerald-50/50 p-3 rounded-lg border border-emerald-100">
-                                        <div className="flex-1">
+                                    <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-2 items-center bg-emerald-50/50 p-3 md:p-2 rounded-lg border border-emerald-100">
+                                        <div className="col-span-1 md:col-span-4">
+                                            <label className="text-[10px] font-bold text-emerald-600 uppercase md:hidden mb-1 block">Category</label>
                                             <input
                                                 type="text"
                                                 value={row.category}
@@ -1034,29 +1133,67 @@ export default function AddAttractionsClient({
                                                     newPricing[idx].category = e.target.value;
                                                     setFormData({ ...formData, entryPricing: newPricing });
                                                 }}
-                                                className="w-full px-3 py-1.5 border rounded text-sm outline-none focus:ring-1 focus:ring-emerald-500"
+                                                className="w-full px-3 py-1.5 border rounded text-sm outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
                                                 placeholder="Category (e.g. Adult, Child)"
                                             />
                                         </div>
-                                        <div className="w-32">
+                                        <div className="col-span-1 md:col-span-2">
+                                            <label className="text-[10px] font-bold text-emerald-600 uppercase md:hidden mb-1 block">Min (₹)</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">₹</span>
+                                                <input
+                                                    type="number"
+                                                    value={row.minPrice}
+                                                    onChange={e => {
+                                                        const newPricing = [...formData.entryPricing];
+                                                        newPricing[idx].minPrice = e.target.value;
+                                                        setFormData({ ...formData, entryPricing: newPricing });
+                                                    }}
+                                                    className="w-full pl-6 pr-3 py-1.5 border rounded text-sm outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                                                    placeholder="Min"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="col-span-1 md:col-span-2">
+                                            <label className="text-[10px] font-bold text-emerald-600 uppercase md:hidden mb-1 block">Max (₹)</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">₹</span>
+                                                <input
+                                                    type="number"
+                                                    value={row.maxPrice}
+                                                    onChange={e => {
+                                                        const newPricing = [...formData.entryPricing];
+                                                        newPricing[idx].maxPrice = e.target.value;
+                                                        setFormData({ ...formData, entryPricing: newPricing });
+                                                    }}
+                                                    className="w-full pl-6 pr-3 py-1.5 border rounded text-sm outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                                                    placeholder="Max"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="col-span-1 md:col-span-3">
+                                            <label className="text-[10px] font-bold text-emerald-600 uppercase md:hidden mb-1 block">Notes</label>
                                             <input
                                                 type="text"
-                                                value={row.price}
+                                                value={row.notes}
                                                 onChange={e => {
                                                     const newPricing = [...formData.entryPricing];
-                                                    newPricing[idx].price = e.target.value;
+                                                    newPricing[idx].notes = e.target.value;
                                                     setFormData({ ...formData, entryPricing: newPricing });
                                                 }}
-                                                className="w-full px-3 py-1.5 border rounded text-sm outline-none focus:ring-1 focus:ring-emerald-500"
-                                                placeholder="Price (₹)"
+                                                className="w-full px-3 py-1.5 border rounded text-sm outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+                                                placeholder="Notes"
                                             />
                                         </div>
-                                        <button type="button" onClick={() => removePricingRow(idx)} className="text-red-500 p-1.5 hover:bg-red-50 rounded">
-                                            <RiDeleteBinLine size={16} />
-                                        </button>
+                                        <div className="col-span-1 md:col-span-1 flex justify-end">
+                                            <button type="button" onClick={() => removePricingRow(idx)} className="text-red-500 p-1.5 hover:bg-red-50 rounded border border-red-100 md:border-0 w-full md:w-auto flex items-center justify-center gap-2">
+                                                <RiDeleteBinLine size={16} />
+                                                <span className="md:hidden text-xs font-bold uppercase">Remove</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
-                                <button type="button" onClick={addPricingRow} className="text-sm text-emerald-600 font-bold flex items-center gap-1 hover:underline">
+                                <button type="button" onClick={addPricingRow} className="text-sm text-emerald-600 font-bold flex items-center gap-1 hover:underline py-1">
                                     <RiAddLine /> Add Row
                                 </button>
                             </div>
@@ -1064,32 +1201,45 @@ export default function AddAttractionsClient({
                             <h3 className="text-md font-bold text-gray-800 flex items-center gap-2 pt-4">
                                 <RiPriceTag3Line className="text-purple-500" /> Additional Charges (Optional)
                             </h3>
-                            <div className="space-y-3">
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-12 gap-2 text-[10px] font-bold text-gray-500 uppercase px-2 hidden md:grid">
+                                    <div className="col-span-4">Item</div>
+                                    <div className="col-span-3">Price Range</div>
+                                    <div className="col-span-4">Note</div>
+                                    <div className="col-span-1"></div>
+                                </div>
                                 {formData.additionalCharges.map((row, idx) => (
-                                    <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-purple-50/50 p-3 rounded-lg border border-purple-100">
-                                        <input
-                                            type="text"
-                                            value={row.item}
-                                            onChange={e => {
-                                                const newCharges = [...formData.additionalCharges];
-                                                newCharges[idx].item = e.target.value;
-                                                setFormData({ ...formData, additionalCharges: newCharges });
-                                            }}
-                                            className="px-3 py-1.5 border rounded text-sm"
-                                            placeholder="Item (e.g. Parking)"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={row.priceRange}
-                                            onChange={e => {
-                                                const newCharges = [...formData.additionalCharges];
-                                                newCharges[idx].priceRange = e.target.value;
-                                                setFormData({ ...formData, additionalCharges: newCharges });
-                                            }}
-                                            className="px-3 py-1.5 border rounded text-sm"
-                                            placeholder="Price Range (e.g. ₹50)"
-                                        />
-                                        <div className="flex gap-2">
+                                    <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-2 items-center bg-purple-50/50 p-3 md:p-2 rounded-lg border border-purple-100">
+                                        <div className="col-span-1 md:col-span-4">
+                                            <label className="text-[10px] font-bold text-purple-600 uppercase md:hidden mb-1 block">Item</label>
+                                            <input
+                                                type="text"
+                                                value={row.item}
+                                                onChange={e => {
+                                                    const newCharges = [...formData.additionalCharges];
+                                                    newCharges[idx].item = e.target.value;
+                                                    setFormData({ ...formData, additionalCharges: newCharges });
+                                                }}
+                                                className="w-full px-3 py-1.5 border rounded text-sm bg-white"
+                                                placeholder="Item (e.g. Parking)"
+                                            />
+                                        </div>
+                                        <div className="col-span-1 md:col-span-3">
+                                            <label className="text-[10px] font-bold text-purple-600 uppercase md:hidden mb-1 block">Price Range</label>
+                                            <input
+                                                type="text"
+                                                value={row.priceRange}
+                                                onChange={e => {
+                                                    const newCharges = [...formData.additionalCharges];
+                                                    newCharges[idx].priceRange = e.target.value;
+                                                    setFormData({ ...formData, additionalCharges: newCharges });
+                                                }}
+                                                className="w-full px-3 py-1.5 border rounded text-sm bg-white"
+                                                placeholder="Price Range (e.g. ₹50)"
+                                            />
+                                        </div>
+                                        <div className="col-span-1 md:col-span-4">
+                                            <label className="text-[10px] font-bold text-purple-600 uppercase md:hidden mb-1 block">Note</label>
                                             <input
                                                 type="text"
                                                 value={row.note}
@@ -1098,16 +1248,19 @@ export default function AddAttractionsClient({
                                                     newCharges[idx].note = e.target.value;
                                                     setFormData({ ...formData, additionalCharges: newCharges });
                                                 }}
-                                                className="flex-1 px-3 py-1.5 border rounded text-sm"
+                                                className="w-full px-3 py-1.5 border rounded text-sm bg-white"
                                                 placeholder="Note"
                                             />
-                                            <button type="button" onClick={() => removeChargeRow(idx)} className="text-red-500 p-1.5 hover:bg-red-50 rounded">
+                                        </div>
+                                        <div className="col-span-1 md:col-span-1 flex justify-end">
+                                            <button type="button" onClick={() => removeChargeRow(idx)} className="text-red-500 p-1.5 hover:bg-red-50 rounded border border-red-100 md:border-0 w-full md:w-auto flex items-center justify-center gap-2">
                                                 <RiDeleteBinLine size={16} />
+                                                <span className="md:hidden text-xs font-bold uppercase">Remove</span>
                                             </button>
                                         </div>
                                     </div>
                                 ))}
-                                <button type="button" onClick={addChargeRow} className="text-sm text-purple-600 font-bold flex items-center gap-1 hover:underline">
+                                <button type="button" onClick={addChargeRow} className="text-sm text-purple-600 font-bold flex items-center gap-1 hover:underline py-1">
                                     <RiAddLine /> Add Charge
                                 </button>
                             </div>
@@ -1148,16 +1301,35 @@ export default function AddAttractionsClient({
                                                             newReach[idx].type = e.target.value;
                                                             setFormData({ ...formData, howToReach: newReach });
                                                         }}
-                                                        className="w-full px-3 py-1.5 border rounded-lg text-sm bg-slate-50"
+                                                        className="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-pink-500 outline-none transition-all"
                                                     >
-                                                        <option value="Train">Train</option>
-                                                        <option value="Bus">Bus</option>
                                                         <option value="Metro">Metro</option>
-                                                        <option value="Taxi">Taxi</option>
+                                                        <option value="Bus">Bus</option>
                                                         <option value="Auto">Auto</option>
+                                                        <option value="Taxi">Taxi</option>
+                                                        <option value="Cab">Cab</option>
+                                                        <option value="Train">Train</option>
+                                                        <option value="Flight">Flight</option>
                                                         <option value="Walk">Walk</option>
+                                                        <option value="Custom">Custom</option>
                                                     </select>
                                                 </div>
+                                                {step.type === 'Custom' && (
+                                                    <div className="space-y-1">
+                                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Custom Type</label>
+                                                        <input
+                                                            type="text"
+                                                            value={step.customType || ''}
+                                                            onChange={e => {
+                                                                const newReach = [...formData.howToReach];
+                                                                (newReach[idx] as any).customType = e.target.value;
+                                                                setFormData({ ...formData, howToReach: newReach });
+                                                            }}
+                                                            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none transition-all"
+                                                            placeholder="Type transport"
+                                                        />
+                                                    </div>
+                                                )}
                                                 <div className="space-y-1 md:col-span-2">
                                                     <label className="text-[10px] font-bold text-slate-400 uppercase">Station / Point Name</label>
                                                     <input
@@ -1168,7 +1340,7 @@ export default function AddAttractionsClient({
                                                             newReach[idx].station = e.target.value;
                                                             setFormData({ ...formData, howToReach: newReach });
                                                         }}
-                                                        className="w-full px-3 py-1.5 border rounded-lg text-sm"
+                                                        className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none transition-all"
                                                         placeholder="e.g. Agra Cantt Railway Station"
                                                     />
                                                 </div>
@@ -1182,22 +1354,56 @@ export default function AddAttractionsClient({
                                                             newReach[idx].distance = e.target.value;
                                                             setFormData({ ...formData, howToReach: newReach });
                                                         }}
-                                                        className="w-full px-3 py-1.5 border rounded-lg text-sm"
+                                                        className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none transition-all"
                                                         placeholder="e.g. 5 km"
                                                     />
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Fare / Cost</label>
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Fare Range (Min - Max)</label>
+                                                    <div className="flex items-center gap-1">
+                                                        <div className="relative flex-1">
+                                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">₹</span>
+                                                            <input
+                                                                type="text"
+                                                                value={step.minFare}
+                                                                onChange={e => {
+                                                                    const newReach = [...formData.howToReach];
+                                                                    newReach[idx].minFare = e.target.value;
+                                                                    setFormData({ ...formData, howToReach: newReach });
+                                                                }}
+                                                                className="w-full pl-5 pr-2 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none transition-all"
+                                                                placeholder="Min"
+                                                            />
+                                                        </div>
+                                                        <span className="text-gray-400 text-xs">-</span>
+                                                        <div className="relative flex-1">
+                                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">₹</span>
+                                                            <input
+                                                                type="text"
+                                                                value={step.maxFare}
+                                                                onChange={e => {
+                                                                    const newReach = [...formData.howToReach];
+                                                                    newReach[idx].maxFare = e.target.value;
+                                                                    setFormData({ ...formData, howToReach: newReach });
+                                                                }}
+                                                                className="w-full pl-5 pr-2 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none transition-all"
+                                                                placeholder="Max"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-1 md:col-span-2">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Route Notes (Optional)</label>
                                                     <input
                                                         type="text"
-                                                        value={step.fare}
+                                                        value={step.routeNote}
                                                         onChange={e => {
                                                             const newReach = [...formData.howToReach];
-                                                            newReach[idx].fare = e.target.value;
+                                                            newReach[idx].routeNote = e.target.value;
                                                             setFormData({ ...formData, howToReach: newReach });
                                                         }}
-                                                        className="w-full px-3 py-1.5 border rounded-lg text-sm"
-                                                        placeholder="e.g. ₹50"
+                                                        className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none transition-all"
+                                                        placeholder="e.g. Best for avoiding traffic"
                                                     />
                                                 </div>
                                                 <div className="space-y-1">
@@ -1210,7 +1416,7 @@ export default function AddAttractionsClient({
                                                             newReach[idx].time = e.target.value;
                                                             setFormData({ ...formData, howToReach: newReach });
                                                         }}
-                                                        className="w-full px-3 py-1.5 border rounded-lg text-sm"
+                                                        className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none transition-all"
                                                         placeholder="e.g. 15 mins"
                                                     />
                                                 </div>
@@ -1266,7 +1472,7 @@ export default function AddAttractionsClient({
                                             <RiDeleteBinLine size={20} />
                                         </button>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4">
                                             <div className="md:col-span-2">
                                                 <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Name</label>
                                                 <input
@@ -1278,91 +1484,95 @@ export default function AddAttractionsClient({
                                                 />
                                             </div>
 
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Logo</label>
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden shrink-0">
-                                                        {partner.logo ? (
-                                                            <img src={partner.logo} alt="Logo" className="w-full h-full object-contain" />
-                                                        ) : (
-                                                            <span className="text-xs text-gray-400">No Image</span>
-                                                        )}
+                                            <div className="space-y-4 md:space-y-0 md:flex md:items-center md:gap-8">
+                                                <div className="flex-1">
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Partner Logo</label>
+                                                    <div className="flex items-center gap-4 bg-white p-3 rounded-lg border border-gray-100">
+                                                        <div className="w-16 h-16 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                                                            {partner.logo ? (
+                                                                <img src={partner.logo} alt="Logo" className="w-full h-full object-contain" />
+                                                            ) : (
+                                                                <span className="text-[10px] text-gray-400 uppercase font-bold text-center px-1">No Logo</span>
+                                                            )}
+                                                        </div>
+                                                        <CldUploadWidget
+                                                            uploadPreset="travoxa"
+                                                            onSuccess={(result: any) => {
+                                                                updatePartner(idx, 'logo', result.info.secure_url);
+                                                            }}
+                                                        >
+                                                            {({ open }) => (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => { e.preventDefault(); open(); }}
+                                                                    className="px-3 py-1.5 bg-gray-50 border border-gray-300 rounded text-xs font-bold hover:bg-gray-100 transition-colors flex items-center gap-2"
+                                                                >
+                                                                    <RiAddLine /> {partner.logo ? 'Change' : 'Upload'}
+                                                                </button>
+                                                            )}
+                                                        </CldUploadWidget>
                                                     </div>
-                                                    <CldUploadWidget
-                                                        uploadPreset="travoxa"
-                                                        onSuccess={(result: any) => {
-                                                            updatePartner(idx, 'logo', result.info.secure_url);
-                                                        }}
-                                                    >
-                                                        {({ open }) => (
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => { e.preventDefault(); open(); }}
-                                                                className="px-3 py-1.5 bg-white border border-gray-300 rounded text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
-                                                            >
-                                                                <RiAddLine /> {partner.logo ? 'Change Logo' : 'Upload Logo'}
-                                                            </button>
-                                                        )}
-                                                    </CldUploadWidget>
+                                                </div>
+
+                                                <div className="flex items-center pt-2 md:pt-6">
+                                                    <label className="flex items-center gap-3 cursor-pointer group bg-white px-4 py-2 rounded-lg border border-gray-100 hover:border-blue-200 transition-all w-full md:w-auto">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={partner.isVerified}
+                                                            onChange={(e) => updatePartner(idx, 'isVerified', e.target.checked)}
+                                                            className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                        />
+                                                        <span className="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
+                                                            Verified
+                                                        </span>
+                                                    </label>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center pt-6">
-                                                <label className="flex items-center gap-2 cursor-pointer group">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:contents">
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Phone Number</label>
                                                     <input
-                                                        type="checkbox"
-                                                        checked={partner.isVerified}
-                                                        onChange={(e) => updatePartner(idx, 'isVerified', e.target.checked)}
-                                                        className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                        type="text"
+                                                        value={partner.phone}
+                                                        onChange={(e) => updatePartner(idx, 'phone', e.target.value)}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                        placeholder="+91..."
                                                     />
-                                                    <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors flex items-center gap-1">
-                                                        Verified Partner
-                                                    </span>
-                                                </label>
-                                            </div>
+                                                </div>
 
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Phone Number</label>
-                                                <input
-                                                    type="text"
-                                                    value={partner.phone}
-                                                    onChange={(e) => updatePartner(idx, 'phone', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                                    placeholder="+91..."
-                                                />
-                                            </div>
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Website URL</label>
+                                                    <input
+                                                        type="text"
+                                                        value={partner.website}
+                                                        onChange={(e) => updatePartner(idx, 'website', e.target.value)}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                        placeholder="https://..."
+                                                    />
+                                                </div>
 
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Website URL</label>
-                                                <input
-                                                    type="text"
-                                                    value={partner.website}
-                                                    onChange={(e) => updatePartner(idx, 'website', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                                    placeholder="https://..."
-                                                />
-                                            </div>
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">State</label>
+                                                    <input
+                                                        type="text"
+                                                        value={partner.state}
+                                                        onChange={(e) => updatePartner(idx, 'state', e.target.value)}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                        placeholder="State"
+                                                    />
+                                                </div>
 
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">State</label>
-                                                <input
-                                                    type="text"
-                                                    value={partner.state}
-                                                    onChange={(e) => updatePartner(idx, 'state', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                                    placeholder="State"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Location/Address</label>
-                                                <input
-                                                    type="text"
-                                                    value={partner.location}
-                                                    onChange={(e) => updatePartner(idx, 'location', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                                    placeholder="City or Full Address"
-                                                />
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-600 block mb-1 uppercase tracking-wider">Location/Address</label>
+                                                    <input
+                                                        type="text"
+                                                        value={partner.location}
+                                                        onChange={(e) => updatePartner(idx, 'location', e.target.value)}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                        placeholder="City or Full Address"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1427,7 +1637,33 @@ export default function AddAttractionsClient({
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div className="space-y-3 p-4 bg-red-50/50 rounded-xl border border-red-100">
-                                    <label className="text-xs font-bold text-red-600 uppercase flex items-center gap-1"><RiHotelLine /> Hospital</label>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <label className="text-xs font-bold text-red-600 uppercase flex items-center gap-1"><RiHotelLine /> Hospital</label>
+                                        <select
+                                            className="text-[10px] bg-white border border-red-200 rounded px-1 outline-none focus:ring-1 focus:ring-red-400"
+                                            onChange={(e) => {
+                                                const selected = allHelplines.find(h => h._id === e.target.value);
+                                                if (selected) {
+                                                    setFormData({
+                                                        ...formData,
+                                                        emergencyInfo: {
+                                                            ...formData.emergencyInfo,
+                                                            hospital: {
+                                                                name: selected.serviceName,
+                                                                distance: '',
+                                                                mapLink: selected.googleMapLink || ''
+                                                            }
+                                                        }
+                                                    });
+                                                }
+                                            }}
+                                        >
+                                            <option value="">Link Existing...</option>
+                                            {allHelplines.filter(h => h.emergencyType === 'Hospital').map(h => (
+                                                <option key={h._id} value={h._id}>{h.serviceName}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                     <input
                                         type="text"
                                         value={formData.emergencyInfo.hospital?.name}
@@ -1451,7 +1687,33 @@ export default function AddAttractionsClient({
                                     />
                                 </div>
                                 <div className="space-y-3 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
-                                    <label className="text-xs font-bold text-blue-600 uppercase flex items-center gap-1">Police Station</label>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <label className="text-xs font-bold text-blue-600 uppercase flex items-center gap-1">Police Station</label>
+                                        <select
+                                            className="text-[10px] bg-white border border-blue-200 rounded px-1 outline-none focus:ring-1 focus:ring-blue-400"
+                                            onChange={(e) => {
+                                                const selected = allHelplines.find(h => h._id === e.target.value);
+                                                if (selected) {
+                                                    setFormData({
+                                                        ...formData,
+                                                        emergencyInfo: {
+                                                            ...formData.emergencyInfo,
+                                                            police: {
+                                                                name: selected.serviceName,
+                                                                distance: '',
+                                                                mapLink: selected.googleMapLink || ''
+                                                            }
+                                                        }
+                                                    });
+                                                }
+                                            }}
+                                        >
+                                            <option value="">Link Existing...</option>
+                                            {allHelplines.filter(h => h.emergencyType === 'Police').map(h => (
+                                                <option key={h._id} value={h._id}>{h.serviceName}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                     <input
                                         type="text"
                                         value={formData.emergencyInfo.police?.name}

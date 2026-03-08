@@ -43,7 +43,7 @@ export default async function RootLayout({
             <main className="flex-1 min-w-0 relative">
               {children}
             </main>
-            {session && <VerticalSidebar />}
+            {session && session.user?.role === 'user' && <VerticalSidebar />}
           </div>
         </Providers>
       </body>

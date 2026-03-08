@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Header from "@/components/ui/Header";
-import Footor from "@/components/ui/Footor";
+import Footer from "@/components/ui/Footer";
 import {
     FaWhatsapp,
     FaStar,
@@ -472,7 +472,7 @@ export default function RentalDetailsPage() {
                 />
             </div>
 
-            <Footor />
+            <Footer />
         </div>
     );
 }

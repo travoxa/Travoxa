@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from '@/components/dashboard/Sidebar'
 import TopBar from '@/components/dashboard/TopBar'
 import { useRouter } from 'next/navigation'
@@ -21,6 +21,8 @@ import AddFoodClient from '@/app/admin/food/AddFoodClient'
 import AddStayClient from '@/app/admin/stay/AddStayClient'
 import AddHelplineClient from '@/app/admin/helpline/AddHelplineClient'
 import VendorRequestsClient from '@/app/admin/requests/VendorRequestsClient'
+import TourRequestsClient from '@/app/admin/tour/TourRequestsClient'
+import VendorTourApprovalClient from '@/app/admin/tour/VendorTourApprovalClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -34,7 +36,51 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
     const permissions = adminUser.permissions || [];
     const [activeTab, setActiveTab] = useState(permissions.includes('Overview') ? 'Overview' : (permissions[0] || 'Overview'))
     const [activeDiscoveryForm, setActiveDiscoveryForm] = useState<'sightseeing' | 'rentals' | 'activities' | 'attractions' | 'food' | 'stay' | 'helpline' | null>(null)
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+    const [hasPendingTourRequests, setHasPendingTourRequests] = useState(false)
+    const [hasPendingVendorTours, setHasPendingVendorTours] = useState(false)
+    const [hasPendingVendorRequests, setHasPendingVendorRequests] = useState(false)
     const router = useRouter()
+
+    useEffect(() => {
+        const checkPendingRequests = async () => {
+            try {
+                // 1. Check Tour Requests (Standard & Custom)
+                const [standardRes, customRes] = await Promise.all([
+                    fetch('/api/tours/request'),
+                    fetch('/api/tours/custom-request')
+                ]);
+                const standardData = await standardRes.json();
+                const customData = await customRes.json();
+
+                const hasPendingStandard = standardData.success && standardData.data.some((req: any) => req.status === 'pending');
+                const hasPendingCustom = customData.success && customData.data.some((req: any) => req.status === 'pending');
+                setHasPendingTourRequests(hasPendingStandard || hasPendingCustom);
+
+                // 2. Check Vendor Tours
+                const vendorToursRes = await fetch('/api/tours?admin=true&status=pending');
+                const vendorToursData = await vendorToursRes.json();
+                setHasPendingVendorTours(vendorToursData.success && vendorToursData.data.length > 0);
+
+                // 3. Check Other Vendor Requests
+                const otherCollections = ['activities', 'rentals', 'sightseeing', 'stay', 'food'];
+                const otherRes = await Promise.all(
+                    otherCollections.map(col => fetch(`/api/${col}?admin=true&status=pending`))
+                );
+                const otherData = await Promise.all(otherRes.map(res => res.json()));
+                const hasAnyOtherPending = otherData.some(d => d.success && d.data.length > 0);
+                setHasPendingVendorRequests(hasAnyOtherPending);
+
+            } catch (error) {
+                console.error('Error checking pending requests:', error);
+            }
+        };
+
+        checkPendingRequests();
+        // Check every 5 minutes
+        const interval = setInterval(checkPendingRequests, 5 * 60 * 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     const renderContent = () => {
         const permissions = adminUser.permissions || [];
@@ -47,12 +93,25 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             return permissions.includes(`Discovery:${subSection}`);
         };
 
-        // Check if current tab is allowed
-        const isAllowed = permissions.includes(activeTab) || (activeTab === 'Discovery' && hasDiscoveryPermission());
+        const hasTourPermission = (subSection?: string) => {
+            if (permissions.includes('Tour')) return true;
+            if (!subSection) {
+                return permissions.some(p => p.startsWith('Tour:'));
+            }
+            return permissions.includes(`Tour:${subSection}`);
+        };
+
+        // For backwards compatibility or default routing, we can still allow 'Discovery'
+        // If 'Discovery' is the active tab but it's now split, we might want to default to the first available one
+        const isAllowed = permissions.includes(activeTab) ||
+            (activeTab === 'Discovery' && hasDiscoveryPermission()) ||
+            (activeTab.startsWith('Discovery:') && hasDiscoveryPermission(activeTab.split(':')[1])) ||
+            (activeTab === 'Tour' && hasTourPermission()) ||
+            (activeTab.startsWith('Tour:') && hasTourPermission(activeTab.split(':')[1]));
 
         if (!isAllowed) {
             return (
-                <div className="flex flex-col items-center justify-center h-[60vh] text-gray-500">
+                <div className="flex flex-col items-center justify-center h-[50vh] md:h-[60vh] text-gray-500 px-4 text-center">
                     <RiShieldCheckLine size={64} className="mb-4 opacity-20" />
                     <h2 className="text-xl font-medium Inter">Access Restricted</h2>
                     <p className="text-sm">You don't have permission to access the {activeTab} section.</p>
@@ -64,157 +123,103 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             case 'Landing':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Landing</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Landing</h1>
                     </div>
                 )
 
-            case 'Tour':
+            case 'Tour:All':
+            case 'Tour': // For backwards compatibility
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Tour</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">All Tours</h1>
                         <AddTourClient />
                     </div>
                 )
 
-            case 'Discovery':
+            case 'Tour:Requests':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Discovery</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Tour Requests</h1>
+                        <TourRequestsClient />
+                    </div>
+                )
 
-                        {/* Full-width form when active - appears at top */}
-                        {activeDiscoveryForm === 'sightseeing' && hasDiscoveryPermission('Sightseeing') && (
-                            <AddSightseeingClient
-                                showManagementBox={false}
-                                showListings={false}
-                                showFormDirectly={true}
-                                onFormClose={() => setActiveDiscoveryForm(null)}
-                            />
-                        )}
+            case 'Tour:VendorTours':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Vendor Tour Submissions</h1>
+                        <VendorTourApprovalClient />
+                    </div>
+                )
 
-                        {activeDiscoveryForm === 'rentals' && hasDiscoveryPermission('Rentals') && (
-                            <AddRentalsClient
-                                showManagementBox={false}
-                                showListings={false}
-                                showFormDirectly={true}
-                                onFormClose={() => setActiveDiscoveryForm(null)}
-                            />
-                        )}
+            case 'Discovery:Sightseeing':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Sightseeing</h1>
+                        <AddSightseeingClient showManagementBox={true} showListings={true} />
+                    </div>
+                )
 
-                        {activeDiscoveryForm === 'activities' && hasDiscoveryPermission('Activities') && (
-                            <AddActivitiesClient
-                                showManagementBox={false}
-                                showListings={false}
-                                showFormDirectly={true}
-                                onFormClose={() => setActiveDiscoveryForm(null)}
-                            />
-                        )}
+            case 'Discovery:Rentals':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Rentals</h1>
+                        <AddRentalsClient showManagementBox={true} showListings={true} />
+                    </div>
+                )
 
-                        {activeDiscoveryForm === 'attractions' && hasDiscoveryPermission('Attractions') && (
-                            <AddAttractionsClient
-                                showManagementBox={false}
-                                showListings={false}
-                                showFormDirectly={true}
-                                onFormClose={() => setActiveDiscoveryForm(null)}
-                            />
-                        )}
+            case 'Discovery:Activities':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Activities</h1>
+                        <AddActivitiesClient showManagementBox={true} showListings={true} />
+                    </div>
+                )
 
-                        {activeDiscoveryForm === 'food' && hasDiscoveryPermission('Food') && (
-                            <AddFoodClient
-                                showManagementBox={false}
-                                showListings={false}
-                                showFormDirectly={true}
-                                onFormClose={() => setActiveDiscoveryForm(null)}
-                            />
-                        )}
+            case 'Discovery:Attractions':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Attractions</h1>
+                        <AddAttractionsClient showManagementBox={true} showListings={true} />
+                    </div>
+                )
 
-                        {activeDiscoveryForm === 'stay' && hasDiscoveryPermission('Stay') && (
-                            <AddStayClient
-                                showManagementBox={false}
-                                showListings={false}
-                                showFormDirectly={true}
-                                onFormClose={() => setActiveDiscoveryForm(null)}
-                            />
-                        )}
+            case 'Discovery:Food':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Food & Cafes</h1>
+                        <AddFoodClient showManagementBox={true} showListings={true} />
+                    </div>
+                )
 
-                        {activeDiscoveryForm === 'helpline' && hasDiscoveryPermission('Emergency') && (
-                            <AddHelplineClient
-                                showManagementBox={false}
-                                showListings={false}
-                                showFormDirectly={true}
-                                onFormClose={() => setActiveDiscoveryForm(null)}
-                            />
-                        )}
+            case 'Discovery:Stay':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Stay</h1>
+                        <AddStayClient showManagementBox={true} showListings={true} />
+                    </div>
+                )
 
-                        {/* Row 1: Management Boxes - Side by Side (hidden when form is open) */}
-                        {!activeDiscoveryForm && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                                {hasDiscoveryPermission('Sightseeing') && (
-                                    <AddSightseeingClient
-                                        showManagementBox={true}
-                                        showListings={false}
-                                        onFormOpen={() => setActiveDiscoveryForm('sightseeing')}
-                                    />
-                                )}
-                                {hasDiscoveryPermission('Rentals') && (
-                                    <AddRentalsClient
-                                        showManagementBox={true}
-                                        showListings={false}
-                                        onFormOpen={() => setActiveDiscoveryForm('rentals')}
-                                    />
-                                )}
-                                {hasDiscoveryPermission('Activities') && (
-                                    <AddActivitiesClient
-                                        showManagementBox={true}
-                                        showListings={false}
-                                        onFormOpen={() => setActiveDiscoveryForm('activities')}
-                                    />
-                                )}
-                                {hasDiscoveryPermission('Attractions') && (
-                                    <AddAttractionsClient
-                                        showManagementBox={true}
-                                        showListings={false}
-                                        onFormOpen={() => setActiveDiscoveryForm('attractions')}
-                                    />
-                                )}
-                                {hasDiscoveryPermission('Food') && (
-                                    <AddFoodClient
-                                        showManagementBox={true}
-                                        showListings={false}
-                                        onFormOpen={() => setActiveDiscoveryForm('food')}
-                                    />
-                                )}
-                                {hasDiscoveryPermission('Stay') && (
-                                    <AddStayClient
-                                        showManagementBox={true}
-                                        showListings={false}
-                                        onFormOpen={() => setActiveDiscoveryForm('stay')}
-                                    />
-                                )}
-                                {hasDiscoveryPermission('Emergency') && (
-                                    <AddHelplineClient
-                                        showManagementBox={true}
-                                        showListings={false}
-                                        onFormOpen={() => setActiveDiscoveryForm('helpline')}
-                                    />
-                                )}
-                            </div>
-                        )}
+            case 'Discovery:Emergency':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Emergency Setup</h1>
+                        <AddHelplineClient showManagementBox={true} showListings={true} />
+                    </div>
+                )
 
-                        {/* Row 2: Listings */}
-                        {hasDiscoveryPermission('Sightseeing') && <AddSightseeingClient showManagementBox={false} showListings={true} />}
-                        {hasDiscoveryPermission('Rentals') && <AddRentalsClient showManagementBox={false} showListings={true} />}
-                        {hasDiscoveryPermission('Activities') && <AddActivitiesClient showManagementBox={false} showListings={true} />}
-                        {hasDiscoveryPermission('Attractions') && <AddAttractionsClient showManagementBox={false} showListings={true} />}
-                        {hasDiscoveryPermission('Food') && <AddFoodClient showManagementBox={false} showListings={true} />}
-                        {hasDiscoveryPermission('Stay') && <AddStayClient showManagementBox={false} showListings={true} />}
-                        {hasDiscoveryPermission('Emergency') && <AddHelplineClient showManagementBox={false} showListings={true} />}
+            case 'Discovery': // Fallback if needed, though they should route to specific ones now
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Discovery Overview</h1>
+                        <p className="text-gray-600">Please select a specific Discovery category from the sidebar menu.</p>
                     </div>
                 )
 
             case 'Backpackers':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Backpackers</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Backpackers</h1>
                         <AddHostedBackpackerClient />
                     </div>
                 )
@@ -222,7 +227,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             case 'Vendor Requests':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Vendor Requests</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Vendor Requests</h1>
                         <VendorRequestsClient />
                     </div>
                 )
@@ -230,7 +235,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             case 'Team':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Team</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Team</h1>
                         <TeamManagementClient />
                     </div>
                 )
@@ -238,15 +243,15 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             case 'Overview':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">Overview</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Overview</h1>
                     </div>
                 )
 
             default:
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-3xl font-medium text-gray-800 mb-6 Inter">{activeTab}</h1>
-                        <div className="bg-white rounded-xl border border-gray-200 p-8">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">{activeTab}</h1>
+                        <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">Coming Soon</h2>
                             <p className="text-gray-600">This section is under development.</p>
                         </div>
@@ -264,12 +269,21 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                 setActiveTab={setActiveTab}
                 isAdmin={true}
                 permissions={adminUser.permissions}
+                isOpen={isSidebarOpen}
+                onClose={() => setIsSidebarOpen(false)}
+                hasPendingTourRequests={hasPendingTourRequests}
+                hasPendingVendorTours={hasPendingVendorTours}
+                hasPendingVendorRequests={hasPendingVendorRequests}
             />
 
             {/* Main Content */}
-            <main className="flex-1 ml-52 p-8 lg:p-12 overflow-y-auto">
-                <div className="max-w-7xl mx-auto space-y-8">
-                    <TopBar onNavigate={setActiveTab} isAdmin={true} />
+            <main className="flex-1 md:ml-64 p-4 pt-4 md:p-8 lg:p-12 overflow-y-auto w-full transition-all duration-300">
+                <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
+                    <TopBar
+                        onNavigate={setActiveTab}
+                        isAdmin={true}
+                        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+                    />
 
                     {/* Dynamic Content Area */}
                     <div className="fade-in-up">

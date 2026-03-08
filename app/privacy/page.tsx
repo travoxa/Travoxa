@@ -1,6 +1,6 @@
 import React from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 
 const PrivacyPage = () => {
     return (
@@ -84,7 +84,7 @@ const PrivacyPage = () => {
                     </div>
                 </div>
             </div>
-            <Footor />
+            <Footer />
         </div>
     );
 };

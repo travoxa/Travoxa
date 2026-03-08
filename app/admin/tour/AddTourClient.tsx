@@ -41,13 +41,23 @@ interface AddTourClientProps {
     showManagementBox?: boolean;
     showListings?: boolean;
     showFormDirectly?: boolean;
+    onFormOpen?: () => void;
+    onFormClose?: () => void;
 }
 
-export default function AddTourClient({ vendorId, showManagementBox, showListings, showFormDirectly }: AddTourClientProps) {
+export default function AddTourClient({
+    vendorId,
+    showManagementBox = true,
+    showListings = true,
+    showFormDirectly = false,
+    onFormOpen,
+    onFormClose
+}: AddTourClientProps = {}) {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
-    const [showForm, setShowForm] = useState(false);
+    const [showFormInternal, setShowFormInternal] = useState(false);
+    const showForm = showFormDirectly || showFormInternal;
     const [tours, setTours] = useState<any[]>([]);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -57,7 +67,10 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
     const [activeTab, setActiveTab] = useState<'tours' | 'requests'>('tours');
     const [requests, setRequests] = useState<any[]>([]);
+    const [customRequests, setCustomRequests] = useState<any[]>([]);
     const [loadingRequests, setLoadingRequests] = useState(false);
+    const [loadingCustomRequests, setLoadingCustomRequests] = useState(false);
+    const [requestTab, setRequestTab] = useState<'standard' | 'custom'>('standard');
 
     // Related Packages Data States
     const [allSightseeing, setAllSightseeing] = useState<any[]>([]);
@@ -218,6 +231,21 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
         }
     };
 
+    const fetchCustomRequests = async () => {
+        setLoadingCustomRequests(true);
+        try {
+            const res = await fetch('/api/tours/custom-request');
+            const data = await res.json();
+            if (data.success) {
+                setCustomRequests(data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch custom requests:', error);
+        } finally {
+            setLoadingCustomRequests(false);
+        }
+    };
+
     const fetchRelatedPackages = async () => {
         setLoadingRelated(true);
         try {
@@ -252,12 +280,22 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
     useEffect(() => {
         fetchTours();
         fetchRequests();
+        fetchCustomRequests();
         fetchRelatedPackages();
     }, []);
 
-    const handleRequestAction = async (requestId: string, status: 'approved' | 'rejected') => {
+    const handleRequestAction = async (requestId: string, status: 'approved' | 'rejected', type: 'standard' | 'custom' = 'standard') => {
         try {
-            const res = await fetch('/api/tours/request', {
+            const endpoint = type === 'standard' ? '/api/tours/request' : '/api/tours/custom-request'; // Note: custom-request needs PUT implement if we want status update
+            // Actually, let's keep it simple for now and only handle standard requests for status update
+            // OR I can implement PUT for custom-request as well.
+
+            if (type === 'custom') {
+                alert('Status update for custom requests is coming soon.');
+                return;
+            }
+
+            const res = await fetch(endpoint, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ requestId, status })
@@ -266,9 +304,11 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
 
             if (data.success) {
                 // Update local state
-                setRequests(prev => prev.map(req =>
-                    req._id === requestId ? { ...req, status } : req
-                ));
+                if (type === 'standard') {
+                    setRequests(prev => prev.map(req =>
+                        req._id === requestId ? { ...req, status } : req
+                    ));
+                }
                 alert(`Request ${status} successfully`);
             } else {
                 alert(data.error || 'Failed to update status');
@@ -628,7 +668,7 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
             }));
         }
 
-        setShowForm(true);
+        setShowFormInternal(true);
         setOpenMenuId(null);
     };
 
@@ -726,7 +766,11 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
 
             // Hide form after successful creation/update
             setTimeout(() => {
-                setShowForm(false);
+                if (onFormClose) {
+                    onFormClose();
+                } else {
+                    setShowFormInternal(false);
+                }
                 setSuccess('');
             }, 2000);
         } catch (err: any) {
@@ -787,180 +831,307 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
 
             {!showForm ? (
                 <>
-                    {/* Create Tour Button & Tabs - Top */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-8 w-full mb-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-lg font-medium text-gray-800">Tour Management</h2>
-                            <div className="flex bg-gray-100 p-1 rounded-lg">
+                    {/* Create Button - Top */}
+                    {showManagementBox && (
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                            {activeTab === 'tours' && (
+                                <button
+                                    onClick={() => {
+                                        setEditingId(null);
+                                        setFormData(isDev ? DUMMY_FORM_DATA : EMPTY_FORM_DATA);
+                                        if (onFormOpen) {
+                                            onFormOpen();
+                                        } else {
+                                            setShowFormInternal(true);
+                                        }
+                                    }}
+                                    className="px-3 py-1.5 md:px-6 md:py-2 bg-black text-white rounded-md text-[10px] md:text-sm font-light hover:bg-gray-800 transition-all"
+                                >
+                                    Create New Tour
+                                </button>
+                            )}
+                            <div className="flex bg-gray-100 p-0.5 md:p-1 rounded-lg self-start md:self-auto">
                                 <button
                                     onClick={() => setActiveTab('tours')}
-                                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'tours' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`px-3 py-1.5 md:px-4 md:py-2 rounded-md text-[10px] md:text-sm font-medium transition-all ${activeTab === 'tours' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
                                 >
                                     All Tours
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('requests')}
-                                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'requests' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`px-3 py-1.5 md:px-4 md:py-2 rounded-md text-[10px] md:text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'requests' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
                                 >
-                                    Enquiry Requests
+                                    Enquiries & Custom Trips
+                                    {(requests.some(r => r.status === 'pending') || customRequests.some(r => r.status === 'pending')) && (
+                                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                                    )}
                                 </button>
                             </div>
                         </div>
-
-                        {activeTab === 'tours' && (
-                            <button
-                                onClick={() => setShowForm(true)}
-                                className="px-6 py-2 bg-black text-white rounded-full text-xs font-light hover:bg-gray-800 transition-all"
-                            >
-                                Create New Tour
-                            </button>
-                        )}
-                    </div>
+                    )}
 
                     {activeTab === 'requests' ? (
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <h2 className="text-lg font-medium text-gray-800 mb-6">Tour Enquiries</h2>
-                            {loadingRequests ? (
-                                <p className="text-gray-500">Loading requests...</p>
-                            ) : requests.length === 0 ? (
-                                <p className="text-gray-500">No requests found.</p>
-                            ) : (
-                                <div className="divide-y divide-gray-200">
-                                    {requests.map((req) => (
-                                        <div key={req._id} className="py-4 flex items-center justify-between">
-                                            <div>
-                                                <p className="font-medium text-gray-900">{req.title}</p>
-                                                <p className="text-sm text-gray-500">{req.userDetails?.name} • {req.members} Members • {req.date}</p>
-                                                <p className="text-xs text-gray-400 mt-1">{req.userDetails?.email} • {req.userDetails?.phone}</p>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className={`px-2 py-1 rounded text-xs font-medium capitalize ${req.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                                    req.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                                        'bg-yellow-100 text-yellow-800'
-                                                    }`}>
-                                                    {req.status}
-                                                </span>
+                        <div className="w-full">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-sm md:text-lg font-medium text-gray-800 px-1">Enquiries & Custom Trips</h2>
+                                <div className="flex bg-gray-100 p-1 rounded-lg">
+                                    <button
+                                        onClick={() => setRequestTab('standard')}
+                                        className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${requestTab === 'standard' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}
+                                    >
+                                        Standard Enquiries
+                                    </button>
+                                    <button
+                                        onClick={() => setRequestTab('custom')}
+                                        className={`px-3 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${requestTab === 'custom' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}
+                                    >
+                                        Custom Trip Requests
+                                        {customRequests.some(r => r.status === 'pending') && (
+                                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
 
-                                                {req.status === 'pending' && (
-                                                    <div className="flex items-center gap-1 ml-2">
-                                                        <button
-                                                            onClick={() => handleRequestAction(req._id, 'approved')}
-                                                            className="p-1.5 bg-green-50 text-green-600 rounded hover:bg-green-100 transition-colors"
-                                                            title="Approve"
-                                                        >
-                                                            <RiCheckLine size={16} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleRequestAction(req._id, 'rejected')}
-                                                            className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
-                                                            title="Reject"
-                                                        >
-                                                            <RiCloseLine size={16} />
-                                                        </button>
+                            {requestTab === 'standard' ? (
+                                loadingRequests ? (
+                                    <div className="py-8 text-center text-gray-500">Loading enquiries...</div>
+                                ) : requests.length === 0 ? (
+                                    <div className="py-8 text-left px-1 text-gray-500 text-sm">No standard enquiries found.</div>
+                                ) : (
+                                    <div className="border border-gray-100 rounded-lg overflow-visible">
+                                        <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-4 gap-4 rounded-t-lg">
+                                            <p className="text-xs font-semibold text-gray-600 uppercase">Tour Name</p>
+                                            <p className="text-xs font-semibold text-gray-600 uppercase">User Details</p>
+                                            <p className="text-xs font-semibold text-gray-600 uppercase">Status</p>
+                                            <p className="text-xs font-semibold text-gray-600 uppercase text-right">Actions</p>
+                                        </div>
+                                        <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
+                                            {requests.map((req) => (
+                                                <div key={req._id} className="p-4 flex flex-col md:grid md:grid-cols-4 md:items-center gap-4 hover:bg-gray-50/50 transition-colors">
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Tour Name</p>
+                                                        <p className="font-medium text-gray-900 text-sm">{req.title}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">User Details</p>
+                                                        <p className="text-sm text-gray-600 Inter">{req.userDetails?.name}</p>
+                                                        <p className="text-[10px] text-gray-400">{req.members} Members • {req.date}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase md:hidden mb-1">Status</p>
+                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium capitalize inline-flex w-fit ${req.status === 'approved' ? 'bg-green-50 text-green-700' :
+                                                            req.status === 'rejected' ? 'bg-red-50 text-red-700' :
+                                                                'bg-yellow-50 text-yellow-700'
+                                                            }`}>
+                                                            {req.status}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        {req.status === 'pending' && (
+                                                            <div className="flex items-center gap-1">
+                                                                <button
+                                                                    onClick={() => handleRequestAction(req._id, 'approved', 'standard')}
+                                                                    className="p-1.5 bg-green-50 text-green-600 rounded hover:bg-green-100 transition-colors"
+                                                                    title="Approve"
+                                                                >
+                                                                    <RiCheckLine size={16} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleRequestAction(req._id, 'rejected', 'standard')}
+                                                                    className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
+                                                                    title="Reject"
+                                                                >
+                                                                    <RiCloseLine size={16} />
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )
+                            ) : (
+                                loadingCustomRequests ? (
+                                    <div className="py-8 text-center text-gray-500">Loading custom requests...</div>
+                                ) : customRequests.length === 0 ? (
+                                    <div className="py-8 text-left px-1 text-gray-500 text-sm">No custom trip requests found.</div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {customRequests.map((req) => (
+                                            <div key={req._id} className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <h3 className="font-bold text-lg text-gray-900">{req.destination}</h3>
+                                                        <p className="text-xs text-gray-400 capitalize">{req.tripType} Trip • {req.budget} Budget</p>
+                                                    </div>
+                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium capitalize ${req.status === 'pending' ? 'bg-yellow-50 text-yellow-700' : 'bg-green-50 text-green-700'}`}>
+                                                        {req.status}
+                                                    </span>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase">Travel Details</p>
+                                                        <div className="space-y-1">
+                                                            <p className="text-sm text-gray-600"><span className="font-medium">Departure:</span> {req.departurePlace}</p>
+                                                            <p className="text-sm text-gray-600"><span className="font-medium">Date:</span> {req.startDate || 'flexible'}</p>
+                                                            <p className="text-sm text-gray-600"><span className="font-medium">Duration:</span> {req.duration}</p>
+                                                            <p className="text-sm text-gray-600"><span className="font-medium">Group Size:</span> {req.groupSize}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase">Preferences</p>
+                                                        <div className="space-y-1">
+                                                            <p className="text-sm text-gray-600"><span className="font-medium">Accommodation:</span> {req.accommodationPreference || 'Not specified'}</p>
+                                                            <p className="text-sm text-gray-600"><span className="font-medium">Meals:</span> {req.mealPlan && req.mealPlan.length > 0 ? req.mealPlan.join(', ') : 'Not specified'}</p>
+                                                            {req.pickupLocation && <p className="text-sm text-gray-600"><span className="font-medium">Pickup:</span> {req.pickupLocation}</p>}
+                                                            {req.dropLocation && <p className="text-sm text-gray-600"><span className="font-medium">Drop:</span> {req.dropLocation}</p>}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase">Requester Info</p>
+                                                        <div className="space-y-1">
+                                                            <p className="text-sm text-gray-800 font-medium">{req.userId?.name || 'Unknown User'}</p>
+                                                            <p className="text-xs text-gray-500">{req.userId?.email || 'No email'}</p>
+                                                            <p className="text-xs text-gray-500">{req.userId?.phone || 'No phone'}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {req.additionalNotes && (
+                                                    <div className="bg-gray-50 rounded-lg p-3 mt-2">
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Additional Notes</p>
+                                                        <p className="text-sm text-gray-600 leading-relaxed italic">"{req.additionalNotes}"</p>
                                                     </div>
                                                 )}
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
+                                )
                             )}
                         </div>
                     ) : (
                         loadingTours ? (
-                            <div className="bg-white rounded-xl border border-gray-200 p-6">
-                                <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Tours</h2>
+                            <div className="w-full">
+                                <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-6 px-1">Existing Tours</h2>
 
                                 {/* Loading Skeleton */}
                                 <div className="space-y-3">
                                     {[1, 2, 3].map((i) => (
-                                        <div key={i} className="flex items-center justify-between py-3 animate-pulse">
-                                            <div className="flex-1 grid grid-cols-3 gap-4">
-                                                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                                                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                                                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                                        <div key={i} className="flex items-center justify-between py-3 animate-pulse border-b border-gray-100">
+                                            <div className="flex-1 grid grid-cols-4 gap-4">
+                                                <div className="h-4 bg-gray-100 rounded w-3/4"></div>
+                                                <div className="h-4 bg-gray-100 rounded w-1/2"></div>
+                                                <div className="h-4 bg-gray-100 rounded w-1/3"></div>
+                                                <div className="h-4 bg-gray-100 rounded w-1/4"></div>
                                             </div>
-                                            <div className="w-10 h-4 bg-gray-200 rounded"></div>
+                                            <div className="w-10 h-4 bg-gray-100 rounded"></div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         ) : tours.length > 0 ? (
-                            <div className="bg-white rounded-xl border border-gray-200 p-6">
-                                <h2 className="text-lg font-medium text-gray-800 mb-6">Existing Tours</h2>
+                            <div className="w-full">
+                                <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-4 px-1">Existing Tours</h2>
 
-                                <div className="flex items-center justify-between pb-2 mb-2  border-gray-200">
-                                    <div className="flex-1 grid grid-cols-4 gap-4">
+                                <div className="border border-gray-100 rounded-lg overflow-visible">
+                                    <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-4 gap-4 rounded-t-lg">
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Tour Name</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:text-gray-900 flex items-center" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>State {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Price</p>
                                         <p className="text-xs font-semibold text-gray-600 uppercase">Group Size</p>
                                     </div>
-                                    <div className="w-10"></div>
-                                </div>
 
-                                <div className="divide-y divide-gray-200">
-                                    {([...tours].sort((a, b) => {
-                                        if (!sortOrder) return 0;
-                                        const stateA = a.state || '';
-                                        const stateB = b.state || '';
-                                        return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
-                                    })).map((tour) => (
-                                        <div
-                                            key={tour.id}
-                                            className="flex items-center justify-between py-1 hover:bg-gray-50 transition-colors"
-                                        >
-                                            <div className="flex-1 grid grid-cols-4 gap-4">
-                                                <p className="text-sm text-gray-900">{tour.title}</p>
-                                                <p className="text-sm text-gray-900">{tour.state}</p>
-                                                <p className="text-sm text-gray-900">₹{tour.price}</p>
-                                                <p className="text-sm text-gray-900">{tour.minPeople && tour.maxPeople ? `${tour.minPeople} - ${tour.maxPeople}` : (tour.maxPeople || 'N/A')}</p>
-                                            </div>
-
-                                            <div className="relative">
-                                                <button
-                                                    onClick={() => setOpenMenuId(openMenuId === tour.id ? null : tour.id)}
-                                                    className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-                                                >
-                                                    <RiMoreLine className="text-gray-600" size={20} />
-                                                </button>
-
-                                                {openMenuId === tour.id && (
-                                                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                                        <button
-                                                            onClick={() => {
-                                                                setOpenMenuId(null);
-                                                                handleEdit(tour);
-                                                            }}
-                                                            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center gap-2 text-sm"
-                                                        >
-                                                            <RiEditLine size={16} />
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                setOpenMenuId(null);
-                                                                handleDelete(tour.id);
-                                                            }}
-                                                            className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2 text-sm"
-                                                        >
-                                                            <RiDeleteBinLine size={16} />
-                                                            Delete
-                                                        </button>
+                                    <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
+                                        {([...tours].sort((a, b) => {
+                                            if (!sortOrder) return 0;
+                                            const stateA = a.state || '';
+                                            const stateB = b.state || '';
+                                            return sortOrder === 'asc' ? stateA.localeCompare(stateB) : stateB.localeCompare(stateA);
+                                        })).map((tour) => (
+                                            <div
+                                                key={tour.id}
+                                                className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-gray-50/50 transition-colors gap-3 md:gap-0"
+                                            >
+                                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Tour Name</p>
+                                                        <p className="text-xs md:text-sm font-medium md:font-normal text-gray-900">{tour.title}</p>
                                                     </div>
-                                                )}
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">State</p>
+                                                        <p className="text-[10px] md:text-sm text-gray-900">{tour.state}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Price</p>
+                                                        <p className="text-[10px] md:text-sm text-gray-900">₹{tour.price}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Group Size</p>
+                                                        <p className="text-[10px] md:text-sm text-gray-900">{tour.minPeople && tour.maxPeople ? `${tour.minPeople} - ${tour.maxPeople}` : (tour.maxPeople || 'N/A')}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="relative">
+                                                    <button
+                                                        onClick={() => setOpenMenuId(openMenuId === tour.id ? null : tour.id)}
+                                                        className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                                                    >
+                                                        <RiMoreLine className="text-gray-600" size={20} />
+                                                    </button>
+
+                                                    {openMenuId === tour.id && (
+                                                        <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setOpenMenuId(null);
+                                                                    handleEdit(tour);
+                                                                }}
+                                                                className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center gap-2 text-sm"
+                                                            >
+                                                                <RiEditLine size={16} />
+                                                                Edit
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setOpenMenuId(null);
+                                                                    handleDelete(tour.id);
+                                                                }}
+                                                                className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2 text-sm"
+                                                            >
+                                                                <RiDeleteBinLine size={16} />
+                                                                Delete
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
-                        ) : null
+                        ) : (
+                            <div className="py-8 text-left px-1 text-gray-500 text-sm">No tours found.</div>
+                        )
                     )}
                 </>
             ) : (
                 <div className="bg-white rounded-xl border border-gray-200 p-8 relative">
                     {/* Close Button */}
                     <button
-                        onClick={() => setShowForm(false)}
+                        onClick={() => {
+                            if (onFormClose) {
+                                onFormClose();
+                            } else {
+                                setShowFormInternal(false);
+                            }
+                            setEditingId(null);
+                            setFormData(isDev ? DUMMY_FORM_DATA : EMPTY_FORM_DATA);
+                        }}
                         className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
                     >
                         <RiCloseLine size={24} />
@@ -1730,7 +1901,7 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                             ) : (
                                 <div className="space-y-3">
                                     {/* Header */}
-                                    <div className="grid grid-cols-12 gap-2 text-xs font-bold text-gray-500 uppercase px-2">
+                                    <div className="grid grid-cols-12 gap-2 text-xs font-bold text-gray-500 uppercase px-2 hidden md:grid">
                                         <div className="col-span-2">People</div>
                                         <div className="col-span-4">Hotel Type</div>
                                         <div className="col-span-2">Rooms</div>
@@ -1739,8 +1910,9 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                                     </div>
 
                                     {formData.pricing.map((row, index) => (
-                                        <div key={index} className="grid grid-cols-12 gap-2 items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
-                                            <div className="col-span-2">
+                                        <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-2 items-center bg-white p-3 md:p-2 rounded-lg border border-gray-200 shadow-sm relative">
+                                            <div className="md:col-span-2">
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase md:hidden mb-1 block">People (Pax)</label>
                                                 <input
                                                     type="number"
                                                     placeholder="Pax"
@@ -1750,7 +1922,8 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                                                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                                                 />
                                             </div>
-                                            <div className="col-span-4">
+                                            <div className="md:col-span-4">
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase md:hidden mb-1 block">Hotel Type</label>
                                                 <select
                                                     value={row.hotelType}
                                                     onChange={(e) => updatePricingRow(index, 'hotelType', e.target.value)}
@@ -1760,7 +1933,8 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                                                     <option value="Premium">Premium</option>
                                                 </select>
                                             </div>
-                                            <div className="col-span-2">
+                                            <div className="md:col-span-2">
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase md:hidden mb-1 block">Rooms</label>
                                                 <input
                                                     type="number"
                                                     placeholder="Rooms"
@@ -1770,7 +1944,8 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                                                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                                                 />
                                             </div>
-                                            <div className="col-span-3">
+                                            <div className="md:col-span-3">
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase md:hidden mb-1 block">Package Price (₹)</label>
                                                 <input
                                                     type="number"
                                                     placeholder="Total"
@@ -1788,7 +1963,7 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                                                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                                                 />
                                             </div>
-                                            <div className="col-span-1 flex justify-end">
+                                            <div className="md:col-span-1 flex justify-end">
                                                 <button
                                                     type="button"
                                                     onClick={() => removePricingRow(index)}
@@ -1935,7 +2110,13 @@ export default function AddTourClient({ vendorId, showManagementBox, showListing
                         <div className="pt-4 flex gap-4">
                             <button
                                 type="button"
-                                onClick={() => setShowForm(false)}
+                                onClick={() => {
+                                    if (onFormClose) {
+                                        onFormClose();
+                                    } else {
+                                        setShowFormInternal(false);
+                                    }
+                                }}
                                 className="flex-1 py-2 bg-white text-black border border-gray-300 rounded-full text-xs font-light hover:bg-gray-50 transition-all"
                             >
                                 Cancel

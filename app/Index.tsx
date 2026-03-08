@@ -1,19 +1,23 @@
 "use client";
 
-import AboutUsQuote from '@/components/Pages/Home/AboutUsQuote'
-import Choose from '@/components/Pages/Home/Choose'
-import Destinations from '@/components/Pages/Home/Destinations'
-import Hero from '@/components/Pages/Home/Hero'
-import ShowCase from '@/components/Pages/Home/ShowCase'
-import PartnersCTA from '@/components/Pages/Home/PartnersCTA'
-import YatraCTA from '@/components/Pages/Home/YatraCTA'
-import Footor from '@/components/ui/Footor'
-import Header from '@/components/ui/Header'
-import Cta from '@/components/ui/cta';
-import HomeFilterSearch from '@/components/ui/HomeFilterSearch'
+import dynamic from 'next/dynamic'
 import { useEffect } from 'react'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
+
+// Eagerly load above-the-fold components
+import Header from '@/components/ui/Header'
+import Hero from '@/components/Pages/Home/Hero'
+import AboutUsQuote from '@/components/Pages/Home/AboutUsQuote'
+
+// Lazy load below-the-fold components
+const Destinations = dynamic(() => import('@/components/Pages/Home/Destinations'), { ssr: false })
+const Choose = dynamic(() => import('@/components/Pages/Home/Choose'), { ssr: false })
+const ShowCase = dynamic(() => import('@/components/Pages/Home/ShowCase'), { ssr: false })
+const PartnersCTA = dynamic(() => import('@/components/Pages/Home/PartnersCTA'), { ssr: false })
+const YatraCTA = dynamic(() => import('@/components/Pages/Home/YatraCTA'), { ssr: false })
+const Footer = dynamic(() => import('@/components/ui/Footer'), { ssr: false })
+const Cta = dynamic(() => import('@/components/ui/cta'), { ssr: false })
 
 const Index = () => {
   useEffect(() => {
@@ -34,8 +38,8 @@ const Index = () => {
         <PartnersCTA />
         <YatraCTA />
       </section>
-      <Cta/>
-      <Footor />
+      <Cta />
+      <Footer />
     </div>
   )
 }

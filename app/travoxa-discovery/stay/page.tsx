@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import StayHero from '@/components/Pages/Stay/StayHero';
 import StayFilterSidebar from '@/components/Pages/Stay/StayFilterSidebar';
 import StayPackageCard from '@/components/Pages/Stay/StayPackageCard';
@@ -174,7 +174,7 @@ const StayPage = () => {
                 </div>
             </div>
 
-            <Footor />
+            <Footer />
         </div>
     );
 };

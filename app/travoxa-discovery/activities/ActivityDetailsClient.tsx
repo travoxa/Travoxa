@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import Image from 'next/image';
 import {
     FaMapMarkerAlt, FaStar, FaRegClock, FaBolt, FaCheck, FaTimes,
@@ -48,17 +48,13 @@ const ActivityDetailsClient: React.FC<ActivityDetailsClientProps> = ({ activity 
 
             {/* HERO SECTION */}
             <div className="relative h-[60vh] md:h-[70vh] w-full bg-slate-900">
-                {activity.image ? (
-                    <Image
-                        src={activity.image}
-                        alt={activity.title}
-                        fill
-                        className="object-cover opacity-60"
-                        priority
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-500">No Image Available</div>
-                )}
+                <Image
+                    src={activity.image || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop"}
+                    alt={activity.title}
+                    fill
+                    className="object-cover opacity-60"
+                    priority
+                />
 
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent pt-32 pb-12">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -366,7 +362,7 @@ const ActivityDetailsClient: React.FC<ActivityDetailsClientProps> = ({ activity 
                 />
             </div>
 
-            <Footor />
+            <Footer />
         </div>
     );
 };

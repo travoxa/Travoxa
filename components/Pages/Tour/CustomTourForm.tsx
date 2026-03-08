@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { HiPaperAirplane, HiLocationMarker, HiUserGroup, HiCalendar, HiCurrencyDollar, HiCheckCircle } from "react-icons/hi";
+import { HiPaperAirplane, HiLocationMarker, HiUserGroup, HiCalendar, HiCurrencyDollar, HiCheckCircle, HiUser, HiMail, HiPhone } from "react-icons/hi";
 import { route } from "@/lib/route";
 
 export default function CustomTourForm() {
@@ -19,11 +19,54 @@ export default function CustomTourForm() {
         tripType: "Friends",
         budget: "Standard",
         startDate: "",
+        departurePlace: "",
+        pickupLocation: "",
+        dropLocation: "",
+        accommodationPreference: "Standard",
+        mealPlan: [] as string[],
         additionalNotes: "",
+        userDetails: {
+            name: "",
+            email: "",
+            phone: "",
+        },
     });
+
+    // Pre-fill user details from session
+    useState(() => {
+        if (session?.user) {
+            setFormData(prev => ({
+                ...prev,
+                userDetails: {
+                    ...prev.userDetails,
+                    name: session.user?.name || prev.userDetails.name,
+                    email: session.user?.email || prev.userDetails.email,
+                }
+            }));
+        }
+    });
+
+    const handleUserChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({
+            ...formData,
+            userDetails: {
+                ...formData.userDetails,
+                [e.target.name]: e.target.value
+            }
+        });
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleMealPlanChange = (meal: string) => {
+        const current = [...formData.mealPlan];
+        if (current.includes(meal)) {
+            setFormData({ ...formData, mealPlan: current.filter(m => m !== meal) });
+        } else {
+            setFormData({ ...formData, mealPlan: [...current, meal] });
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -60,7 +103,17 @@ export default function CustomTourForm() {
                 tripType: "Friends",
                 budget: "Standard",
                 startDate: "",
+                departurePlace: "",
+                pickupLocation: "",
+                dropLocation: "",
+                accommodationPreference: "Standard",
+                mealPlan: [],
                 additionalNotes: "",
+                userDetails: {
+                    name: session?.user?.name || "",
+                    email: session?.user?.email || "",
+                    phone: "",
+                },
             });
         } catch (err: any) {
             console.error(err);
@@ -116,121 +169,272 @@ export default function CustomTourForm() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-6 md:hidden">Custom Trip Request</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Destination</label>
-                            <div className="relative">
-                                <HiLocationMarker className="absolute left-3 top-3.5 text-gray-400" />
-                                <input
-                                    type="text"
-                                    name="destination"
-                                    required
-                                    placeholder="e.g. Paris, Bali, Kerala"
-                                    value={formData.destination}
-                                    onChange={handleChange}
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white"
-                                />
+                    <div className="space-y-4">
+                        <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Contact Information</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                <div className="relative">
+                                    <HiUser className="absolute left-3 top-3.5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        required
+                                        placeholder="John Doe"
+                                        value={formData.userDetails.name}
+                                        onChange={handleUserChange}
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                <div className="relative">
+                                    <HiMail className="absolute left-3 top-3.5 text-gray-400" />
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        required
+                                        placeholder="john@example.com"
+                                        value={formData.userDetails.email}
+                                        onChange={handleUserChange}
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white"
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                             <div className="relative">
-                                <HiCalendar className="absolute left-3 top-3.5 text-gray-400" />
+                                <HiPhone className="absolute left-3 top-3.5 text-gray-400" />
                                 <input
-                                    type="text"
-                                    name="duration"
+                                    type="tel"
+                                    name="phone"
                                     required
-                                    placeholder="e.g. 5 Days"
-                                    value={formData.duration}
-                                    onChange={handleChange}
+                                    placeholder="+91 98765 43210"
+                                    value={formData.userDetails.phone}
+                                    onChange={handleUserChange}
                                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Group Size</label>
-                            <div className="relative">
-                                <HiUserGroup className="absolute left-3 top-3.5 text-gray-400" />
-                                <input
-                                    type="number"
-                                    name="groupSize"
-                                    required
-                                    min="1"
-                                    value={formData.groupSize}
-                                    onChange={handleChange}
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white"
-                                />
+                    <hr className="border-gray-100" />
+
+                    <div className="space-y-4">
+                        <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Trip Details</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Destination</label>
+                                <div className="relative">
+                                    <HiLocationMarker className="absolute left-3 top-3.5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        name="destination"
+                                        required
+                                        placeholder="e.g. Paris, Bali, Kerala"
+                                        value={formData.destination}
+                                        onChange={handleChange}
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                                <div className="relative">
+                                    <HiCalendar className="absolute left-3 top-3.5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        name="duration"
+                                        required
+                                        placeholder="e.g. 5 Days"
+                                        value={formData.duration}
+                                        onChange={handleChange}
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white"
+                                    />
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Trip Type</label>
-                            <select
-                                name="tripType"
-                                value={formData.tripType}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white appearance-none"
-                            >
-                                <option value="Friends">Friends</option>
-                                <option value="Family">Family</option>
-                                <option value="Couple">Couple</option>
-                                <option value="Solo">Solo</option>
-                                <option value="Corporate">Corporate</option>
-                                <option value="Other">Other</option>
-                            </select>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Place of Departure</label>
+                                <div className="relative">
+                                    <HiLocationMarker className="absolute left-3 top-3.5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        name="departurePlace"
+                                        required
+                                        placeholder="e.g. New Delhi, Mumbai"
+                                        value={formData.departurePlace}
+                                        onChange={handleChange}
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date (Optional)</label>
+                                <div className="relative">
+                                    <HiCalendar className="absolute left-3 top-3.5 text-gray-400" />
+                                    <input
+                                        type="date"
+                                        name="startDate"
+                                        value={formData.startDate}
+                                        onChange={handleChange}
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white"
+                                    />
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Budget</label>
-                            <div className="relative">
-                                <HiCurrencyDollar className="absolute left-3 top-3.5 text-gray-400" />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Pickup Location (Optional)</label>
+                                <div className="relative">
+                                    <HiLocationMarker className="absolute left-3 top-3.5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        name="pickupLocation"
+                                        placeholder="Specific airport/station"
+                                        value={formData.pickupLocation}
+                                        onChange={handleChange}
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Drop Location (Optional)</label>
+                                <div className="relative">
+                                    <HiLocationMarker className="absolute left-3 top-3.5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        name="dropLocation"
+                                        placeholder="End destination"
+                                        value={formData.dropLocation}
+                                        onChange={handleChange}
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Group Size</label>
+                                <div className="relative">
+                                    <HiUserGroup className="absolute left-3 top-3.5 text-gray-400" />
+                                    <input
+                                        type="number"
+                                        name="groupSize"
+                                        required
+                                        min="1"
+                                        value={formData.groupSize}
+                                        onChange={handleChange}
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Trip Type</label>
                                 <select
-                                    name="budget"
-                                    value={formData.budget}
+                                    name="tripType"
+                                    value={formData.tripType}
                                     onChange={handleChange}
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white appearance-none"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white appearance-none"
                                 >
-                                    <option value="Budget">Budget</option>
+                                    <option value="Friends">Friends</option>
+                                    <option value="Family">Family</option>
+                                    <option value="Couple">Couple</option>
+                                    <option value="Solo">Solo</option>
+                                    <option value="Corporate">Corporate</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Budget</label>
+                                <div className="relative">
+                                    <HiCurrencyDollar className="absolute left-3 top-3.5 text-gray-400" />
+                                    <select
+                                        name="budget"
+                                        value={formData.budget}
+                                        onChange={handleChange}
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white appearance-none"
+                                    >
+                                        <option value="Budget">Budget</option>
+                                        <option value="Standard">Standard</option>
+                                        <option value="Premium">Premium</option>
+                                        <option value="Luxury">Luxury</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Accommodation Preference</label>
+                                <select
+                                    name="accommodationPreference"
+                                    value={formData.accommodationPreference}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white appearance-none"
+                                >
                                     <option value="Standard">Standard</option>
                                     <option value="Premium">Premium</option>
                                     <option value="Luxury">Luxury</option>
+                                    <option value="Not Required">Not Required</option>
                                 </select>
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Meal Plan</label>
+                                <div className="flex flex-wrap gap-4">
+                                    {["Breakfast", "Lunch", "Dinner", "Snacks"].map((meal) => (
+                                        <label key={meal} className="flex items-center gap-2 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.mealPlan.includes(meal)}
+                                                onChange={() => handleMealPlanChange(meal)}
+                                                className="w-4 h-4 text-black rounded focus:ring-0"
+                                            />
+                                            <span className="text-sm text-gray-600">{meal}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
-                        <textarea
-                            name="additionalNotes"
-                            rows={3}
-                            placeholder="Specific activities, dietary requirements, or special requests..."
-                            value={formData.additionalNotes}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white resize-none"
-                        />
-                    </div>
-
-                    {error && (
-                        <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg">
-                            {error}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
+                            <textarea
+                                name="additionalNotes"
+                                rows={3}
+                                placeholder="Specific activities, dietary requirements, or special requests..."
+                                value={formData.additionalNotes}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:ring-0 transition-colors bg-gray-50 focus:bg-white resize-none"
+                            />
                         </div>
-                    )}
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-black text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                    >
-                        {loading ? (
-                            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                            <>
-                                Submit Request <HiPaperAirplane className="rotate-90" />
-                            </>
+                        {error && (
+                            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg">
+                                {error}
+                            </div>
                         )}
-                    </button>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-black text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-8"
+                        >
+                            {loading ? (
+                                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            ) : (
+                                <>
+                                    Submit Request <HiPaperAirplane className="rotate-90" />
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

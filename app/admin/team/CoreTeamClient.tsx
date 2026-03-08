@@ -28,8 +28,12 @@ const SECTIONS = [
     { id: 'Discovery:Rentals', label: '↳ Discovery: Rentals' },
     { id: 'Discovery:Food', label: '↳ Discovery: Food' },
     { id: 'Discovery:Stay', label: '↳ Discovery: Stay' },
+    { id: 'Discovery:Emergency', label: '↳ Discovery: Emergency' },
     { id: 'Backpackers', label: 'Backpackers' },
+    { id: 'Vendor Requests', label: 'Vendor Requests' },
+    { id: 'Listings', label: 'Listings' },
     { id: 'Team', label: 'Team' },
+    { id: 'Other', label: 'Other' },
 ];
 
 export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
@@ -317,57 +321,73 @@ export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
                     </form>
                 </div>
             ) : (
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <div className="w-full">
                     {loading ? (
                         <div className="flex items-center justify-center p-12">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {members.map(member => (
-                                <div key={member._id} className="p-4 border border-gray-100 rounded-xl relative group bg-white">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
-                                            {member.image ? (
-                                                <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                    <RiUserLine size={24} />
+                        <div className="border border-gray-100 rounded-lg overflow-visible">
+                            <div className="bg-gray-50/50 border-b border-gray-100 px-4 py-3 hidden md:grid grid-cols-3 gap-4 rounded-t-lg">
+                                <p className="text-xs font-semibold text-gray-500 uppercase">Member</p>
+                                <p className="text-xs font-semibold text-gray-500 uppercase">Role</p>
+                                <p className="text-xs font-semibold text-gray-500 uppercase text-right">Actions</p>
+                            </div>
+
+                            <div className="divide-y divide-gray-100 bg-white rounded-b-lg">
+                                {members.length === 0 ? (
+                                    <div className="py-12 text-center text-gray-500">
+                                        <p className="text-sm">No team members found. Add one to get started.</p>
+                                    </div>
+                                ) : (
+                                    members.map(member => (
+                                        <div key={member._id} className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-gray-50/50 transition-colors gap-3 md:gap-0">
+                                            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-center">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-100">
+                                                        {member.image ? (
+                                                            <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                                <RiUserLine size={16} />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-900 line-clamp-1">{member.name}</p>
+                                                        <p className="text-[10px] text-gray-400 font-mono">@{member.username || 'no-username'}</p>
+                                                    </div>
                                                 </div>
-                                            )}
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Role</p>
+                                                    <p className="text-xs md:text-sm text-gray-600 capitalize">{member.role}</p>
+                                                </div>
+                                                <div className="flex items-center md:justify-end gap-2">
+                                                    <button
+                                                        onClick={() => handleEdit(member)}
+                                                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                                                        title="Edit"
+                                                    >
+                                                        <RiEditLine size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(member._id)}
+                                                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                                        title="Delete"
+                                                    >
+                                                        <RiDeleteBinLine size={18} />
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-gray-900">{member.name}</h3>
-                                            <p className="text-sm text-gray-500">{member.role}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                                        <button
-                                            onClick={() => handleEdit(member)}
-                                            className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                        >
-                                            <RiEditLine size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(member._id)}
-                                            className="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                        >
-                                            <RiDeleteBinLine size={18} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-
-                            {members.length === 0 && (
-                                <div className="col-span-full py-12 text-center text-gray-500 bg-gray-50 rounded-xl border-dashed border-2 border-gray-200">
-                                    <p>No team members found. Add one to get started.</p>
-                                </div>
-                            )}
+                                    ))
+                                )}
+                            </div>
                         </div>
-                    )}
-                </div>
+                    )
+                    }
+                </div >
             )}
-        </div>
+        </div >
     );
 }

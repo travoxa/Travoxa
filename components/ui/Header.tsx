@@ -99,8 +99,8 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
     //   ],
     // },
     {
-      label: "Nestloop",
-      path: "/contact",
+      label: "Travoxa Circle",
+      path: "/travoxa-circle",
       dropdown: [],
     },
   ];
@@ -221,7 +221,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
           </nav>
 
           {/* RIGHT SECTION (DESKTOP) */}
-          {!session?.user?.email ?
+          {!(session?.user?.email && session?.user?.role === 'user') ?
             <button
 
               onClick={() => routeTo('/login')}
@@ -324,7 +324,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
             </div>
           ))}
 
-          {!session?.user?.email ?
+          {!(session?.user?.email && session?.user?.role === 'user') ?
             <button
 
               onClick={() => routeTo('/login')}

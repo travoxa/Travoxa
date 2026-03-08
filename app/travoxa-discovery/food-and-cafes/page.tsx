@@ -11,41 +11,15 @@ import { FoodPackage } from './FoodClient';
 
 export const dynamic = 'force-dynamic';
 
-const serializeConfig = (doc: any): FoodPackage => ({
-    _id: doc._id.toString(),
-    id: doc._id.toString(),
-
-    title: doc.title || '',
-    city: doc.city || '',
-    state: doc.state || '',
-    location: doc.location || '',
-
-    rating: Number(doc.rating) || 0,
-    reviews: Number(doc.reviews) || 0,
-
-    image: doc.image || '',
-    category: doc.type || '',
-
-    cuisine: Array.isArray(doc.cuisine)
-        ? doc.cuisine
-        : [doc.cuisine || ''],
-
-    overview: doc.overview || '',
-
-    price: Number(doc.price) || 0,
-
-    // convert number to string because filter expects string
-    priceRange: String(doc.priceRange || doc.price || ''),
-
-    createdAt: doc.createdAt
-        ? new Date(doc.createdAt).toISOString()
-        : new Date().toISOString(),
-
-    famousDish: doc.famousDish || '',
-    dishType: doc.dishType || '',
-
-    fullMenu: doc.fullMenu || [],
-});
+const serializeConfig = (doc: any): FoodPackage => {
+    const serialized = JSON.parse(JSON.stringify(doc));
+    return {
+        ...serialized,
+        id: serialized._id,
+        category: serialized.type || '', // Handle mapping 'type' to 'category' if needed by Client
+        cuisine: Array.isArray(serialized.cuisine) ? serialized.cuisine : [serialized.cuisine || ''],
+    };
+};
 
 export default async function FoodAndCafesPage() {
     await connectDB();

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import { RentalItem } from '@/data/rentalsData';
 import RentalHero from '@/components/Pages/Rentals/RentalHero';
 import RentalFilterSidebar from '@/components/Pages/Rentals/RentalFilterSidebar';
@@ -175,7 +175,7 @@ const RentalsPage = () => {
                 </div>
             </div>
 
-            <Footor />
+            <Footer />
         </div>
     );
 };

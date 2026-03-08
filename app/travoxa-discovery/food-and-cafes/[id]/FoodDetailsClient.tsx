@@ -9,7 +9,7 @@ import {
 } from 'react-icons/fa';
 import { HiBadgeCheck, HiLocationMarker, HiPhone, HiGlobeAlt } from "react-icons/hi";
 import Header from '@/components/ui/Header';
-import Footor from '@/components/ui/Footor';
+import Footer from '@/components/ui/Footer';
 import { FoodPackage } from '../FoodClient';
 import SaveButton from '@/components/ui/SaveButton';
 import RelatedPackages from '@/components/ui/RelatedPackages';
@@ -45,7 +45,7 @@ export default function FoodDetailsClient({ pkg }: FoodDetailsClientProps) {
             {/* Hero Section */}
             <section className="relative h-[65vh] w-full overflow-hidden">
                 <Image
-                    src={pkg.image}
+                    src={pkg.image || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop"}
                     alt={pkg.title}
                     fill
                     className="object-cover"
@@ -456,7 +456,7 @@ export default function FoodDetailsClient({ pkg }: FoodDetailsClientProps) {
                 />
             </div>
 
-            <Footor />
+            <Footer />
         </main>
     );
 }
