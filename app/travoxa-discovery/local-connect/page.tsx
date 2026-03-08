@@ -51,6 +51,83 @@ const LocalConnectComingSoon = () => {
                             </div>
                         ))}
                     </div>
+                </div>
+            </div>
+
+            {/* PROMO BANNER */}
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mb-32">
+                <div className="relative bg-slate-900 rounded-[3rem] overflow-hidden min-h-[650px] flex items-center justify-center text-center">
+
+                    {/* Background Image */}
+                    <Image
+                        src="https://images.unsplash.com/photo-1526772662000-3f88f107f598?auto=format&fit=crop&q=80&w=1600"
+                        alt="Group of friends"
+                        fill
+                        className="object-cover"
+                    />
+
+                    {/* Dark Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/80 to-slate-900/90"></div>
+
+                    {/* Content */}
+                    <div className="relative z-10 pt-10 max-w-3xl px-8">
+
+                        <span className="inline-block bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-8">
+                            Join the Community
+                        </span>
+
+                        <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight mb-4">
+                            Your City. Your Stories.
+                        </h2>
+
+                        <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-emerald-500 leading-tight mb-8">
+                            Your Income.
+                        </h2>
+
+                        <p className="text-slate-300 text-lg mb-10 leading-relaxed">
+                            Turn your city knowledge into an experience. Become a verified Travoxa Local and connect with global travelers.
+                        </p>
+
+                        {/* Benefits */}
+                        <div className="space-y-4 mb-10">
+                            {[
+                                "Earn ₹30,000 - ₹80,000 monthly",
+                                "Set your own schedule & pricing",
+                                "Travoxa provides the travelers, you provide the stories",
+                            ].map((item, i) => (
+                                <div key={i} className="flex items-center justify-center gap-3">
+                                    <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs">
+                                        ✓
+                                    </div>
+                                    <span className="text-white font-semibold text-sm">{item}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <button className="bg-white text-slate-900 px-10 py-4 rounded-xl font-bold hover:bg-emerald-50 transition-colors">
+                            Join as a Local
+                        </button>
+                        <div className="mt-5 flex pb-8 justify-center">
+                            <div className="text-center">
+                                <div className="text-4xl font-black text-white tracking-[0.3em] mb-2">
+                                    500+
+                                </div>
+                                <div className="text-xs text-white tracking-[0.4em] font-bold uppercase">
+                                    VERIFIED LOCAL ACROSS INDIA
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {/* Stats Badge */}
+                    {/* <div className="absolute bottom-10 right-10 bg-emerald-500 p-6 rounded-3xl text-center shadow-2xl text-white hidden md:block">
+                        <div className="text-4xl font-black mb-1">500+</div>
+                        <div className="text-xs uppercase font-bold tracking-wider opacity-80">
+                            Locals in India
+                        </div>
+                    </div> */}
+
 
                     <div className="bg-slate-900 text-white px-8 py-3 rounded-xl font-medium Mont text-xs tracking-widest shadow-lg cursor-not-allowed opacity-80 uppercase">
                         Stay Tuned for Launch
