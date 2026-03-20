@@ -17,6 +17,48 @@ const connectDB = async () => {
     await mongoose.connect(process.env.MONGODB_URI);
 };
 
+export async function GET(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    const { id } = await params;
+
+    try {
+        await connectDB();
+
+        if (!id) {
+            return NextResponse.json(
+                { success: false, error: 'Tour ID is required' },
+                { status: 400 }
+            );
+        }
+
+        const tour = await Tour.findById(id)
+            .populate('vendorId', 'vendorDetails.businessName')
+            .populate('relatedTours', 'title price rating image reviews');
+
+        if (!tour) {
+            return NextResponse.json(
+                { success: false, error: 'Tour not found' },
+                { status: 404 }
+            );
+        }
+
+        const tourWithId = {
+            ...tour.toObject(),
+            id: tour._id.toString(),
+        };
+
+        return NextResponse.json({ success: true, data: tourWithId });
+    } catch (error: any) {
+        console.error('Error fetching tour:', error);
+        return NextResponse.json({
+            success: false,
+            error: error.message || 'Failed to fetch tour'
+        }, { status: 500 });
+    }
+}
+
 export async function PUT(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
