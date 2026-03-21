@@ -164,6 +164,8 @@ export default function AddAttractionsClient({
     const [customCategory, setCustomCategory] = useState('');
     const [showCustomType, setShowCustomType] = useState(false);
     const [showCustomCategory, setShowCustomCategory] = useState(false);
+    const [showCustomCity, setShowCustomCity] = useState(false);
+    const [metadata, setMetadata] = useState<{ cities: string[], types: string[], categories: string[] }>({ cities: [], types: [], categories: [] });
 
     const [highlightInput, setHighlightInput] = useState('');
     const [badgeInput, setBadgeInput] = useState('');
@@ -174,14 +176,28 @@ export default function AddAttractionsClient({
         if (formData.state) {
             const cities = getCitiesForState(formData.state);
             setAvailableCities(cities);
-            if (!cities.includes(formData.city)) {
+            if (!showCustomCity && !cities.includes(formData.city)) {
                 setFormData(prev => ({ ...prev, city: '' }));
             }
         } else {
             setAvailableCities([]);
-            setFormData(prev => ({ ...prev, city: '' }));
+            if (!showCustomCity) {
+                setFormData(prev => ({ ...prev, city: '' }));
+            }
         }
-    }, [formData.state]);
+    }, [formData.state, showCustomCity]);
+
+    const fetchMetadata = async () => {
+        try {
+            const res = await fetch('/api/attractions/metadata');
+            const data = await res.json();
+            if (data.success) {
+                setMetadata(data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch metadata:', error);
+        }
+    };
 
     const fetchAttractions = async () => {
         setLoadingAttractions(true);
@@ -247,6 +263,7 @@ export default function AddAttractionsClient({
 
     useEffect(() => {
         fetchAttractions();
+        fetchMetadata();
     }, []);
 
     const handleDelete = async (id: string) => {
@@ -475,6 +492,12 @@ export default function AddAttractionsClient({
 
     const handleEdit = (attraction: any) => {
         setEditingId(attraction._id);
+        const cities = getCitiesForState(attraction.state);
+        const isCustomCity = attraction.city && !cities.includes(attraction.city);
+        setShowCustomCity(isCustomCity);
+        setShowCustomType(false); // Reset custom type/category on edit
+        setShowCustomCategory(false);
+
         setFormData({
             title: attraction.title,
             city: attraction.city,
@@ -755,8 +778,16 @@ export default function AddAttractionsClient({
                                 <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
                                 <select
                                     required
-                                    value={formData.city}
-                                    onChange={e => setFormData({ ...formData, city: e.target.value })}
+                                    value={showCustomCity ? 'Custom' : formData.city}
+                                    onChange={e => {
+                                        if (e.target.value === 'Custom') {
+                                            setShowCustomCity(true);
+                                            setFormData({ ...formData, city: '' });
+                                        } else {
+                                            setShowCustomCity(false);
+                                            setFormData({ ...formData, city: e.target.value });
+                                        }
+                                    }}
                                     disabled={!formData.state}
                                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white ${!formData.state ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
@@ -764,7 +795,24 @@ export default function AddAttractionsClient({
                                     {availableCities.map(city => (
                                         <option key={city} value={city}>{city}</option>
                                     ))}
+                                    {formData.state && <option value="Custom">Add Custom...</option>}
                                 </select>
+                                {showCustomCity && (
+                                    <div className="mt-2">
+                                        <input
+                                            type="text"
+                                            required
+                                            list="metadata-cities"
+                                            value={formData.city}
+                                            onChange={e => setFormData({ ...formData, city: e.target.value })}
+                                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                            placeholder="Enter custom city/place (e.g. Sarnath)"
+                                        />
+                                        <datalist id="metadata-cities">
+                                            {metadata.cities.map(c => <option key={c} value={c} />)}
+                                        </datalist>
+                                    </div>
+                                )}
                             </div>
                             <div className="grid grid-cols-1 gap-4">
                                 <div>
@@ -796,14 +844,20 @@ export default function AddAttractionsClient({
                                             <option value="Custom">Custom...</option>
                                         </select>
                                         {showCustomType && (
-                                            <input
-                                                type="text"
-                                                required
-                                                value={formData.type}
-                                                onChange={e => setFormData({ ...formData, type: e.target.value })}
-                                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                                placeholder="Enter custom type"
-                                            />
+                                            <>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    list="metadata-types"
+                                                    value={formData.type}
+                                                    onChange={e => setFormData({ ...formData, type: e.target.value })}
+                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="Enter custom type"
+                                                />
+                                                <datalist id="metadata-types">
+                                                    {metadata.types.map(t => <option key={t} value={t} />)}
+                                                </datalist>
+                                            </>
                                         )}
                                     </div>
                                 </div>
@@ -837,14 +891,20 @@ export default function AddAttractionsClient({
                                             <option value="Custom">Custom...</option>
                                         </select>
                                         {showCustomCategory && (
-                                            <input
-                                                type="text"
-                                                required
-                                                value={formData.category}
-                                                onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                                placeholder="Enter custom category"
-                                            />
+                                            <>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    list="metadata-categories"
+                                                    value={formData.category}
+                                                    onChange={e => setFormData({ ...formData, category: e.target.value })}
+                                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                                    placeholder="Enter custom category"
+                                                />
+                                                <datalist id="metadata-categories">
+                                                    {metadata.categories.map(c => <option key={c} value={c} />)}
+                                                </datalist>
+                                            </>
                                         )}
                                     </div>
                                 </div>

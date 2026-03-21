@@ -144,7 +144,11 @@ const TourSchema = new mongoose.Schema({
     relatedRentals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Rental' }],
     relatedStays: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Stay' }],
     relatedFood: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Food' }],
-    relatedAttractions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attraction' }]
+    relatedAttractions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attraction' }],
+    views: {
+        type: Number,
+        default: 0,
+    }
 }, { timestamps: true });
 
 // Prevent mongoose from creating a new model if it already exists

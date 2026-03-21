@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import { connectDB } from '@/lib/mongodb';
 import Attraction from '@/models/Attraction';
+import { generateAttractionSlug } from '@/utils/slugify';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
@@ -10,9 +11,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         const body = await req.json();
         console.log(`Attraction PUT Payload for ${id}:`, JSON.stringify(body, null, 2));
 
-        // Force re-registration if schema might have changed in dev
-        if (process.env.NODE_ENV === 'development' && mongoose.models.Attraction) {
-            delete mongoose.models.Attraction;
+        if (!body.slug && body.title && body.city) {
+            body.slug = generateAttractionSlug(body.title, body.city);
         }
 
         const attraction = await Attraction.findByIdAndUpdate(id, body, {

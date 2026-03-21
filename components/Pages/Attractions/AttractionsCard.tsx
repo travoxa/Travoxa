@@ -12,7 +12,7 @@ interface AttractionsCardProps {
 
 const AttractionsCard: React.FC<AttractionsCardProps> = ({ pkg }) => {
     return (
-        <Link href={`/travoxa-discovery/attractions/${pkg.id}`} className="group block h-full">
+        <Link href={`/travoxa-discovery/attractions/${pkg.slug || pkg.id}`} className="group block h-full">
             <div className="bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-xl hover:shadow-pink-500/5 transition-all duration-300 h-full flex flex-col">
                 {/* Image Container */}
                 <div className="relative h-56 overflow-hidden">
@@ -91,7 +91,7 @@ const AttractionsCard: React.FC<AttractionsCardProps> = ({ pkg }) => {
                                 itemId={pkg.id}
                                 itemType="attraction"
                                 title={pkg.title}
-                                itemLink={`/travoxa-discovery/attractions/${pkg.id}`}
+                                itemLink={`/travoxa-discovery/attractions/${pkg.slug || pkg.id}`}
                                 isSmall={true}
                                 activeColor="bg-pink-600"
                             />

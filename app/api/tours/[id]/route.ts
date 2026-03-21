@@ -33,7 +33,11 @@ export async function GET(
             );
         }
 
-        const tour = await Tour.findById(id)
+        const tour = await Tour.findByIdAndUpdate(
+            id,
+            { $inc: { views: 1 } },
+            { new: true }
+        )
             .populate('vendorId', 'vendorDetails.businessName')
             .populate('relatedTours', 'title price rating image reviews');
 

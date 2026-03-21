@@ -31,15 +31,18 @@ export async function GET(
         await connectDB();
         Tour.find().limit(1); Sightseeing.find().limit(1); Activity.find().limit(1); Rental.find().limit(1); Stay.find().limit(1); Food.find().limit(1); Attraction.find().limit(1);
 
-        const pkg = await Sightseeing.findById(id)
+        const pkg = await Sightseeing.findByIdAndUpdate(
+            id,
+            { $inc: { views: 1 } },
+            { new: true }
+        )
             .populate('relatedTours', 'title image _id googleRating rating location city state')
             .populate('relatedSightseeing', 'title image _id rating location city state')
             .populate('relatedActivities', 'title image _id rating location city state')
             .populate('relatedRentals', 'title name image _id rating location city state')
             .populate('relatedStays', 'title name image _id rating location city state')
             .populate('relatedFood', 'name image _id rating location city state cuisine')
-            .populate('relatedAttractions', 'title image _id rating location city state type category')
-            .lean();
+            .populate('relatedAttractions', 'title image _id rating location city state type category slug');
 
         if (!pkg) {
             return NextResponse.json(
