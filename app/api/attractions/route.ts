@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import { connectDB } from '@/lib/mongodb';
 import Attraction from '@/models/Attraction';
+import { slugify, generateAttractionSlug } from '@/utils/slugify';
 
 export async function GET(req: Request) {
     try {
@@ -34,13 +35,11 @@ export async function POST(req: Request) {
         const body = await req.json();
         console.log('Attraction POST Payload:', JSON.stringify(body, null, 2));
 
-        // Force re-registration if schema might have changed in dev
-        if (process.env.NODE_ENV === 'development' && mongoose.models.Attraction) {
-            delete mongoose.models.Attraction;
-        }
+        const slug = body.slug || generateAttractionSlug(body.title, body.city);
 
         const attractionData = {
             ...body,
+            slug,
             status: body.vendorId ? 'pending' : 'approved'
         };
 

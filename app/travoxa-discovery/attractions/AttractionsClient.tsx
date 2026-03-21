@@ -12,6 +12,7 @@ import 'aos/dist/aos.css';
 export interface AttractionPackage {
     _id: string;
     id: string;
+    slug: string;
     title: string;
     city: string;
     state: string;

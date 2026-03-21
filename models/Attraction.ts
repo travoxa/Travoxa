@@ -145,6 +145,13 @@ const AttractionSchema = new mongoose.Schema({
         type: [String],
         default: [],
     },
+    slug: {
+        type: String,
+        lowercase: true,
+        trim: true,
+        unique: true,
+        sparse: true, // Allow existing docs without slug during migration
+    },
     travelInformation: {
         crowdLevel: String, // Low, Moderate, High
         safetyScore: Number, // 1-10
@@ -181,7 +188,11 @@ const AttractionSchema = new mongoose.Schema({
     relatedRentals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Rental' }],
     relatedStays: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Stay' }],
     relatedFood: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Food' }],
-    relatedAttractions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attraction' }]
+    relatedAttractions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attraction' }],
+    views: {
+        type: Number,
+        default: 0,
+    }
 });
 
 export default mongoose.models.Attraction || mongoose.model('Attraction', AttractionSchema);

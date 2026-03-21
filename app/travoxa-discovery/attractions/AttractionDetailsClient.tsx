@@ -133,7 +133,7 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                                     itemId={attraction.id}
                                     itemType="attraction"
                                     title={attraction.title}
-                                    itemLink={`/travoxa-discovery/attractions/${attraction.id}`}
+                                    itemLink={`/travoxa-discovery/attractions/${attraction.slug || attraction.id}`}
                                 />
                             </div>
 
@@ -454,7 +454,7 @@ const AttractionDetailsClient: React.FC<AttractionDetailsClientProps> = ({ attra
                                     </div>
                                     <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
                                         {attraction.nearbyAttractions?.map((near, idx) => (
-                                            <Link href={`/travoxa-discovery/attractions/${near._id}`} key={idx} className="min-w-[280px] group">
+                                            <Link href={`/travoxa-discovery/attractions/${near.slug || near._id}`} key={idx} className="min-w-[280px] group">
                                                 <div className="relative h-48 rounded-2xl overflow-hidden mb-4 border border-gray-100">
                                                     <img src={near.image} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                                     <div className="absolute bottom-4 left-6">

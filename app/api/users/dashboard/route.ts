@@ -1,62 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkUserExists, createUser, updateUser, getUser } from "@/lib/mongodbUtils";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/lib/models/User";
 import BackpackerGroup from "@/lib/models/BackpackerGroup";
 import TourRequest from "@/models/TourRequest";
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { email, name, phone, gender, interests, hasBike, authProvider, role, vendorDetails, profileComplete, city } = body;
-
-    if (!email || !name || !gender) {
-      return NextResponse.json(
-        { error: "Missing required fields: email, name, and gender are required" },
-        { status: 400 }
-      );
-    }
-
-    const userData = {
-      email,
-      name,
-      phone: phone || "",
-      gender,
-      interests: interests || [],
-      hasBike: hasBike || false,
-      authProvider: authProvider || "email",
-      ...(role ? { role } : {}),
-      ...(vendorDetails ? { vendorDetails } : {}),
-      ...(profileComplete !== undefined ? { profileComplete } : {}),
-      ...(city ? { city } : {}),
-    };
-
-    // For API calls, we use email as the identifier for MongoDB
-    const exists = await checkUserExists(email);
-
-    if (exists) {
-      await updateUser(email, userData);
-    } else {
-      await createUser(userData);
-    }
-
-    return NextResponse.json(
-      { message: "User data saved successfully" },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error in users API:", error);
-    return NextResponse.json(
-      { error: "Failed to save user data", details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
-  }
-}
-
 export async function GET(request: NextRequest) {
   try {
     const email = request.nextUrl.searchParams.get("email");
-    const includeDashboard = request.nextUrl.searchParams.get("includeDashboard") === "true";
 
     if (!email) {
       return NextResponse.json(
@@ -71,24 +21,14 @@ export async function GET(request: NextRequest) {
     const dbUser = await User.findOne({ email }).lean();
     if (!dbUser) {
       return NextResponse.json(
-        { exists: false, userData: null },
-        { status: 200 }
+        { error: "User not found" },
+        { status: 404 }
       );
     }
 
     const userId = dbUser._id.toString();
 
-    // If dashboard data is not requested, return the simple profile
-    if (!includeDashboard) {
-      return NextResponse.json({
-        exists: true,
-        userData: dbUser
-      });
-    }
-
-    // 2. Fetch Dashboard Data (Groups and Tour Requests)
-
-    // Fetch Backpacker Groups (Created, Joined, or Requested)
+    // 2. Fetch Backpacker Groups (Created, Joined, or Requested)
     const allUserGroups = await BackpackerGroup.find({
       $or: [
         { creatorId: userId },
@@ -131,9 +71,9 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Fetch Tour Requests
+    // 3. Fetch Tour Requests
     const tourRequests = await TourRequest.find({ userId: userId }).sort({ createdAt: -1 }).lean();
-
+    
     const formattedTourRequests = tourRequests.map((req: any) => ({
       id: req._id.toString(),
       tourId: req.tourId.toString(),
@@ -146,7 +86,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      exists: true,
       userData: {
         name: dbUser.name,
         email: dbUser.email,
@@ -163,9 +102,9 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error("Error in users GET API:", error);
+    console.error("Error in dashboard API:", error);
     return NextResponse.json(
-      { error: "Failed to fetch user data" },
+      { error: "Failed to fetch dashboard data" },
       { status: 500 }
     );
   }

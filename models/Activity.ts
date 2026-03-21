@@ -199,7 +199,11 @@ const ActivitySchema = new mongoose.Schema({
     relatedRentals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Rental' }],
     relatedStays: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Stay' }],
     relatedFood: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Food' }],
-    relatedAttractions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attraction' }]
+    relatedAttractions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attraction' }],
+    views: {
+        type: Number,
+        default: 0,
+    }
 });
 
 export default mongoose.models.Activity || mongoose.model('Activity', ActivitySchema);

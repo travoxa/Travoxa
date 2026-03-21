@@ -39,6 +39,7 @@ const PackageSlider = ({ title, items, linkPrefix, viewAllLink, colorTheme }: { 
             <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
                 {items.map((item, idx) => {
                     const id = item._id ? item._id.toString() : item.id;
+                    const urlId = item.slug || id;
                     const itemTitle = item.title || item.name;
                     const location = item.city || item.location || item.state || '';
                     const image = item.image || (item.images && item.images[0]) || item.coverImage || '/placeholder.jpg';
@@ -46,7 +47,7 @@ const PackageSlider = ({ title, items, linkPrefix, viewAllLink, colorTheme }: { 
                     const badgeText = item.type || item.category || (item.cuisine && item.cuisine[0]) || '';
 
                     return (
-                        <Link href={`${linkPrefix}/${id}`} key={id || idx} className="min-w-[280px] group block">
+                        <Link href={`${linkPrefix}/${urlId}`} key={id || idx} className="min-w-[280px] group block">
                             <div className="relative h-48 rounded-2xl overflow-hidden mb-4 border border-gray-100">
                                 <img src={image} alt={itemTitle} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                 {badgeText && (
