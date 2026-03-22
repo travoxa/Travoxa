@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { FaRegTrashAlt, FaChevronRight } from "react-icons/fa";
 import { FiTag } from "react-icons/fi";
@@ -15,13 +16,18 @@ interface SavedItem {
 }
 
 export default function SavedItemsCard() {
+    const { data: session } = useSession();
     const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchSavedItems = async () => {
+            if (!session?.user?.email) {
+                setIsLoading(false);
+                return;
+            }
             try {
-                const res = await fetch("/api/save");
+                const res = await fetch(`/api/save?email=${encodeURIComponent(session.user.email)}`);
                 const data = await res.json();
                 if (data.success) {
                     setSavedItems(data.data);
@@ -33,16 +39,17 @@ export default function SavedItemsCard() {
             }
         };
         fetchSavedItems();
-    }, []);
+    }, [session?.user?.email]);
 
     const handleRemove = async (id: string, itemId: string, itemType: string) => {
+        if (!session?.user?.email) return;
         try {
             const res = await fetch("/api/save", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ itemId, itemType }),
+                body: JSON.stringify({ itemId, itemType, email: session.user.email }),
             });
             const data = await res.json();
             if (!data.saved) {
