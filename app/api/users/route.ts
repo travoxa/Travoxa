@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/lib/models/User";
 import BackpackerGroup from "@/lib/models/BackpackerGroup";
 import TourRequest from "@/models/TourRequest";
+import SavedItem from "@/lib/models/SavedItem";
 
 export async function POST(request: NextRequest) {
   try {
@@ -144,6 +145,17 @@ export async function GET(request: NextRequest) {
       createdAt: req.createdAt.toISOString()
     }));
 
+    // Fetch Saved Items
+    const savedItems = await SavedItem.find({ userId: userId }).sort({ createdAt: -1 }).lean();
+    const formattedSavedItems = savedItems.map((item: any) => ({
+      id: item._id.toString(),
+      itemId: item.itemId,
+      itemType: item.itemType,
+      title: item.title,
+      itemLink: item.itemLink,
+      createdAt: item.createdAt.toISOString()
+    }));
+
     return NextResponse.json({
       success: true,
       exists: true,
@@ -159,7 +171,8 @@ export async function GET(request: NextRequest) {
         travelExperience: dbUser.travelExperience,
       },
       createdGroups: formattedGroups,
-      tourRequests: formattedTourRequests
+      tourRequests: formattedTourRequests,
+      savedItems: formattedSavedItems
     });
 
   } catch (error) {
