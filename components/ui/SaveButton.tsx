@@ -32,7 +32,7 @@ export default function SaveButton({
         if (status === "authenticated" && session?.user?.id) {
             const checkStatus = async () => {
                 try {
-                    const res = await fetch(`/api/save?itemId=${itemId}&itemType=${itemType}`);
+                    const res = await fetch(`/api/save?itemId=${itemId}&itemType=${itemType}&email=${session.user.email}`);
                     const data = await res.json();
                     if (data.saved !== undefined) {
                         setIsSaved(data.saved);
@@ -61,7 +61,7 @@ export default function SaveButton({
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ itemId, itemType, title, itemLink }),
+                body: JSON.stringify({ itemId, itemType, title, itemLink, email: session.user.email }),
             });
             const data = await res.json();
             if (data.saved !== undefined) {
