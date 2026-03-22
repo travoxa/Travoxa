@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
         let userEmail = email;
         if (!userEmail) {
             const user = await authenticateRequest(req);
-            userEmail = user?.email;
+            userEmail = user?.email || null;
             console.log('[API SAVE POST] Session User:', userEmail);
         }
 
@@ -109,7 +109,7 @@ export async function GET(req: NextRequest) {
         let userEmail = emailParam;
         if (!userEmail) {
             const user = await authenticateRequest(req);
-            userEmail = user?.email;
+            userEmail = user?.email || null;
             console.log('[API SAVE GET] Session User:', userEmail);
         }
 
