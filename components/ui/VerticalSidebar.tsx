@@ -64,9 +64,10 @@ export default function VerticalSidebar() {
     }, [isExpanded, session?.user?.id, status]);
 
     const fetchSavedItems = async () => {
+        if (!session?.user?.email) return;
         setIsLoading(true);
         try {
-            const res = await fetch("/api/save");
+            const res = await fetch(`/api/save?email=${encodeURIComponent(session.user.email)}`);
             const data = await res.json();
             if (data.success) {
                 setSavedItems(data.data);
@@ -79,11 +80,12 @@ export default function VerticalSidebar() {
     };
 
     const handleRemove = async (itemId: string, itemType: string) => {
+        if (!session?.user?.email) return;
         try {
             const res = await fetch("/api/save", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ itemId, itemType }),
+                body: JSON.stringify({ itemId, itemType, email: session.user.email }),
             });
             const data = await res.json();
             if (!data.saved) {
