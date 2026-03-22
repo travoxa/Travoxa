@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
     }));
 
     // Fetch Saved Items
-    const savedItems = await SavedItem.find({ userId: userId }).sort({ createdAt: -1 }).lean();
+    const savedItems = await SavedItem.find({ userId: dbUser.email }).sort({ createdAt: -1 }).lean();
     const formattedSavedItems = savedItems.map((item: any) => ({
       id: item._id.toString(),
       itemId: item.itemId,

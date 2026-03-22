@@ -9,13 +9,17 @@ import SavedItem from "@/lib/models/SavedItem";
  */
 export async function POST(req: NextRequest) {
     try {
+        const { itemId, itemType, title, itemLink, email } = await req.json();
         const user = await authenticateRequest(req);
-        if (!user) {
+
+        // Use provided email (mobile) or session email (web)
+        const userEmail = email || user?.email;
+
+        if (!userEmail) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { itemId, itemType, title, itemLink } = await req.json();
-        console.log('[API SAVE] Received:', { itemId, itemType, title, itemLink });
+        console.log('[API SAVE] Received:', { itemId, itemType, title, itemLink, userEmail });
 
         if (!itemId || !itemType) {
             return NextResponse.json({ error: "Missing itemId or itemType" }, { status: 400 });
@@ -25,7 +29,7 @@ export async function POST(req: NextRequest) {
 
         // Check if already saved
         const existing = await SavedItem.findOne({
-            userId: user.id,
+            userId: userEmail,
             itemId,
             itemType,
         });
@@ -37,7 +41,7 @@ export async function POST(req: NextRequest) {
         } else {
             // Save
             await SavedItem.create({
-                userId: user.id,
+                userId: userEmail,
                 itemId,
                 itemType,
                 title,
@@ -57,12 +61,16 @@ export async function POST(req: NextRequest) {
  */
 export async function GET(req: NextRequest) {
     try {
+        const { searchParams } = new URL(req.url);
+        const emailParam = searchParams.get("email");
         const user = await authenticateRequest(req);
-        if (!user) {
+
+        const userEmail = emailParam || user?.email;
+
+        if (!userEmail) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { searchParams } = new URL(req.url);
         const itemId = searchParams.get("itemId");
         const itemType = searchParams.get("itemType");
 
@@ -71,7 +79,7 @@ export async function GET(req: NextRequest) {
         if (itemId && itemType) {
             // Check if specific item is saved
             const existing = await SavedItem.findOne({
-                userId: user.id,
+                userId: userEmail,
                 itemId,
                 itemType,
             });
@@ -79,7 +87,7 @@ export async function GET(req: NextRequest) {
         }
 
         // Fetch all saved items
-        const savedItems = await SavedItem.find({ userId: user.id }).sort({ createdAt: -1 });
+        const savedItems = await SavedItem.find({ userId: userEmail }).sort({ createdAt: -1 });
         return NextResponse.json({ success: true, data: savedItems });
     } catch (error: any) {
         console.error("Fetch saved items error:", error);
