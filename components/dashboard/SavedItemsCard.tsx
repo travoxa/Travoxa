@@ -92,10 +92,10 @@ export default function SavedItemsCard() {
     }
 
     return (
-        <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm">
+        <div className="bg-white rounded-[32px] p-8 border border-gray-100">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {savedItems.map((item) => (
-                    <div key={item._id} className="group relative bg-gray-50 rounded-2xl p-4 border border-transparent hover:border-emerald-200 hover:bg-white transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-emerald-500/5">
+                    <div key={item._id} className="group relative bg-gray-50 rounded-2xl p-4 border border-transparent hover:border-emerald-200 hover:bg-white transition-all duration-300">
                         <div className="flex items-start justify-between mb-4">
                             <div className="flex flex-col">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-50 px-2 py-1 rounded-md mb-2 w-fit">

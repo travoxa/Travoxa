@@ -90,6 +90,11 @@ export default function NormalHeader({ backgroundColor = "bg-white", logoHeight 
             path: "/travoxa-circle",
             dropdown: [],
         },
+        {
+            label: "Blog",
+            path: "/#blog",
+            dropdown: [],
+        },
     ];
 
     const navigateTo = (path?: string) => {

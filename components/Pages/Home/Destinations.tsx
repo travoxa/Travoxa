@@ -91,7 +91,7 @@ const Destinations = () => {
     <div className='bg-white relative z-10 p-0'>
 
       <div className='flex flex-col justify-center items-center pt-24 pb-8' data-aos="fade-up">
-        <h2 className='text-center text-3xl lg:text-5xl text-black mb-6 Mont leading-tight'>
+        <h2 className='text-center text-4xl lg:text-6xl text-black mb-8 Mont font-normal leading-tight'>
           A Selection Of Exceptional <br /> <span className="">Tour Packages</span>
         </h2>
         {/* Filter Section directly embedded */}

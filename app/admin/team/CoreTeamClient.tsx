@@ -33,6 +33,7 @@ const SECTIONS = [
     { id: 'Vendor Requests', label: 'Vendor Requests' },
     { id: 'Listings', label: 'Listings' },
     { id: 'Team', label: 'Team' },
+    { id: 'Blogs', label: 'Blogs' },
     { id: 'Other', label: 'Other' },
 ];
 

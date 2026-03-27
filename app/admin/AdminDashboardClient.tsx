@@ -23,6 +23,7 @@ import AddHelplineClient from '@/app/admin/helpline/AddHelplineClient'
 import VendorRequestsClient from '@/app/admin/requests/VendorRequestsClient'
 import TourRequestsClient from '@/app/admin/tour/TourRequestsClient'
 import VendorTourApprovalClient from '@/app/admin/tour/VendorTourApprovalClient'
+import BlogManagementClient from '@/app/admin/blogs/BlogManagementClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -40,6 +41,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
     const [hasPendingTourRequests, setHasPendingTourRequests] = useState(false)
     const [hasPendingVendorTours, setHasPendingVendorTours] = useState(false)
     const [hasPendingVendorRequests, setHasPendingVendorRequests] = useState(false)
+    const [hasPendingBackpackers, setHasPendingBackpackers] = useState(false)
     const router = useRouter()
 
     useEffect(() => {
@@ -70,6 +72,14 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                 const otherData = await Promise.all(otherRes.map(res => res.json()));
                 const hasAnyOtherPending = otherData.some(d => d.success && d.data.length > 0);
                 setHasPendingVendorRequests(hasAnyOtherPending);
+
+                // 4. Check Pending Backpackers (Unverified community trips)
+                const backpackersRes = await fetch('/api/groups?admin=true');
+                const backpackersData = await backpackersRes.json();
+                if (backpackersData.groups) {
+                    const hasUnverified = backpackersData.groups.some((g: any) => g.tripSource !== 'hosted' && !g.verified);
+                    setHasPendingBackpackers(hasUnverified);
+                }
 
             } catch (error) {
                 console.error('Error checking pending requests:', error);
@@ -107,7 +117,8 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             (activeTab === 'Discovery' && hasDiscoveryPermission()) ||
             (activeTab.startsWith('Discovery:') && hasDiscoveryPermission(activeTab.split(':')[1])) ||
             (activeTab === 'Tour' && hasTourPermission()) ||
-            (activeTab.startsWith('Tour:') && hasTourPermission(activeTab.split(':')[1]));
+            (activeTab.startsWith('Tour:') && hasTourPermission(activeTab.split(':')[1])) ||
+            (activeTab === 'Blogs' && permissions.includes('Other'));
 
         if (!isAllowed) {
             return (
@@ -239,6 +250,14 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                         <TeamManagementClient />
                     </div>
                 )
+            
+            case 'Blogs':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Blogs</h1>
+                        <BlogManagementClient />
+                    </div>
+                )
 
             case 'Overview':
                 return (
@@ -274,6 +293,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                 hasPendingTourRequests={hasPendingTourRequests}
                 hasPendingVendorTours={hasPendingVendorTours}
                 hasPendingVendorRequests={hasPendingVendorRequests}
+                hasPendingBackpackers={hasPendingBackpackers}
             />
 
             {/* Main Content */}

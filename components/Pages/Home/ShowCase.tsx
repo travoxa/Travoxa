@@ -4,7 +4,10 @@ import { HiArrowRight } from "react-icons/hi2"
 
 const ShowCase = () => {
 
-    const blogs = [
+    const [blogs, setBlogs] = React.useState<any[]>([])
+    const [loading, setLoading] = React.useState(true)
+
+    const placeholders = [
         {
             title: "Exploring Local Culture and Traditions",
             author: "Admin",
@@ -20,10 +23,41 @@ const ShowCase = () => {
         {
             title: "Sunrise in Bromo Tengger Semeru",
             author: "Admin",
-            date: "Dec 20, 2025",
+            date: "Dec 20, 2024",
             image: "/home/tourist-places3.jpg"
         }
     ]
+
+    React.useEffect(() => {
+        const fetchBlogs = async () => {
+            try {
+                const res = await fetch('/api/blogs?limit=3')
+                const data = await res.json()
+                if (data.success && data.data) {
+                    const realBlogs = data.data.map((blog: any) => ({
+                        _id: blog._id,
+                        slug: blog.slug,
+                        title: blog.title,
+                        author: "Admin", // Assuming admin for now or could use blog.author if available
+                        date: new Date(blog.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+                        image: blog.coverImage
+                    }))
+                    
+                    // Combine real blogs with placeholders to make exactly 3
+                    const combined = [...realBlogs, ...placeholders].slice(0, 3)
+                    setBlogs(combined)
+                } else {
+                    setBlogs(placeholders)
+                }
+            } catch (error) {
+                console.error('Error fetching blogs:', error)
+                setBlogs(placeholders)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchBlogs()
+    }, [])
 
     const [email, setEmail] = React.useState('')
     const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -67,82 +101,106 @@ const ShowCase = () => {
         <div className='container mx-auto px-6 lg:px-20 py-20' >
             <div className='flex flex-col lg:flex-row justify-between items-start lg:items-end mb-12' data-aos="fade-right">
                 <div className="max-w-2xl">
-                    <h2 className='text-3xl lg:text-5xl text-black mb-6 Mont' >Travel Blog <br /> <span className="">Around Travoxa</span></h2>
+                    <h2 className='text-4xl lg:text-6xl text-black mb-8 Mont font-normal leading-tight' >Travel Blog <br /> <span className="">Around Travoxa</span></h2>
                     <p className="text-gray-600 Inter text-lg">This blog features beautiful photography and personal experiences, providing insights into the local culture.</p>
                 </div>
                 {/* Subscribe section - full width on mobile */}
-                <div className="w-full lg:w-auto flex gap-4 mt-6 lg:mt-0 items-center h-[50px]">
-                    {!showInput ? (
-                        <button
-                            onClick={() => setShowInput(true)}
-                            className="w-full lg:w-auto bg-black text-white px-8 py-3 rounded-full text-sm font-medium hover:bg-black/80 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                        >
-                            Subscribe
-                        </button>
-                    ) : (
-                        <form onSubmit={handleSubscribe} className="w-full lg:w-auto flex gap-2 items-center animate-in fade-in slide-in-from-right-4 duration-300">
-                            <div className="relative group flex-1 lg:flex-none">
-                                <input
-                                    type="email"
-                                    placeholder="Enter your email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full px-6 py-3 rounded-full border border-gray-300 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all lg:w-[250px] shadow-sm group-hover:shadow-md"
-                                    required
-                                    disabled={status === 'success'}
-                                />
-                                {status === 'success' && (
-                                    <span className="absolute -bottom-6 left-4 text-xs text-green-600 font-medium animate-in fade-in slide-in-from-top-1">Subscribed successfully!</span>
-                                )}
-                                {status === 'already_subscribed' && (
-                                    <span className="absolute -bottom-6 left-4 text-xs text-blue-600 font-medium animate-in fade-in slide-in-from-top-1">Already subscribed!</span>
-                                )}
-                                {status === 'error' && (
-                                    <span className="absolute -bottom-6 left-4 text-xs text-red-500 font-medium animate-in fade-in slide-in-from-top-1">Something went wrong</span>
-                                )}
-                            </div>
+                <div className="w-full lg:w-auto flex flex-col sm:flex-row gap-4 mt-6 lg:mt-0 items-center h-auto lg:h-[50px]">
+                    <a 
+                        href="/blog"
+                        className="w-full sm:w-auto bg-gray-100 text-gray-900 px-8 py-3 rounded-full text-sm font-medium hover:bg-gray-200 transition-all duration-300 transform hover:-translate-y-0.5 text-center"
+                    >
+                        Explore Blogs
+                    </a>
+                    <div className="w-full sm:w-auto h-[50px] flex items-center">
+                        {!showInput ? (
                             <button
-                                type="submit"
-                                disabled={isSubmitting || status === 'success'}
-                                className="bg-black text-white p-3 rounded-full hover:bg-black/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex-shrink-0"
+                                onClick={() => setShowInput(true)}
+                                className="w-full lg:w-auto bg-black text-white px-8 py-3 rounded-full text-sm font-medium hover:bg-black/80 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                             >
-                                {isSubmitting ? (
-                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                ) : (
-                                    <HiArrowRight className="text-lg" />
-                                )}
+                                Subscribe
                             </button>
-                        </form>
-                    )}
+                        ) : (
+                            <form onSubmit={handleSubscribe} className="w-full lg:w-auto flex gap-2 items-center animate-in fade-in slide-in-from-right-4 duration-300">
+                                <div className="relative group flex-1 lg:flex-none">
+                                    <input
+                                        type="email"
+                                        placeholder="Enter your email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full px-6 py-3 rounded-full border border-gray-300 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all lg:w-[250px] shadow-sm group-hover:shadow-md"
+                                        required
+                                        disabled={status === 'success'}
+                                    />
+                                    {status === 'success' && (
+                                        <span className="absolute -bottom-6 left-4 text-xs text-green-600 font-medium animate-in fade-in slide-in-from-top-1">Subscribed successfully!</span>
+                                    )}
+                                    {status === 'already_subscribed' && (
+                                        <span className="absolute -bottom-6 left-4 text-xs text-blue-600 font-medium animate-in fade-in slide-in-from-top-1">Already subscribed!</span>
+                                    )}
+                                    {status === 'error' && (
+                                        <span className="absolute -bottom-6 left-4 text-xs text-red-500 font-medium animate-in fade-in slide-in-from-top-1">Something went wrong</span>
+                                    )}
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting || status === 'success'}
+                                    className="bg-black text-white p-3 rounded-full hover:bg-black/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex-shrink-0"
+                                >
+                                    {isSubmitting ? (
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <HiArrowRight className="text-lg" />
+                                    )}
+                                </button>
+                            </form>
+                        )}
+                    </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" data-aos="fade-up" data-aos-delay="200">
-                {blogs.map((blog, idx) => (
-                    <div key={idx} className="group cursor-pointer">
-                        <div className="rounded-2xl overflow-hidden mb-4 relative h-[250px]">
-                            <Image
-                                src={blog.image}
-                                alt={blog.title}
-                                fill
-                                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                            <div className="absolute top-4 right-4 p-2 bg-white/30 backdrop-blur-md rounded-full">
-                                <HiArrowRight className="text-white -rotate-45 group-hover:rotate-0 transition-transform" />
+                {blogs.map((blog, idx) => {
+                    const Content = (
+                        <div className="group cursor-pointer h-full flex flex-col">
+                            <div className="rounded-2xl overflow-hidden mb-4 relative h-[250px] flex-shrink-0">
+                                <Image
+                                    src={blog.image}
+                                    alt={blog.title}
+                                    fill
+                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+                                <div className="absolute top-4 right-4 p-2 bg-white/30 backdrop-blur-md rounded-full">
+                                    <HiArrowRight className="text-white -rotate-45 group-hover:rotate-0 transition-transform" />
+                                </div>
+                            </div>
+                            <div className="flex flex-col flex-1">
+                                <div className="flex gap-4 text-xs text-gray-500 mb-2 uppercase tracking-wide font-medium">
+                                    <span>{blog.author}</span>
+                                    <span>•</span>
+                                    <span>{blog.date}</span>
+                                </div>
+                                <h3 className="text-xl font-medium leading-tight group-hover:text-green-600 transition-colors line-clamp-2">
+                                    {blog.title}
+                                </h3>
                             </div>
                         </div>
-                        <div>
-                            <div className="flex gap-4 text-xs text-gray-500 mb-2 uppercase tracking-wide font-medium">
-                                <span>{blog.author}</span>
-                                <span>•</span>
-                                <span>{blog.date}</span>
-                            </div>
-                            <h3 className="text-xl font-medium leading-tight group-hover:text-green-600 transition-colors">
-                                {blog.title}
-                            </h3>
+                    );
+
+                    if (blog.slug) {
+                        return (
+                            <a key={blog._id || idx} href={`/blog/${blog.slug}`}>
+                                {Content}
+                            </a>
+                        );
+                    }
+
+                    return (
+                        <div key={idx}>
+                            {Content}
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
         </div>

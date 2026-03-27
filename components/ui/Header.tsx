@@ -103,6 +103,11 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
       path: "/travoxa-circle",
       dropdown: [],
     },
+    {
+      label: "Blog",
+      path: "/#blog",
+      dropdown: [],
+    },
   ];
 
   const navigateTo = (path?: string) => {

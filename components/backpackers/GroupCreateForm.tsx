@@ -125,59 +125,59 @@ export default function GroupCreateForm() {
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-  event.preventDefault();
-  setStatus('submitting');
+    event.preventDefault();
+    setStatus('submitting');
 
-  // Validate required fields
-  if (!formState.groupName || !formState.startLocation || !formState.endLocation || !formState.startDate || !formState.endDate) {
-    setStatus('error');
-    alert('Please fill in all required fields: Group Name, Start Location, End Location, Start Date, and End Date.');
-    
-    return;
-  }
+    // Validate required fields
+    if (!formState.groupName || !formState.startLocation || !formState.endLocation || !formState.startDate || !formState.endDate) {
+      setStatus('error');
+      alert('Please fill in all required fields: Group Name, Start Location, End Location, Start Date, and End Date.');
 
-  try {
-    
-
-    const response = await fetch('/api/groups', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        groupName: formState.groupName,
-        destination: formState.endLocation,
-        startDate: formState.startDate,
-        endDate: formState.endDate,
-        startLocation: formState.startLocation,
-        endLocation: formState.endLocation,
-        maxMembers: formState.maxMembers,
-        tripType: formState.tripType,
-        budgetRange: formState.budgetRange,
-        pickupLocation: formState.pickupLocation,
-        accommodationType: formState.accommodationType,
-        minAge: formState.minAge,
-        genderPreference: formState.genderPreference,
-        trekkingExperience: formState.trekkingExperience,
-        planOverview: formState.planOverview,
-        creatorId: session.user.email,
-        mandatoryRules: parseList(formState.mandatoryRules),
-        itinerary: parseList(formState.itinerary),
-        activities: parseList(formState.activities),
-        estimatedCosts: parseKeyValueLines(formState.estimatedCosts),
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.log('API Error Response:', errorData);
-      throw new Error(errorData.error || 'Failed to submit');
+      return;
     }
 
-    setStatus('success');
-  } catch (error) {
-    console.error('Failed to create group', error);
-    setStatus('error');
-  }
-};
+    try {
+
+
+      const response = await fetch('/api/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          groupName: formState.groupName,
+          destination: formState.endLocation,
+          startDate: formState.startDate,
+          endDate: formState.endDate,
+          startLocation: formState.startLocation,
+          endLocation: formState.endLocation,
+          maxMembers: formState.maxMembers,
+          tripType: formState.tripType,
+          budgetRange: formState.budgetRange,
+          pickupLocation: formState.pickupLocation,
+          accommodationType: formState.accommodationType,
+          minAge: formState.minAge,
+          genderPreference: formState.genderPreference,
+          trekkingExperience: formState.trekkingExperience,
+          planOverview: formState.planOverview,
+          creatorId: session.user.email,
+          mandatoryRules: parseList(formState.mandatoryRules),
+          itinerary: parseList(formState.itinerary),
+          activities: parseList(formState.activities),
+          estimatedCosts: parseKeyValueLines(formState.estimatedCosts),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log('API Error Response:', errorData);
+        throw new Error(errorData.error || 'Failed to submit');
+      }
+
+      setStatus('success');
+    } catch (error) {
+      console.error('Failed to create group', error);
+      setStatus('error');
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 text-black">

@@ -20,7 +20,8 @@ import {
     RiBuilding2Line,
     RiRestaurantLine,
     RiHotelLine,
-    RiHeartPulseLine
+    RiHeartPulseLine,
+    RiArticleLine
 } from 'react-icons/ri';
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
@@ -38,6 +39,8 @@ interface SidebarProps {
     hasPendingTourRequests?: boolean;
     hasPendingVendorTours?: boolean;
     hasPendingVendorRequests?: boolean;
+    hasPendingBackpackers?: boolean;
+    hasPendingBlogs?: boolean;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -50,7 +53,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     onClose,
     hasPendingTourRequests = false,
     hasPendingVendorTours = false,
-    hasPendingVendorRequests = false
+    hasPendingVendorRequests = false,
+    hasPendingBackpackers = false,
+    hasPendingBlogs = false
 }) => {
     const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
@@ -162,6 +167,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             id="Tour:Requests"
                                             activeTab={activeTab}
                                             showDot={hasPendingTourRequests}
+                                            dotColor="bg-amber-500"
                                             onClick={(id) => {
                                                 setActiveTab(id);
                                                 if (onClose) onClose();
@@ -175,6 +181,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             id="Tour:VendorTours"
                                             activeTab={activeTab}
                                             showDot={hasPendingVendorTours}
+                                            dotColor="bg-amber-500"
                                             onClick={(id) => {
                                                 setActiveTab(id);
                                                 if (onClose) onClose();
@@ -280,37 +287,40 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     label="Backpackers"
                                     id="Backpackers"
                                     activeTab={activeTab}
+                                    showDot={hasPendingBackpackers}
+                                    dotColor="bg-amber-500"
                                     onClick={(id) => {
                                         setActiveTab(id);
                                         if (onClose) onClose();
                                     }}
                                 />
                             )}
-                            {permissions.includes('Vendor Requests') && (
-                                <NavItem
-                                    icon={<RiFileListLine size={20} />}
-                                    label="Vendor Requests"
-                                    id="Vendor Requests"
-                                    activeTab={activeTab}
-                                    showDot={hasPendingVendorRequests}
-                                    onClick={(id) => {
-                                        setActiveTab(id);
-                                        if (onClose) onClose();
-                                    }}
-                                />
-                            )}
-                            {permissions.includes('Listings') && (
-                                <NavItem
-                                    icon={<RiFileListLine size={20} />}
-                                    label="Listings"
-                                    id="Listings"
-                                    activeTab={activeTab}
-                                    onClick={(id) => {
-                                        setActiveTab(id);
-                                        if (onClose) onClose();
-                                    }}
-                                />
-                            )}
+                            {(permissions.includes('Blogs') || permissions.includes('Other')) && (
+                                    <NavItem
+                                        icon={<RiArticleLine size={20} />}
+                                        label="Blogs"
+                                        id="Blogs"
+                                        activeTab={activeTab}
+                                        showDot={hasPendingBlogs}
+                                        dotColor="bg-blue-500"
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
+                                )}
+                                {permissions.includes('Listings') && (
+                                    <NavItem
+                                        icon={<RiFileListLine size={20} />}
+                                        label="Listings"
+                                        id="Listings"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
+                                )}
                             {permissions.includes('Team') && (
                                 <NavItem
                                     icon={<RiGroupLine size={20} />}
@@ -475,14 +485,16 @@ const NavItem = ({
     id,
     activeTab,
     onClick,
-    showDot
+    showDot,
+    dotColor
 }: {
     icon: any,
     label: string,
     id: string,
     activeTab: string,
     onClick: (id: string) => void,
-    showDot?: boolean
+    showDot?: boolean,
+    dotColor?: string
 }) => {
     const active = activeTab === id;
     return (
@@ -498,7 +510,7 @@ const NavItem = ({
                 <span className="md:hidden">{icon && typeof icon === 'object' && 'props' in icon ? { ...icon, props: { ...icon.props, size: 14 } } : icon}</span>
                 <span className="text-[11px] md:text-sm font-medium">{label}</span>
                 {showDot && (
-                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    <span className={`w-2 h-2 ${dotColor || 'bg-red-500'} rounded-full animate-pulse`} />
                 )}
             </div>
         </button>
@@ -511,14 +523,16 @@ const SubNavItem = ({
     id,
     activeTab,
     onClick,
-    showDot
+    showDot,
+    dotColor
 }: {
     icon: any,
     label: string,
     id: string,
     activeTab: string,
     onClick: (id: string) => void,
-    showDot?: boolean
+    showDot?: boolean,
+    dotColor?: string
 }) => {
     const active = activeTab === id;
     return (
@@ -534,7 +548,7 @@ const SubNavItem = ({
                 <span className="md:hidden">{icon && typeof icon === 'object' && 'props' in icon ? { ...icon, props: { ...icon.props, size: 12 } } : icon}</span>
                 <span className="text-[10px] md:text-xs font-light">{label}</span>
                 {showDot && (
-                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                    <span className={`w-1.5 h-1.5 ${dotColor || 'bg-red-500'} rounded-full animate-pulse`} />
                 )}
             </div>
         </button>

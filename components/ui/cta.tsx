@@ -12,7 +12,7 @@ function Cta() {
                 {/* Content */}
                 <div className="relative max-w-4xl mx-auto text-center space-y-8 text-white">
 
-                    <h2 className="Mont text-4xl md:text-6xl text-black font-bold leading-tight">
+                    <h2 className="Mont font-normal text-4xl lg:text-6xl text-black leading-tight mb-8">
                         FIND YOUR NEXT <span className="italic">ADVENTURE</span>
                     </h2>
 
