@@ -9,7 +9,7 @@ async function isAdmin() {
     return !!adminAccess;
 }
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         await connectDB();
         const { id } = await params;
@@ -36,7 +36,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         if (!(await isAdmin())) {
             return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -58,7 +58,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         if (!(await isAdmin())) {
             return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
