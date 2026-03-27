@@ -374,7 +374,7 @@ const Choose = () => {
         <p className="Mont text-[18px] tracking-[4px] uppercase text-[#4da528] font-medium mb-[12px]">
           WHY CHOOSE US
         </p>
-        <h2 className=" text-[56px] lg:text-[68px] Mont font-light leading-[1.1] mb-[20px] bg-gradient-to-r from-black to-gray-600 bg-clip-text text-transparent">
+        <h2 className=" text-4xl lg:text-6xl Mont font-normal leading-tight mb-8 text-black">
           Explore Our Features.
         </h2>
         <p className="Mont text-[22px] text-gray-600 leading-[1.6] max-w-5xl mx-auto ">

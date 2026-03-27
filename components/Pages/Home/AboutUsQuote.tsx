@@ -33,7 +33,7 @@ const AboutUsQuote = () => {
 
       {/* Text Content */}
       <div className="lg:w-1/2" data-aos="fade-right">
-        <h2 className=" text-4xl lg:text-6xl text-black leading-tight mb-8 Mont">
+        <h2 className=" text-4xl lg:text-6xl text-black leading-tight mb-8 Mont font-normal">
           The Journey Of <br />
           <span className="text-gray-900">Travoxa AI</span>
         </h2>
