@@ -8,6 +8,9 @@ import { useRouter } from "next/navigation";
 import { getFirebaseAuth } from "@/lib/firebaseAuth";
 import Loading from "@/components/ui/components/Loading";
 import GoBackButton from "@/components/ui/components/GoBackButton";
+import LogoutPopup from "@/components/vendor/LogoutPopup";
+import Image from "next/image";
+import { FiMail, FiLock, FiUser, FiArrowRight } from "react-icons/fi";
 
 export default function VendorLogin() {
     const [isLogin, setIsLogin] = useState(true);
@@ -20,6 +23,7 @@ export default function VendorLogin() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+    const [isLogoutPopupOpen, setIsLogoutPopupOpen] = useState(false);
 
     const { data: session, status } = useSession();
     const router = useRouter();
@@ -27,23 +31,19 @@ export default function VendorLogin() {
     useEffect(() => {
         if (status === "authenticated" && session?.user) {
             if (session.user.role === 'user') {
-                // If a normal user somehow ends up here, redirect them to home
-                router.push("/");
+                setIsLogoutPopupOpen(true);
                 return;
             }
-            // Check if user exists in MongoDB by email
+            
             const checkUserInDB = async () => {
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await new Promise(resolve => setTimeout(resolve, 500));
                     const response = await fetch(`/api/users/check?email=${encodeURIComponent(session.user.email!)}`);
-                    if (!response.ok) {
-                        console.error('Failed to check user in MongoDB');
-                        return;
-                    }
+                    if (!response.ok) return;
+                    
                     const result = await response.json();
 
                     if (!result.exists) {
-                        // User doesn't exist, add them to MongoDB as vendor
                         const createResponse = await fetch('/api/users', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -58,19 +58,17 @@ export default function VendorLogin() {
                                 role: 'vendor'
                             }),
                         });
-
-                        if (!createResponse.ok) console.error('Failed to save vendor to MongoDB');
+                        if (!createResponse.ok) console.error('Failed to save vendor');
                         router.push("/vendor/onboarding");
                     } else {
                         if (result.userData?.role !== 'vendor') {
-                            setError("This email is already registered as a normal user. Please use a different email or contact support.");
+                            setError("This email is already registered as a normal user.");
                             return;
                         }
                         router.push("/vendor");
                     }
                 } catch (error) {
-                    console.error("Error checking user in MongoDB:", error);
-                    setError("Failed to connect to database. Please try again.");
+                    console.error("Error checking user:", error);
                 }
             };
 
@@ -85,11 +83,10 @@ export default function VendorLogin() {
 
         try {
             const auth = getFirebaseAuth();
-            if (!auth) throw new Error("Firebase Auth is not available");
+            if (!auth) throw new Error("Authentication module not loaded");
 
             if (isLogin) {
-                if (!email) { setError("Enter email"); setLoading(false); return; }
-                if (!password) { setError("Enter Password"); setLoading(false); return; }
+                if (!email || !password) { setError("Please fill all fields"); setLoading(false); return; }
 
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
@@ -99,29 +96,26 @@ export default function VendorLogin() {
 
                 const result = await response.json();
 
-                if (!result.exists) {
-                    setError("Account not found. Please create a vendor account.");
-                } else {
-                    if (result.userData?.role !== 'vendor') {
-                        setError("This account is not a vendor account. Please login through the standard login page.");
-                        setLoading(false);
-                        return;
-                    }
-                    await signIn("credentials", { email: user.email, password, redirect: false });
-                    router.push("/vendor");
-                }
-            } else {
-                if (!firstName || !lastName || !agreement || !email || !password || !confirmPassword) {
-                    setError("Please fill all fields and agree to T&C.");
+                if (!result.exists || result.userData?.role !== 'vendor') {
+                    setError("Unauthorized: Vendor account not found.");
                     setLoading(false);
                     return;
                 }
-                if (password.length < 6) { setError("Password must be at least 6 characters"); setLoading(false); return; }
-                if (password !== confirmPassword) { setError("Passwords do not match!"); setLoading(false); return; }
+                
+                await signIn("credentials", { email: user.email, password, redirect: false });
+                router.push("/vendor");
+            } else {
+                if (!firstName || !lastName || !agreement || !email || !password || !confirmPassword) {
+                    setError("Please fill all fields and agree to terms.");
+                    setLoading(false);
+                    return;
+                }
+                if (password.length < 6) { setError("Password too short (min 6 chars)"); setLoading(false); return; }
+                if (password !== confirmPassword) { setError("Passwords do not match"); setLoading(false); return; }
 
                 const methods = await fetchSignInMethodsForEmail(auth, email);
                 if (methods.length > 0) {
-                    setError("An account with this email already exists. Please sign in.");
+                    setError("Account already exists. Please sign in.");
                     setLoading(false); return;
                 }
 
@@ -149,14 +143,13 @@ export default function VendorLogin() {
                     }),
                 });
 
-                if (!response.ok) throw new Error('Failed to create vendor account');
+                if (!response.ok) throw new Error('Failed to create account');
 
                 await signIn("credentials", { email, password, redirect: false });
                 router.push("/vendor/onboarding");
             }
         } catch (error: any) {
-            console.error("Authentication error:", error);
-            setError(error.message || "An error occurred");
+            setError(error.message || "Authentication failed");
         } finally {
             setLoading(false);
         }
@@ -167,105 +160,138 @@ export default function VendorLogin() {
         try {
             await signIn("google", { callbackUrl: "/vendor/onboarding" });
         } catch (error) {
-            console.error("Google sign-in error:", error);
-            setError("Failed to sign in with Google.");
+            setError("Google sign-in failed");
         } finally {
             setIsGoogleLoading(false);
         }
     };
 
-    if (status === "loading" || status === "authenticated") return <Loading />;
+    if (status === "loading") return <Loading />;
 
     return (
-        <div className="bg-dots-svg relative max-w-screen overflow-hidden Inter w-full h-screen flex justify-between items-center bg-white px-[12px]">
+        <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] bg-dots-svg p-4 md:p-6 select-none">
+            <LogoutPopup 
+                isOpen={isLogoutPopupOpen} 
+                onClose={() => setIsLogoutPopupOpen(false)} 
+            />
             {loading && <Loading />}
 
-            {/* Left side image */}
-            <div
-                className="hidden lg:flex relative w-[calc(50vw-24px)] h-[calc(100vh-24px)] bg-cover bg-center rounded-[12px]"
-                style={{ backgroundImage: `url('/Destinations/Des6.jpg')` }}>
-                <p className="absolute top-[24px] left-[24px] Mont text-[24px] font-light text-white uppercase">TRAVOXA VENDORS</p>
-                <p className="absolute bottom-[24px] left-1/2 text-center transform -translate-x-1/2 text-white font-light Mont text-[2vw]">Grow your business with us.</p>
-            </div>
-
-            {/* Right side form */}
-            <div className="Mont w-full lg:w-[calc(50vw-24px)] px-[3vw] mt-[24px]">
-                {isLogin ? (
-                    <div>
-                        <div className="flex lg:hidden"><GoBackButton /></div>
-                        <p className="text-black mt-[24px] text-[36px] font-extrabold Mont">Vendor Login</p>
-                        <button
-                            onClick={() => { setIsLogin(false); setError(""); }}
-                            className="text-black mt-[2.5vh] text-[12px] font-light">
-                            Become a Vendor! <span className="underline">Click Here to Apply</span>
-                        </button>
-
-                        {error.length > 0 && <div className="text-red-500 text-[13px] mt-[12px] bg-red-50 p-3 rounded-md border border-red-200">{error}</div>}
-
-                        <input
-                            className="mt-[24px] lg:mt-[9vh] bg-white text-black text-[14px] outline-none border-[0.5px] border-[#3e4462] placeholder-[#00000090] w-full rounded-[6px] px-[24px] py-[16px]"
-                            type="email" placeholder="Business Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                        <input
-                            className="mt-[3vh] bg-white text-black text-[14px] outline-none border-[0.5px] border-[#3e4462] placeholder-[#00000090] w-full rounded-[6px] px-[24px] py-[16px]"
-                            type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleEmailPasswordSubmit()} />
-
-                        <button onClick={() => handleEmailPasswordSubmit()} className="text-white font-light w-full bg-black mt-[6vh] rounded-[6px] py-[12px]">
-                            {loading ? "Logging in..." : "Login to Portal"}
-                        </button>
+            <div className="w-full max-w-[480px] bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100 p-8 md:p-12 animate-in fade-in zoom-in duration-300">
+                <div className="flex flex-col items-center mb-10 text-center">
+                    <div className="mb-8 p-3 bg-gray-50 rounded-2xl">
+                        <Image src="/logo.png" alt="Travoxa" width={140} height={40} className="w-auto h-8" />
                     </div>
-                ) : (
-                    <div>
-                        <div className="flex lg:hidden"><GoBackButton /></div>
-                        <p className="text-black text-[36px] font-extrabold Mont mt-[24px]">Vendor Registration</p>
-                        <button
-                            onClick={() => { setIsLogin(true); setError(""); }}
-                            className="text-black mt-[2.5vh] text-[12px] font-light">
-                            Already a partner? <span className="underline">Login Here</span>
-                        </button>
+                    <h1 className="text-3xl font-[900] text-gray-900 Mont uppercase tracking-tight leading-none">
+                        Vendor <span className="text-green-600">Portal</span>
+                    </h1>
+                    <p className="text-gray-400 text-sm Mont mt-3 font-medium max-w-[280px]">
+                        {isLogin ? "Sign in to manage your listings and bookings" : "Start your journey as a certified Travoxa partner"}
+                    </p>
+                </div>
 
-                        {error.length > 0 && <div className="text-red-500 mt-[12px] text-[13px] bg-red-50 p-3 rounded-md border border-red-200">{error}</div>}
-
-                        <div className="w-full flex gap-[2.5vh] items-center">
-                            <input
-                                className="mt-[24px] lg:mt-[5vh] bg-white text-black text-[14px] outline-none border-[0.5px] border-[#3e4462] placeholder-[#00000090] w-full rounded-[6px] px-[24px] py-[16px]"
-                                type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-                            <input
-                                className="mt-[24px] lg:mt-[5vh] bg-white text-black text-[14px] outline-none border-[0.5px] border-[#3e4462] placeholder-[#00000090] w-full rounded-[6px] px-[24px] py-[16px]"
-                                type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-                        </div>
-                        <input
-                            className="mt-[2.5vh] bg-white text-black text-[14px] outline-none border-[0.5px] border-[#3e4462] placeholder-[#00000090] w-full rounded-[6px] px-[24px] py-[16px]"
-                            type="email" placeholder="Business Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                        <input
-                            className="mt-[2.5vh] bg-white text-black text-[14px] outline-none border-[0.5px] border-[#3e4462] placeholder-[#00000090] w-full rounded-[6px] px-[24px] py-[16px]"
-                            type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                        <input
-                            className="mt-[2.5vh] bg-white text-black text-[14px] outline-none border-[0.5px] border-[#3e4462] placeholder-[#00000090] w-full rounded-[6px] px-[24px] py-[16px]"
-                            type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-
-                        <div className="flex gap-[12px] items-center mt-[2.5vh]">
-                            <input type="checkbox" checked={agreement} onChange={(e) => setAgreement(e.target.checked)} />
-                            <p className="text-black text-[12px]">I agree to the Vendor Terms & Conditions</p>
-                        </div>
-
-                        <button onClick={() => handleEmailPasswordSubmit()} className="text-white font-light w-full bg-black mt-[6vh] rounded-[6px] py-[12px]">
-                            {loading ? "Creating Account..." : "Create Vendor Account"}
-                        </button>
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 text-red-600 text-[13px] rounded-2xl border border-red-100 flex items-center gap-3 Mont animate-pulse">
+                        <div className="w-1.5 h-1.5 bg-red-600 rounded-full"></div>
+                        {error}
                     </div>
                 )}
 
-                <div className="flex flex-col justify-center items-center mt-[24px]">
-                    <div className="h-px w-full bg-black mt-[20px]"></div>
-                    <p className="text-black text-[12px] w-fit mt-[-10px] bg-white px-[12px]">OR</p>
+                <form onSubmit={handleEmailPasswordSubmit} className="space-y-4">
+                    {!isLogin && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="relative group">
+                                <FiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-green-600" />
+                                <input
+                                    className="w-full pl-11 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-gray-900 text-sm outline-none ring-2 ring-transparent focus:ring-green-600/20 focus:bg-white transition-all Mont placeholder:text-gray-400"
+                                    type="text" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                            </div>
+                            <div className="relative group">
+                                <FiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-green-600" />
+                                <input
+                                    className="w-full pl-11 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-gray-900 text-sm outline-none ring-2 ring-transparent focus:ring-green-600/20 focus:bg-white transition-all Mont placeholder:text-gray-400"
+                                    type="text" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="relative group">
+                        <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-green-600" />
+                        <input
+                            className="w-full pl-11 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-gray-900 text-sm outline-none ring-2 ring-transparent focus:ring-green-600/20 focus:bg-white transition-all Mont placeholder:text-gray-400"
+                            type="email" placeholder="Business Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    </div>
+
+                    <div className="relative group">
+                        <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-green-600" />
+                        <input
+                            className="w-full pl-11 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-gray-900 text-sm outline-none ring-2 ring-transparent focus:ring-green-600/20 focus:bg-white transition-all Mont placeholder:text-gray-400"
+                            type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                    </div>
+
+                    {!isLogin && (
+                        <>
+                            <div className="relative group">
+                                <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-green-600" />
+                                <input
+                                    className="w-full pl-11 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-gray-900 text-sm outline-none ring-2 ring-transparent focus:ring-green-600/20 focus:bg-white transition-all Mont placeholder:text-gray-400"
+                                    type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                            </div>
+                            <label className="flex items-center gap-3 px-2 py-1 cursor-pointer group">
+                                <input 
+                                    type="checkbox" 
+                                    checked={agreement} 
+                                    onChange={(e) => setAgreement(e.target.checked)}
+                                    className="w-4 h-4 rounded-md border-gray-300 text-green-600 focus:ring-green-600/20" 
+                                />
+                                <span className="text-gray-500 text-[12px] Mont font-medium group-hover:text-gray-700 transition-colors">I agree to the Vendor Terms & Conditions</span>
+                            </label>
+                        </>
+                    )}
+
+                    <button 
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-black text-white text-sm font-bold Mont py-4 rounded-2xl hover:bg-gray-800 transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50 mt-4 group"
+                    >
+                        {loading ? "Processing..." : (isLogin ? "Sign In to Portal" : "Create Vendor Account")}
+                        {!loading && <FiArrowRight className="group-hover:translate-x-1 transition-transform" />}
+                    </button>
+                </form>
+
+                <div className="relative my-8">
+                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"></div></div>
+                    <div className="relative flex justify-center text-[11px] uppercase tracking-widest font-bold text-gray-300"><span className="bg-white px-4">OR CONTINUE WITH</span></div>
                 </div>
 
-                <button onClick={handleGoogleSignIn} disabled={isGoogleLoading} className="flex gap-[12px] justify-center items-center text-black font-light border border-[#3e4462] w-full mt-[36px] rounded-[6px] py-[12px] disabled:opacity-50 disabled:cursor-not-allowed">
-                    {isGoogleLoading ? <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div> : <>
-                        <img width={16} src="https://www.gstatic.com/marketing-cms/assets/images/d5/dc/cfe9ce8b4425b410b49b7f2dd3f3/g.webp=s96-fcrop64=1,00000000ffffffff-rw" alt="Google" />
-                        <span>Continue with Google</span>
-                    </>}
-                </button>
+                <div className="grid grid-cols-1 gap-4">
+                    <button 
+                        onClick={handleGoogleSignIn} 
+                        disabled={isGoogleLoading}
+                        className="flex items-center justify-center gap-3 py-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all active:scale-[0.98] disabled:opacity-50 group"
+                    >
+                        {isGoogleLoading ? (
+                            <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                            <>
+                                <img width={18} src="https://www.gstatic.com/marketing-cms/assets/images/d5/dc/cfe9ce8b4425b410b49b7f2dd3f3/g.webp=s96-fcrop64=1,00000000ffffffff-rw" alt="Google" />
+                                <span className="text-sm font-bold text-gray-700 Mont">Google</span>
+                            </>
+                        )}
+                    </button>
+                </div>
+
+                <div className="mt-10 text-center">
+                    <button
+                        onClick={() => { setIsLogin(!isLogin); setError(""); }}
+                        className="text-sm font-bold text-gray-400 hover:text-green-600 transition-colors Mont"
+                    >
+                        {isLogin ? (
+                            <>Don't have an account? <span className="text-gray-900 ml-1">Join as Vendor</span></>
+                        ) : (
+                            <>Already a partner? <span className="text-gray-900 ml-1">Login Here</span></>
+                        )}
+                    </button>
+                </div>
             </div>
         </div>
     );
