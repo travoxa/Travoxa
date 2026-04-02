@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, SetStateAction } from 'react';
-import { RiDeleteBinLine, RiAddLine, RiMoreLine, RiCloseLine, RiEditLine, RiCheckLine } from 'react-icons/ri';
+import { RiDeleteBinLine, RiAddLine, RiMoreLine, RiCloseLine, RiEditLine, RiCheckLine, RiSettings4Line, RiImageLine } from 'react-icons/ri';
 import { CldUploadWidget } from 'next-cloudinary';
 
 const INCLUSION_OPTIONS = [
@@ -101,7 +101,17 @@ export default function AddTourClient({
         overview: '',
         inclusions: [] as string[],
         exclusions: [] as string[],
-        itinerary: [] as { day: number; title: string; description: string; stay: string; activity: string; meal: string; transfer: string }[],
+        itinerary: [] as { 
+            day: number; 
+            title: string; 
+            description: string; 
+            stay: string; 
+            stayLevel: string;
+            vehicleType: string;
+            activity: string; 
+            meal: string; 
+            transfer: string 
+        }[],
         images: [] as string[],
         // New Fields
         pickupLocation: '',
@@ -118,14 +128,32 @@ export default function AddTourClient({
         earlyBirdDiscount: '',
         meals: [] as { day: number; breakfast: string[]; lunch: string[]; dinner: string[]; snacks: string[]; custom: string[] }[],
         pricing: [] as { people: number; hotelType: 'Standard' | 'Premium'; rooms: number; packagePrice: number; pricePerPerson: number }[],
+        relatedFood: [] as string[],
+        relatedAttractions: [] as string[],
         // Related Packages
         relatedTours: [] as string[],
         relatedSightseeing: [] as string[],
         relatedActivities: [] as string[],
         relatedRentals: [] as string[],
         relatedStays: [] as string[],
-        relatedFood: [] as string[],
-        relatedAttractions: [] as string[]
+        // Configurator Fields
+        configurator: {
+            stayOptions: [] as { type: string; name: string; pricePerNight: number; image: string; description: string }[],
+            mealPricing: {
+                breakfast: 0,
+                lunch: 0,
+                dinner: 0,
+                fullPlan: 0
+            },
+            sightseeingOptions: [] as { type: string; name: string; pricePerDay: number; description: string }[],
+            transportAssistance: {
+                railNormal: 0,
+                railTatkal: 0,
+                bus: 0,
+                flight: 0
+            },
+            addOnActivities: [] as { name: string; price: number; iconType: string }[]
+        }
     };
 
     const isDev = process.env.NODE_ENV === 'development';
@@ -150,8 +178,8 @@ export default function AddTourClient({
         inclusions: ["Daily breakfast", "Airport transfers"],
         exclusions: ["Personal expenses", "Flight tickets"],
         itinerary: [
-            { day: 1, title: 'Arrival', description: 'Arrive at the location.', stay: 'Hotel Test', activity: 'Rest', meal: 'Dinner', transfer: 'Airport Pickup' },
-            { day: 2, title: 'Exploration', description: ' explore the city.', stay: 'Hotel Test', activity: 'City Tour', meal: 'Breakfast, Lunch', transfer: 'Bus' }
+            { day: 1, title: 'Arrival', description: 'Arrive at the location.', stay: 'Hotel Test', stayLevel: 'standard', vehicleType: 'shared', activity: 'Rest', meal: 'Dinner', transfer: 'Airport Pickup' },
+            { day: 2, title: 'Exploration', description: ' explore the city.', stay: 'Hotel Test', stayLevel: 'standard', vehicleType: 'shared', activity: 'City Tour', meal: 'Breakfast, Lunch', transfer: 'Bus' }
         ],
         images: ['https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg'],
         pickupLocation: 'Test Airport',
@@ -188,13 +216,39 @@ export default function AddTourClient({
             { people: 2, hotelType: 'Standard', rooms: 1, packagePrice: 10000, pricePerPerson: 5000 },
             { people: 4, hotelType: 'Standard', rooms: 2, packagePrice: 18000, pricePerPerson: 4500 }
         ],
+        relatedFood: [],
+        relatedAttractions: [],
         relatedTours: [],
         relatedSightseeing: [],
         relatedActivities: [],
         relatedRentals: [],
         relatedStays: [],
-        relatedFood: [],
-        relatedAttractions: []
+        configurator: {
+            stayOptions: [
+                { type: 'dormitory', name: 'Mountain Nest Hostel', pricePerNight: 599, image: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg', description: 'Cozy bunk beds with mountain views.' },
+                { type: 'standard', name: 'Hill View Retreat', pricePerNight: 1599, image: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg', description: 'Comfortable private rooms.' }
+            ],
+            mealPricing: {
+                breakfast: 150,
+                lunch: 250,
+                dinner: 300,
+                fullPlan: 600
+            },
+            sightseeingOptions: [
+                { type: 'scooty', name: 'Honda Activa', pricePerDay: 500, description: 'Ideal for solo/duo.' },
+                { type: 'private', name: 'Sedan AC', pricePerDay: 2500, description: 'Comfortable for families.' }
+            ],
+            transportAssistance: {
+                railNormal: 100,
+                railTatkal: 500,
+                bus: 150,
+                flight: 200
+            },
+            addOnActivities: [
+                { name: 'Bonfire Night', price: 399, iconType: 'fire' },
+                { name: 'River Rafting', price: 1200, iconType: 'water' }
+            ]
+        }
     };
 
     const [formData, setFormData] = useState(isDev ? DUMMY_FORM_DATA : EMPTY_FORM_DATA);
@@ -365,15 +419,27 @@ export default function AddTourClient({
             ...prev,
             itinerary: [
                 ...prev.itinerary,
-                { day: prev.itinerary.length + 1, title: '', description: '', stay: '', activity: '', meal: '', transfer: '' }
+                { 
+                    day: prev.itinerary.length + 1, 
+                    title: '', 
+                    description: '', 
+                    stay: '', 
+                    stayLevel: 'none',
+                    vehicleType: 'none',
+                    activity: '', 
+                    meal: '', 
+                    transfer: '' 
+                }
             ]
         }));
     };
 
     const updateItinerary = (index: number, field: string, value: string) => {
-        const updated = [...formData.itinerary];
-        updated[index] = { ...updated[index], [field]: value };
-        setFormData(prev => ({ ...prev, itinerary: updated }));
+        setFormData(prev => {
+            const updated = [...prev.itinerary];
+            updated[index] = { ...updated[index], [field]: value };
+            return { ...prev, itinerary: updated };
+        });
     };
 
     const removeItineraryDay = (index: number) => {
@@ -585,6 +651,48 @@ export default function AddTourClient({
         setFormData(prev => ({ ...prev, pricing: updated }));
     };
 
+    // --- CONFIGURATOR HELPERS ---
+    const updateConfiguratorBasic = (category: 'mealPricing' | 'transportAssistance', field: string, value: number) => {
+        setFormData(prev => ({
+            ...prev,
+            configurator: {
+                ...prev.configurator,
+                [category]: { ...prev.configurator[category], [field]: value }
+            }
+        }));
+    };
+
+    const addConfiguratorItem = (field: 'stayOptions' | 'sightseeingOptions' | 'addOnActivities', defaultValue: any) => {
+        setFormData(prev => ({
+            ...prev,
+            configurator: {
+                ...prev.configurator,
+                [field]: [...prev.configurator[field], defaultValue]
+            }
+        }));
+    };
+
+    const updateConfiguratorItem = (field: 'stayOptions' | 'sightseeingOptions' | 'addOnActivities', index: number, update: any) => {
+        setFormData(prev => {
+            const items = [...prev.configurator[field]];
+            items[index] = { ...items[index], ...update };
+            return {
+                ...prev,
+                configurator: { ...prev.configurator, [field]: items }
+            };
+        });
+    };
+
+    const removeConfiguratorItem = (field: 'stayOptions' | 'sightseeingOptions' | 'addOnActivities', index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            configurator: {
+                ...prev.configurator,
+                [field]: prev.configurator[field].filter((_, i) => i !== index)
+            }
+        }));
+    };
+
     // Handle edit
     const handleEdit = (tour: any) => {
         setEditingId(tour.id);
@@ -636,7 +744,8 @@ export default function AddTourClient({
             relatedRentals: tour.relatedRentals || [],
             relatedStays: tour.relatedStays || [],
             relatedFood: tour.relatedFood || [],
-            relatedAttractions: tour.relatedAttractions || []
+            relatedAttractions: tour.relatedAttractions || [],
+            configurator: tour.configurator || EMPTY_FORM_DATA.configurator
         });
 
         // Parse duration if exists
@@ -717,13 +826,14 @@ export default function AddTourClient({
             meals: formData.meals,
             availabilityBatches: formData.availabilityBatches,
             pricing: formData.pricing,
+            relatedFood: formData.relatedFood,
+            relatedAttractions: formData.relatedAttractions,
             relatedTours: formData.relatedTours,
             relatedSightseeing: formData.relatedSightseeing,
             relatedActivities: formData.relatedActivities,
             relatedRentals: formData.relatedRentals,
             relatedStays: formData.relatedStays,
-            relatedFood: formData.relatedFood,
-            relatedAttractions: formData.relatedAttractions,
+            configurator: formData.configurator,
             ...(vendorId && { vendorId })
         };
 
@@ -1696,7 +1806,315 @@ export default function AddTourClient({
                             </div>
                         </div>
 
-                        <div>
+                        {/* SMART TRIP CONFIGURATOR SETTINGS */}
+                        <div className="border-t border-gray-200 pt-8 mt-8 space-y-8">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                    <RiSettings4Line className="text-green-600" /> Smart Trip Configurator Settings
+                                </h3>
+                                <p className="text-xs text-gray-500 mb-6">Configure the options and pricing for the interactive booking engine.</p>
+                            </div>
+
+                            {/* 1. Stay Options */}
+                            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h4 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Stay & Property Upgrades</h4>
+                                    <button
+                                        type="button"
+                                        onClick={() => addConfiguratorItem('stayOptions', { type: 'standard', name: '', pricePerNight: 0, image: '', description: '' })}
+                                        className="text-xs bg-black text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-gray-800"
+                                    >
+                                        <RiAddLine /> Add Property
+                                    </button>
+                                </div>
+                                <div className="space-y-4">
+                                    {formData.configurator.stayOptions.map((stay, idx) => (
+                                        <div key={idx} className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm relative grid grid-cols-1 md:grid-cols-12 gap-4">
+                                            <button
+                                                type="button"
+                                                onClick={() => removeConfiguratorItem('stayOptions', idx)}
+                                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"
+                                            >
+                                                <RiCloseLine size={14} />
+                                            </button>
+                                            
+                                            <div className="md:col-span-3">
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Property Image</label>
+                                                <div className="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                                                    {stay.image ? (
+                                                        <img src={stay.image} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-gray-300"><RiImageLine size={24} /></div>
+                                                    )}
+                                                    <CldUploadWidget 
+                                                        uploadPreset="travoxa_tours"
+                                                        onSuccess={(result: any) => updateConfiguratorItem('stayOptions', idx, { image: result.info.secure_url })}
+                                                    >
+                                                        {({ open }) => (
+                                                            <button 
+                                                                type="button"
+                                                                onClick={() => open()}
+                                                                className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition-opacity"
+                                                            >
+                                                                Change Image
+                                                            </button>
+                                                        )}
+                                                    </CldUploadWidget>
+                                                </div>
+                                            </div>
+
+                                            <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                <div className="md:col-span-2">
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Property Name</label>
+                                                    <input
+                                                        type="text"
+                                                        value={stay.name}
+                                                        onChange={e => updateConfiguratorItem('stayOptions', idx, { name: e.target.value })}
+                                                        className="w-full px-3 py-1.5 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                                        placeholder="e.g. Hill View Resort"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Level</label>
+                                                    <select
+                                                        value={stay.type}
+                                                        onChange={e => updateConfiguratorItem('stayOptions', idx, { type: e.target.value })}
+                                                        className="w-full px-3 py-1.5 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                                    >
+                                                        <option value="dormitory">Dormitory</option>
+                                                        <option value="standard">Standard</option>
+                                                        <option value="premium">Premium</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Price / Night (₹)</label>
+                                                    <input
+                                                        type="number"
+                                                        value={stay.pricePerNight}
+                                                        onChange={e => updateConfiguratorItem('stayOptions', idx, { pricePerNight: parseInt(e.target.value) || 0 })}
+                                                        className="w-full px-3 py-1.5 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                                    />
+                                                </div>
+                                                <div className="md:col-span-2">
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Short Description</label>
+                                                    <input
+                                                        type="text"
+                                                        value={stay.description}
+                                                        onChange={e => updateConfiguratorItem('stayOptions', idx, { description: e.target.value })}
+                                                        className="w-full px-3 py-1.5 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                                        placeholder="e.g. Near Mall Road, Free WiFi"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {formData.configurator.stayOptions.length === 0 && <p className="text-xs text-gray-400 italic">No property options added. Basic itinerary stay will be used.</p>}
+                                </div>
+                            </div>
+
+                            {/* 2. Meal Pricing */}
+                            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                                <h4 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4">Meal Add-on Pricing (Per Person/Day)</h4>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div>
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Breakfast</label>
+                                        <input
+                                            type="number"
+                                            value={formData.configurator.mealPricing.breakfast}
+                                            onChange={e => updateConfiguratorBasic('mealPricing', 'breakfast', parseInt(e.target.value) || 0)}
+                                            className="w-full px-3 py-2 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Lunch</label>
+                                        <input
+                                            type="number"
+                                            value={formData.configurator.mealPricing.lunch}
+                                            onChange={e => updateConfiguratorBasic('mealPricing', 'lunch', parseInt(e.target.value) || 0)}
+                                            className="w-full px-3 py-2 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Dinner</label>
+                                        <input
+                                            type="number"
+                                            value={formData.configurator.mealPricing.dinner}
+                                            onChange={e => updateConfiguratorBasic('mealPricing', 'dinner', parseInt(e.target.value) || 0)}
+                                            className="w-full px-3 py-2 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Full Plan (All 3)</label>
+                                        <input
+                                            type="number"
+                                            value={formData.configurator.mealPricing.fullPlan}
+                                            onChange={e => updateConfiguratorBasic('mealPricing', 'fullPlan', parseInt(e.target.value) || 0)}
+                                            className="w-full px-3 py-2 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 3. Sightseeing & Vehicles */}
+                            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h4 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Sightseeing & Vehicles</h4>
+                                    <button
+                                        type="button"
+                                        onClick={() => addConfiguratorItem('sightseeingOptions', { type: 'scooty', name: '', pricePerDay: 0, description: '' })}
+                                        className="text-xs bg-black text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-gray-800"
+                                    >
+                                        <RiAddLine /> Add Vehicle
+                                    </button>
+                                </div>
+                                <div className="space-y-3">
+                                    {formData.configurator.sightseeingOptions.map((opt, idx) => (
+                                        <div key={idx} className="bg-white p-3 rounded-lg border border-gray-100 flex items-center gap-4 relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => removeConfiguratorItem('sightseeingOptions', idx)}
+                                                className="absolute top-2 right-2 text-gray-300 hover:text-red-500"
+                                            >
+                                                <RiDeleteBinLine size={14} />
+                                            </button>
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 flex-1 pt-2">
+                                                <div>
+                                                    <select
+                                                        value={opt.type}
+                                                        onChange={e => updateConfiguratorItem('sightseeingOptions', idx, { type: e.target.value })}
+                                                        className="w-full px-2 py-1.5 border rounded text-xs focus:ring-1 focus:ring-green-500 outline-none"
+                                                    >
+                                                        <option value="scooty">Scooty / Bike</option>
+                                                        <option value="shared">Shared Vehicle</option>
+                                                        <option value="private">Private Cab</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <input
+                                                        type="text"
+                                                        value={opt.name}
+                                                        onChange={e => updateConfiguratorItem('sightseeingOptions', idx, { name: e.target.value })}
+                                                        className="w-full px-2 py-1.5 border rounded text-xs focus:ring-1 focus:ring-green-500 outline-none"
+                                                        placeholder="Vehicle Name (e.g. Swift)"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <input
+                                                        type="number"
+                                                        value={opt.pricePerDay}
+                                                        onChange={e => updateConfiguratorItem('sightseeingOptions', idx, { pricePerDay: parseInt(e.target.value) || 0 })}
+                                                        className="w-full px-2 py-1.5 border rounded text-xs focus:ring-1 focus:ring-green-500 outline-none"
+                                                        placeholder="Price / Day"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <input
+                                                        type="text"
+                                                        value={opt.description}
+                                                        onChange={e => updateConfiguratorItem('sightseeingOptions', idx, { description: e.target.value })}
+                                                        className="w-full px-2 py-1.5 border rounded text-xs focus:ring-1 focus:ring-green-500 outline-none"
+                                                        placeholder="Short Detail"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* 4. Transport Assistance Fees */}
+                            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                                <h4 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4">Ticket Assistance Fees (Per Person)</h4>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div>
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Rail (Normal)</label>
+                                        <input
+                                            type="number"
+                                            value={formData.configurator.transportAssistance.railNormal}
+                                            onChange={e => updateConfiguratorBasic('transportAssistance', 'railNormal', parseInt(e.target.value) || 0)}
+                                            className="w-full px-3 py-2 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Rail (Tatkal)</label>
+                                        <input
+                                            type="number"
+                                            value={formData.configurator.transportAssistance.railTatkal}
+                                            onChange={e => updateConfiguratorBasic('transportAssistance', 'railTatkal', parseInt(e.target.value) || 0)}
+                                            className="w-full px-3 py-2 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Bus</label>
+                                        <input
+                                            type="number"
+                                            value={formData.configurator.transportAssistance.bus}
+                                            onChange={e => updateConfiguratorBasic('transportAssistance', 'bus', parseInt(e.target.value) || 0)}
+                                            className="w-full px-3 py-2 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Flight</label>
+                                        <input
+                                            type="number"
+                                            value={formData.configurator.transportAssistance.flight}
+                                            onChange={e => updateConfiguratorBasic('transportAssistance', 'flight', parseInt(e.target.value) || 0)}
+                                            className="w-full px-3 py-2 border rounded text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 5. Add-on Activities */}
+                            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h4 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Additional Add-on Activities</h4>
+                                    <button
+                                        type="button"
+                                        onClick={() => addConfiguratorItem('addOnActivities', { name: '', price: 0, iconType: 'activity' })}
+                                        className="text-xs bg-black text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-gray-800"
+                                    >
+                                        <RiAddLine /> Add Activity
+                                    </button>
+                                </div>
+                                <div className="space-y-3">
+                                    {formData.configurator.addOnActivities.map((act, idx) => (
+                                        <div key={idx} className="bg-white p-3 rounded-lg border border-gray-100 flex items-center gap-4 relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => removeConfiguratorItem('addOnActivities', idx)}
+                                                className="absolute top-2 right-2 text-gray-300 hover:text-red-500"
+                                            >
+                                                <RiDeleteBinLine size={14} />
+                                            </button>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1 pt-2">
+                                                <div>
+                                                    <input
+                                                        type="text"
+                                                        value={act.name}
+                                                        onChange={e => updateConfiguratorItem('addOnActivities', idx, { name: e.target.value })}
+                                                        className="w-full px-2 py-1.5 border rounded text-xs focus:ring-1 focus:ring-green-500 outline-none"
+                                                        placeholder="Activity Name (e.g. Paragliding)"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <input
+                                                        type="number"
+                                                        value={act.price}
+                                                        onChange={e => updateConfiguratorItem('addOnActivities', idx, { price: parseInt(e.target.value) || 0 })}
+                                                        className="w-full px-2 py-1.5 border rounded text-xs focus:ring-1 focus:ring-green-500 outline-none"
+                                                        placeholder="Price / Person"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <p className="text-[10px] text-gray-400 mt-2 italic font-medium">* These will appear alongside the "Related Activities" linked in the section below.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pt-8">
                             <label className="block text-sm font-medium text-gray-700 mb-1">Overview</label>
                             <textarea
                                 required
@@ -2046,6 +2464,34 @@ export default function AddTourClient({
                                                     onChange={e => updateItinerary(idx, 'transfer', e.target.value)}
                                                     className="w-full px-3 py-2 border rounded bg-white focus:ring-1 focus:ring-green-500 outline-none text-sm"
                                                 />
+                                                <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 mt-1 pt-2 border-t border-gray-100">
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Stay Level (Smart Link)</label>
+                                                        <select
+                                                            value={day.stayLevel || 'none'}
+                                                            onChange={e => updateItinerary(idx, 'stayLevel', e.target.value)}
+                                                            className="w-full px-2 py-1.5 border rounded text-xs bg-white focus:ring-1 focus:ring-green-500 outline-none"
+                                                        >
+                                                            <option value="none">Manual / No Stay</option>
+                                                            <option value="dormitory">Dormitory</option>
+                                                            <option value="standard">Standard</option>
+                                                            <option value="premium">Premium</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Vehicle Option (Smart Link)</label>
+                                                        <select
+                                                            value={day.vehicleType || 'none'}
+                                                            onChange={e => updateItinerary(idx, 'vehicleType', e.target.value)}
+                                                            className="w-full px-2 py-1.5 border rounded text-xs bg-white focus:ring-1 focus:ring-green-500 outline-none"
+                                                        >
+                                                            <option value="none">Manual / No Vehicle</option>
+                                                            <option value="scooty">Scooty / Bike</option>
+                                                            <option value="shared">Shared Vehicle</option>
+                                                            <option value="private">Private Cab</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

@@ -21,7 +21,8 @@ import {
     RiRestaurantLine,
     RiHotelLine,
     RiHeartPulseLine,
-    RiArticleLine
+    RiArticleLine,
+    RiSparklingLine
 } from 'react-icons/ri';
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
@@ -279,6 +280,23 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             }}
                                         />
                                     )}
+                                </>
+                            )}
+                            {(permissions.includes('AI') || permissions.includes('Admin') || permissions.includes('Overview')) && (
+                                <>
+                                    <div className="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        AI Tools
+                                    </div>
+                                    <SubNavItem
+                                        icon={<RiSparklingLine size={18} />}
+                                        label="AI Harvester"
+                                        id="AI:Harvester"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
                                 </>
                             )}
                             {permissions.includes('Backpackers') && (

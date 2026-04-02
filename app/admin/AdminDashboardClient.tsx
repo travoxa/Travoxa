@@ -24,6 +24,7 @@ import VendorRequestsClient from '@/app/admin/requests/VendorRequestsClient'
 import TourRequestsClient from '@/app/admin/tour/TourRequestsClient'
 import VendorTourApprovalClient from '@/app/admin/tour/VendorTourApprovalClient'
 import BlogManagementClient from '@/app/admin/blogs/BlogManagementClient'
+import AIHarvesterClient from '@/app/admin/components/AIHarvesterClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -118,6 +119,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             (activeTab.startsWith('Discovery:') && hasDiscoveryPermission(activeTab.split(':')[1])) ||
             (activeTab === 'Tour' && hasTourPermission()) ||
             (activeTab.startsWith('Tour:') && hasTourPermission(activeTab.split(':')[1])) ||
+            (activeTab === 'AI:Harvester') ||
             (activeTab === 'Blogs' && permissions.includes('Other'));
 
         if (!isAllowed) {
@@ -256,6 +258,14 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                     <div className="space-y-6">
                         <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Blogs</h1>
                         <BlogManagementClient />
+                    </div>
+                )
+
+            case 'AI:Harvester':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">AI Harvester</h1>
+                        <AIHarvesterClient />
                     </div>
                 )
 

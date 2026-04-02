@@ -42,6 +42,11 @@ const PlaceSchema = new mongoose.Schema({
         unique: true,
         sparse: true,
     },
+    elevation: {
+        type: Number,
+        default: 0,
+    },
+    googleMapsLink: String,
     createdAt: {
         type: Date,
         default: Date.now,

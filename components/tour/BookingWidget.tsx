@@ -3,7 +3,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import Image from "next/image";
-import { HiCalendar, HiUserGroup, HiCurrencyRupee, HiDownload } from "react-icons/hi";
+import { HiCalendar, HiUserGroup, HiCurrencyRupee, HiDownload, HiSparkles } from "react-icons/hi";
 import EnquireModal from './EnquireModal';
 
 interface BookingWidgetProps {
@@ -273,15 +273,11 @@ export default function BookingWidget({
                 <div className="flex flex-col gap-3 mb-8">
                     <button
                         onClick={() => {
-                            if (!session?.user?.email) {
-                                router.push(`/login?callbackUrl=/tour/${tourId}`);
-                                return;
-                            }
-                            setIsModalOpen(true);
+                            router.push(`/tour/${tourId}/book`);
                         }}
-                        className="w-full bg-black text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition-all active:scale-95 shadow-lg shadow-gray-200"
+                        className="w-full bg-black text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition-all active:scale-95 shadow-lg shadow-gray-200 flex items-center justify-center gap-2"
                     >
-                        Check Availability / Enquire
+                        Build My Trip <HiSparkles className="text-yellow-400" />
                     </button>
                     {brochureUrl && (
                         <a

@@ -11,4 +11,4 @@ export const openrouter = new OpenAI({
     apiKey: apiKey || "",
 });
 
-export const MODEL_NAME = "xiaomi/mimo-v2-flash:free";
+export const MODEL_NAME = "google/gemini-2.0-flash-lite-preview-02-05:free";
