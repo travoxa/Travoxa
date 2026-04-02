@@ -305,10 +305,14 @@ export default async function TourDetailPage({ params }: PageProps) {
 
                                                 {/* Day Details Grid */}
                                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                                                    {item.stay && (
+                                                    {(item.stay || (item.stayLevel && item.stayLevel !== 'none')) && (
                                                         <div className="p-3 bg-white rounded-xl border border-gray-200">
                                                             <p className="text-xs text-gray-400 uppercase font-bold mb-1">Stay</p>
-                                                            <p className="text-sm font-semibold text-gray-800">{item.stay}</p>
+                                                            <p className="text-sm font-semibold text-gray-800">
+                                                                {item.stayLevel && item.stayLevel !== 'none' && pkg.configurator?.stayOptions
+                                                                    ? (pkg.configurator.stayOptions.find((s: any) => s.type === item.stayLevel)?.name || item.stay)
+                                                                    : item.stay}
+                                                            </p>
                                                         </div>
                                                     )}
                                                     {item.activity && (
@@ -323,10 +327,14 @@ export default async function TourDetailPage({ params }: PageProps) {
                                                             <p className="text-sm font-semibold text-gray-800">{item.meal}</p>
                                                         </div>
                                                     )}
-                                                    {item.transfer && (
+                                                    {(item.transfer || (item.vehicleType && item.vehicleType !== 'none')) && (
                                                         <div className="p-3 bg-white rounded-xl border border-gray-200">
                                                             <p className="text-xs text-gray-400 uppercase font-bold mb-1">Transfer</p>
-                                                            <p className="text-sm font-semibold text-gray-800">{item.transfer}</p>
+                                                            <p className="text-sm font-semibold text-gray-800">
+                                                                {item.vehicleType && item.vehicleType !== 'none' && pkg.configurator?.sightseeingOptions
+                                                                    ? (pkg.configurator.sightseeingOptions.find((v: any) => v.type === item.vehicleType)?.name || item.transfer)
+                                                                    : item.transfer}
+                                                            </p>
                                                         </div>
                                                     )}
                                                 </div>

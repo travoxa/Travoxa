@@ -71,6 +71,8 @@ const TourSchema = new mongoose.Schema({
         activity: String,
         meal: String,
         transfer: String,
+        stayLevel: { type: String, enum: ['dormitory', 'standard', 'premium', 'none'], default: 'none' },
+        vehicleType: { type: String, enum: ['scooty', 'shared', 'private', 'none'], default: 'none' }
     }],
     locationMapLink: {
         type: String,
@@ -148,6 +150,38 @@ const TourSchema = new mongoose.Schema({
     views: {
         type: Number,
         default: 0,
+    },
+    configurator: {
+        stayOptions: [{
+            type: { type: String, enum: ['dormitory', 'standard', 'premium'] },
+            name: String,
+            pricePerNight: Number,
+            image: String,
+            description: String
+        }],
+        mealPricing: {
+            breakfast: { type: Number, default: 0 },
+            lunch: { type: Number, default: 0 },
+            dinner: { type: Number, default: 0 },
+            fullPlan: { type: Number, default: 0 }
+        },
+        sightseeingOptions: [{
+            type: { type: String, enum: ['scooty', 'shared', 'private'] },
+            name: String,
+            pricePerDay: Number,
+            description: String
+        }],
+        transportAssistance: {
+            railNormal: { type: Number, default: 0 },
+            railTatkal: { type: Number, default: 0 },
+            bus: { type: Number, default: 0 },
+            flight: { type: Number, default: 0 }
+        },
+        addOnActivities: [{
+            name: String,
+            price: Number,
+            iconType: String
+        }]
     }
 }, { timestamps: true });
 
