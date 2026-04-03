@@ -34,6 +34,8 @@ export interface IUser extends Document {
   authProvider: string;
   profileComplete?: boolean;
   role: string;
+  latitude?: number;
+  longitude?: number;
   vendorDetails?: {
     businessName: string;
     businessType: string;
@@ -201,6 +203,12 @@ const userSchema = new Schema<IUser>({
     twitter: { type: String, trim: true },
     googleBusiness: { type: String, trim: true },
     youtube: { type: String, trim: true },
+  },
+  latitude: {
+    type: Number,
+  },
+  longitude: {
+    type: Number,
   },
   createdAt: {
     type: Date,
