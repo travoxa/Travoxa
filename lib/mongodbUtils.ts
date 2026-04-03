@@ -34,6 +34,8 @@ export interface UserFormData {
   interests: string[];
   authProvider: string;
   profileComplete?: boolean;
+  latitude?: number;
+  longitude?: number;
   role?: string;
   vendorDetails?: {
     businessName: string;

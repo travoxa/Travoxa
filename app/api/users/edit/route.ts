@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       preferredTravelMode, shareAccommodation, smokingPreference, drinkingPreference,
       foodPreference, activityInterests, weekdayAvailability, weekendAvailability,
       shortNoticeTravel, socialProfileLink, interests, authProvider,
-      profileComplete
+      profileComplete, latitude, longitude
     } = body;
 
     // Validation: Only email, name, gender, and city are required
@@ -60,6 +60,8 @@ export async function POST(request: NextRequest) {
       interests: interests || [],
       authProvider: authProvider || "email",
       profileComplete: profileComplete || false,
+      latitude: latitude || undefined,
+      longitude: longitude || undefined,
     };
 
     // Check if user exists and update or create accordingly
