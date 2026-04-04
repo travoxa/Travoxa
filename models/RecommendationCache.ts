@@ -20,6 +20,10 @@ const RecommendationCacheSchema = new mongoose.Schema({
             lon: Number
         }
     },
+    rawPayload: {
+        type: [mongoose.Schema.Types.Mixed],
+        default: []
+    },
     createdAt: {
         type: Date,
         default: Date.now,
