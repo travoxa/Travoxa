@@ -25,6 +25,7 @@ import TourRequestsClient from '@/app/admin/tour/TourRequestsClient'
 import VendorTourApprovalClient from '@/app/admin/tour/VendorTourApprovalClient'
 import BlogManagementClient from '@/app/admin/blogs/BlogManagementClient'
 import AIHarvesterClient from '@/app/admin/components/AIHarvesterClient'
+import HomeCitiesClient from '@/app/admin/landing/HomeCitiesClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -136,7 +137,8 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             case 'Landing':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Landing</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Landing Content</h1>
+                        <HomeCitiesClient />
                     </div>
                 )
 
