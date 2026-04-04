@@ -297,6 +297,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             if (onClose) onClose();
                                         }}
                                     />
+                                    <SubNavItem
+                                        icon={<RiSettings4Line size={18} />}
+                                        label="AI Settings"
+                                        id="AI:Settings"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            window.location.href = '/admin/ai-settings';
+                                            if (onClose) onClose();
+                                        }}
+                                    />
                                 </>
                             )}
                             {permissions.includes('Backpackers') && (

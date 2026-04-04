@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
-import Place from '@/models/Place';
+import AIConfig from '@/models/AIConfig';
 import RecommendationCache from '@/models/RecommendationCache';
-import { fetchPlacesFromOSM } from '@/utils/osm';
 import { fetchPlaceDetails } from '@/utils/wikipedia';
+import mongoose from 'mongoose';
 
 // Haversine formula for distance calculation in KM
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -29,157 +29,132 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    // Generate cache key
-    const sortedSecondaries = [...secondaryTypes].sort().join('-');
-    const cacheKey = `${primaryType}-${sortedSecondaries}-${departure.lat.toFixed(2)}-${departure.lon.toFixed(2)}`;
-
     // 1. Check Cache
-    const cachedResult = await RecommendationCache.findOne({ key: cacheKey }).populate('results');
-    if (cachedResult && cachedResult.results && cachedResult.results.length > 0) {
-      console.log('Serving from cache:', cacheKey);
-      return NextResponse.json({ success: true, data: cachedResult.results, source: 'cache' });
-    } else if (cachedResult) {
-      // Clear empty cache to allow re-run
-      await RecommendationCache.deleteOne({ key: cacheKey });
-    }
-
-    // 2. Query MongoDB for existing places
-    // Search in primary and secondary categories, but also search in tags and name
-    const categoriesToSearch = [primaryType, ...secondaryTypes];
-    const searchRegex = new RegExp(primaryType, 'i');
+    const sortedSecondaries = secondaryTypes && secondaryTypes.length > 0 ? [...secondaryTypes].sort().join('-') : 'none';
+    const cacheKey = `ai_v2-${primaryType}-${sortedSecondaries}-${departure.lat.toFixed(2)}-${departure.lon.toFixed(2)}`;
     
-    // We'll search in a radius of 1500km to find high-quality results
-    let places = await Place.find({
-      $or: [
-        { category: { $in: categoriesToSearch } },
-        { tags: { $in: categoriesToSearch } },
-        { name: searchRegex }
-      ],
-      location: {
-        $near: {
-          $geometry: { type: "Point", coordinates: [departure.lon, departure.lat] },
-          $maxDistance: 1500 * 1000 // 1500km in meters
-        }
-      }
-    }).limit(60);
-
-    // 3. IF low density (< 12), fetch from OSM
-    if (places.length < 12) {
-      console.log(`Low data (${places.length} found), fetching from OSM for: ${primaryType}`);
-      const osmPlaces = await fetchPlacesFromOSM(departure.lat, departure.lon, primaryType, 300000); // 300km radius
-      
-      // Batch handle OSM places without Wikipedia enrichment initially to save time
-      const newPlaces = [];
-      for (const osmPlace of osmPlaces) {
-        try {
-          const existing = await Place.findOne({ 
-             $or: [
-                 { osmId: osmPlace.osmId },
-                 { name: osmPlace.name, district: osmPlace.district }
-             ]
-          });
-
-          if (!existing) {
-             const newP = new Place({
-                ...osmPlace,
-                location: {
-                    type: "Point",
-                    coordinates: [osmPlace.lon, osmPlace.lat]
-                },
-                source: 'osm'
-             });
-             newPlaces.push(newP);
-             places.push(newP);
-          } else {
-             places.push(existing);
-          }
-        } catch (err) {
-          console.error('Error handling OSM place:', err);
-        }
-      }
-      
-      // Save new places in bulk
-      if (newPlaces.length > 0) {
-        await Place.insertMany(newPlaces, { ordered: false }).catch(e => console.log('Bulk insert partial success'));
-      }
-    }
-
-    // 4. Scoring Logic (Fine-Tuned)
-    const scoredPlaces = places.map((place: any) => {
-      let score = 0;
-      const placeName = place.name.toLowerCase();
-      const primaryLow = primaryType.toLowerCase();
-      
-      // A. Relevance Scoring
-      if (place.category === primaryType) score += 50;
-      if (placeName.includes(primaryLow)) score += 30; // Strong match if style is in name (e.g. "Manali Hill")
-      
-      secondaryTypes.forEach((type: string) => {
-        const typeLow = type.toLowerCase();
-        if (place.category === type) score += 20;
-        if (place.tags && place.tags.includes(type)) score += 15;
-        if (placeName.includes(typeLow)) score += 10;
-      });
-
-      // B. Quality Scoring (Favor enriched data)
-      if (place.description && place.description.length > 50) score += 15;
-      if (place.image) score += 15;
-      if (place.source === 'manual') score += 25; // Favor manually added/vetted content
-
-      // C. Distance Scoring & Min Distance Check
-      const dist = calculateDistance(departure.lat, departure.lon, place.location.coordinates[1], place.location.coordinates[0]);
-      
-      // EXCLUSION: If searching for Hill Station, skip anything closer than 100km (e.g. city attractions)
-      if (primaryType === 'Hill Station' && dist < 100) return null;
-
-      // Proximity bonus: max 40 points for being very close, decaying with distance
-      const distanceBonus = Math.max(0, 40 * (1 - (dist / 1500))); 
-      score += distanceBonus;
-
-      // D. Elevation Bonus (Specific for Hill Stations)
-      if (primaryType === 'Hill Station' && place.elevation) {
-          if (place.elevation > 1500) score += 40;
-          else if (place.elevation > 1000) score += 20;
-      }
-
-      return { ...place.toObject(), score, distance: dist };
-    }).filter((p: any) => p !== null);
-
-    // 5. Final Filtering & Ranking
-    // Remove duplicates (by ID or name) and sort
-    const uniquePlaces = Array.from(new Map(scoredPlaces.map(p => [p.name + p.category, p])).values());
+    // Attempt cache fetch
+    const cachedResult = await RecommendationCache.findOne({ key: cacheKey });
     
-    const topResults = uniquePlaces
-      .sort((a: any, b: any) => b.score - a.score)
-      .slice(0, 20);
+    // We store the serialized payload directly in the cache now, since these are AI generated mock objects
+    // rather than real database ObjectIds
+    if (cachedResult && cachedResult.rawPayload && cachedResult.rawPayload.length > 0) {
+      console.log('Serving robust AI response from cache:', cacheKey);
+      return NextResponse.json({ success: true, data: cachedResult.rawPayload, source: 'cache_v2' });
+    }
 
-    // 6. Enrich top 5 remaining if they lack images (ensures premium UI)
-    for (let i = 0; i < Math.min(topResults.length, 5); i++) {
-        if (!topResults[i].description || !topResults[i].image) {
-            const wiki = await fetchPlaceDetails(topResults[i].name);
-            topResults[i].description = wiki.summary || topResults[i].description;
-            topResults[i].image = wiki.image || topResults[i].image;
-            // Update DB in background
-            Place.findByIdAndUpdate(topResults[i]._id, { 
-                description: topResults[i].description, 
-                image: topResults[i].image 
-            }).exec();
+    // 2. Fetch Config securely from DB
+    const config = await AIConfig.findOne({});
+    if (!config || !config.apiKey) {
+        return NextResponse.json({ success: false, error: 'AI OpenRouter API Key is not configured on the server.' }, { status: 500 });
+    }
+
+    // 3. Compile AI Prompt
+    let userPrompt = config.promptTemplate || `Find top 5 location recommendations for primaryType: {primaryType} near {lat}, {lon}. Return JSON array where objects have name, description, lat, lon.`;
+    
+    userPrompt = userPrompt.replace(/\{primaryType\}/g, primaryType || '')
+                           .replace(/\{lat\}/g, departure.lat.toString() || '')
+                           .replace(/\{lon\}/g, departure.lon.toString() || '')
+                           .replace(/\{departureName\}/g, departure.name || '');
+
+    if (secondaryTypes && secondaryTypes.length > 0) {
+      userPrompt += ` Consider secondary preferences: ${secondaryTypes.join(', ')}.`;
+    }
+
+    // 4. Secure OpenRouter Direct Call
+    const payload = {
+        model: config.modelName || "google/gemini-2.0-flash-lite-preview-02-05:free",
+        messages: [
+            { role: 'system', content: 'You are a precise AI travel assistant. You ONLY output an array of raw JSON objects representing places (e.g., [{"name": "...", "description": "...", "lat": 12.3, "lon": 45.6}]). No markdown, no introductory text.' },
+            { role: 'user', content: userPrompt }
+        ],
+        response_format: { type: 'json_object' }
+    };
+
+    console.log(`Making secure OpenRouter call to ${payload.model} for ${primaryType}...`);
+    const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${config.apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://www.travoxa.in',
+            'X-Title': 'Travoxa Backend AI'
+        },
+        body: JSON.stringify(payload)
+    });
+
+    if (!openRouterResponse.ok) {
+        const errorData = await openRouterResponse.text();
+        console.error("Openrouter Error", errorData);
+        return NextResponse.json({ success: false, error: 'AI generation failed from OpenRouter' }, { status: 500 });
+    }
+
+    const aiData = await openRouterResponse.json();
+    let messageContent = aiData.choices[0]?.message?.content || '[]';
+    
+    // Strip possible hallucinated markdown wrapper
+    messageContent = messageContent.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    let aiPlaces = [];
+    try {
+        aiPlaces = JSON.parse(messageContent);
+        if (!Array.isArray(aiPlaces)) {
+            if (aiPlaces.recommendations) aiPlaces = aiPlaces.recommendations;
+            else if (aiPlaces.places) aiPlaces = aiPlaces.places;
+            else aiPlaces = [aiPlaces]; // Last resort wrap
         }
+    } catch (e) {
+        console.error("Failed to parse JSON from AI", messageContent);
+        return NextResponse.json({ success: false, error: 'Model returned unparseable text format' }, { status: 500 });
     }
 
-    // 7. Save to Cache (Only if we actually found something)
-    if (topResults.length > 0) {
-      await RecommendationCache.create({
-          key: cacheKey,
-          results: topResults.map((p: any) => p._id),
-          preferences: { primaryType, secondaryTypes, departure }
-      });
+    // 5. Enrich & Format Data (Inject Wikipedia Images)
+    console.log(`Received ${aiPlaces.length} places from AI. Enriching with Wikipedia images...`);
+    const finalResults = await Promise.all(aiPlaces.map(async (place: any, index: number) => {
+        const lat = parseFloat(place.lat) || departure.lat;
+        const lon = parseFloat(place.lon) || departure.lon;
+        const dist = calculateDistance(departure.lat, departure.lon, lat, lon);
+
+        // Run place through Wikipedia exactly like the old logic to get image/summary
+        const wiki = await fetchPlaceDetails(place.name);
+
+        return {
+            _id: new mongoose.Types.ObjectId().toHexString(), // Generate a fake Mongoose _id so React Native renders keys properly
+            name: place.name || "Unknown Place",
+            description: wiki.summary || place.description || "A beautiful place to visit.",
+            image: wiki.image || null,
+            location: {
+                type: "Point",
+                coordinates: [lon, lat]
+            },
+            distance: dist,
+            category: place.category || primaryType,
+            tags: [primaryType, ...(secondaryTypes || [])],
+            source: 'ai_direct',
+            score: (100 - index) // Arbitrary score based on AI output order
+        };
+    }));
+
+    // Filter out generic bad drops
+    const validResults = finalResults.filter(p => p.name !== "Unknown Place");
+
+    // 6. Save robust results into RecommendationCache
+    // Notice we save the whole object in rawPayload because these mocked _id's aren't actually in the Places DB table
+    if (validResults.length > 0) {
+        // If an old structure exists, purge it
+        await RecommendationCache.deleteOne({ key: cacheKey });
+        
+        await RecommendationCache.create({
+            key: cacheKey,
+            rawPayload: validResults,
+            preferences: { primaryType, secondaryTypes, departure }
+        });
     }
 
-    return NextResponse.json({ success: true, data: topResults, source: 'fresh' });
+    return NextResponse.json({ success: true, data: validResults, source: 'fresh_ai' });
 
   } catch (error: any) {
-    console.error('AI Recommendation endpoint error:', error);
+    console.error('AI Recommendation Error:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
