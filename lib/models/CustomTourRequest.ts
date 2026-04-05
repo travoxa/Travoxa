@@ -14,6 +14,7 @@ export interface ICustomTourRequest extends Document {
     dropLocation?: string;
     accommodationPreference?: "Standard" | "Premium" | "Luxury" | "Not Required";
     mealPlan?: string[];
+    travelStyle?: "Full Private" | "Full Sharing" | "Mix";
     additionalNotes?: string;
     userDetails: {
         name: string;
@@ -83,6 +84,11 @@ const customTourRequestSchema = new Schema<ICustomTourRequest>({
     },
     mealPlan: {
         type: [String],
+    },
+    travelStyle: {
+        type: String,
+        enum: ["Full Private", "Full Sharing", "Mix"],
+        required: false,
     },
     additionalNotes: {
         type: String,

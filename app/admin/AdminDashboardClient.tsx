@@ -28,6 +28,7 @@ import AIHarvesterClient from '@/app/admin/components/AIHarvesterClient'
 import AISettingsClient from '@/app/admin/components/AISettingsClient'
 import HomeCitiesClient from '@/app/admin/landing/HomeCitiesClient'
 import HelpControlClient from '@/app/admin/help-control/HelpControlClient'
+import ActivityClient from '@/app/admin/mobile-activity/ActivityClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -128,7 +129,8 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             (activeTab.startsWith('Tour:') && hasTourPermission(activeTab.split(':')[1])) ||
             (activeTab === 'AI:Harvester' || activeTab === 'AI:Settings') ||
             (activeTab === 'Help Control' && hasOtherPermission()) ||
-            (activeTab === 'Blogs' && hasOtherPermission());
+            (activeTab === 'Blogs' && hasOtherPermission()) ||
+            (activeTab === 'MobileActivity:Activity' && (permissions.includes('MobileActivity') || permissions.includes('Admin') || permissions.includes('Landing')));
 
         if (!isAllowed) {
             return (
@@ -144,7 +146,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             case 'Landing':
                 return (
                     <div className="space-y-6">
-                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Landing Content</h1>
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Home Cities & Carousel</h1>
                         <HomeCitiesClient />
                     </div>
                 )
@@ -297,6 +299,14 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                 return (
                     <div className="space-y-6">
                         <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Overview</h1>
+                    </div>
+                )
+            
+            case 'MobileActivity:Activity':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Mobile User Activity</h1>
+                        <ActivityClient />
                     </div>
                 )
 

@@ -35,10 +35,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'HomeCity not found' }, { status: 404 });
     }
 
-    if (city.touristPlaces && city.touristPlaces.length > 0) {
-      console.log(`Serving cached touristPlaces for city: ${cityName}`);
-      return NextResponse.json({ success: true, data: city.touristPlaces, source: 'cache_city' });
+    const minPlaces = 6;
+    const existingPlaces = city.touristPlaces || [];
+    
+    // If we already have enough places, just return them
+    if (existingPlaces.length >= minPlaces) {
+      console.log(`Serving ${existingPlaces.length} cached touristPlaces for city: ${cityName}`);
+      return NextResponse.json({ success: true, data: existingPlaces, source: 'cache_city' });
     }
+
+    console.log(`City ${cityName} has only ${existingPlaces.length} places. Supplementing with AI...`);
 
     // 2. Fetch Config securely from DB
     const config = await AIConfig.findOne({});
@@ -130,13 +136,19 @@ export async function POST(req: Request) {
 
     const validResults = finalResults.filter(p => p.name !== "Unknown Place");
 
-    // 6. Save robust results directly to HomeCity
+    // 6. Merge & Save results directly to HomeCity (Prioritize manual entries)
     if (validResults.length > 0) {
-        city.touristPlaces = validResults;
+        const manualPlaces = existingPlaces.filter((p: any) => p.source === 'manual');
+        // Filter AI places to not duplicate manual ones by name
+        const uniqueAiPlaces = validResults.filter((ai: any) => 
+            !manualPlaces.some((m: any) => m.name.toLowerCase() === ai.name.toLowerCase())
+        );
+        
+        city.touristPlaces = [...manualPlaces, ...uniqueAiPlaces];
         await city.save();
     }
 
-    return NextResponse.json({ success: true, data: validResults, source: 'fresh_city_ai' });
+    return NextResponse.json({ success: true, data: city.touristPlaces, source: 'hybrid_city_ai' });
 
   } catch (error: any) {
     console.error('AI City Places Error:', error);
