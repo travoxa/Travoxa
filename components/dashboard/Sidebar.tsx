@@ -22,7 +22,8 @@ import {
     RiHotelLine,
     RiHeartPulseLine,
     RiArticleLine,
-    RiSparklingLine
+    RiSparklingLine,
+    RiCustomerService2Line
 } from 'react-icons/ri';
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
@@ -304,7 +305,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                                         activeTab={activeTab}
                                         onClick={(id) => {
                                             setActiveTab(id);
-                                            window.location.href = '/admin/ai-settings';
                                             if (onClose) onClose();
                                         }}
                                     />
@@ -338,7 +338,19 @@ const Sidebar: React.FC<SidebarProps> = ({
                                         }}
                                     />
                                 )}
-                                {permissions.includes('Listings') && (
+                            {permissions.includes('Other') && (
+                                <NavItem
+                                    icon={<RiCustomerService2Line size={20} />}
+                                    label="Help Control"
+                                    id="Help Control"
+                                    activeTab={activeTab}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+                            )}
+                            {permissions.includes('Listings') && (
                                     <NavItem
                                         icon={<RiFileListLine size={20} />}
                                         label="Listings"

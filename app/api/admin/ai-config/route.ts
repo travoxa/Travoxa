@@ -13,6 +13,7 @@ export async function GET() {
         apiKey: "",
         modelName: "google/gemini-2.0-flash-lite-preview-02-05:free",
         promptTemplate: `You are an AI travel assistant helping users find optimal locations. The user is looking for a $\{primaryType\} destination near $\{{lat: departure.lat, lon: departure.lon}\}. Provide top 5 detailed location recommendations in JSON.`,
+        cityPromptTemplate: `Find top 10 sightseeing places in {cityName}. Return JSON array where objects have name, description, lat, lon and category.`,
       });
     }
 
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
       config.apiKey = body.apiKey ?? config.apiKey;
       config.modelName = body.modelName ?? config.modelName;
       config.promptTemplate = body.promptTemplate ?? config.promptTemplate;
+      config.cityPromptTemplate = body.cityPromptTemplate ?? config.cityPromptTemplate;
       config.temperature = body.temperature ?? config.temperature;
       config.maxTokens = body.maxTokens ?? config.maxTokens;
       await config.save();

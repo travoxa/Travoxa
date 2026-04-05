@@ -29,20 +29,14 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    // 1. Check Cache
+    // 1. Prepare Cache Key
     const sortedSecondaries = secondaryTypes && secondaryTypes.length > 0 ? [...secondaryTypes].sort().join('-') : 'none';
     const cacheKey = `ai_v2-${primaryType}-${sortedSecondaries}-${departure.lat.toFixed(2)}-${departure.lon.toFixed(2)}`;
     
-    // Attempt cache fetch
+    // Fetch existing cache but don't return yet
     const cachedResult = await RecommendationCache.findOne({ key: cacheKey });
+    const existingPayload = (cachedResult && cachedResult.rawPayload) ? cachedResult.rawPayload : [];
     
-    // We store the serialized payload directly in the cache now, since these are AI generated mock objects
-    // rather than real database ObjectIds
-    if (cachedResult && cachedResult.rawPayload && cachedResult.rawPayload.length > 0) {
-      console.log('Serving robust AI response from cache:', cacheKey);
-      return NextResponse.json({ success: true, data: cachedResult.rawPayload, source: 'cache_v2' });
-    }
-
     // 2. Fetch Config securely from DB
     const config = await AIConfig.findOne({});
     if (!config || !config.apiKey) {
@@ -86,6 +80,11 @@ export async function POST(req: Request) {
     if (!openRouterResponse.ok) {
         const errorData = await openRouterResponse.text();
         console.error("Openrouter Error", errorData);
+        // Fallback to cache if AI fails
+        if (existingPayload.length > 0) {
+            console.log("AI failed, falling back to cache content.");
+            return NextResponse.json({ success: true, data: existingPayload, source: 'cache_fallback' });
+        }
         return NextResponse.json({ success: false, error: 'AI generation failed from OpenRouter' }, { status: 500 });
     }
 
@@ -105,12 +104,16 @@ export async function POST(req: Request) {
         }
     } catch (e) {
         console.error("Failed to parse JSON from AI", messageContent);
+        // Fallback to cache if parse fails
+        if (existingPayload.length > 0) {
+            return NextResponse.json({ success: true, data: existingPayload, source: 'cache_fallback_parse_error' });
+        }
         return NextResponse.json({ success: false, error: 'Model returned unparseable text format' }, { status: 500 });
     }
 
     // 5. Enrich & Format Data (Inject Wikipedia Images)
     console.log(`Received ${aiPlaces.length} places from AI. Enriching with Wikipedia images...`);
-    const finalResults = await Promise.all(aiPlaces.map(async (place: any, index: number) => {
+    const freshResults = await Promise.all(aiPlaces.map(async (place: any, index: number) => {
         const lat = parseFloat(place.lat) || departure.lat;
         const lon = parseFloat(place.lon) || departure.lon;
         const dist = calculateDistance(departure.lat, departure.lon, lat, lon);
@@ -136,22 +139,40 @@ export async function POST(req: Request) {
     }));
 
     // Filter out generic bad drops
-    const validResults = finalResults.filter(p => p.name !== "Unknown Place");
+    const validFreshResults = freshResults.filter(p => p.name !== "Unknown Place");
 
-    // 6. Save robust results into RecommendationCache
-    // Notice we save the whole object in rawPayload because these mocked _id's aren't actually in the Places DB table
-    if (validResults.length > 0) {
-        // If an old structure exists, purge it
-        await RecommendationCache.deleteOne({ key: cacheKey });
-        
-        await RecommendationCache.create({
-            key: cacheKey,
-            rawPayload: validResults,
-            preferences: { primaryType, secondaryTypes, departure }
-        });
+    // 6. Merge with Cache (Priority to Fresh Results)
+    const mergedResults = [...validFreshResults];
+    const freshNames = new Set(validFreshResults.map(p => p.name.toLowerCase().trim()));
+
+    for (const cachedPlace of existingPayload) {
+        if (!freshNames.has(cachedPlace.name.toLowerCase().trim())) {
+            mergedResults.push(cachedPlace);
+        }
     }
 
-    return NextResponse.json({ success: true, data: validResults, source: 'fresh_ai' });
+    // Limit total results to 12 for performance/UI
+    const finalResults = mergedResults.slice(0, 12);
+
+    // 7. Save merged results into RecommendationCache
+    if (finalResults.length > 0) {
+        await RecommendationCache.updateOne(
+            { key: cacheKey },
+            { 
+                $set: { 
+                    rawPayload: finalResults,
+                    preferences: { primaryType, secondaryTypes, departure }
+                } 
+            },
+            { upsert: true }
+        );
+    }
+
+    return NextResponse.json({ 
+        success: true, 
+        data: finalResults, 
+        source: validFreshResults.length > 0 ? 'fresh_ai_merged' : 'cache_only' 
+    });
 
   } catch (error: any) {
     console.error('AI Recommendation Error:', error);
