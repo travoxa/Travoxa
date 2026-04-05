@@ -1,4 +1,5 @@
 import React from 'react'
+import { CONTACT_INFO } from '@/config/contact';
 import ForwordButton from './components/ForwordButton'
 import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 import { LiaCopyrightSolid } from "react-icons/lia";
@@ -28,20 +29,19 @@ const Footer = () => {
         <div className="text-white space-y-3 py-5 pl-3">
           <p>
             <span className="font-bold">ADDRESS:</span>{" "}
-            Flat 402, Shree Ganesh Residency,
-            MG Road, Andheri East,
-            Mumbai, Maharashtra 400069,
-            India
+            {CONTACT_INFO.address.line1}<br />
+            {CONTACT_INFO.address.line2}<br />
+            {CONTACT_INFO.address.line3}
           </p>
 
           <p>
             <span className="font-bold">PHONE:</span>{" "}
-            (+91) 81005 39204
+            {CONTACT_INFO.phones.primary}
           </p>
 
           <p>
             <span className="font-bold">EMAIL:</span>{" "}
-            travoxa@gmail.com
+            {CONTACT_INFO.emails.main}
           </p>
         </div>
       </div>

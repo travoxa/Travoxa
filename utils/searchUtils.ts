@@ -3,21 +3,27 @@ import { sightseeingPackages, SightseeingPackage } from "@/data/sightseeingData"
 import { tourData, TourPackage } from "@/data/tourData";
 
 export interface SearchResults {
-    rentals: RentalItem[];
-    sightseeing: SightseeingPackage[];
-    tours: TourPackage[];
+    rentals: any[];
+    sightseeing: any[];
+    tours: any[];
+    stays: any[];
+    activities: any[];
+    attractions: any[];
+    food: any[];
 }
 
-export const searchUniversal = (query: string, location: string): SearchResults => {
+export const searchUniversal = (query: string, location: string, dynamicTours?: TourPackage[]): SearchResults => {
     const normalize = (str: string) => str.toLowerCase().trim();
     const q = normalize(query);
     const loc = normalize(location);
+
+    const allTours = dynamicTours ? [...tourData, ...dynamicTours] : tourData;
 
     const hasQuery = q.length > 0;
     const hasLoc = loc.length > 0;
 
     if (!hasQuery && !hasLoc) {
-        return { rentals: [], sightseeing: [], tours: [] };
+        return { rentals: [], sightseeing: [], tours: [], stays: [], activities: [], attractions: [], food: [] };
     }
 
     // Rentals
@@ -45,11 +51,22 @@ export const searchUniversal = (query: string, location: string): SearchResults 
     });
 
     // Tours
-    const tours = tourData.filter(item => {
-        const matchLoc = hasLoc ? normalize(item.location).includes(loc) : true;
+    const tours = allTours.filter(item => {
+        const searchInField = (field: any, queryStr: string): boolean => {
+            if (!field) return false;
+            if (typeof field === 'string') return normalize(field).includes(queryStr);
+            if (Array.isArray(field)) return field.some(i => searchInField(i, queryStr));
+            if (typeof field === 'object') return Object.values(field).some(val => searchInField(val, queryStr));
+            return false;
+        };
+
+        const matchLoc = hasLoc ? searchInField(item.location, loc) : true;
         const matchQuery = hasQuery ? (
-            normalize(item.title).includes(q) ||
-            normalize(item.location).includes(q)
+            searchInField(item.title, q) ||
+            searchInField(item.location, q) ||
+            searchInField(item.overview, q) ||
+            searchInField(item.highlights, q) ||
+            searchInField(item.itinerary, q)
         ) : true;
         return matchLoc && matchQuery;
     });
@@ -63,7 +80,7 @@ export const searchUniversal = (query: string, location: string): SearchResults 
         // Double check if 'q' matches location fields in data when 'loc' is empty
         const rentalsByLoc = rentalsData.filter(item => normalize(item.location).includes(q));
         const sightseeingByLoc = sightseeingPackages.filter(item => normalize(item.city).includes(q) || normalize(item.state).includes(q));
-        const toursByLoc = tourData.filter(item => normalize(item.location).includes(q));
+        const toursByLoc = allTours.filter(item => normalize(item.location).includes(q));
 
         // Merge unique results
         const merge = <T extends { id: string | number }>(arr1: T[], arr2: T[]) => {
@@ -76,9 +93,13 @@ export const searchUniversal = (query: string, location: string): SearchResults 
         return {
             rentals: merge(rentals, rentalsByLoc),
             sightseeing: merge(sightseeing, sightseeingByLoc),
-            tours: merge(tours, toursByLoc)
+            tours: merge(tours, toursByLoc),
+            stays: [],
+            activities: [],
+            attractions: [],
+            food: []
         };
     }
 
-    return { rentals, sightseeing, tours };
+    return { rentals, sightseeing, tours, stays: [], activities: [], attractions: [], food: [] };
 };

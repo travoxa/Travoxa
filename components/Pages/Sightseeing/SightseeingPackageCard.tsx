@@ -4,7 +4,8 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { SightseeingPackage } from "@/data/sightseeingData";
-import { FaCar, FaUserFriends, FaRegClock, FaStar, FaShareAlt } from "react-icons/fa";
+import { FaCar, FaRegClock, FaStar, FaShareAlt } from "react-icons/fa";
+
 import { MdLocationOn } from "react-icons/md";
 import { useState } from "react";
 import ShareModal from "@/components/ui/ShareModal";
@@ -21,7 +22,7 @@ export default function SightseeingPackageCard({ pkg, activeTab = 'sharing' }: S
 
     const handleBookNow = (e: React.MouseEvent) => {
         e.stopPropagation();
-        router.push(`/travoxa-discovery/sightseeing/${pkg.id}`);
+        router.push(`/travoxa-discovery/sightseeing/${pkg.slug || pkg.id}`);
     };
 
     const handleShare = (e: React.MouseEvent) => {
@@ -31,7 +32,7 @@ export default function SightseeingPackageCard({ pkg, activeTab = 'sharing' }: S
 
     return (
         <div
-            onClick={() => router.push(`/travoxa-discovery/sightseeing/${pkg.id}`)}
+            onClick={() => router.push(`/travoxa-discovery/sightseeing/${pkg.slug || pkg.id}`)}
             className="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-emerald-500/50 transition-all duration-300 cursor-pointer flex flex-col h-full"
         >
             {/* Image Section */}
@@ -81,11 +82,6 @@ export default function SightseeingPackageCard({ pkg, activeTab = 'sharing' }: S
                         <FaCar className="text-slate-400" />
                         {pkg.vehicleType}
                     </div>
-                    <div className="w-[1px] h-4 bg-slate-300"></div>
-                    <div className="flex items-center gap-1.5" title="Max Guests">
-                        <FaUserFriends className="text-slate-400" />
-                        Max {pkg.maxPeople}
-                    </div>
                 </div>
 
                 {/* Highlights */}
@@ -123,7 +119,7 @@ export default function SightseeingPackageCard({ pkg, activeTab = 'sharing' }: S
                             itemId={pkg.id}
                             itemType="sightseeing"
                             title={pkg.title}
-                            itemLink={`/travoxa-discovery/sightseeing/${pkg.id}`}
+                            itemLink={`/travoxa-discovery/sightseeing/${pkg.slug || pkg.id}`}
                             isSmall={true}
                         />
                         <button
@@ -145,7 +141,7 @@ export default function SightseeingPackageCard({ pkg, activeTab = 'sharing' }: S
             <ShareModal
                 isOpen={isShareModalOpen}
                 onClose={() => setIsShareModalOpen(false)}
-                url={`/travoxa-discovery/sightseeing/${pkg.id}`}
+                url={`/travoxa-discovery/sightseeing/${pkg.slug || pkg.id}`}
                 title={pkg.title}
             />
         </div>

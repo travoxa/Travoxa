@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { HiX, HiUserGroup, HiCalendar, HiPhone, HiMail, HiUser } from 'react-icons/hi';
+import { CONTACT_INFO } from '@/config/contact';
 import { useSession } from 'next-auth/react';
 
 interface EnquireModalProps {
@@ -15,6 +16,7 @@ interface EnquireModalProps {
     selectedHotelType?: string;
     selectedRooms?: number;
     calculatedPrice?: number;
+    initialNotes?: string;
 }
 
 export default function EnquireModal({
@@ -25,7 +27,8 @@ export default function EnquireModal({
     availabilityDate,
     userPhone,
     selectedPeople,
-    selectedHotelType
+    selectedHotelType,
+    initialNotes
 }: EnquireModalProps) {
     const { data: session } = useSession();
     const [loading, setLoading] = useState(false);
@@ -35,8 +38,17 @@ export default function EnquireModal({
     const [formData, setFormData] = useState({
         members: selectedPeople || 2,
         date: availabilityDate && availabilityDate !== 'Flexible' ? availabilityDate : '',
-        phone: userPhone || ''
+        phone: userPhone || '',
+        priceReductionNotes: initialNotes || ''
     });
+
+    // Sync with availabilityDate from Props
+    React.useEffect(() => {
+        setFormData(prev => ({
+            ...prev,
+            date: availabilityDate && availabilityDate !== 'Flexible' ? availabilityDate : ''
+        }));
+    }, [availabilityDate]);
 
     if (!isOpen) return null;
 
@@ -56,7 +68,8 @@ export default function EnquireModal({
                     userDetails: {
                         // Name and Email will be inferred from session on backend
                         phone: formData.phone
-                    }
+                    },
+                    priceReductionNotes: formData.priceReductionNotes
                 })
             });
 
@@ -136,8 +149,8 @@ export default function EnquireModal({
                                     <div className="relative">
                                         <HiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                                         <input
-                                            type="text"
-                                            placeholder="Flexible"
+                                            type={(formData.date && formData.date.includes(' to ')) ? "text" : "date"}
+                                            placeholder="Enter your preferred date"
                                             value={formData.date}
                                             onChange={e => setFormData({ ...formData, date: e.target.value })}
                                             className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black transition-all outline-none font-medium"
@@ -161,11 +174,24 @@ export default function EnquireModal({
                                             value={formData.phone}
                                             onChange={e => setFormData({ ...formData, phone: e.target.value })}
                                             className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black transition-all outline-none text-sm"
-                                            placeholder="+91 98765 43210"
+                                            placeholder={CONTACT_INFO.phones.primary}
                                         />
                                     </div>
                                 </div>
-                            </div>
+ 
+                                 <div>
+                                     <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">
+                                         Special Requests / Price Reduction Notes
+                                     </label>
+                                     <textarea
+                                         value={formData.priceReductionNotes}
+                                         onChange={e => setFormData({ ...formData, priceReductionNotes: e.target.value })}
+                                         className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black transition-all outline-none text-sm resize-none"
+                                         placeholder="e.g. Remove meals to reduce price, change to shared transport..."
+                                         rows={3}
+                                     />
+                                 </div>
+                             </div>
 
                             <button
                                 type="submit"

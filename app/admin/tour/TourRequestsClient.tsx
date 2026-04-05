@@ -19,6 +19,7 @@ interface Request {
     };
     destination?: string; // For custom requests
     tourDetails?: any; // For standard tours
+    priceReductionNotes?: string;
 }
 
 export default function TourRequestsClient() {
@@ -59,7 +60,8 @@ export default function TourRequestsClient() {
                     members: r.members,
                     date: r.date,
                     userDetails: r.userDetails,
-                    tourDetails: r.tourId // Full populated object
+                    tourDetails: r.tourId, // Full populated object
+                    priceReductionNotes: r.priceReductionNotes
                 }))];
             }
 
@@ -148,6 +150,7 @@ export default function TourRequestsClient() {
                         <tr className="bg-gray-50/50 border-b border-gray-100">
                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tour / Destination</th>
+                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-green-600">Travel Date</th>
                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">User Details</th>
                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Group</th>
                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
@@ -174,7 +177,26 @@ export default function TourRequestsClient() {
                                             </button>
                                         )}
                                     </div>
-                                    <div className="text-xs text-gray-500 mt-0.5">{req.date || 'TBD'}</div>
+                                    {req.priceReductionNotes && (
+                                        <div className="mt-2 p-2 bg-amber-50 border border-amber-100 rounded-lg max-w-[200px]">
+                                            <div className="flex items-center gap-1.5 text-[9px] font-black text-amber-700 uppercase tracking-widest mb-1 leading-none">
+                                                <RiMoneyDollarCircleLine size={12} /> Reduction Request
+                                            </div>
+                                            <p className="text-[10px] text-amber-800/80 leading-snug italic line-clamp-3">
+                                                {req.priceReductionNotes}
+                                            </p>
+                                        </div>
+                                    )}
+                                </td>
+                                <td className="px-6 py-4">
+                                    <div className="flex flex-col">
+                                        <div className={`text-sm font-black p-2 rounded-xl border -ml-2 inline-block ${req.date && !req.date.includes('to') ? 'text-green-700 bg-green-50 border-green-200' : 'text-gray-900 border-transparent'}`}>
+                                            {req.date || 'Flexible'}
+                                        </div>
+                                        {req.date && !req.date.includes('to') && (
+                                            <span className="text-[9px] font-black text-green-500 uppercase tracking-widest mt-1">Custom Req</span>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="text-sm text-gray-900">{req.userDetails?.name}</div>

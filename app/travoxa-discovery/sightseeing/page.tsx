@@ -7,6 +7,7 @@ import { SightseeingPackage } from '@/data/sightseeingData';
 import SightseeingHero from '@/components/Pages/Sightseeing/SightseeingHero';
 import SightseeingFilterSidebar from '@/components/Pages/Sightseeing/SightseeingFilterSidebar';
 import SightseeingPackageCard from '@/components/Pages/Sightseeing/SightseeingPackageCard';
+import BookingFlowBadge from '@/components/ui/BookingFlowBadge';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -24,7 +25,8 @@ const SightseeingPage = () => {
     const [filteredPackages, setFilteredPackages] = useState<SightseeingPackage[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'sharing' | 'private'>('sharing');
-    const [searchQuery, setSearchQuery] = useState({ state: "", city: "", members: "" });
+    const [searchQuery, setSearchQuery] = useState({ state: "", city: "" });
+
     const [filters, setFilters] = useState({
         duration: [] as string[],
         vehicleType: [] as string[],
@@ -53,10 +55,12 @@ const SightseeingPage = () => {
     }, []);
 
     // Handle Search from Hero
-    const handleSearch = (query: { state: string; city: string; members: string }) => {
+    const handleSearch = (query: { state: string; city: string }) => {
         setSearchQuery(query);
         applyFilters(query, filters, activeTab);
     };
+
+
 
     // Handle Filters from Sidebar
     const handleFilterChange = (type: string, value: string) => {
@@ -88,6 +92,7 @@ const SightseeingPage = () => {
         applyFilters(searchQuery, resetFilters, activeTab);
     };
 
+
     // Handle Tab Change
     const handleTabChange = (tab: 'sharing' | 'private') => {
         setActiveTab(tab);
@@ -95,8 +100,9 @@ const SightseeingPage = () => {
     };
 
     // Apply Logic
-    const applyFilters = (query: typeof searchQuery, currentFilters: typeof filters, tab: 'sharing' | 'private') => {
+    const applyFilters = (query: { state: string; city: string }, currentFilters: typeof filters, tab: 'sharing' | 'private') => {
         let results = sightseeingPackages;
+
 
         // 0. Tab Filter
         if (tab === 'sharing') {
@@ -112,12 +118,7 @@ const SightseeingPage = () => {
         if (query.city) {
             results = results.filter(pkg => pkg.city === query.city);
         }
-        if (query.members) {
-            const requiredSeats = parseInt(query.members);
-            if (!isNaN(requiredSeats)) {
-                results = results.filter(pkg => pkg.maxPeople >= requiredSeats);
-            }
-        }
+
 
         // 2. Sidebar Filters
         if (currentFilters.duration.length > 0) {
@@ -197,6 +198,8 @@ const SightseeingPage = () => {
                             </button>
                         </div>
                     </div>
+
+                    <BookingFlowBadge themeColor="emerald" />
 
                     {filteredPackages.length > 0 ? (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

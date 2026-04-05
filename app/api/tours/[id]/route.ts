@@ -21,25 +21,38 @@ export async function GET(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const { id } = await params;
+    const { id: identifier } = await params;
 
     try {
         await connectDB();
 
-        if (!id) {
+        if (!identifier) {
             return NextResponse.json(
-                { success: false, error: 'Tour ID is required' },
+                { success: false, error: 'Tour identifier is required' },
                 { status: 400 }
             );
         }
 
-        const tour = await Tour.findByIdAndUpdate(
-            id,
+        let tour;
+        // Try finding by slug first
+        tour = await Tour.findOneAndUpdate(
+            { slug: identifier },
             { $inc: { views: 1 } },
             { new: true }
         )
             .populate('vendorId', 'vendorDetails.businessName')
-            .populate('relatedTours', 'title price rating image reviews');
+            .populate('relatedTours', 'title price rating image reviews slug');
+
+        // If not found and identifier is valid Mongo ID, try finding by ID
+        if (!tour && identifier.match(/^[0-9a-fA-F]{24}$/)) {
+            tour = await Tour.findByIdAndUpdate(
+                identifier,
+                { $inc: { views: 1 } },
+                { new: true }
+            )
+                .populate('vendorId', 'vendorDetails.businessName')
+                .populate('relatedTours', 'title price rating image reviews slug');
+        }
 
         if (!tour) {
             return NextResponse.json(

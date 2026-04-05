@@ -26,24 +26,44 @@ const serializeConfig = (doc: any) => {
 export default async function ActivityDetailsPage({ params }: PageProps) {
     await connectDB();
     // Await params for Next.js 15+
-    const { id } = await params;
+    const { id: identifier } = await params;
 
     try {
         Tour.find().limit(1); Sightseeing.find().limit(1); Activity.find().limit(1); Rental.find().limit(1); Stay.find().limit(1); Food.find().limit(1); Attraction.find().limit(1);
 
-        const activity = await Activity.findByIdAndUpdate(
-            id,
+        let activity = null;
+
+        // Try finding by slug first
+        activity = await Activity.findOneAndUpdate(
+            { slug: identifier },
             { $inc: { views: 1 } },
             { new: true }
         )
-            .populate('relatedTours', 'title image _id googleRating rating location city state')
-            .populate('relatedSightseeing', 'title image _id rating location city state')
-            .populate('relatedActivities', 'title image _id rating location city state')
-            .populate('relatedRentals', 'title name image _id rating location city state')
-            .populate('relatedStays', 'title name image _id rating location city state')
-            .populate('relatedFood', 'name image _id rating location city state cuisine')
+            .populate('relatedTours', 'title image _id googleRating rating location city state slug')
+            .populate('relatedSightseeing', 'title image _id rating location city state slug')
+            .populate('relatedActivities', 'title image _id rating location city state slug')
+            .populate('relatedRentals', 'title name image _id rating location city state slug')
+            .populate('relatedStays', 'title name image _id rating location city state slug')
+            .populate('relatedFood', 'name image _id rating location city state cuisine slug')
             .populate('relatedAttractions', 'title image _id rating location city state type category slug')
             .lean();
+
+        // If not found and identifier is valid Mongo ID, try finding by ID
+        if (!activity && identifier.match(/^[0-9a-fA-F]{24}$/)) {
+            activity = await Activity.findByIdAndUpdate(
+                identifier,
+                { $inc: { views: 1 } },
+                { new: true }
+            )
+                .populate('relatedTours', 'title image _id googleRating rating location city state slug')
+                .populate('relatedSightseeing', 'title image _id rating location city state slug')
+                .populate('relatedActivities', 'title image _id rating location city state slug')
+                .populate('relatedRentals', 'title name image _id rating location city state slug')
+                .populate('relatedStays', 'title name image _id rating location city state slug')
+                .populate('relatedFood', 'name image _id rating location city state cuisine slug')
+                .populate('relatedAttractions', 'title image _id rating location city state type category slug')
+                .lean();
+        }
 
         if (!activity) {
             notFound();

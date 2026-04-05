@@ -2,6 +2,7 @@
 
 import Footer from "@/components/ui/Footer";
 import Header from "@/components/ui/Header";
+import { CONTACT_INFO } from "@/config/contact";
 import { useState } from "react";
 import { IoPaperPlane } from "react-icons/io5";
 
@@ -66,31 +67,32 @@ export default function ContactPage() {
                             <div className="space-y-4">
                                 <h3 className="text-lg text-zinc-400 font-light lowercase">general inquiries</h3>
                                 <div className="space-y-1">
-                                    <p className="font-medium text-lg text-black">work@travoxa.com</p>
-                                    <p className="font-medium text-lg text-black">+91 7439708923</p>
+                                    <p className="font-medium text-lg text-black">{CONTACT_INFO.emails.contact}</p>
+                                    <p className="font-medium text-lg text-black">{CONTACT_INFO.phones.primary}</p>
                                 </div>
                             </div>
 
                             <div className="space-y-4">
                                 <h3 className="text-lg text-zinc-400 font-light lowercase">careers</h3>
                                 <div className="space-y-1">
-                                    <p className="font-medium text-lg text-black">hr@travoxa.com</p>
+                                    <p className="font-medium text-lg text-black">{CONTACT_INFO.emails.hr}</p>
                                 </div>
                             </div>
 
                             <div className="space-y-4">
                                 <h3 className="text-lg text-zinc-400 font-light lowercase">collaborations</h3>
                                 <div className="space-y-1">
-                                    <p className="font-medium text-lg text-black">partners@travoxa.com</p>
-                                    <p className="font-medium text-lg text-black">+91 7449443669</p>
+                                    <p className="font-medium text-lg text-black">{CONTACT_INFO.emails.partners}</p>
+                                    <p className="font-medium text-lg text-black">{CONTACT_INFO.phones.primary}</p>
                                 </div>
                             </div>
 
                             <div className="space-y-4">
                                 <h3 className="text-lg text-zinc-400 font-light lowercase">address</h3>
                                 <div className="space-y-1">
-                                    <p className="font-medium text-lg text-black">Travoxa HQ, Howrah</p>
-                                    <p className="font-medium text-lg text-black">West Bengal, India</p>
+                                    <p className="font-medium text-lg text-black">{CONTACT_INFO.address.line1}</p>
+                                    <p className="font-medium text-lg text-black">{CONTACT_INFO.address.line2}</p>
+                                    <p className="font-medium text-lg text-black">{CONTACT_INFO.address.line3}</p>
                                 </div>
                             </div>
                         </div>

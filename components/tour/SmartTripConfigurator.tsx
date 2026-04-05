@@ -12,6 +12,7 @@ import Image from 'next/image';
 
 interface SmartTripConfiguratorProps {
     tour: any; // Ideally typed, but following the existing project style
+    initialNotes?: string;
 }
 
 function HiXCircle({ className }: { className?: string }) {
@@ -22,7 +23,7 @@ function HiXCircle({ className }: { className?: string }) {
     )
 }
 
-export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorProps) {
+export default function SmartTripConfigurator({ tour, initialNotes }: SmartTripConfiguratorProps) {
     const [currentStep, setCurrentStep] = useState(1);
     
     // Configurator State
@@ -54,6 +55,19 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
         },
     });
 
+    const [showBudgetSaver, setShowBudgetSaver] = useState(!!initialNotes);
+    const [budgetNotes, setBudgetNotes] = useState(initialNotes || '');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitSuccess, setSubmitSuccess] = useState(false);
+
+    useEffect(() => {
+        if (initialNotes) {
+            setShowBudgetSaver(true);
+            setBudgetNotes(initialNotes);
+        }
+    }, [initialNotes]);
+
+
     // Helper to calculate total travelers
     const totalTravelers = useMemo(() => {
         const { travelerType, groupDetails } = selections;
@@ -79,7 +93,10 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
 
     // PRICING CALCULATION
     const priceSummary = useMemo(() => {
-        const basePrice = (tour.price || 0) * totalTravelers;
+        const rawBasePrice = (tour.price || 0) * totalTravelers;
+        const discountAmount = tour.earlyBirdDiscount ? Math.round(rawBasePrice * (tour.earlyBirdDiscount / 100)) : 0;
+        const basePrice = rawBasePrice - discountAmount;
+        
         const config = tour.configurator || {};
         const days = tour.durationDays ? parseInt(tour.durationDays) : 3;
         const nights = tour.durationNights ? parseInt(tour.durationNights) : 2;
@@ -131,7 +148,8 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
         const grandTotal = basePrice + stayUpgrade + mealsPrice + sightseeingPrice + activitiesPrice + transportFee;
 
         return {
-            basePrice,
+            basePrice: rawBasePrice,
+            discountAmount,
             stayUpgrade,
             mealsPrice,
             sightseeingPrice,
@@ -141,6 +159,91 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
             perPerson: Math.round(grandTotal / totalTravelers)
         };
     }, [selections, totalTravelers, tour]);
+ 
+    // Budget Saving Suggestions
+    const budgetSuggestions = useMemo(() => {
+        const suggestions = [];
+        const config = tour.configurator || {};
+ 
+        // 1. Sightseeing Suggestion
+        if (selections.sightseeing === 'private') {
+            const sharedOption = config.sightseeingOptions?.find((s: any) => s.type === 'shared');
+            if (sharedOption) {
+                const days = tour.durationDays ? parseInt(tour.durationDays) : 3;
+                const saving = (sharedOption.pricePerDay * totalTravelers) - (sharedOption.pricePerDay * days); // This logic depends on pricing, but let's approximate
+                // Simplified saving calculation for suggestion
+                suggestions.push({
+                    id: 'sightseeing',
+                    label: 'Switch to Shared Sightseeing',
+                    saving: priceSummary.sightseeingPrice - (sharedOption.pricePerDay * totalTravelers),
+                    action: () => setSelections({ ...selections, sightseeing: 'shared' })
+                });
+            }
+        }
+ 
+        // 2. Stay Suggestion
+        if (selections.stayType === 'premium') {
+            const standardOption = config.stayOptions?.find((s: any) => s.type === 'standard');
+            if (standardOption) {
+                suggestions.push({
+                    id: 'stay',
+                    label: 'Downgrade to Standard Stay',
+                    saving: priceSummary.stayUpgrade - (standardOption.pricePerNight * totalTravelers * (tour.durationNights ? parseInt(tour.durationNights) : 2)),
+                    action: () => setSelections({ ...selections, stayType: 'standard' })
+                });
+            }
+        } else if (selections.stayType === 'standard') {
+            const dormOption = config.stayOptions?.find((s: any) => s.type === 'dormitory');
+            if (dormOption) {
+                suggestions.push({
+                    id: 'stay-dorm',
+                    label: 'Switch to Dormitory',
+                    saving: priceSummary.stayUpgrade - (dormOption.pricePerNight * totalTravelers * (tour.durationNights ? parseInt(tour.durationNights) : 2)),
+                    action: () => setSelections({ ...selections, stayType: 'dormitory' })
+                });
+            }
+        }
+ 
+        // 3. Meals
+        if (selections.meals.lunch || selections.meals.dinner || selections.meals.fullPlan) {
+            suggestions.push({
+                id: 'meals',
+                label: 'Remove Optional Meals',
+                saving: priceSummary.mealsPrice,
+                action: () => setSelections({ ...selections, meals: { breakfast: false, lunch: false, dinner: false, fullPlan: false } })
+            });
+        }
+ 
+        return suggestions.filter(s => s.saving > 0);
+    }, [selections, tour, priceSummary, totalTravelers]);
+ 
+    const handleBuildTrip = async () => {
+        setIsSubmitting(true);
+        try {
+            const response = await fetch('/api/tours/request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tourId: tour._id || tour.id,
+                    members: totalTravelers,
+                    date: 'Flexible / Customized',
+                    priceReductionNotes: `[Configured Trip] ${budgetNotes}\n\nSelections:\n- Type: ${selections.travelerType}\n- Stay: ${selections.stayType}\n- Sightseeing: ${selections.sightseeing}\n- Total Price: ₹${priceSummary.grandTotal}`,
+                    userDetails: {
+                        // Backend will fetch from session
+                    }
+                })
+            });
+ 
+            if (response.ok) {
+                setSubmitSuccess(true);
+                setTimeout(() => setSubmitSuccess(false), 5000);
+            }
+        } catch (error) {
+            console.error("Error submitting trip config:", error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     // RENDER HELPERS
     const StepHeader = ({ num, title, description }: { num: number, title: string, description?: string }) => (
@@ -669,6 +772,15 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
                             <span>Base Package ({totalTravelers} Pax)</span>
                             <span className="font-bold">₹{priceSummary.basePrice.toLocaleString()}</span>
                         </div>
+                        {priceSummary.discountAmount > 0 && (
+                            <div className="flex justify-between items-center text-sm opacity-80">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                    <span>{tour.earlyBirdDiscount}% Early Bird Discount</span>
+                                </div>
+                                <span className="font-bold text-green-400">- ₹{priceSummary.discountAmount.toLocaleString()}</span>
+                            </div>
+                        )}
                         {priceSummary.stayUpgrade > 0 && (
                             <div className="flex justify-between items-center text-sm opacity-80">
                                 <span>Stay Upgrade</span>
@@ -700,6 +812,18 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
                             </div>
                         )}
                     </div>
+ 
+                    {budgetNotes && (
+                        <div className="mt-6 p-4 bg-white/5 rounded-2xl border border-white/10 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <div className="flex items-center gap-2 mb-2">
+                                <HiSparkles className="text-green-400" />
+                                <span className="text-[10px] font-bold text-green-400 uppercase tracking-widest">Active Reduction Note</span>
+                            </div>
+                            <p className="text-xs text-white/70 italic leading-relaxed">
+                                "{budgetNotes}"
+                            </p>
+                        </div>
+                    )}
 
                     <div className="border-t border-white/10 pt-6 mb-8">
                         <div className="flex justify-between items-end">
@@ -715,9 +839,18 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
                     </div>
 
                     <div className="space-y-4">
-                        <button className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-green-500/20">
-                            Build My Trip
-                        </button>
+                        <div className="space-y-2">
+                            <button 
+                                onClick={handleBuildTrip}
+                                disabled={isSubmitting || submitSuccess}
+                                className={`w-full font-bold py-4 rounded-xl transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 ${submitSuccess ? 'bg-white text-green-600' : 'bg-green-500 hover:bg-green-400 text-black shadow-green-500/20'}`}
+                            >
+                                {isSubmitting ? 'Sending...' : submitSuccess ? <><HiCheckCircle className="text-green-600" /> Enquiry Sent!</> : 'Send Enquire'}
+                            </button>
+                            <p className="text-[10px] text-center text-white/40 font-bold uppercase tracking-widest italic flex items-center justify-center gap-1.5 antialiased">
+                                <HiCheckCircle size={10} className="text-green-500" /> First confirm then only pay
+                            </p>
+                        </div>
                         <button className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-all border border-white/10">
                             Reserve for ₹999
                         </button>
@@ -728,6 +861,69 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
                         <span className="text-[10px] font-bold uppercase tracking-widest text-center">Secure Payment & Instant Confirmation</span>
                     </div>
                 </div>
+
+                {/* Budget Saver Module */}
+                <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm overflow-hidden">
+                    <button
+                        onClick={() => setShowBudgetSaver(!showBudgetSaver)}
+                        className="w-full flex items-center justify-between group"
+                    >
+                        <div className="flex items-center gap-2">
+                             <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+                                 <HiSparkles className="text-green-600" />
+                             </div>
+                             <span className="text-sm font-bold text-gray-900">Budget Saver</span>
+                        </div>
+                        <HiChevronDown className={`text-gray-400 transition-transform ${showBudgetSaver ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {showBudgetSaver && (
+                        <div className="mt-6 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                            {initialNotes && (
+                                <div className="p-3 bg-green-50 rounded-xl border border-green-100 flex items-start gap-3">
+                                    <HiCheckCircle className="text-green-600 mt-0.5 shrink-0" />
+                                    <p className="text-[10px] text-green-800 font-medium leading-tight">
+                                        Your reduction request: <span className="font-bold">"{initialNotes}"</span> has been applied to our team's review.
+                                    </p>
+                                </div>
+                            )}
+                            {budgetSuggestions.length > 0 ? (
+                                <div className="space-y-2">
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Suggestions to Save</p>
+                                    {budgetSuggestions.map((s) => (
+                                        <button
+                                            key={s.id}
+                                            onClick={s.action}
+                                            className="w-full flex items-center justify-between p-3 bg-green-50/50 hover:bg-green-50 rounded-xl border border-green-100 transition-colors group"
+                                        >
+                                            <span className="text-xs text-green-900 font-medium">{s.label}</span>
+                                            <span className="text-xs font-black text-green-600">Save ₹{Math.round(s.saving)}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-[10px] text-gray-400 italic">You've already selected the most budget-friendly core options!</p>
+                            )}
+
+                            <div className="space-y-2">
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Custom Reduction Request</p>
+                                <textarea
+                                    value={budgetNotes}
+                                    onChange={(e) => setBudgetNotes(e.target.value)}
+                                    placeholder="e.g. Remove one activity, change to budget transport..."
+                                    className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-xs outline-none focus:ring-1 focus:ring-green-500 h-24 resize-none"
+                                />
+                                <button 
+                                    onClick={handleBuildTrip}
+                                    className="text-[10px] font-bold text-green-600 hover:text-green-700 transition-colors"
+                                >
+                                    Submit Request with Notes →
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
 
                 {/* Trust / FAQ Note */}
                 <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">

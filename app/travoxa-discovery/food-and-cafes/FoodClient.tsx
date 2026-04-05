@@ -12,6 +12,7 @@ import 'aos/dist/aos.css';
 export interface FoodPackage {
     _id: string;
     id: string;
+    slug?: string;
 
     title: string;
     city: string;

@@ -1,6 +1,7 @@
 
 export interface TourPackage {
     id: string;
+    slug?: string;
     title: string;
     location: string;
     price: number;
@@ -22,7 +23,7 @@ export interface TourPackage {
     exclusions: string[];
     highlights?: string[]; // New field for trip highlights
     availabilityDate?: string; // New field for MongoDB tours
-    maxPeople?: string; // New field for MongoDB tours
+
     earlyBirdDiscount?: number; // New field for MongoDB tours
     pricing?: { // Added for dynamic pricing support
         people: number;

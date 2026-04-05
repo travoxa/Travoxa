@@ -119,6 +119,26 @@ const StaySchema = new mongoose.Schema({
     views: {
         type: Number,
         default: 0,
+    },
+    slug: {
+        type: String,
+        unique: true,
+        sparse: true,
+        lowercase: true,
+        trim: true
+    }
+});
+
+// Pre-save hook to generate slug
+StaySchema.pre('save', function (this: any) {
+    if (this.isModified('title') || !this.slug) {
+        this.slug = this.title
+            .toString()
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w-]+/g, '')
+            .replace(/--+/g, '-');
     }
 });
 

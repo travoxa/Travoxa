@@ -25,10 +25,12 @@ interface PageProps {
     params: Promise<{
         id: string;
     }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function BookTourPage({ params }: PageProps) {
+export default async function BookTourPage({ params, searchParams }: PageProps) {
     const { id } = await params;
+    const { notes } = await searchParams;
     const tour = await getTourById(id);
 
     if (!tour) {
@@ -86,8 +88,8 @@ export default async function BookTourPage({ params }: PageProps) {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 pt-20 pb-12">
-                <SmartTripConfigurator tour={tour} />
+            <div className="max-w-7xl mx-auto px-6 pt-12 pb-12">
+                <SmartTripConfigurator tour={tour} initialNotes={Array.isArray(notes) ? notes[0] : notes} />
             </div>
 
             <Footer />

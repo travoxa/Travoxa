@@ -7,17 +7,64 @@ import { useRouter } from "next/navigation";
 import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaUserFriends, FaChevronDown, FaRegCompass } from "react-icons/fa";
 import { rentalsData } from "@/data/rentalsData";
 import { sightseeingPackages } from "@/data/sightseeingData";
-import { tourData } from "@/data/tourData";
+import { tourData as staticTourData } from "@/data/tourData";
 
 export default function Hero() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [location, setLocation] = useState("");
+  const [dynamicTours, setDynamicTours] = useState<any[]>([]);
   const [showQueryDropdown, setShowQueryDropdown] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
   const queryRef = useRef<HTMLDivElement>(null);
   const locationRef = useRef<HTMLDivElement>(null);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Fetch dynamic suggestions
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (query.length < 2 && !location) {
+        setSuggestions([]);
+        return;
+      }
+      
+      setIsSearching(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`);
+        const data = await res.json();
+        if (data.success) {
+          setSuggestions(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch suggestions:", error);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const timer = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(timer);
+  }, [query, location]);
+
+  // Fetch dynamic tours once on load (for initial locations list)
+  useEffect(() => {
+    const fetchTours = async () => {
+      try {
+        const res = await fetch('/api/tours');
+        const data = await res.json();
+        if (data.success) {
+          setDynamicTours(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch tours for hero suggestions:", error);
+      }
+    };
+    fetchTours();
+  }, []);
+
+  const allTours = useMemo(() => [...staticTourData, ...dynamicTours], [dynamicTours]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -36,31 +83,17 @@ export default function Hero() {
   // Collect unique locations
   const allLocations = useMemo(() => {
     const locs = new Set<string>();
-    rentalsData.forEach(i => locs.add(i.location));
-    sightseeingPackages.forEach(i => { locs.add(i.city); locs.add(i.state); });
-    tourData.forEach(i => locs.add(i.location));
+    rentalsData.forEach(i => { if (i.location && typeof i.location === 'string') locs.add(i.location); });
+    sightseeingPackages.forEach(i => { 
+      if (i.city && typeof i.city === 'string') locs.add(i.city); 
+      if (i.state && typeof i.state === 'string') locs.add(i.state); 
+    });
+    allTours.forEach(i => { if (i.location && typeof i.location === 'string') locs.add(i.location); });
     return Array.from(locs).sort();
-  }, []);
+  }, [allTours]);
 
-  // Collect suggestions for query
-  const querySuggestions = useMemo(() => {
-    if (!query) return [];
-    const lowerQ = query.toLowerCase();
-    const suggestions = new Set<string>();
-
-    // Add matching titles/names
-    sightseeingPackages.forEach(p => {
-      if (p.title.toLowerCase().includes(lowerQ)) suggestions.add(p.title);
-    });
-    tourData.forEach(p => {
-      if (p.title.toLowerCase().includes(lowerQ)) suggestions.add(p.title);
-    });
-    rentalsData.forEach(r => {
-      if (r.name.toLowerCase().includes(lowerQ)) suggestions.add(r.name);
-    });
-
-    return Array.from(suggestions).slice(0, 5); // Limit to 5
-  }, [query]);
+  // Use dynamic suggestions instead of static ones
+  const querySuggestions = suggestions;
 
   const filteredLocations = useMemo(() => {
     if (!location) return allLocations.slice(0, 8); // Show first 8 default
@@ -126,18 +159,40 @@ export default function Hero() {
                 />
 
                 {/* Query Dropdown */}
-                {showQueryDropdown && querySuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50">
-                    {querySuggestions.map((suggestion, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => { setQuery(suggestion); setShowQueryDropdown(false); }}
-                        className="px-4 py-2 hover:bg-slate-50 cursor-pointer text-xs text-slate-700 font-medium flex items-center gap-2"
-                      >
-                        <FaSearch className="text-slate-300 text-[10px]" />
-                        {suggestion}
+                {showQueryDropdown && (querySuggestions.length > 0 || isSearching) && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-100 z-50 min-w-[300px] max-h-[380px] overflow-y-auto overflow-x-hidden custom-scrollbar scroll-smooth">
+                    {isSearching ? (
+                      <div className="px-4 py-3 text-xs text-slate-400 flex items-center gap-2">
+                        <div className="w-3 h-3 border-2 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
+                        Searching...
                       </div>
-                    ))}
+                    ) : (
+                      querySuggestions.map((suggestion, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => { 
+                            setQuery(suggestion.title); 
+                            setShowQueryDropdown(false); 
+                            // If it's a specific item, maybe we want to navigate directly?
+                            // For now just fill the search bar.
+                          }}
+                          className="px-4 py-2 hover:bg-slate-50 cursor-pointer text-xs text-slate-700 font-medium flex flex-col gap-0.5 border-b border-slate-50 last:border-0"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="truncate">{suggestion.title}</span>
+                            <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold bg-slate-100 px-1.5 py-0.5 rounded">
+                              {suggestion.category}
+                            </span>
+                          </div>
+                          {suggestion.location && (
+                            <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                              <FaMapMarkerAlt className="text-[8px]" />
+                              {typeof suggestion.location === 'string' ? suggestion.location : (suggestion.location.name || '')}
+                            </span>
+                          )}
+                        </div>
+                      ))
+                    )}
                   </div>
                 )}
               </div>

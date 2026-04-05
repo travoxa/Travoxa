@@ -43,7 +43,7 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
 
     const handleCardClick = () => {
         if (!isBlurItem) {
-            router.push(`/tour/${pkg.id}`);
+            router.push(`/tour/${pkg.slug || pkg.id}`);
         }
     };
 
@@ -216,7 +216,7 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
                             itemId={pkg.id}
                             itemType="tour"
                             title={pkg.title}
-                            itemLink={`/tour/${pkg.id}`}
+                            itemLink={`/tour/${pkg.slug || pkg.id}`}
                             isSmall={true}
                         />
                         <button
@@ -243,7 +243,7 @@ export default function PackageCard({ pkg, isBlurItem }: PackageCardProps) {
             <ShareModal
                 isOpen={isShareModalOpen}
                 onClose={() => setIsShareModalOpen(false)}
-                url={`/tour/${pkg.id}`}
+                url={`/tour/${pkg.slug || pkg.id}`}
                 title={pkg.title}
             />
         </div >

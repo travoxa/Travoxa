@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { MdEmail, MdPhone, MdCalendarToday } from "react-icons/md";
+import { CONTACT_INFO } from "@/config/contact";
 
 export default function TopHeader() {
   const [dateString, setDateString] = useState("");
@@ -46,13 +47,13 @@ export default function TopHeader() {
           {/* Email */}
           <div className="flex items-center gap-2">
             <MdEmail className="text-green-600 text-lg" />
-            <span className="break-all">travoxa@gmail.com</span>
+            <span className="break-all">{CONTACT_INFO.emails.main}</span>
           </div>
 
           {/* Phone */}
           <div className="flex items-center gap-2">
             <MdPhone className="text-green-600 text-lg" />
-            <span>+91 74397 08923</span>
+            <span>{CONTACT_INFO.phones.primary}</span>
           </div>
         </div>
 

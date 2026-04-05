@@ -141,7 +141,7 @@ const FoodCard: React.FC<FoodCardProps> = ({ pkg }) => {
                 <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
 
                     <a
-                        href={`/travoxa-discovery/food-and-cafes/${pkg.id || pkg._id}`}
+                        href={`/travoxa-discovery/food-and-cafes/${pkg.slug || pkg.id || pkg._id}`}
                         className="flex-1 h-11 bg-slate-900 text-white rounded-xl flex items-center justify-center text-[10px] font-black uppercase tracking-widest hover:bg-yellow-600 transition-all shadow-lg active:scale-95"
                     >
                         View Details
@@ -151,7 +151,7 @@ const FoodCard: React.FC<FoodCardProps> = ({ pkg }) => {
                         itemId={pkg.id || pkg._id}
                         itemType="food"
                         title={pkg.title}
-                        itemLink={`/travoxa-discovery/food-and-cafes/${pkg.id || pkg._id}`}
+                        itemLink={`/travoxa-discovery/food-and-cafes/${pkg.slug || pkg.id || pkg._id}`}
                         isSmall={false}
                         activeColor="bg-yellow-500"
                     />

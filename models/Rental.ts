@@ -155,9 +155,29 @@ const RentalSchema = new mongoose.Schema({
     views: {
         type: Number,
         default: 0,
+    },
+    slug: {
+        type: String,
+        unique: true,
+        sparse: true,
+        lowercase: true,
+        trim: true
     }
 }, {
     timestamps: true
+});
+
+// Pre-save hook to generate slug
+RentalSchema.pre('save', function (this: any) {
+    if (this.isModified('name') || !this.slug) {
+        this.slug = this.name
+            .toString()
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w-]+/g, '')
+            .replace(/--+/g, '-');
+    }
 });
 
 export default mongoose.models.Rental || mongoose.model('Rental', RentalSchema);

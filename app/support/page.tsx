@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
+import { CONTACT_INFO } from '@/config/contact';
 import { FaPhone, FaEnvelope, FaCommentDots, FaQuestionCircle } from 'react-icons/fa';
 
 const SupportPage = () => {
@@ -24,7 +25,7 @@ const SupportPage = () => {
                             </div>
                             <h3 className="text-xl font-medium mb-2">Email Support</h3>
                             <p className="text-gray-500 mb-6 font-light">For general inquiries and booking details.</p>
-                            <a href="mailto:support@travoxa.com" className="text-[#4da528] font-medium hover:underline">support@travoxa.com</a>
+                            <a href={`mailto:${CONTACT_INFO.emails.support}`} className="text-[#4da528] font-medium hover:underline">{CONTACT_INFO.emails.support}</a>
                         </div>
 
                         <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 text-center hover:shadow-xl transition-shadow">
@@ -44,7 +45,7 @@ const SupportPage = () => {
                             </div>
                             <h3 className="text-xl font-medium mb-2">Phone Support</h3>
                             <p className="text-gray-500 mb-6 font-light">Urgent assistance for active trips.</p>
-                            <a href="tel:+1234567890" className="text-[#4da528] font-medium hover:underline">+1 (800) 123-4567</a>
+                            <a href={`tel:${CONTACT_INFO.phones.whatsapp}`} className="text-[#4da528] font-medium hover:underline">{CONTACT_INFO.phones.primary}</a>
                         </div>
                     </div>
 

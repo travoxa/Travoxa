@@ -32,25 +32,44 @@ export async function GET(
 
         if (!id) {
             return NextResponse.json(
-                { success: false, error: 'Stay ID is required' },
+                { success: false, error: 'Stay ID or slug is required' },
                 { status: 400 }
             );
         }
 
         Tour.find().limit(1); Sightseeing.find().limit(1); Activity.find().limit(1); Rental.find().limit(1); Stay.find().limit(1); Food.find().limit(1); Attraction.find().limit(1);
 
-        const stay = await Stay.findByIdAndUpdate(
-            id,
+        let stay = null;
+
+        // Try finding by slug first
+        stay = await Stay.findOneAndUpdate(
+            { slug: id },
             { $inc: { views: 1 } },
             { new: true }
         )
-            .populate('relatedTours', 'title image _id googleRating rating location city state')
-            .populate('relatedSightseeing', 'title image _id rating location city state')
-            .populate('relatedActivities', 'title image _id rating location city state')
-            .populate('relatedRentals', 'title name image _id rating location city state')
-            .populate('relatedStays', 'title name image _id rating location city state')
-            .populate('relatedFood', 'name image _id rating location city state cuisine')
+            .populate('relatedTours', 'title image _id googleRating rating location city state slug')
+            .populate('relatedSightseeing', 'title image _id rating location city state slug')
+            .populate('relatedActivities', 'title image _id rating location city state slug')
+            .populate('relatedRentals', 'title name image _id rating location city state slug')
+            .populate('relatedStays', 'title name image _id rating location city state slug')
+            .populate('relatedFood', 'name image _id rating location city state cuisine slug')
             .populate('relatedAttractions', 'title image _id rating location city state type category slug');
+
+        // If not found, try by ID if it's a valid ObjectId
+        if (!stay && id.match(/^[0-9a-fA-F]{24}$/)) {
+            stay = await Stay.findByIdAndUpdate(
+                id,
+                { $inc: { views: 1 } },
+                { new: true }
+            )
+                .populate('relatedTours', 'title image _id googleRating rating location city state slug')
+                .populate('relatedSightseeing', 'title image _id rating location city state slug')
+                .populate('relatedActivities', 'title image _id rating location city state slug')
+                .populate('relatedRentals', 'title name image _id rating location city state slug')
+                .populate('relatedStays', 'title name image _id rating location city state slug')
+                .populate('relatedFood', 'name image _id rating location city state cuisine slug')
+                .populate('relatedAttractions', 'title image _id rating location city state type category slug');
+        }
 
         if (!stay) {
             return NextResponse.json(

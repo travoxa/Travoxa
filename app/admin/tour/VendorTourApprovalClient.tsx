@@ -20,9 +20,8 @@ interface VendorTour {
     cancellationPolicy?: string[];
     pricing?: any[];
     availabilityBatches?: any[];
-    minPeople?: number;
-    maxPeople?: number;
     locationMapLink?: string;
+
     pickupLocation?: string;
     pickupMapLink?: string;
     dropLocation?: string;
@@ -65,9 +64,8 @@ export default function VendorTourApprovalClient() {
                     cancellationPolicy: t.cancellationPolicy,
                     pricing: t.pricing,
                     availabilityBatches: t.availabilityBatches,
-                    minPeople: t.minPeople,
-                    maxPeople: t.maxPeople,
                     locationMapLink: t.locationMapLink,
+
                     pickupLocation: t.pickupLocation,
                     pickupMapLink: t.pickupMapLink,
                     dropLocation: t.dropLocation,
@@ -193,9 +191,7 @@ export default function VendorTourApprovalClient() {
                                     <span className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
                                         <RiTimeLine className="text-blue-500" /> {selectedTour.duration}
                                     </span>
-                                    <span className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
-                                        <RiGroupLine className="text-blue-500" /> {selectedTour.minPeople}-{selectedTour.maxPeople} PAX
-                                    </span>
+
                                     <span className="flex items-center gap-1.5 text-sm font-black text-gray-900 bg-gray-50 px-3 py-1 rounded-full">
                                         <RiMoneyDollarCircleLine className="text-green-500 text-lg" /> ₹{selectedTour.price.toLocaleString()}
                                     </span>

@@ -7,7 +7,8 @@ import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaUserFriends, FaChevronDown }
 import { SightseeingPackage } from "@/data/sightseeingData";
 
 interface SightseeingHeroProps {
-    onSearch: (filters: { state: string; city: string; date: string; members: string }) => void;
+    onSearch: (filters: { state: string; city: string; date: string }) => void;
+
     packages: SightseeingPackage[];
 }
 
@@ -18,7 +19,7 @@ export default function SightseeingHero({ onSearch, packages }: SightseeingHeroP
     // Form State
     const [selectedState, setSelectedState] = useState("");
     const [selectedCity, setSelectedCity] = useState("");
-    const [members, setMembers] = useState("");
+
 
     // Initialize States from data
     useEffect(() => {
@@ -46,7 +47,6 @@ export default function SightseeingHero({ onSearch, packages }: SightseeingHeroP
             state: selectedState,
             city: selectedCity,
             date: "", // Removed date from UI
-            members
         });
     };
 
@@ -118,25 +118,7 @@ export default function SightseeingHero({ onSearch, packages }: SightseeingHeroP
 
                     <div className="h-5 w-[1px] bg-slate-300 hidden md:block"></div>
 
-                    {/* Members (Optional) */}
-                    <div className="w-full md:w-auto relative">
-                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-emerald-500 transition-colors">
-                            <FaUserFriends size={10} />
-                        </div>
-                        <select
-                            value={members}
-                            onChange={(e) => setMembers(e.target.value)}
-                            className="w-full md:w-40 h-9 pl-10 pr-6 rounded-full bg-transparent hover:bg-slate-50 border-none text-slate-700 text-xs font-light focus:outline-none focus:ring-0 appearance-none cursor-pointer transition-colors"
-                        >
-                            <option value="">Members</option>
-                            <option value="1">1 Person</option>
-                            <option value="2">2 People</option>
-                            <option value="4">4 People</option>
-                            <option value="6">6 People</option>
-                            <option value="10+">10+ Group</option>
-                        </select>
-                        <FaChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 text-[8px] pointer-events-none" />
-                    </div>
+
 
                     {/* Search Button */}
                     <button

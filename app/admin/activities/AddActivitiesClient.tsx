@@ -85,10 +85,8 @@ export default function AddActivitiesClient({
         suitableFor: ['Solo', 'Friends'] as string[],
         season: ['Winter', 'Summer'] as string[],
         ageLimit: { min: 12, max: 65 },
-        groupSize: { min: 1, max: 10 },
-        fitnessLevel: 'Medium',
-        maxPeople: '1',
         price: '2500',
+
         priceType: 'per_person',
         includes: ['Pilot', 'GoPro Video'] as string[],
         overview: 'Experience the thrill of flying high above the Dhauladhar range with seasoned pilots.',
@@ -139,10 +137,8 @@ export default function AddActivitiesClient({
         suitableFor: [] as string[],
         season: [] as string[],
         ageLimit: { min: 0, max: 0 },
-        groupSize: { min: 1, max: 10 },
-        fitnessLevel: 'Medium',
-        maxPeople: '',
         price: '',
+
         priceType: 'per_person',
         includes: [] as string[],
         overview: '',
@@ -427,10 +423,8 @@ export default function AddActivitiesClient({
             suitableFor: activity.suitableFor || [],
             season: activity.season || [],
             ageLimit: activity.ageLimit || { min: 0, max: 0 },
-            groupSize: activity.groupSize || { min: 1, max: 10 },
-            fitnessLevel: activity.fitnessLevel || 'Medium',
-            maxPeople: activity.maxPeople.toString(),
             price: activity.price.toString(),
+
             priceType: activity.priceType,
             includes: activity.includes || [],
             overview: activity.overview,
@@ -477,8 +471,8 @@ export default function AddActivitiesClient({
             ...formData,
             type: finalType,
             duration: finalDuration,
-            maxPeople: Number(formData.maxPeople),
             price: Number(formData.price),
+
             // Ensure objects are passed correctly - they are in state already
             category: finalType, // Mapped for backward compat
             level: formData.difficultyLevel, // Mapped for backward compat
@@ -624,9 +618,7 @@ export default function AddActivitiesClient({
                                         suitableFor: [] as string[],
                                         season: [] as string[],
                                         ageLimit: { min: 0, max: 0 },
-                                        groupSize: { min: 1, max: 10 },
-                                        fitnessLevel: 'Medium',
-                                        maxPeople: '',
+
                                         price: '',
                                         priceType: 'per_person',
                                         includes: [] as string[],
@@ -790,9 +782,7 @@ export default function AddActivitiesClient({
                                 suitableFor: [] as string[],
                                 season: [] as string[],
                                 ageLimit: { min: 0, max: 0 },
-                                groupSize: { min: 1, max: 10 },
-                                fitnessLevel: 'Medium',
-                                maxPeople: '',
+
                                 price: '',
                                 priceType: 'per_person',
                                 includes: [] as string[],

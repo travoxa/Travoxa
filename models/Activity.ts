@@ -79,19 +79,7 @@ const ActivitySchema = new mongoose.Schema({
         min: Number,
         max: Number,
     },
-    groupSize: {
-        min: Number,
-        max: Number,
-    },
-    fitnessLevel: {
-        type: String,
-        enum: ['Low', 'Medium', 'High'],
-    },
-    minGroupSize: Number, // Legacy/Alternative if object not used, keeping object for better structure but supporting flat if needed. User asked "Minimum Group Size", "Maximum Group Size".
-    maxPeople: {
-        type: Number,
-        required: [true, 'Please provide max people'],
-    },
+
 
     // Pricing & Includes
     price: {
@@ -203,6 +191,26 @@ const ActivitySchema = new mongoose.Schema({
     views: {
         type: Number,
         default: 0,
+    },
+    slug: {
+        type: String,
+        unique: true,
+        sparse: true,
+        lowercase: true,
+        trim: true
+    }
+});
+
+// Pre-save hook to generate slug
+ActivitySchema.pre('save', function (this: any) {
+    if (this.isModified('title') || !this.slug) {
+        this.slug = this.title
+            .toString()
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w-]+/g, '')
+            .replace(/--+/g, '-');
     }
 });
 

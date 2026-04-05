@@ -13,9 +13,10 @@ interface FilterState {
 
 interface TourFilterSearchProps {
     onFilterChange: (filters: FilterState) => void;
+    packages: any[];
 }
 
-export default function TourFilterSearch({ onFilterChange }: TourFilterSearchProps) {
+export default function TourFilterSearch({ onFilterChange, packages }: TourFilterSearchProps) {
     const [filters, setFilters] = useState<FilterState>({
         searchQuery: "",
         priceRange: "Any Price",
@@ -34,7 +35,7 @@ export default function TourFilterSearch({ onFilterChange }: TourFilterSearchPro
         if (name === "searchQuery") {
             if (value.length > 0) {
                 const uniqueSuggestions = Array.from(new Set(
-                    tourData
+                    packages
                         .filter((pkg: any) =>
                             pkg.title.toLowerCase().includes(value.toLowerCase()) ||
                             pkg.location.toLowerCase().includes(value.toLowerCase())

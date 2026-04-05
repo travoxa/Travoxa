@@ -34,6 +34,10 @@ const TourRequestSchema = new mongoose.Schema({
         email: String,
         phone: String
     },
+    priceReductionNotes: {
+        type: String,
+        trim: true
+    },
     createdAt: {
         type: Date,
         default: Date.now

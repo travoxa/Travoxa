@@ -51,29 +51,49 @@ const ensureProtocol = (url: string) => {
 
 // Fetch tour from API (MongoDB) or static data
 // Fetch tour from API (MongoDB) or static data
-async function getTourById(id: string) {
+async function getTourBySlugOrId(id: string) {
     // First try to fetch from MongoDB directly
     try {
         await connectDB();
         // pre-register models to ensure population works
         Sightseeing.find().limit(1); Activity.find().limit(1); Rental.find().limit(1); Stay.find().limit(1); Food.find().limit(1); Attraction.find().limit(1);
 
-        const tour = await Tour.findByIdAndUpdate(
-            id,
+        let tour = null;
+
+        // Try slug first
+        tour = await Tour.findOneAndUpdate(
+            { slug: id },
             { $inc: { views: 1 } },
             { new: true }
         )
-            .populate('relatedTours', 'title image _id googleRating rating location city state')
-            .populate('relatedSightseeing', 'title image _id rating location city state')
-            .populate('relatedActivities', 'title image _id rating location city state')
-            .populate('relatedRentals', 'title name image _id rating location city state')
-            .populate('relatedStays', 'title name image _id rating location city state')
-            .populate('relatedFood', 'name image _id rating location city state cuisine')
+            .populate('relatedTours', 'title image _id googleRating rating location city state slug')
+            .populate('relatedSightseeing', 'title image _id rating location city state slug')
+            .populate('relatedActivities', 'title image _id rating location city state slug')
+            .populate('relatedRentals', 'title name image _id rating location city state slug')
+            .populate('relatedStays', 'title name image _id rating location city state slug')
+            .populate('relatedFood', 'name image _id rating location city state cuisine slug')
             .populate('relatedAttractions', 'title image _id rating location city state type category slug')
             .lean();
 
+        // If not found, try ID if it's a valid ObjectId
+        if (!tour && id.match(/^[0-9a-fA-F]{24}$/)) {
+            tour = await Tour.findByIdAndUpdate(
+                id,
+                { $inc: { views: 1 } },
+                { new: true }
+            )
+                .populate('relatedTours', 'title image _id googleRating rating location city state slug')
+                .populate('relatedSightseeing', 'title image _id rating location city state slug')
+                .populate('relatedActivities', 'title image _id rating location city state slug')
+                .populate('relatedRentals', 'title name image _id rating location city state slug')
+                .populate('relatedStays', 'title name image _id rating location city state slug')
+                .populate('relatedFood', 'name image _id rating location city state cuisine slug')
+                .populate('relatedAttractions', 'title image _id rating location city state type category slug')
+                .lean();
+        }
+
         if (tour) {
-            console.log('[DETAIL PAGE] Found MongoDB tour with id:', id);
+            console.log('[DETAIL PAGE] Found MongoDB tour with identifier:', id);
             // Serialize _id and dates to simple strings to pass to components
             return {
                 ...JSON.parse(JSON.stringify(tour)),
@@ -100,9 +120,9 @@ async function getTourById(id: string) {
     }
 
     // Fallback to static data
-    const staticTour = tourData.find(t => t.id === id);
+    const staticTour = tourData.find(t => t.id === id || t.slug === id);
     if (staticTour) {
-        console.log('[DETAIL PAGE] Found static tour with id:', id);
+        console.log('[DETAIL PAGE] Found static tour with identifier:', id);
     }
     return staticTour;
 }
@@ -119,10 +139,10 @@ import User from "@/lib/models/User";
 
 export default async function TourDetailPage({ params }: PageProps) {
     const { id } = await params;
-    const pkg = await getTourById(id);
+    const pkg = await getTourBySlugOrId(id);
 
     if (!pkg) {
-        console.error('[DETAIL PAGE] Tour not found for id:', id);
+        console.error('[DETAIL PAGE] Tour not found for identifier:', id);
         notFound();
     }
 
@@ -140,6 +160,9 @@ export default async function TourDetailPage({ params }: PageProps) {
     // Normalize images to always be an array
     const images = Array.isArray(pkg.image) ? pkg.image : [pkg.image];
 
+    // Priority slug for navigation
+    const currentSlug = pkg.slug || pkg._id || pkg.id;
+
     return (
         <main className="min-h-screen bg-white">
             <NormalHeader logoHeight="h-[22px] lg:h-[28px]" />
@@ -155,7 +178,7 @@ export default async function TourDetailPage({ params }: PageProps) {
                 duration={pkg.duration}
                 itemId={pkg._id ? pkg._id.toString() : pkg.id}
                 itemType="tour"
-                itemLink={`/tour/${pkg._id ? pkg._id.toString() : pkg.id}`}
+                itemLink={`/tour/${currentSlug}`}
                 hideControls={true}
             />
 
