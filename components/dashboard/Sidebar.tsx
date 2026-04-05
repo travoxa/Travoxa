@@ -23,7 +23,8 @@ import {
     RiHeartPulseLine,
     RiArticleLine,
     RiSparklingLine,
-    RiCustomerService2Line
+    RiCustomerService2Line,
+    RiHistoryLine
 } from 'react-icons/ri';
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
@@ -133,11 +134,26 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     }}
                                 />
                             )}
+                            <div className="px-4 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                Mobile Main
+                            </div>
                             {permissions.includes('Landing') && (
-                                <NavItem
-                                    icon={<RiHomeLine size={20} />}
-                                    label="Landing"
+                                <SubNavItem
+                                    icon={<RiMapPinLine size={18} />}
+                                    label="Home Cities"
                                     id="Landing"
+                                    activeTab={activeTab}
+                                    onClick={(id) => {
+                                        setActiveTab(id);
+                                        if (onClose) onClose();
+                                    }}
+                                />
+                            )}
+                            {(permissions.includes('Landing') || permissions.includes('Admin')) && (
+                                <SubNavItem
+                                    icon={<RiHistoryLine size={18} />}
+                                    label="Activity"
+                                    id="MobileActivity:Activity"
                                     activeTab={activeTab}
                                     onClick={(id) => {
                                         setActiveTab(id);

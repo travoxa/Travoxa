@@ -127,7 +127,7 @@ export default function AddTourClient({
         bookingAmount: '',
         earlyBirdDiscount: '',
         meals: [] as { day: number; breakfast: string[]; lunch: string[]; dinner: string[]; snacks: string[]; custom: string[] }[],
-        pricing: [] as { people: number; hotelType: 'Standard' | 'Premium'; rooms: number; packagePrice: number; pricePerPerson: number }[],
+        pricing: [] as { people: number; hotelType: 'Standard' | 'Premium'; travelStyle?: 'Full Private' | 'Full Sharing' | 'Mix'; rooms: number; packagePrice: number; pricePerPerson: number }[],
         relatedFood: [] as string[],
         relatedAttractions: [] as string[],
         // Related Packages
@@ -213,8 +213,8 @@ export default function AddTourClient({
             }
         ],
         pricing: [
-            { people: 2, hotelType: 'Standard', rooms: 1, packagePrice: 10000, pricePerPerson: 5000 },
-            { people: 4, hotelType: 'Standard', rooms: 2, packagePrice: 18000, pricePerPerson: 4500 }
+            { people: 2, hotelType: 'Standard', travelStyle: 'Full Private', rooms: 1, packagePrice: 10000, pricePerPerson: 5000 },
+            { people: 4, hotelType: 'Standard', travelStyle: 'Full Sharing', rooms: 2, packagePrice: 18000, pricePerPerson: 4500 }
         ],
         relatedFood: [],
         relatedAttractions: [],
@@ -633,7 +633,7 @@ export default function AddTourClient({
             ...prev,
             pricing: [
                 ...prev.pricing,
-                { people: 1, hotelType: 'Standard', rooms: 1, packagePrice: 0, pricePerPerson: 0 }
+                { people: 1, hotelType: 'Standard', travelStyle: 'Full Private', rooms: 1, packagePrice: 0, pricePerPerson: 0 }
             ]
         }));
     };
@@ -2320,17 +2320,18 @@ export default function AddTourClient({
                                 <div className="space-y-3">
                                     {/* Header */}
                                     <div className="grid grid-cols-12 gap-2 text-xs font-bold text-gray-500 uppercase px-2 hidden md:grid">
-                                        <div className="col-span-2">People</div>
-                                        <div className="col-span-4">Hotel Type</div>
-                                        <div className="col-span-2">Rooms</div>
-                                        <div className="col-span-3">Package Price</div>
+                                        <div className="col-span-1">Pax</div>
+                                        <div className="col-span-3">Hotel Type</div>
+                                        <div className="col-span-3">Style</div>
+                                        <div className="col-span-1">Rooms</div>
+                                        <div className="col-span-3">Price (₹)</div>
                                         <div className="col-span-1"></div>
                                     </div>
 
                                     {formData.pricing.map((row, index) => (
                                         <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-2 items-center bg-white p-3 md:p-2 rounded-lg border border-gray-200 shadow-sm relative">
-                                            <div className="md:col-span-2">
-                                                <label className="text-[10px] font-bold text-gray-400 uppercase md:hidden mb-1 block">People (Pax)</label>
+                                            <div className="md:col-span-1">
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase md:hidden mb-1 block">People</label>
                                                 <input
                                                     type="number"
                                                     placeholder="Pax"
@@ -2340,7 +2341,7 @@ export default function AddTourClient({
                                                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                                                 />
                                             </div>
-                                            <div className="md:col-span-4">
+                                            <div className="md:col-span-3">
                                                 <label className="text-[10px] font-bold text-gray-400 uppercase md:hidden mb-1 block">Hotel Type</label>
                                                 <select
                                                     value={row.hotelType}
@@ -2351,7 +2352,19 @@ export default function AddTourClient({
                                                     <option value="Premium">Premium</option>
                                                 </select>
                                             </div>
-                                            <div className="md:col-span-2">
+                                            <div className="md:col-span-3">
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase md:hidden mb-1 block">Style</label>
+                                                <select
+                                                    value={row.travelStyle || 'Full Private'}
+                                                    onChange={(e) => updatePricingRow(index, 'travelStyle', e.target.value)}
+                                                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                                                >
+                                                    <option value="Full Private">Full Private</option>
+                                                    <option value="Full Sharing">Full Sharing</option>
+                                                    <option value="Mix">Mix Tour</option>
+                                                </select>
+                                            </div>
+                                            <div className="md:col-span-1">
                                                 <label className="text-[10px] font-bold text-gray-400 uppercase md:hidden mb-1 block">Rooms</label>
                                                 <input
                                                     type="number"

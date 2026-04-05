@@ -20,6 +20,12 @@ const TourSchema = new mongoose.Schema({
             type: String,
             enum: ['Standard', 'Premium']
         },
+        travelStyle: {
+            type: String,
+            enum: ['Full Private', 'Full Sharing', 'Mix'],
+            required: false,
+            default: 'Full Private'
+        },
         rooms: Number,
         packagePrice: Number, // Total price for the group
         pricePerPerson: Number // Derived or explicit
