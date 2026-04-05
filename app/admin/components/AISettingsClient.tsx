@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 
-export default function AISettingsPage() {
+export default function AISettingsClient() {
   const [config, setConfig] = useState({
     apiKey: '',
     modelName: '',
     promptTemplate: '',
+    cityPromptTemplate: '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -25,6 +26,7 @@ export default function AISettingsPage() {
           apiKey: json.data.apiKey || '',
           modelName: json.data.modelName || '',
           promptTemplate: json.data.promptTemplate || '',
+          cityPromptTemplate: json.data.cityPromptTemplate || '',
         });
       }
     } catch (error) {
@@ -108,6 +110,18 @@ export default function AISettingsPage() {
              rows={6}
              className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-mono text-sm leading-relaxed"
              placeholder="Enter your system prompt here..."
+           />
+        </div>
+
+        <div>
+           <label className="block text-sm font-medium text-gray-700 mb-2">City Screen Prompt Template</label>
+           <p className="text-xs text-gray-500 mb-3">Available variables: {'{cityName}'}</p>
+           <textarea
+             value={config.cityPromptTemplate}
+             onChange={(e) => setConfig({ ...config, cityPromptTemplate: e.target.value })}
+             rows={6}
+             className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-mono text-sm leading-relaxed"
+             placeholder="Enter the city screen prompt here..."
            />
         </div>
 

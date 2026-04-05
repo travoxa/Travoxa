@@ -13,6 +13,10 @@ const AIConfigSchema = new mongoose.Schema({
     type: String,
     default: "You are a helpful travel assistant. Find top 5 places that match: PRIMARY_TYPE near LAT,LON."
   },
+  cityPromptTemplate: {
+    type: String,
+    default: "Find top 10 sightseeing places in {cityName}. Return JSON array where objects have name, description, lat, lon and category."
+  },
   temperature: {
     type: Number,
     default: 0.7,

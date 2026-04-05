@@ -25,7 +25,9 @@ import TourRequestsClient from '@/app/admin/tour/TourRequestsClient'
 import VendorTourApprovalClient from '@/app/admin/tour/VendorTourApprovalClient'
 import BlogManagementClient from '@/app/admin/blogs/BlogManagementClient'
 import AIHarvesterClient from '@/app/admin/components/AIHarvesterClient'
+import AISettingsClient from '@/app/admin/components/AISettingsClient'
 import HomeCitiesClient from '@/app/admin/landing/HomeCitiesClient'
+import HelpControlClient from '@/app/admin/help-control/HelpControlClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -113,6 +115,10 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             return permissions.includes(`Tour:${subSection}`);
         };
 
+        const hasOtherPermission = () => {
+            return permissions.includes('Other');
+        };
+
         // For backwards compatibility or default routing, we can still allow 'Discovery'
         // If 'Discovery' is the active tab but it's now split, we might want to default to the first available one
         const isAllowed = permissions.includes(activeTab) ||
@@ -120,8 +126,9 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             (activeTab.startsWith('Discovery:') && hasDiscoveryPermission(activeTab.split(':')[1])) ||
             (activeTab === 'Tour' && hasTourPermission()) ||
             (activeTab.startsWith('Tour:') && hasTourPermission(activeTab.split(':')[1])) ||
-            (activeTab === 'AI:Harvester') ||
-            (activeTab === 'Blogs' && permissions.includes('Other'));
+            (activeTab === 'AI:Harvester' || activeTab === 'AI:Settings') ||
+            (activeTab === 'Help Control' && hasOtherPermission()) ||
+            (activeTab === 'Blogs' && hasOtherPermission());
 
         if (!isAllowed) {
             return (
@@ -263,11 +270,26 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                     </div>
                 )
 
+            case 'Help Control':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Help Control</h1>
+                        <HelpControlClient />
+                    </div>
+                )
+
             case 'AI:Harvester':
                 return (
                     <div className="space-y-6">
                         <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">AI Harvester</h1>
                         <AIHarvesterClient />
+                    </div>
+                )
+
+            case 'AI:Settings':
+                return (
+                    <div className="space-y-6">
+                        <AISettingsClient />
                     </div>
                 )
 

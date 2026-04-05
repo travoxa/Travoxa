@@ -11,13 +11,16 @@ interface HomeCity {
     image: string;
     rating: string;
     reviews: string;
+    touristPlaces?: any[];
 }
 
 export default function HomeCitiesClient() {
     const [cities, setCities] = useState<HomeCity[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isPlacesModalOpen, setIsPlacesModalOpen] = useState(false);
     const [editingCity, setEditingCity] = useState<HomeCity | null>(null);
+    const [placesJson, setPlacesJson] = useState('[]');
 
     const [formData, setFormData] = useState({
         name: '',
@@ -67,7 +70,47 @@ export default function HomeCitiesClient() {
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
+        setIsPlacesModalOpen(false);
         setEditingCity(null);
+    };
+
+    const handleOpenPlacesModal = (city: HomeCity) => {
+        setEditingCity(city);
+        setPlacesJson(JSON.stringify(city.touristPlaces || [], null, 2));
+        setIsPlacesModalOpen(true);
+    };
+
+    const handleSavePlaces = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitLoading(true);
+        try {
+            let parsedPlaces = [];
+            try {
+                parsedPlaces = JSON.parse(placesJson);
+            } catch (err) {
+                alert('Invalid JSON format');
+                setSubmitLoading(false);
+                return;
+            }
+
+            const res = await fetch(`/api/home-cities/${editingCity?._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ touristPlaces: parsedPlaces })
+            });
+            const data = await res.json();
+            if (data.success) {
+                fetchCities();
+                handleCloseModal();
+            } else {
+                alert('Error updating places: ' + data.error);
+            }
+        } catch (error) {
+           console.error(error);
+           alert('Something went wrong!');
+        } finally {
+            setSubmitLoading(false);
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -164,6 +207,13 @@ export default function HomeCitiesClient() {
                                         <RiEditLine size={18} />
                                     </button>
                                     <button 
+                                        onClick={() => handleOpenPlacesModal(city)}
+                                        className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition"
+                                        title="Edit Tourist Places Data"
+                                    >
+                                        <span>⚙️</span>
+                                    </button>
+                                    <button 
                                         onClick={() => handleDelete(city._id)}
                                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
                                     >
@@ -220,6 +270,42 @@ export default function HomeCitiesClient() {
                                 <button type="button" onClick={handleCloseModal} className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg font-medium hover:bg-gray-50">Cancel</button>
                                 <button type="submit" disabled={submitLoading} className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50">
                                     {submitLoading ? 'Saving...' : 'Save City'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {isPlacesModalOpen && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden animate-fade-in-up">
+                        <div className="flex justify-between items-center p-6 border-b border-gray-100">
+                            <h3 className="text-lg font-bold text-gray-900">
+                                Edit AI Cached Places for {editingCity?.name}
+                            </h3>
+                            <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600">
+                                <RiCloseLine size={24} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSavePlaces} className="p-6 space-y-4">
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-gray-500 uppercase">Tourist Places (JSON Array)</label>
+                                <textarea
+                                    required
+                                    rows={15}
+                                    value={placesJson}
+                                    onChange={(e) => setPlacesJson(e.target.value)}
+                                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none font-mono text-sm leading-relaxed"
+                                    placeholder="[ { name: '...', description: '...' } ]"
+                                />
+                            </div>
+
+                            <div className="pt-4 flex justify-end gap-3 mt-4 border-t border-gray-100">
+                                <button type="button" onClick={handleCloseModal} className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg font-medium hover:bg-gray-50">Cancel</button>
+                                <button type="submit" disabled={submitLoading} className="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50">
+                                    {submitLoading ? 'Saving...' : 'Save Data'}
                                 </button>
                             </div>
                         </form>

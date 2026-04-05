@@ -20,6 +20,10 @@ const HomeCitySchema = new mongoose.Schema({
     reviews: {
         type: String,
         required: true,
+    },
+    touristPlaces: {
+        type: [mongoose.Schema.Types.Mixed],
+        default: []
     }
 }, { timestamps: true });
 
