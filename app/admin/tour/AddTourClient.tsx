@@ -96,9 +96,8 @@ export default function AddTourClient({
         availabilityStart: '',
         availabilityEnd: '',
         availabilityBatches: [] as { startDate: string; endDate: string; active: boolean }[],
-        minPeople: '',
-        maxPeople: '',
         overview: '',
+
         inclusions: [] as string[],
         exclusions: [] as string[],
         itinerary: [] as { 
@@ -172,9 +171,8 @@ export default function AddTourClient({
             { startDate: new Date().toISOString().split('T')[0], endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], active: true },
             { startDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], endDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], active: true }
         ],
-        minPeople: '2',
-        maxPeople: '10',
         overview: 'This is a test overview for the tour. It contains dummy data for development purposes.',
+
         inclusions: ["Daily breakfast", "Airport transfers"],
         exclusions: ["Personal expenses", "Flight tickets"],
         itinerary: [
@@ -714,9 +712,8 @@ export default function AddTourClient({
             availabilityStart: '',
             availabilityEnd: '',
             availabilityBatches: tour.availabilityBatches || [],
-            minPeople: tour.minPeople || '',
-            maxPeople: tour.maxPeople || '',
             overview: tour.overview || '',
+
             inclusions: tour.inclusions || [],
             exclusions: tour.exclusions || [],
             itinerary: tour.itinerary || [],
@@ -803,9 +800,8 @@ export default function AddTourClient({
             price: calculatedPrice,
             duration: `${formData.durationDays} Days / ${formData.durationNights} Nights`,
             availabilityDate: `${formData.availabilityStart} to ${formData.availabilityEnd}`,
-            minPeople: Number(formData.minPeople),
-            maxPeople: Number(formData.maxPeople),
             overview: formData.overview,
+
             inclusions: formData.inclusions,
             exclusions: formData.exclusions,
             itinerary: formData.itinerary,
@@ -837,11 +833,7 @@ export default function AddTourClient({
             ...(vendorId && { vendorId })
         };
 
-        if (payload.minPeople > payload.maxPeople) {
-            setError('Minimum people cannot be greater than Maximum people');
-            setLoading(false);
-            return;
-        }
+
 
         console.log('[FORM] Sending payload to /api/tours:', payload);
         console.log('[FORM] Meals payload:', payload.meals);
@@ -1181,9 +1173,10 @@ export default function AddTourClient({
                                                         <p className="text-[10px] md:text-sm text-gray-900">₹{tour.price}</p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Group Size</p>
-                                                        <p className="text-[10px] md:text-sm text-gray-900">{tour.minPeople && tour.maxPeople ? `${tour.minPeople} - ${tour.maxPeople}` : (tour.maxPeople || 'N/A')}</p>
+                                                        <p className="text-[10px] font-semibold text-gray-500 uppercase md:hidden mb-0.5">Status</p>
+                                                        <p className="text-[10px] md:text-sm text-gray-900 capitalize">{tour.status}</p>
                                                     </div>
+
                                                 </div>
 
                                                 <div className="relative">
@@ -1380,32 +1373,7 @@ export default function AddTourClient({
                                     )}
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Min People</label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        required
-                                        value={formData.minPeople}
-                                        onChange={e => setFormData({ ...formData, minPeople: e.target.value })}
-                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                        placeholder="e.g. 5"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Max People</label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        required
-                                        value={formData.maxPeople}
-                                        onChange={e => setFormData({ ...formData, maxPeople: e.target.value })}
-                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                        placeholder="e.g. 20"
-                                    />
-                                </div>
-                            </div>
+
 
                             {/* New Fields Row 1 */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

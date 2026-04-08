@@ -111,7 +111,7 @@ export default function RentalDetailsPage() {
                         itemId={rental._id || id}
                         itemType="rental"
                         title={rental.name}
-                        itemLink={`/travoxa-discovery/rentals/${rental._id || id}`}
+                        itemLink={`/travoxa-discovery/rentals/${rental.slug || rental._id || id}`}
                     />
                 </div>
 

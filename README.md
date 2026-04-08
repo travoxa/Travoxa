@@ -70,7 +70,8 @@ A one-stop hub for travel essentials, featuring a Bento Grid layout:
 
 ### Tour Model (`models/Tour.ts`)
 The `Tour` model is the core of the package system:
-- **Basic Info**: `title`, `location`, `price`, `duration`, `overview`, `minPeople`, `maxPeople`.
+- **Basic Info**: `title`, `location`, `price`, `duration`, `overview`.
+
 - **Availability**: `availabilityBatches` array (containing `startDate`, `endDate`, `active` status).
 - **Media**: `image` (array of URLs), `brochureUrl`.
 - **Itinerary**: Array of objects with:

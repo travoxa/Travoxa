@@ -54,8 +54,8 @@ export default function AddSightseeingClient({
         state: 'Rajasthan',
         durationDays: '1',
         durationNights: '0',
-        maxPeople: '4',
         vehicleType: 'Sedan',
+
         highlights: ['Amber Fort', 'Hawa Mahal', 'City Palace', 'Jantar Mantar'],
         placesCovered: ['Amber Fort', 'Jal Mahal', 'Hawa Mahal', 'City Palace', 'Jantar Mantar', 'Albert Hall Museum'],
         price: '3500',
@@ -97,8 +97,8 @@ export default function AddSightseeingClient({
         state: '',
         durationDays: '',
         durationNights: '',
-        maxPeople: '',
         vehicleType: 'Sedan',
+
         highlights: [] as string[],
         placesCovered: [] as string[],
         price: '',
@@ -349,8 +349,8 @@ export default function AddSightseeingClient({
             state: pkg.state,
             durationDays,
             durationNights,
-            maxPeople: pkg.maxPeople.toString(),
             vehicleType: pkg.vehicleType,
+
             highlights: pkg.highlights || [],
             placesCovered: pkg.placesCovered || [],
             price: pkg.price.toString(),
@@ -401,8 +401,8 @@ export default function AddSightseeingClient({
         const payload = {
             ...restFormData,
             duration,
-            maxPeople: Number(formData.maxPeople),
             price: mainPrice, // existing field as fallback
+
             pricePrivate: formData.isPrivate ? Number(formData.pricePrivate) : undefined,
             priceSharing: formData.isSharing ? Number(formData.priceSharing) : undefined,
             relatedTours: formData.relatedTours,
@@ -440,8 +440,8 @@ export default function AddSightseeingClient({
                 state: '',
                 durationDays: '',
                 durationNights: '',
-                maxPeople: '',
                 vehicleType: 'Sedan',
+
                 highlights: [],
                 placesCovered: [],
                 price: '',
@@ -551,8 +551,8 @@ export default function AddSightseeingClient({
                                         state: '',
                                         durationDays: '',
                                         durationNights: '',
-                                        maxPeople: '',
                                         vehicleType: 'Sedan',
+
                                         highlights: [] as string[],
                                         placesCovered: [] as string[],
                                         price: '',
@@ -710,8 +710,8 @@ export default function AddSightseeingClient({
                                 state: '',
                                 durationDays: '',
                                 durationNights: '',
-                                maxPeople: '',
                                 vehicleType: 'Sedan',
+
                                 highlights: [] as string[],
                                 placesCovered: [] as string[],
                                 price: '',
@@ -857,17 +857,7 @@ export default function AddSightseeingClient({
                                     </div>
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Max People</label>
-                                <input
-                                    type="number"
-                                    required
-                                    value={formData.maxPeople}
-                                    onChange={e => setFormData({ ...formData, maxPeople: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="e.g. 4"
-                                />
-                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Type</label>
                                 <select

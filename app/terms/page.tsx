@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
+import { CONTACT_INFO } from '@/config/contact';
 
 const TermsPage = () => {
     return (
@@ -72,7 +73,7 @@ const TermsPage = () => {
                     </p>
 
                     <div className="mt-16 pt-8 border-t text-sm text-gray-500">
-                        <p>If you have any questions about these Terms, please contact us at <a href="mailto:legal@travoxa.com" className="text-blue-600 hover:underline">legal@travoxa.com</a>.</p>
+                        <p>If you have any questions about these Terms, please contact us at <a href={`mailto:${CONTACT_INFO.emails.legal}`} className="text-blue-600 hover:underline">{CONTACT_INFO.emails.legal}</a>.</p>
                     </div>
                 </div>
             </div>

@@ -6,6 +6,7 @@ import Footer from '@/components/ui/Footer';
 import ActivitiesHero from '@/components/Pages/Activities/ActivitiesHero';
 import ActivitiesFilterSidebar from '@/components/Pages/Activities/ActivitiesFilterSidebar';
 import ActivitiesCard from '@/components/Pages/Activities/ActivitiesCard';
+import BookingFlowBadge from '@/components/ui/BookingFlowBadge';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -13,6 +14,7 @@ import 'aos/dist/aos.css';
 export interface ActivityPackage {
     _id: string;
     id: string; // virtual
+    slug?: string;
     title: string;
     city: string;
     state: string;
@@ -31,7 +33,7 @@ export interface ActivityPackage {
     suitableFor: string[];
     season?: string[];
     bestMonths?: { start: string; end: string };
-    groupSize?: { min: number; max: number };
+
     ageLimit?: { min: number; max?: number };
     inclusions?: string[];
     exclusions?: string[];
@@ -198,6 +200,8 @@ const ActivitiesClient: React.FC<ActivitiesClientProps> = ({ initialPackages }) 
                             <span className="text-sm font-normal text-slate-500 ml-2 Inter">({filteredPackages.length} found)</span>
                         </h2>
                     </div>
+
+                    <BookingFlowBadge themeColor="orange" />
 
                     {filteredPackages.length > 0 ? (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

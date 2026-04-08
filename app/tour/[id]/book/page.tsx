@@ -25,10 +25,12 @@ interface PageProps {
     params: Promise<{
         id: string;
     }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function BookTourPage({ params }: PageProps) {
+export default async function BookTourPage({ params, searchParams }: PageProps) {
     const { id } = await params;
+    const { notes } = await searchParams;
     const tour = await getTourById(id);
 
     if (!tour) {
@@ -60,21 +62,6 @@ export default async function BookTourPage({ params }: PageProps) {
                         </div>
                     </div>
                     <div className="flex items-center gap-6">
-                        <div className="hidden md:flex items-center gap-2">
-                             <div className="flex -space-x-3 overflow-hidden">
-                                {[1, 2, 3].map((i) => (
-                                    <img 
-                                        key={i}
-                                        className="inline-block h-8 w-8 rounded-full ring-2 ring-white" 
-                                        src={`https://i.pravatar.cc/100?u=travoxa${i}`} 
-                                        alt="" 
-                                    />
-                                ))}
-                            </div>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase leading-tight ml-2">
-                                42 People building <br /> trips right now
-                            </p>
-                        </div>
                         <div className="bg-green-50 px-4 py-2 rounded-xl flex items-center gap-2 shrink-0">
                             <HiBadgeCheck className="text-green-600 text-lg" />
                             <div>
@@ -86,8 +73,8 @@ export default async function BookTourPage({ params }: PageProps) {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 pt-20 pb-12">
-                <SmartTripConfigurator tour={tour} />
+            <div className="max-w-7xl mx-auto px-6 pt-12 pb-12">
+                <SmartTripConfigurator tour={tour} initialNotes={Array.isArray(notes) ? notes[0] : notes} />
             </div>
 
             <Footer />

@@ -10,6 +10,7 @@ import { FaClock, FaCar, FaUserFriends, FaMapMarkerAlt, FaCheckCircle, FaTimesCi
 import { HiBadgeCheck, HiLocationMarker, HiPhone, HiGlobeAlt } from "react-icons/hi";
 import { useState, useEffect } from "react";
 import ReviewSection from "@/components/sightseeing/ReviewSection";
+import { CONTACT_INFO } from "@/config/contact";
 import SaveButton from "@/components/ui/SaveButton";
 import RelatedPackages from "@/components/ui/RelatedPackages";
 
@@ -82,7 +83,7 @@ export default function SightseeingDetailPage() {
 
     const handleWhatsApp = () => {
         const message = `Hi, I want to book ${pkg.title} in ${pkg.city}. My travel date is [Enter Date]. Members: [Enter Count].`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+        window.open(`https://wa.me/${CONTACT_INFO.phones.whatsapp}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
     const handleFormSubmit = (e: React.FormEvent) => {
@@ -131,9 +132,7 @@ export default function SightseeingDetailPage() {
                                     <span className="flex items-center gap-2 bg-white/10 backdrop-blur px-3 py-1.5 rounded-lg border border-white/20">
                                         <FaCar className="text-emerald-400" /> {pkg.vehicleType}
                                     </span>
-                                    <span className="flex items-center gap-2 bg-white/10 backdrop-blur px-3 py-1.5 rounded-lg border border-white/20">
-                                        <FaUserFriends className="text-emerald-400" /> Max {pkg.maxPeople} Guests
-                                    </span>
+
                                 </div>
                             </div>
 
@@ -156,7 +155,7 @@ export default function SightseeingDetailPage() {
                                 itemId={pkg.id}
                                 itemType="sightseeing"
                                 title={pkg.title}
-                                itemLink={`/travoxa-discovery/sightseeing/${pkg.id}`}
+                                itemLink={`/travoxa-discovery/sightseeing/${pkg.slug || pkg.id}`}
                             />
                         </h2>
                         <p className="text-slate-600 leading-relaxed text-lg Inter">

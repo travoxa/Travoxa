@@ -18,7 +18,7 @@ export default async function AdminPage() {
         // Main Admin
         adminUser = {
             name: 'Admin',
-            email: 'admin@travoxa.com',
+            email: 'admin@travoxa.in',
             image: null,
             id: 'admin',
             role: 'Super Admin',

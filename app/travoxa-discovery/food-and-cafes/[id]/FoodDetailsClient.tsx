@@ -344,7 +344,7 @@ export default function FoodDetailsClient({ pkg }: FoodDetailsClientProps) {
                                             itemId={pkg.id || pkg._id}
                                             itemType="food"
                                             title={pkg.title}
-                                            itemLink={`/travoxa-discovery/food-and-cafes/${pkg.id || pkg._id}`}
+                                            itemLink={`/travoxa-discovery/food-and-cafes/${pkg.slug || pkg.id || pkg._id}`}
                                             isSmall={false}
                                             activeColor="bg-yellow-500"
                                         />

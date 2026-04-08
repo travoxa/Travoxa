@@ -86,7 +86,7 @@ export default function StayDetailsPage() {
                         itemId={stay._id || id}
                         itemType="stay"
                         title={stay.title}
-                        itemLink={`/travoxa-discovery/stay/${stay._id || id}`}
+                        itemLink={`/travoxa-discovery/stay/${stay.slug || stay._id || id}`}
                     />
                 </div>
 

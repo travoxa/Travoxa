@@ -23,7 +23,7 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { tourId, members, date, userDetails } = body;
+        const { tourId, members, date, userDetails, priceReductionNotes } = body;
 
         if (!tourId || !members || !date) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -46,6 +46,7 @@ export async function POST(req: Request) {
                 email: userDetails?.email || user.email,
                 phone: userDetails?.phone || ''
             },
+            priceReductionNotes: priceReductionNotes || '',
             status: 'pending'
         });
 
@@ -89,7 +90,8 @@ export async function GET(req: Request) {
         }
 
         const requests = await TourRequest.find(query)
-            .populate('tourId', 'title location price overview duration itinerary highlights inclusions exclusions cancellationPolicy image pricing availabilityBatches minPeople maxPeople locationMapLink pickupLocation pickupMapLink dropLocation dropMapLink partners brochureUrl totalSlots bookedSlots bookingAmount earlyBirdDiscount meals vendorId status')
+            .populate('tourId', 'title location price overview duration itinerary highlights inclusions exclusions cancellationPolicy image pricing availabilityBatches locationMapLink pickupLocation pickupMapLink dropLocation dropMapLink partners brochureUrl totalSlots bookedSlots bookingAmount earlyBirdDiscount meals vendorId status')
+
             .sort({ createdAt: -1 });
 
         return NextResponse.json({ success: true, data: requests });

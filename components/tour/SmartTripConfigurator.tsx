@@ -5,13 +5,14 @@ import {
     HiUser, HiUsers, HiUserGroup, HiHome, HiStar, 
     HiLocationMarker, HiCheckCircle, HiChevronRight, HiChevronDown, 
     HiCalendar, HiTrash, HiCurrencyRupee, HiPlus, HiMinus,
-    HiTruck, HiTicket, HiBookOpen, HiSparkles
+    HiTruck, HiTicket, HiBookOpen, HiSparkles, HiClock, HiCreditCard, HiX
 } from 'react-icons/hi';
 import { MdRestaurant, MdHotel, MdCameraAlt, MdDirectionsBus, MdLocalFireDepartment, MdHiking, MdParagliding, MdLandscape, MdTempleHindu, MdFlight, MdStars } from "react-icons/md";
 import Image from 'next/image';
 
 interface SmartTripConfiguratorProps {
     tour: any; // Ideally typed, but following the existing project style
+    initialNotes?: string;
 }
 
 function HiXCircle({ className }: { className?: string }) {
@@ -22,7 +23,7 @@ function HiXCircle({ className }: { className?: string }) {
     )
 }
 
-export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorProps) {
+export default function SmartTripConfigurator({ tour, initialNotes }: SmartTripConfiguratorProps) {
     const [currentStep, setCurrentStep] = useState(1);
     
     // Configurator State
@@ -54,6 +55,20 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
         },
     });
 
+    const [showBudgetSaver, setShowBudgetSaver] = useState(!!initialNotes);
+    const [budgetNotes, setBudgetNotes] = useState(initialNotes || '');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitSuccess, setSubmitSuccess] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+    useEffect(() => {
+        if (initialNotes) {
+            setShowBudgetSaver(true);
+            setBudgetNotes(initialNotes);
+        }
+    }, [initialNotes]);
+
+
     // Helper to calculate total travelers
     const totalTravelers = useMemo(() => {
         const { travelerType, groupDetails } = selections;
@@ -79,7 +94,10 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
 
     // PRICING CALCULATION
     const priceSummary = useMemo(() => {
-        const basePrice = (tour.price || 0) * totalTravelers;
+        const rawBasePrice = (tour.price || 0) * totalTravelers;
+        const discountAmount = tour.earlyBirdDiscount ? Math.round(rawBasePrice * (tour.earlyBirdDiscount / 100)) : 0;
+        const basePrice = rawBasePrice - discountAmount;
+        
         const config = tour.configurator || {};
         const days = tour.durationDays ? parseInt(tour.durationDays) : 3;
         const nights = tour.durationNights ? parseInt(tour.durationNights) : 2;
@@ -131,7 +149,8 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
         const grandTotal = basePrice + stayUpgrade + mealsPrice + sightseeingPrice + activitiesPrice + transportFee;
 
         return {
-            basePrice,
+            basePrice: rawBasePrice,
+            discountAmount,
             stayUpgrade,
             mealsPrice,
             sightseeingPrice,
@@ -141,6 +160,92 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
             perPerson: Math.round(grandTotal / totalTravelers)
         };
     }, [selections, totalTravelers, tour]);
+ 
+    // Budget Saving Suggestions
+    const budgetSuggestions = useMemo(() => {
+        const suggestions = [];
+        const config = tour.configurator || {};
+ 
+        // 1. Sightseeing Suggestion
+        if (selections.sightseeing === 'private') {
+            const sharedOption = config.sightseeingOptions?.find((s: any) => s.type === 'shared');
+            if (sharedOption) {
+                const days = tour.durationDays ? parseInt(tour.durationDays) : 3;
+                const saving = (sharedOption.pricePerDay * totalTravelers) - (sharedOption.pricePerDay * days); // This logic depends on pricing, but let's approximate
+                // Simplified saving calculation for suggestion
+                suggestions.push({
+                    id: 'sightseeing',
+                    label: 'Switch to Shared Sightseeing',
+                    saving: priceSummary.sightseeingPrice - (sharedOption.pricePerDay * totalTravelers),
+                    action: () => setSelections({ ...selections, sightseeing: 'shared' })
+                });
+            }
+        }
+ 
+        // 2. Stay Suggestion
+        if (selections.stayType === 'premium') {
+            const standardOption = config.stayOptions?.find((s: any) => s.type === 'standard');
+            if (standardOption) {
+                suggestions.push({
+                    id: 'stay',
+                    label: 'Downgrade to Standard Stay',
+                    saving: priceSummary.stayUpgrade - (standardOption.pricePerNight * totalTravelers * (tour.durationNights ? parseInt(tour.durationNights) : 2)),
+                    action: () => setSelections({ ...selections, stayType: 'standard' })
+                });
+            }
+        } else if (selections.stayType === 'standard') {
+            const dormOption = config.stayOptions?.find((s: any) => s.type === 'dormitory');
+            if (dormOption) {
+                suggestions.push({
+                    id: 'stay-dorm',
+                    label: 'Switch to Dormitory',
+                    saving: priceSummary.stayUpgrade - (dormOption.pricePerNight * totalTravelers * (tour.durationNights ? parseInt(tour.durationNights) : 2)),
+                    action: () => setSelections({ ...selections, stayType: 'dormitory' })
+                });
+            }
+        }
+ 
+        // 3. Meals
+        if (selections.meals.lunch || selections.meals.dinner || selections.meals.fullPlan) {
+            suggestions.push({
+                id: 'meals',
+                label: 'Remove Optional Meals',
+                saving: priceSummary.mealsPrice,
+                action: () => setSelections({ ...selections, meals: { breakfast: false, lunch: false, dinner: false, fullPlan: false } })
+            });
+        }
+ 
+        return suggestions.filter(s => s.saving > 0);
+    }, [selections, tour, priceSummary, totalTravelers]);
+ 
+    const handleBuildTrip = async () => {
+        setIsSubmitting(true);
+        try {
+            const response = await fetch('/api/tours/request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tourId: tour._id || tour.id,
+                    members: totalTravelers,
+                    date: 'Flexible / Customized',
+                    priceReductionNotes: `[Configured Trip] ${budgetNotes}\n\n=== CUSTOM SELECTIONS ===\n- Traveler Type: ${selections.travelerType}\n- Stay Category: ${selections.stayType}\n- Sightseeing: ${selections.sightseeing}\n- Total Calculated Price: ₹${priceSummary.grandTotal}\n- Members: ${totalTravelers}`,
+                    userDetails: {
+                        // Backend will fetch from session
+                    }
+                })
+            });
+ 
+            if (response.ok) {
+                setSubmitSuccess(true);
+                setShowSuccessModal(true);
+                // No longer resetting submitSuccess after 5s, the modal handles it
+            }
+        } catch (error) {
+            console.error("Error submitting trip config:", error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     // RENDER HELPERS
     const StepHeader = ({ num, title, description }: { num: number, title: string, description?: string }) => (
@@ -174,7 +279,8 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
     );
 
     return (
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <>
+            <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* WIZARD COLUMN */}
             <div className="lg:col-span-8 space-y-6">
@@ -669,6 +775,15 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
                             <span>Base Package ({totalTravelers} Pax)</span>
                             <span className="font-bold">₹{priceSummary.basePrice.toLocaleString()}</span>
                         </div>
+                        {priceSummary.discountAmount > 0 && (
+                            <div className="flex justify-between items-center text-sm opacity-80">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                    <span>{tour.earlyBirdDiscount}% Early Bird Discount</span>
+                                </div>
+                                <span className="font-bold text-green-400">- ₹{priceSummary.discountAmount.toLocaleString()}</span>
+                            </div>
+                        )}
                         {priceSummary.stayUpgrade > 0 && (
                             <div className="flex justify-between items-center text-sm opacity-80">
                                 <span>Stay Upgrade</span>
@@ -700,6 +815,18 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
                             </div>
                         )}
                     </div>
+ 
+                    {budgetNotes && (
+                        <div className="mt-6 p-4 bg-white/5 rounded-2xl border border-white/10 animate-in fade-in slide-in-from-right-4 duration-500">
+                            <div className="flex items-center gap-2 mb-2">
+                                <HiSparkles className="text-green-400" />
+                                <span className="text-[10px] font-bold text-green-400 uppercase tracking-widest">Active Reduction Note</span>
+                            </div>
+                            <p className="text-xs text-white/70 italic leading-relaxed">
+                                "{budgetNotes}"
+                            </p>
+                        </div>
+                    )}
 
                     <div className="border-t border-white/10 pt-6 mb-8">
                         <div className="flex justify-between items-end">
@@ -715,9 +842,18 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
                     </div>
 
                     <div className="space-y-4">
-                        <button className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-green-500/20">
-                            Build My Trip
-                        </button>
+                        <div className="space-y-2">
+                            <button 
+                                onClick={handleBuildTrip}
+                                disabled={isSubmitting || submitSuccess}
+                                className={`w-full font-bold py-4 rounded-xl transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 ${submitSuccess ? 'bg-white text-green-600' : 'bg-green-500 hover:bg-green-400 text-black shadow-green-500/20'}`}
+                            >
+                                {isSubmitting ? 'Sending...' : submitSuccess ? <><HiCheckCircle className="text-green-600" /> Enquiry Sent!</> : 'Send Enquire'}
+                            </button>
+                            <p className="text-[10px] text-center text-white/40 font-bold uppercase tracking-widest italic flex items-center justify-center gap-1.5 antialiased">
+                                <HiCheckCircle size={10} className="text-green-500" /> First confirm then only pay
+                            </p>
+                        </div>
                         <button className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-all border border-white/10">
                             Reserve for ₹999
                         </button>
@@ -728,6 +864,69 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
                         <span className="text-[10px] font-bold uppercase tracking-widest text-center">Secure Payment & Instant Confirmation</span>
                     </div>
                 </div>
+
+                {/* Budget Saver Module */}
+                <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm overflow-hidden">
+                    <button
+                        onClick={() => setShowBudgetSaver(!showBudgetSaver)}
+                        className="w-full flex items-center justify-between group"
+                    >
+                        <div className="flex items-center gap-2">
+                             <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+                                 <HiSparkles className="text-green-600" />
+                             </div>
+                             <span className="text-sm font-bold text-gray-900">Budget Saver</span>
+                        </div>
+                        <HiChevronDown className={`text-gray-400 transition-transform ${showBudgetSaver ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {showBudgetSaver && (
+                        <div className="mt-6 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                            {initialNotes && (
+                                <div className="p-3 bg-green-50 rounded-xl border border-green-100 flex items-start gap-3">
+                                    <HiCheckCircle className="text-green-600 mt-0.5 shrink-0" />
+                                    <p className="text-[10px] text-green-800 font-medium leading-tight">
+                                        Your reduction request: <span className="font-bold">"{initialNotes}"</span> has been applied to our team's review.
+                                    </p>
+                                </div>
+                            )}
+                            {budgetSuggestions.length > 0 ? (
+                                <div className="space-y-2">
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Suggestions to Save</p>
+                                    {budgetSuggestions.map((s) => (
+                                        <button
+                                            key={s.id}
+                                            onClick={s.action}
+                                            className="w-full flex items-center justify-between p-3 bg-green-50/50 hover:bg-green-50 rounded-xl border border-green-100 transition-colors group"
+                                        >
+                                            <span className="text-xs text-green-900 font-medium">{s.label}</span>
+                                            <span className="text-xs font-black text-green-600">Save ₹{Math.round(s.saving)}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-[10px] text-gray-400 italic">You've already selected the most budget-friendly core options!</p>
+                            )}
+
+                            <div className="space-y-2">
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Custom Reduction Request</p>
+                                <textarea
+                                    value={budgetNotes}
+                                    onChange={(e) => setBudgetNotes(e.target.value)}
+                                    placeholder="e.g. Remove one activity, change to budget transport..."
+                                    className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-xs outline-none focus:ring-1 focus:ring-green-500 h-24 resize-none"
+                                />
+                                <button 
+                                    onClick={handleBuildTrip}
+                                    className="text-[10px] font-bold text-green-600 hover:text-green-700 transition-colors"
+                                >
+                                    Submit Request with Notes →
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
 
                 {/* Trust / FAQ Note */}
                 <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
@@ -745,5 +944,140 @@ export default function SmartTripConfigurator({ tour }: SmartTripConfiguratorPro
             </div>
 
         </div>
+
+        {/* Success Modal */}
+        <AnimatePresence>
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowSuccessModal(false)}
+                        className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                    />
+                    
+                    <motion.div 
+                        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                        className="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden relative shadow-2xl z-10"
+                    >
+                        {/* Close Button */}
+                        <button 
+                            onClick={() => setShowSuccessModal(false)}
+                            className="absolute top-6 right-6 p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-full transition-all z-20"
+                        >
+                            <HiX size={24} />
+                        </button>
+
+                        <div className="flex flex-col md:flex-row h-full">
+                            {/* Left Side: Visual / Info */}
+                            <div className="md:w-[40%] bg-black p-8 md:p-10 text-white flex flex-col justify-between relative overflow-hidden">
+                                 {/* Background Decor */}
+                                 <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/20 rounded-full -mr-20 -mt-20 blur-3xl" />
+                                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full -ml-16 -mb-16 blur-2xl" />
+
+                                 <div className="relative z-10">
+                                    <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-green-500/20 rotate-3">
+                                        <HiCheckCircle size={32} className="text-black" />
+                                    </div>
+                                    <h2 className="text-3xl font-black leading-tight mb-4">Request Received! 🚀</h2>
+                                    <p className="text-white/60 text-sm font-medium leading-relaxed">
+                                        Your personalized itinerary for <span className="text-white font-bold">{tour.title}</span> is now with our expert team.
+                                    </p>
+                                 </div>
+
+                                 <div className="relative z-10 mt-8 pt-8 border-t border-white/10">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-green-400 mb-2">Next Step</p>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                                            <HiClock className="text-white" />
+                                        </div>
+                                        <p className="text-sm font-bold">Review in 3 Hours</p>
+                                    </div>
+                                 </div>
+                            </div>
+
+                            {/* Right Side: Flow */}
+                            <div className="md:w-[60%] p-8 md:p-10 bg-white">
+                                <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-8">Booking Process Flow</h3>
+                                
+                                <div className="space-y-8 relative">
+                                    {/* Connecting Line */}
+                                    <div className="absolute left-4 top-2 bottom-2 w-0.5 bg-gray-100" />
+
+                                    {[
+                                        {
+                                            title: "Enquiry Sent",
+                                            desc: "We have received your custom configuration and preferences.",
+                                            icon: <HiCheckCircle className="text-green-500" />,
+                                            status: "completed"
+                                        },
+                                        {
+                                            title: "Expert Review",
+                                            desc: "Our travel designers will refine your itinerary & optimize price.",
+                                            icon: <HiUsers />,
+                                            status: "current",
+                                            badge: "Within 3 Hrs"
+                                        },
+                                        {
+                                            title: "Secure Booking",
+                                            desc: "Receive the final quote and pay a small token amount to confirm.",
+                                            icon: <HiCreditCard />,
+                                            status: "upcoming"
+                                        },
+                                        {
+                                            title: "Get Vouchers",
+                                            desc: "Finalize details and get your vouchers delivered instantly.",
+                                            icon: <HiTicket />,
+                                            status: "upcoming"
+                                        }
+                                    ].map((step, i) => (
+                                        <div key={i} className="flex gap-6 relative group">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 transition-all shadow-sm ${
+                                                step.status === 'completed' ? 'bg-green-100 text-green-600' : 
+                                                step.status === 'current' ? 'bg-black text-white ring-4 ring-gray-50' : 
+                                                'bg-gray-50 text-gray-300'
+                                            }`}>
+                                                {step.icon}
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h4 className={`text-sm font-black tracking-tight ${step.status === 'upcoming' ? 'text-gray-400' : 'text-gray-900'}`}>
+                                                        {step.title}
+                                                    </h4>
+                                                    {step.badge && (
+                                                        <span className="text-[9px] font-black uppercase bg-green-500 text-black px-1.5 py-0.5 rounded">
+                                                            {step.badge}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className={`text-xs leading-relaxed ${step.status === 'upcoming' ? 'text-gray-300' : 'text-gray-500'}`}>
+                                                    {step.desc}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="mt-10 pt-8 border-t border-gray-100">
+                                    <button 
+                                        onClick={() => setShowSuccessModal(false)}
+                                        className="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-2xl transition-all shadow-xl shadow-gray-200 active:scale-95"
+                                    >
+                                        Sweet, I'll Wait!
+                                    </button>
+                                    <p className="text-[10px] text-center text-gray-400 font-bold uppercase tracking-widest mt-4">
+                                        Expect a call or WhatsApp shortly
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+            </AnimatePresence>
+        </>
     );
 }

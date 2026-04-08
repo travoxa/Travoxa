@@ -1,11 +1,12 @@
 
 export interface SightseeingPackage {
     id: string;
+    slug?: string;
     title: string;
     city: string;
     state: string;
     duration: string; // e.g., "Full Day (8 Hours)"
-    maxPeople: number;
+
     vehicleType: "Sedan" | "SUV" | "Tempo Traveller" | "Mini Bus";
     highlights: string[];
     placesCovered: string[];

@@ -79,9 +79,11 @@ const ActivityClient = () => {
             case 'search': 
                 return `Searched for "${activity.details.keyword}"`;
             case 'ai_usage': 
-                return `Generated AI plan for "${activity.details.cityName || 'Unknown city'}" with style "${activity.details.parameters?.primaryType || 'General'}"`;
+                const aiCity = activity.details?.cityName || 'Unknown city';
+                const aiStyle = activity.details?.parameters?.primaryType || 'General';
+                return `Generated AI plan for "${aiCity}" with style "${aiStyle}"`;
             case 'city_view': 
-                return `Viewed city "${activity.details.cityName}"`;
+                return `Viewed city "${activity.details?.cityName || 'Unknown'}"`;
             case 'login_location': 
                 return `Logged in and shared location: "${activity.details.cityName}" (${activity.details.parameters?.lat?.toFixed(4)}, ${activity.details.parameters?.lon?.toFixed(4)})`;
             default: 

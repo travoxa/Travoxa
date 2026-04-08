@@ -11,6 +11,8 @@ import Header from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer"; // Note: typo in original file 'Footer'
 import Image from "next/image";
 import SectionLoading from "@/components/ui/components/SectionLoading";
+import TourCTA from "@/components/Pages/Tour/TourCTA";
+import BookingFlowBadge from "@/components/ui/BookingFlowBadge";
 
 export default function TourPage() {
     return (
@@ -82,13 +84,28 @@ function TourContent() {
     const handleFilter = (filters: { searchQuery: string, priceRange: string, duration: string }) => {
         let results = allPackages; // Use state instead of static import
 
-        // Filter by Search Query (Title or Location)
+        // Filter by Search Query (Title, Location, Overview, Itinerary, Highlights, etc.)
         if (filters.searchQuery) {
             const query = filters.searchQuery.toLowerCase();
-            results = results.filter(pkg =>
-                pkg.title.toLowerCase().includes(query) ||
-                pkg.location.toLowerCase().includes(query)
-            );
+            results = results.filter(pkg => {
+                const searchInField = (field: any): boolean => {
+                    if (!field) return false;
+                    if (typeof field === 'string') return field.toLowerCase().includes(query);
+                    if (Array.isArray(field)) return field.some(item => searchInField(item));
+                    if (typeof field === 'object') return Object.values(field).some(val => searchInField(val));
+                    return false;
+                };
+
+                return (
+                    searchInField(pkg.title) ||
+                    searchInField(pkg.location) ||
+                    searchInField(pkg.overview) ||
+                    searchInField(pkg.highlights) ||
+                    searchInField(pkg.itinerary) ||
+                    searchInField(pkg.inclusions) ||
+                    searchInField(pkg.exclusions)
+                );
+            });
         }
 
         // Filter by Price
@@ -173,7 +190,10 @@ function TourContent() {
 
             {/* Search Bar - Below Hero with Gap */}
             <div className="relative z-20 mt-10 px-4">
-                <TourFilterSearch onFilterChange={handleFilter} />
+                <TourFilterSearch 
+                    onFilterChange={handleFilter} 
+                    packages={allPackages}
+                />
             </div>
 
             {/* Packages Grid */}
@@ -187,6 +207,8 @@ function TourContent() {
                         Explore our most requested destinations and itineraries, crafted by travel experts for unforgettable memories.
                     </p>
                 </div>
+
+                <BookingFlowBadge themeColor="emerald" />
 
                 {isLoading ? (
                     <SectionLoading />
@@ -248,6 +270,9 @@ function TourContent() {
                     </div>
                 )}
             </section>
+
+            {/* Tour CTA */}
+            <TourCTA />
 
             {/* Custom Tour Request Form */}
             <section className="bg-gray-50 py-20 px-6">

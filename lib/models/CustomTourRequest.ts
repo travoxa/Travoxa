@@ -12,7 +12,11 @@ export interface ICustomTourRequest extends Document {
     departurePlace: string;
     pickupLocation?: string;
     dropLocation?: string;
-    accommodationPreference?: "Standard" | "Premium" | "Luxury" | "Not Required";
+    adults?: number;
+    children?: number;
+    infants?: number;
+    interests?: string[];
+    accommodationPreference?: "Standard" | "Premium" | "Luxury" | "Budget" | "Homestay" | "Camps" | "Not Required";
     mealPlan?: string[];
     travelStyle?: "Full Private" | "Full Sharing" | "Mix";
     additionalNotes?: string;
@@ -80,7 +84,22 @@ const customTourRequestSchema = new Schema<ICustomTourRequest>({
     },
     accommodationPreference: {
         type: String,
-        enum: ["Standard", "Premium", "Luxury", "Not Required"],
+        enum: ["Standard", "Premium", "Luxury", "Budget", "Homestay", "Camps", "Not Required"],
+    },
+    adults: {
+        type: Number,
+        default: 1,
+    },
+    children: {
+        type: Number,
+        default: 0,
+    },
+    infants: {
+        type: Number,
+        default: 0,
+    },
+    interests: {
+        type: [String],
     },
     mealPlan: {
         type: [String],

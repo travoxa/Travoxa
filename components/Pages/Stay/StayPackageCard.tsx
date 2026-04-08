@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FaStar, FaMapMarkerAlt, FaBed, FaBath, FaUserFriends, FaWhatsapp } from "react-icons/fa";
+import { CONTACT_INFO } from "@/config/contact";
 import SaveButton from "@/components/ui/SaveButton";
 
 interface StayPackageCardProps {
@@ -14,13 +15,13 @@ export default function StayPackageCard({ pkg }: StayPackageCardProps) {
 
     const handleViewDetails = (e: React.MouseEvent) => {
         e.stopPropagation();
-        router.push(`/travoxa-discovery/stay/${pkg.id}`);
+        router.push(`/travoxa-discovery/stay/${pkg.slug || pkg.id}`);
     };
 
     const handleWhatsApp = (e: React.MouseEvent) => {
         e.stopPropagation();
         const message = `Hi, I'm interested in booking ${pkg.title} in ${pkg.city}. Please provide more details.`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+        window.open(`https://wa.me/${CONTACT_INFO.phones.whatsapp}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
     return (
@@ -102,7 +103,7 @@ export default function StayPackageCard({ pkg }: StayPackageCardProps) {
                             itemId={pkg.id}
                             itemType="stay"
                             title={pkg.title}
-                            itemLink={`/travoxa-discovery/stay/${pkg.id}`}
+                            itemLink={`/travoxa-discovery/stay/${pkg.slug || pkg.id}`}
                             isSmall={true}
                         />
                         <button

@@ -195,4 +195,17 @@ const AttractionSchema = new mongoose.Schema({
     }
 });
 
+// Pre-save hook to generate slug
+AttractionSchema.pre('save', function (this: any) {
+    if (this.isModified('title') || !this.slug) {
+        this.slug = this.title
+            .toString()
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w-]+/g, '')
+            .replace(/--+/g, '-');
+    }
+});
+
 export default mongoose.models.Attraction || mongoose.model('Attraction', AttractionSchema);

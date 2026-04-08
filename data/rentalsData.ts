@@ -1,5 +1,6 @@
 export interface RentalItem {
     id: string;
+    slug?: string;
     name: string;
     type: string;
     model: string;

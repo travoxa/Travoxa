@@ -117,13 +117,7 @@ const ActivityDetailsClient: React.FC<ActivityDetailsClientProps> = ({ activity 
                                     {activity.duration}
                                 </p>
                             </div>
-                            <div>
-                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Group Size</p>
-                                <p className="text-slate-900 font-bold text-lg flex items-center gap-2">
-                                    <FaUsers className="text-blue-500" />
-                                    {activity.groupSize ? `${activity.groupSize.min}-${activity.groupSize.max}` : 'Standard'}
-                                </p>
-                            </div>
+
                             <div>
                                 <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Age Limit</p>
                                 <p className="text-slate-900 font-bold text-lg flex items-center gap-2">

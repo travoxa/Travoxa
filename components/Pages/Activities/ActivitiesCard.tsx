@@ -18,7 +18,7 @@ const ActivitiesCard: React.FC<ActivitiesCardProps> = ({ pkg }) => {
     const difficulty = pkg.difficultyLevel || pkg.level || 'Moderate';
 
     return (
-        <Link href={`/travoxa-discovery/activities/${pkg._id}`} className="block h-full">
+        <Link href={`/travoxa-discovery/activities/${pkg.slug || pkg._id}`} className="block h-full">
             <div className="group bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300 h-full flex flex-col">
                 {/* Image Container */}
                 <div className="relative h-56 overflow-hidden">
@@ -104,7 +104,7 @@ const ActivitiesCard: React.FC<ActivitiesCardProps> = ({ pkg }) => {
                                 itemId={pkg.id}
                                 itemType="activity"
                                 title={pkg.title}
-                                itemLink={`/travoxa-discovery/activities/${pkg._id}`}
+                                itemLink={`/travoxa-discovery/activities/${pkg.slug || pkg._id}`}
                                 isSmall={true}
                                 activeColor="bg-orange-600"
                             />

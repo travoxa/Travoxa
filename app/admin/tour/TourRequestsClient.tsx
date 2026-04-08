@@ -8,7 +8,7 @@ interface Request {
     type: 'Standard' | 'Custom';
     isVendorTour?: boolean;
     vendorName?: string;
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'pending' | 'approved' | 'rejected' | 'reviewed' | 'contacted' | 'closed';
     createdAt: string;
     members?: number;
     date?: string;
@@ -19,13 +19,24 @@ interface Request {
     };
     destination?: string; // For custom requests
     tourDetails?: any; // For standard tours
+    priceReductionNotes?: string; // For standard
+    // New fields for Custom & Smart Builder visibility
+    additionalNotes?: string;
+    budget?: string;
+    tripType?: string;
+    duration?: string;
+    accommodationPreference?: string;
+    travelStyle?: string;
+    adults?: number;
+    children?: number;
+    infants?: number;
 }
 
 export default function TourRequestsClient() {
     const [requests, setRequests] = useState<Request[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'custom' | 'travoxa' | 'vendor'>('custom');
-    const [selectedPackage, setSelectedPackage] = useState<any>(null);
+    const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
     const [showApprovalModal, setShowApprovalModal] = useState(false);
     const [approvalData, setApprovalData] = useState({
         requestId: '',
@@ -59,12 +70,10 @@ export default function TourRequestsClient() {
                     members: r.members,
                     date: r.date,
                     userDetails: r.userDetails,
-                    tourDetails: r.tourId // Full populated object
+                    tourDetails: r.tourId, // Full populated object
+                    priceReductionNotes: r.priceReductionNotes
                 }))];
             }
-
-            // ... rest of fetch remains similar but mapping tourDetails ...
-            // Let's replace the whole component's tail parts for clarity
 
             if (customData.success && customData.data) {
                 all = [...all, ...customData.data.map((r: any) => ({
@@ -76,7 +85,16 @@ export default function TourRequestsClient() {
                     members: r.groupSize,
                     date: r.startDate,
                     userDetails: r.userDetails || { name: r.userId?.name, email: r.userId?.email, phone: r.userId?.phone },
-                    destination: r.destination
+                    destination: r.destination,
+                    additionalNotes: r.additionalNotes,
+                    budget: r.budget,
+                    tripType: r.tripType,
+                    duration: r.duration,
+                    accommodationPreference: r.accommodationPreference,
+                    travelStyle: r.travelStyle,
+                    adults: r.adults,
+                    children: r.children,
+                    infants: r.infants
                 }))];
             }
 
@@ -93,7 +111,7 @@ export default function TourRequestsClient() {
         fetchRequests();
     }, []);
 
-    const handleAction = async (requestId: string, type: 'Standard' | 'Custom', newStatus: 'approved' | 'rejected', extraData?: any) => {
+    const handleAction = async (requestId: string, type: 'Standard' | 'Custom', newStatus: 'approved' | 'rejected' | 'reviewed' | 'contacted' | 'closed', extraData?: any) => {
         if (type === 'Custom' && newStatus === 'approved' && !extraData) {
             setApprovalData({
                 requestId,
@@ -148,6 +166,7 @@ export default function TourRequestsClient() {
                         <tr className="bg-gray-50/50 border-b border-gray-100">
                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tour / Destination</th>
+                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-green-600">Travel Date</th>
                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">User Details</th>
                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Group</th>
                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
@@ -164,17 +183,34 @@ export default function TourRequestsClient() {
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">
                                         <div className="text-sm font-semibold text-gray-900 line-clamp-1">{req.title}</div>
-                                        {req.tourDetails && (
-                                            <button
-                                                onClick={() => setSelectedPackage(req.tourDetails)}
-                                                className="text-gray-400 hover:text-blue-500 transition-colors"
-                                                title="View Package Details"
-                                            >
-                                                <RiInformationLine size={16} />
-                                            </button>
+                                        <button
+                                            onClick={() => setSelectedRequest(req)}
+                                            className="text-gray-400 hover:text-blue-500 transition-colors"
+                                            title="View Enquiry Details"
+                                        >
+                                            <RiInformationLine size={16} />
+                                        </button>
+                                    </div>
+                                    {(req.priceReductionNotes || req.additionalNotes) && (
+                                        <div className="mt-2 p-2 bg-amber-50 border border-amber-100 rounded-lg max-w-[200px]">
+                                            <div className="flex items-center gap-1.5 text-[9px] font-black text-amber-700 uppercase tracking-widest mb-1 leading-none">
+                                                <RiMoneyDollarCircleLine size={12} /> {req.type === 'Custom' ? 'Customer Note' : 'Reduction Request'}
+                                            </div>
+                                            <p className="text-[10px] text-amber-800/80 leading-snug italic line-clamp-3">
+                                                {req.priceReductionNotes || req.additionalNotes}
+                                            </p>
+                                        </div>
+                                    )}
+                                </td>
+                                <td className="px-6 py-4">
+                                    <div className="flex flex-col">
+                                        <div className={`text-sm font-black p-2 rounded-xl border -ml-2 inline-block ${req.date && !req.date.includes('to') ? 'text-green-700 bg-green-50 border-green-200' : 'text-gray-900 border-transparent'}`}>
+                                            {req.date || 'Flexible'}
+                                        </div>
+                                        {req.date && !req.date.includes('to') && (
+                                            <span className="text-[9px] font-black text-green-500 uppercase tracking-widest mt-1">Custom Req</span>
                                         )}
                                     </div>
-                                    <div className="text-xs text-gray-500 mt-0.5">{req.date || 'TBD'}</div>
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="text-sm text-gray-900">{req.userDetails?.name}</div>
@@ -319,34 +355,32 @@ export default function TourRequestsClient() {
                 />
             </div>
 
-            {/* Package Detail Modal */}
-            {selectedPackage && (
+            {/* Enquiry Detail Modal */}
+            {selectedRequest && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white rounded-[32px] w-full max-w-5xl max-h-full overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-300 border border-white/20">
                         {/* Header */}
                         <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
                             <div>
-                                <h3 className="text-2xl font-black text-gray-900 leading-tight">{selectedPackage.title}</h3>
+                                <h3 className="text-2xl font-black text-gray-900 leading-tight">{selectedRequest.title}</h3>
                                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-3">
                                     <span className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
-                                        <RiMapPinLine className="text-blue-500" /> {selectedPackage.location}
+                                        <RiMapPinLine className="text-blue-500" /> {selectedRequest.destination || selectedRequest.tourDetails?.location}
                                     </span>
                                     <span className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
-                                        <RiTimeLine className="text-blue-500" /> {selectedPackage.duration}
+                                        <RiTimeLine className="text-blue-500" /> {selectedRequest.duration || selectedRequest.tourDetails?.duration}
                                     </span>
                                     <span className="flex items-center gap-x-1.5 text-sm font-black text-gray-900 bg-gray-50 px-3 py-1 rounded-full">
-                                        <RiMoneyDollarCircleLine className="text-green-500 text-lg" /> ₹{selectedPackage.price?.toLocaleString()}
+                                        <RiMoneyDollarCircleLine className="text-green-500 text-lg" /> ₹{(selectedRequest.budget || selectedRequest.tourDetails?.price)?.toLocaleString()}
+                                    </span>
+                                    <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase ${selectedRequest.status === 'approved' ? 'bg-green-50 text-green-600' : 'bg-yellow-50 text-yellow-600'}`}>
+                                        {selectedRequest.status}
                                     </span>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
-                                {selectedPackage.brochureUrl && (
-                                    <a href={selectedPackage.brochureUrl} target="_blank" className="p-3 bg-blue-50 text-blue-600 rounded-2xl hover:bg-blue-100 transition-colors" title="Download Brochure">
-                                        <RiDownloadLine size={20} />
-                                    </a>
-                                )}
                                 <button
-                                    onClick={() => setSelectedPackage(null)}
+                                    onClick={() => setSelectedRequest(null)}
                                     className="p-3 hover:bg-gray-100 rounded-2xl transition-colors text-gray-400 hover:text-gray-900"
                                 >
                                     <RiCloseLine size={24} />
@@ -356,267 +390,159 @@ export default function TourRequestsClient() {
 
                         {/* Content */}
                         <div className="flex-1 overflow-y-auto p-8 space-y-12 custom-scrollbar bg-white">
-                            {/* Images Grid */}
-                            {selectedPackage.image && selectedPackage.image.length > 0 && (
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {selectedPackage.image.map((img: string, i: number) => (
-                                        <div key={i} className={`rounded-3xl overflow-hidden bg-gray-100 border border-gray-100 shadow-sm transition-transform hover:scale-[1.02] ${i === 0 ? 'md:col-span-2 md:row-span-2' : ''}`}>
-                                            <img src={img} alt={`Tour ${i}`} className="w-full h-full object-cover min-h-[140px]" />
+                            
+                            {/* NEW: Request-Specific Details Section */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div className="bg-amber-50/50 border border-amber-100 rounded-[32px] p-8 space-y-6">
+                                    <h4 className="text-lg font-bold text-amber-900 flex items-center gap-2">
+                                        <RiMoneyDollarCircleLine className="text-amber-500" /> User Request & Notes
+                                    </h4>
+                                    
+                                    {(selectedRequest.priceReductionNotes || selectedRequest.additionalNotes) ? (
+                                        <div className="bg-white p-6 rounded-2xl border border-amber-100 shadow-sm">
+                                            <p className="text-sm text-amber-900/80 leading-relaxed whitespace-pre-line italic">
+                                                "{selectedRequest.priceReductionNotes || selectedRequest.additionalNotes}"
+                                            </p>
                                         </div>
-                                    ))}
-                                </div>
-                            )}
+                                    ) : (
+                                        <p className="text-sm text-amber-600 italic">No specific notes provided by the user.</p>
+                                    )}
 
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                                {/* Left Column: Main Info */}
-                                <div className="lg:col-span-2 space-y-12">
-                                    {/* Overview */}
-                                    <div className="space-y-4">
-                                        <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                            <RiFileListLine className="text-blue-500" /> Overview
-                                        </h4>
-                                        <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line bg-gray-50/50 p-6 rounded-[24px] border border-gray-50">
-                                            {selectedPackage.overview}
+                                    {/* Smart Selections (if it was a Configured Trip) */}
+                                    {selectedRequest.priceReductionNotes?.includes('[Configured Trip]') && (
+                                        <div className="pt-4 border-t border-amber-100">
+                                            <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest mb-3">Trip Configurations</p>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                {/* Parsing rough selections if they exist in notes */}
+                                                {['Type', 'Stay', 'Sightseeing', 'Total Price'].map(key => {
+                                                    const regex = new RegExp(`- ${key}: (.*)`);
+                                                    const match = selectedRequest.priceReductionNotes?.match(regex);
+                                                    if (!match) return null;
+                                                    return (
+                                                        <div key={key} className="bg-white/50 p-3 rounded-xl border border-amber-50">
+                                                            <p className="text-[9px] text-amber-500 uppercase font-bold">{key}</p>
+                                                            <p className="text-xs font-bold text-amber-900">{match[1]}</p>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="bg-blue-50/50 border border-blue-100 rounded-[32px] p-8 space-y-6">
+                                    <h4 className="text-lg font-bold text-blue-900 flex items-center gap-2">
+                                        <RiGroupLine className="text-blue-500" /> Traveller Details
+                                    </h4>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-4">
+                                            <div>
+                                                <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mb-1">Contact Person</p>
+                                                <p className="text-sm font-bold text-gray-900">{selectedRequest.userDetails?.name}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mb-1">Phone</p>
+                                                <p className="text-sm font-bold text-gray-900">{selectedRequest.userDetails?.phone}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mb-1">Email</p>
+                                                <p className="text-sm text-gray-600">{selectedRequest.userDetails?.email}</p>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mb-1">Total Members</p>
+                                                <p className="text-sm font-bold text-gray-900">{selectedRequest.members} Adults / Kids</p>
+                                            </div>
+                                            {selectedRequest.type === 'Custom' && (
+                                                <>
+                                                    <div>
+                                                        <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mb-1">Trip Type</p>
+                                                        <p className="text-sm font-bold text-gray-900">{selectedRequest.tripType}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mb-1">Budget Level</p>
+                                                        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] font-black uppercase">{selectedRequest.budget}</span>
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
+                                </div>
+                            </div>
 
-                                    {/* Highlights */}
-                                    {selectedPackage.highlights && selectedPackage.highlights.length > 0 && (
-                                        <div className="space-y-4">
-                                            <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                                <RiEBikeLine className="text-blue-500" /> Package Highlights
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                {selectedPackage.highlights.map((h: string, i: number) => (
-                                                    <div key={i} className="flex items-center gap-3 bg-white border border-gray-100 p-4 rounded-2xl shadow-sm">
-                                                        <div className="w-2 h-2 rounded-full bg-blue-500" />
-                                                        <span className="text-xs font-medium text-gray-700">{h}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
+                            <hr className="border-gray-100" />
+
+                            {/* Tour Details (If standard or related) */}
+                            {selectedRequest.type === 'Standard' && selectedRequest.tourDetails && (
+                                <div className="space-y-12">
+                                    <h4 className="text-xl font-black text-gray-900">Referenced Package Details</h4>
+                                    
+                                    {/* Images Grid */}
+                                    {selectedRequest.tourDetails.image && selectedRequest.tourDetails.image.length > 0 && (
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            {selectedRequest.tourDetails.image.map((img: string, i: number) => (
+                                                <div key={i} className={`rounded-3xl overflow-hidden bg-gray-100 border border-gray-100 shadow-sm transition-transform hover:scale-[1.02] ${i === 0 ? 'md:col-span-2 md:row-span-2' : ''}`}>
+                                                    <img src={img} alt={`Tour ${i}`} className="w-full h-full object-cover min-h-[140px]" />
+                                                </div>
+                                            ))}
                                         </div>
                                     )}
 
-                                    {/* Itinerary */}
-                                    {selectedPackage.itinerary && selectedPackage.itinerary.length > 0 && (
-                                        <div className="space-y-6">
-                                            <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                                <RiCalendarLine className="text-blue-500" /> Day-wise Itinerary
-                                            </h4>
-                                            <div className="space-y-6">
-                                                {selectedPackage.itinerary.map((day: any, i: number) => (
-                                                    <div key={i} className="group relative">
-                                                        <div className="absolute left-6 top-10 bottom-0 w-0.5 bg-gray-100 group-last:hidden" />
-                                                        <div className="flex gap-6">
-                                                            <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-black shadow-lg shadow-blue-100 z-10 shrink-0">
-                                                                {day.day}
-                                                            </div>
-                                                            <div className="bg-white border border-gray-100 p-6 rounded-[28px] shadow-sm hover:shadow-md transition-shadow w-full">
-                                                                <h5 className="font-bold text-gray-900 mb-2">{day.title}</h5>
-                                                                <p className="text-xs text-gray-500 leading-relaxed mb-4">{day.description}</p>
-                                                                <div className="flex flex-wrap gap-2">
-                                                                    {day.stay && <span className="flex items-center gap-1.5 px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-[10px] font-bold"><RiHotelLine /> {day.stay}</span>}
-                                                                    {day.meal && <span className="flex items-center gap-1.5 px-3 py-1 bg-orange-50 text-orange-600 rounded-full text-[10px] font-bold"><RiRestaurantLine /> {day.meal}</span>}
-                                                                    {day.activity && <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold"><RiEBikeLine /> {day.activity}</span>}
-                                                                    {day.transfer && <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold"><RiTruckLine /> {day.transfer}</span>}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                                        <div className="lg:col-span-2 space-y-12">
+                                            <div className="space-y-4">
+                                                <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                                    <RiFileListLine className="text-blue-500" /> Overview
+                                                </h4>
+                                                <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line bg-gray-50/50 p-6 rounded-[24px] border border-gray-50">
+                                                    {selectedRequest.tourDetails.overview}
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
 
-                                    {/* Detailed Meals */}
-                                    {selectedPackage.meals && selectedPackage.meals.length > 0 && (
-                                        <div className="space-y-4">
-                                            <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                                <RiRestaurantLine className="text-orange-500" /> Detailed Meal Plan
-                                            </h4>
-                                            <div className="bg-gray-50 rounded-[28px] p-6 space-y-4">
-                                                {selectedPackage.meals.map((m: any, i: number) => (
-                                                    <div key={i} className="flex flex-col md:flex-row gap-4 p-4 bg-white rounded-2xl border border-gray-100">
-                                                        <div className="w-12 font-black text-gray-300">D{m.day}</div>
-                                                        <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
-                                                            {['breakfast', 'lunch', 'dinner', 'snacks'].map(meal => (
-                                                                <div key={meal}>
-                                                                    <div className="text-[10px] uppercase font-bold text-gray-400 mb-1">{meal}</div>
-                                                                    <div className="text-[11px] text-gray-700 font-medium">
-                                                                        {m[meal]?.join(', ') || 'Not included'}
+                                            {/* Itinerary */}
+                                            {selectedRequest.tourDetails.itinerary && selectedRequest.tourDetails.itinerary.length > 0 && (
+                                                <div className="space-y-6">
+                                                    <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                                        <RiCalendarLine className="text-blue-500" /> Day-wise Itinerary
+                                                    </h4>
+                                                    <div className="space-y-6">
+                                                        {selectedRequest.tourDetails.itinerary.map((day: any, i: number) => (
+                                                            <div key={i} className="group relative">
+                                                                <div className="absolute left-6 top-10 bottom-0 w-0.5 bg-gray-100 group-last:hidden" />
+                                                                <div className="flex gap-6">
+                                                                    <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-black shadow-lg z-10 shrink-0">
+                                                                        {day.day}
+                                                                    </div>
+                                                                    <div className="bg-white border border-gray-100 p-6 rounded-[28px] shadow-sm w-full">
+                                                                        <h5 className="font-bold text-gray-900 mb-2">{day.title}</h5>
+                                                                        <p className="text-xs text-gray-500 leading-relaxed mb-4">{day.description}</p>
+                                                                        <div className="flex flex-wrap gap-2">
+                                                                            {day.stay && <span className="flex items-center gap-1.5 px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-[10px] font-bold"><RiHotelLine /> {day.stay}</span>}
+                                                                            {day.meal && <span className="flex items-center gap-1.5 px-3 py-1 bg-orange-50 text-orange-600 rounded-full text-[10px] font-bold"><RiRestaurantLine /> {day.meal}</span>}
+                                                                            {day.activity && <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold"><RiEBikeLine /> {day.activity}</span>}
+                                                                            {day.transfer && <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold"><RiTruckLine /> {day.transfer}</span>}
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            ))}
-                                                        </div>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Right Column: Logistics & Pricing */}
-                                <div className="space-y-8">
-                                    {/* Pricing & Booking */}
-                                    <div className="bg-gray-900 p-8 rounded-[32px] text-white space-y-6 shadow-2xl shadow-gray-200">
-                                        <h4 className="text-sm font-bold uppercase tracking-widest text-gray-400">Booking Summary</h4>
-                                        <div className="space-y-4">
-                                            <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                                                <span className="text-xs text-gray-400">Base Package</span>
-                                                <span className="text-2xl font-black italic">₹{selectedPackage.price?.toLocaleString()}</span>
-                                            </div>
-                                            {selectedPackage.bookingAmount && (
-                                                <div className="flex justify-between text-xs">
-                                                    <span className="text-gray-400">Initial Booking</span>
-                                                    <span className="font-bold">₹{selectedPackage.bookingAmount.toLocaleString()}</span>
-                                                </div>
-                                            )}
-                                            {selectedPackage.earlyBirdDiscount && (
-                                                <div className="flex justify-between text-xs">
-                                                    <span className="text-green-400">Early Bird Offer</span>
-                                                    <span className="font-black">-{selectedPackage.earlyBirdDiscount}%</span>
                                                 </div>
                                             )}
                                         </div>
-                                    </div>
 
-                                    {/* Pricing Tiers */}
-                                    {selectedPackage.pricing && selectedPackage.pricing.length > 0 && (
-                                        <div className="space-y-4 bg-white border border-gray-100 p-6 rounded-[28px] shadow-sm">
-                                            <h4 className="font-bold text-gray-900 text-sm flex items-center gap-2"><RiMoneyDollarCircleLine /> Pricing Tiers</h4>
-                                            <div className="space-y-2">
-                                                {selectedPackage.pricing.map((p: any, i: number) => (
-                                                    <div key={i} className="p-3 bg-gray-50 rounded-xl flex justify-between items-center text-[11px]">
-                                                        <div>
-                                                            <div className="font-black text-gray-700">{p.people} People</div>
-                                                            <div className="text-gray-400 text-[10px]">{p.hotelType} • {p.rooms} Rooms</div>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <div className="font-black text-blue-600">₹{p.packagePrice.toLocaleString()}</div>
-                                                            <div className="text-gray-400 text-[9px]">₹{p.pricePerPerson}/pp</div>
-                                                        </div>
+                                        <div className="space-y-8">
+                                            <div className="bg-gray-900 p-8 rounded-[32px] text-white space-y-6 shadow-2xl">
+                                                <h4 className="text-sm font-bold uppercase tracking-widest text-gray-400">Pricing Summary</h4>
+                                                <div className="space-y-4">
+                                                    <div className="flex justify-between items-end border-b border-white/10 pb-4">
+                                                        <span className="text-xs text-gray-400">Base Package</span>
+                                                        <span className="text-2xl font-black italic">₹{selectedRequest.tourDetails.price?.toLocaleString()}</span>
                                                     </div>
-                                                ))}
+                                                </div>
                                             </div>
                                         </div>
-                                    )}
-
-                                    {/* Batches */}
-                                    {selectedPackage.availabilityBatches && selectedPackage.availabilityBatches.length > 0 && (
-                                        <div className="space-y-4 bg-white border border-gray-100 p-6 rounded-[28px] shadow-sm">
-                                            <h4 className="font-bold text-gray-900 text-sm flex items-center gap-2"><RiCalendarLine /> Available Batches</h4>
-                                            <div className="grid grid-cols-1 gap-2">
-                                                {selectedPackage.availabilityBatches.map((b: any, i: number) => (
-                                                    <div key={i} className={`p-3 rounded-xl border flex flex-col gap-1 ${b.active ? 'border-blue-100 bg-blue-50/30' : 'bg-gray-50 opacity-50 border-gray-100'}`}>
-                                                        <div className="text-[10px] text-gray-400 font-bold uppercase">Batch {i + 1}</div>
-                                                        <div className="text-[11px] font-black text-gray-700 flex items-center gap-2">
-                                                            {b.startDate} <span className="text-gray-300">→</span> {b.endDate}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Logistics (Pickup/Drop) */}
-                                    {(selectedPackage.pickupLocation || selectedPackage.dropLocation) && (
-                                        <div className="space-y-4 bg-white border border-gray-100 p-6 rounded-[28px] shadow-sm">
-                                            <h4 className="font-bold text-gray-900 text-sm flex items-center gap-2"><RiTruckLine /> Logistics</h4>
-                                            <div className="space-y-4">
-                                                {selectedPackage.pickupLocation && (
-                                                    <div className="space-y-1.5">
-                                                        <div className="text-[10px] font-black text-blue-600 uppercase">Pickup</div>
-                                                        <div className="text-[11px] text-gray-700 font-medium px-3 py-2 bg-gray-50 rounded-xl relative group">
-                                                            {selectedPackage.pickupLocation}
-                                                            {selectedPackage.pickupMapLink && (
-                                                                <a href={selectedPackage.pickupMapLink} target="_blank" className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-500 hover:scale-110 transition-transform">
-                                                                    <RiMapLine size={16} />
-                                                                </a>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                {selectedPackage.dropLocation && (
-                                                    <div className="space-y-1.5">
-                                                        <div className="text-[10px] font-black text-orange-600 uppercase">Drop</div>
-                                                        <div className="text-[11px] text-gray-700 font-medium px-3 py-2 bg-gray-50 rounded-xl relative group">
-                                                            {selectedPackage.dropLocation}
-                                                            {selectedPackage.dropMapLink && (
-                                                                <a href={selectedPackage.dropMapLink} target="_blank" className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-500 hover:scale-110 transition-transform">
-                                                                    <RiMapLine size={16} />
-                                                                </a>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Partners */}
-                                    {selectedPackage.partners && selectedPackage.partners.length > 0 && (
-                                        <div className="space-y-4 bg-white border border-gray-100 p-6 rounded-[28px] shadow-sm">
-                                            <h4 className="font-bold text-gray-900 text-sm flex items-center gap-2"><RiShieldUserLine /> Partners</h4>
-                                            <div className="space-y-3">
-                                                {selectedPackage.partners.map((p: any, i: number) => (
-                                                    <div key={i} className="flex items-center gap-4 bg-gray-50 p-3 rounded-2xl">
-                                                        {p.logo ? (
-                                                            <img src={p.logo} alt={p.name} className="w-8 h-8 rounded-lg object-contain bg-white pb-px border border-gray-200" />
-                                                        ) : (
-                                                            <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center text-[10px] text-gray-400 font-bold">L</div>
-                                                        )}
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="text-[11px] font-bold text-gray-900 truncate">{p.name}</div>
-                                                            <div className="text-[9px] text-gray-500 truncate">{p.website || p.phone}</div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Policies (Bottom) */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-100 pt-12">
-                                <div className="space-y-4 bg-green-50/30 p-8 rounded-[32px]">
-                                    <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                                        <RiListCheck className="text-green-500" /> Inclusions
-                                    </h4>
-                                    <ul className="grid grid-cols-1 gap-3">
-                                        {selectedPackage.inclusions?.map((item: string, i: number) => (
-                                            <li key={i} className="text-[11px] text-gray-600 flex items-start gap-3 bg-white/50 p-3 rounded-xl border border-white">
-                                                <span className="text-green-500 font-black">✓</span> {item}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                                <div className="space-y-4 bg-red-50/30 p-8 rounded-[32px]">
-                                    <h4 className="font-bold text-gray-900 flex items-center gap-2 text-red-600">
-                                        <RiCloseLine className="text-red-500" /> Exclusions
-                                    </h4>
-                                    <ul className="grid grid-cols-1 gap-3">
-                                        {selectedPackage.exclusions?.map((item: string, i: number) => (
-                                            <li key={i} className="text-[11px] text-gray-600 flex items-start gap-3 bg-white/50 p-3 rounded-xl border border-white">
-                                                <span className="text-red-500 font-black">×</span> {item}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </div>
-
-                            {/* Cancellation Policy */}
-                            {selectedPackage.cancellationPolicy && selectedPackage.cancellationPolicy.length > 0 && (
-                                <div className="space-y-4 bg-gray-50 p-8 rounded-[32px]">
-                                    <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                                        <RiShieldUserLine className="text-gray-500" /> Cancellation Policy
-                                    </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        {selectedPackage.cancellationPolicy.map((p: string, i: number) => (
-                                            <div key={i} className="text-[11px] text-gray-500 bg-white p-4 rounded-xl border border-gray-100 italic">
-                                                "{p}"
-                                            </div>
-                                        ))}
                                     </div>
                                 </div>
                             )}

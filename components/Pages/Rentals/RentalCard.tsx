@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { RentalItem } from "@/data/rentalsData";
 import { FaWhatsapp, FaStar, FaGasPump, FaUserGroup, FaHelmetSafety } from "react-icons/fa6";
+import { CONTACT_INFO } from "@/config/contact";
 import { MdLocationOn, MdPlace } from "react-icons/md";
 import SaveButton from "@/components/ui/SaveButton";
 
@@ -21,12 +22,12 @@ export default function RentalCard({ item }: RentalCardProps) {
         if (item.whatsapp) {
             window.open(`https://wa.me/91${item.whatsapp}?text=${encodeURIComponent(message)}`, '_blank');
         } else {
-            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+            window.open(`https://wa.me/${CONTACT_INFO.phones.whatsapp}?text=${encodeURIComponent(message)}`, '_blank');
         }
     };
 
     const handleCardClick = () => {
-        router.push(`/travoxa-discovery/rentals/${item.id}`);
+        router.push(`/travoxa-discovery/rentals/${item.slug || item.id}`);
     };
 
     return (

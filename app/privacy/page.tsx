@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
+import { CONTACT_INFO } from '@/config/contact';
 
 const PrivacyPage = () => {
     return (
@@ -79,8 +80,8 @@ const PrivacyPage = () => {
                     <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
                         <p className="mb-2">If you have questions about this Privacy Policy, please contact us at:</p>
                         <p className="font-semibold text-gray-900">Travoxa Privacy Team</p>
-                        <p className="text-gray-600">Email: <a href="mailto:privacy@travoxa.com" className="text-blue-600 hover:underline">privacy@travoxa.com</a></p>
-                        <p className="text-gray-600">Address: 123 Travel Way, Adventure City, AC 12345</p>
+                        <p className="text-gray-600">Email: <a href={`mailto:${CONTACT_INFO.emails.privacy}`} className="text-blue-600 hover:underline">{CONTACT_INFO.emails.privacy}</a></p>
+                        <p className="text-gray-600">Address: {CONTACT_INFO.address.line1} {CONTACT_INFO.address.line2} {CONTACT_INFO.address.line3}</p>
                     </div>
                 </div>
             </div>

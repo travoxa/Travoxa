@@ -45,14 +45,7 @@ const TourSchema = new mongoose.Schema({
         }],
         default: []
     },
-    minPeople: {
-        type: Number,
-        required: [true, 'Please provide min people'],
-    },
-    maxPeople: {
-        type: Number,
-        required: [true, 'Please provide max people'],
-    },
+
     rating: {
         type: Number,
         default: 0,
@@ -157,6 +150,13 @@ const TourSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    slug: {
+        type: String,
+        unique: true,
+        sparse: true,
+        lowercase: true,
+        trim: true
+    },
     configurator: {
         stayOptions: [{
             type: { type: String, enum: ['dormitory', 'standard', 'premium'] },
@@ -190,6 +190,19 @@ const TourSchema = new mongoose.Schema({
         }]
     }
 }, { timestamps: true });
+
+// Pre-save hook to generate slug
+TourSchema.pre('save', function (this: any) {
+    if (this.isModified('title') || !this.slug) {
+        this.slug = this.title
+            .toString()
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w-]+/g, '')
+            .replace(/--+/g, '-');
+    }
+});
 
 // Prevent mongoose from creating a new model if it already exists
 // This is needed because in development we don't want to restart the server for every change
