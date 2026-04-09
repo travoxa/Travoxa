@@ -95,6 +95,13 @@ export interface IBackpackerGroup extends Document {
   comments: IGroupComment[];
   requests: IJoinRequest[];
   verified: boolean;
+  reports: {
+    reporterId: string;
+    reason: string;
+    createdAt: Date;
+  }[];
+  reportCount: number;
+  isAutoHidden: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -309,6 +316,21 @@ const backpackerGroupSchema = new Schema<IBackpackerGroup>({
     type: Boolean,
     default: false,
     index: true,
+  },
+  reports: [{
+    reporterId: { type: String, required: true },
+    reason: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  reportCount: {
+    type: Number,
+    default: 0,
+    index: true
+  },
+  isAutoHidden: {
+    type: Boolean,
+    default: false,
+    index: true
   },
   createdAt: {
     type: Date,

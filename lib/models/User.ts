@@ -53,6 +53,7 @@ export interface IUser extends Document {
     seen: boolean;
     createdAt: Date;
   }[];
+  blockedUserIds: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -224,6 +225,7 @@ const userSchema = new Schema<IUser>({
     seen: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now }
   }],
+  blockedUserIds: [{ type: String, trim: true }],
 });
 
 // Update the updatedAt field before saving

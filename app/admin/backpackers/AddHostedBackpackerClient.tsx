@@ -49,6 +49,7 @@ export default function AddHostedBackpackerClient({
     const [groups, setGroups] = useState<any[]>([]); // Hosted trips
     const [verifiedCommunityGroups, setVerifiedCommunityGroups] = useState<any[]>([]); // Verified Community trips
     const [unverifiedCommunityGroups, setUnverifiedCommunityGroups] = useState<any[]>([]); // Unverified Community trips
+    const [reportedGroups, setReportedGroups] = useState<any[]>([]); // Reported trips
     const [filteredGroups, setFilteredGroups] = useState<any[]>([]);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const [viewingGroup, setViewingGroup] = useState<any | null>(null); // For details modal
@@ -88,12 +89,14 @@ export default function AddHostedBackpackerClient({
             if (data.groups) {
                 // Filter trips by source
                 const hosted = data.groups.filter((g: any) => g.tripSource === 'hosted');
-                const verifiedVal = data.groups.filter((g: any) => g.tripSource !== 'hosted' && g.verified === true);
+                const verifiedVal = data.groups.filter((g: any) => g.tripSource !== 'hosted' && g.verified === true && (!g.reportCount || g.reportCount === 0));
                 const unverifiedVal = data.groups.filter((g: any) => g.tripSource !== 'hosted' && g.verified !== true);
+                const reported = data.groups.filter((g: any) => (g.reports && g.reports.length > 0) || g.isAutoHidden);
 
                 setGroups(hosted);
                 setVerifiedCommunityGroups(verifiedVal);
                 setUnverifiedCommunityGroups(unverifiedVal);
+                setReportedGroups(reported);
                 setFilteredGroups(hosted);
             }
         } catch (error) {
@@ -141,6 +144,26 @@ export default function AddHostedBackpackerClient({
         } catch (error) {
             console.error('Verification failed:', error);
             alert('Failed to verify group');
+        }
+    };
+
+    const handleClearReports = async (id: string) => {
+        if (!confirm('Are you sure you want to clear all reports for this trip?')) return;
+
+        try {
+            const res = await fetch(`/api/groups/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reports: [], reportCount: 0, isAutoHidden: false }),
+            });
+
+            if (!res.ok) throw new Error('Failed to clear reports');
+
+            await fetchGroups();
+            setViewingGroup(null);
+        } catch (error) {
+            console.error('Failed to clear reports:', error);
+            alert('Failed to clear reports');
         }
     };
 
@@ -257,6 +280,21 @@ export default function AddHostedBackpackerClient({
                                 <p><span className="text-gray-500">Email/ID:</span> {viewingGroup.creatorId}</p>
                             </div>
 
+                            {viewingGroup.reports?.length > 0 && (
+                                <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+                                    <h3 className="font-semibold text-red-800 mb-2">Reports ({viewingGroup.reports.length})</h3>
+                                    <div className="space-y-3">
+                                        {viewingGroup.reports.map((report: any, idx: number) => (
+                                            <div key={idx} className="bg-white p-2 rounded border border-red-50 text-xs">
+                                                <p><span className="font-medium text-red-700">Reason:</span> {report.reason}</p>
+                                                <p><span className="text-gray-500">By:</span> {report.reporterId}</p>
+                                                <p><span className="text-gray-400">On:</span> {new Date(report.createdAt).toLocaleString()}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <p className="text-sm text-gray-500">Destination</p>
@@ -298,13 +336,22 @@ export default function AddHostedBackpackerClient({
                             >
                                 <RiDeleteBinLine /> Delete
                             </button>
-                            {!viewingGroup.verified && (
+                            {viewingGroup.isAdminReportMode ? (
                                 <button
-                                    onClick={() => handleVerify(viewingGroup.id)}
+                                    onClick={() => handleClearReports(viewingGroup.id)}
                                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
                                 >
-                                    <RiCheckLine /> Verify & Publish
+                                    <RiCheckLine /> Dismiss Reports
                                 </button>
+                            ) : (
+                                !viewingGroup.verified && (
+                                    <button
+                                        onClick={() => handleVerify(viewingGroup.id)}
+                                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+                                    >
+                                        <RiCheckLine /> Verify & Publish
+                                    </button>
+                                )
                             )}
                         </div>
                     </div>
@@ -538,6 +585,59 @@ export default function AddHostedBackpackerClient({
                                             </div>
                                         )) : (
                                             <div className="py-8 text-left px-4 text-gray-500 text-sm">No community trips found.</div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Reported Content - NEW SECTION */}
+                            <div className="w-full">
+                                <h2 className="text-sm md:text-lg font-medium text-gray-800 mb-6 px-1 flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                                    Reported Content {reportedGroups.length > 0 && <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-red-400 opacity-75"></span>}
+                                    <span className="text-[10px] bg-red-50 px-2 py-0.5 rounded-full text-red-600 font-normal">{reportedGroups.length}</span>
+                                </h2>
+                                <div className="border border-red-100 rounded-lg overflow-visible bg-red-50/10">
+                                    <div className="bg-red-50/30 border-b border-red-100 px-4 py-3 hidden md:grid grid-cols-4 gap-4 rounded-t-lg">
+                                        <p className="text-xs font-semibold text-red-800 uppercase">Item</p>
+                                        <p className="text-xs font-semibold text-red-800 uppercase">Reason(s)</p>
+                                        <p className="text-xs font-semibold text-red-800 uppercase">Reports</p>
+                                        <p className="text-xs font-semibold text-red-800 uppercase text-right">Action</p>
+                                    </div>
+                                    <div className="divide-y divide-red-50 bg-white rounded-b-lg">
+                                        {reportedGroups.length > 0 ? reportedGroups.map((group) => (
+                                            <div key={group.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-red-50/30 transition-colors gap-3 md:gap-0">
+                                                <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 items-center">
+                                                    <div>
+                                                        <p className="text-xs font-medium text-gray-900">{group.groupName}</p>
+                                                        <p className="text-[10px] text-gray-400">by {group.hostProfile?.name}</p>
+                                                        {group.isAutoHidden && <span className="text-[9px] bg-red-600 text-white px-1.5 py-0.5 rounded-full uppercase font-bold mt-1 inline-block">Auto-Hidden</span>}
+                                                    </div>
+                                                    <div className="md:col-span-1">
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {Array.from(new Set(group.reports?.map((r: any) => r.reason) || [])).map((reason: any, idx) => (
+                                                                <span key={idx} className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">{reason}</span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-bold text-red-600">{group.reportCount} reports</p>
+                                                    </div>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button onClick={() => setViewingGroup({ ...group, isAdminReportMode: true })} className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors" title="View Details">
+                                                            <RiEyeLine size={18} />
+                                                        </button>
+                                                        <button onClick={() => handleClearReports(group.id)} className="p-2 text-green-600 hover:bg-green-50 rounded-full transition-colors" title="Clear Reports">
+                                                            <RiCheckLine size={18} />
+                                                        </button>
+                                                        <button onClick={() => handleDelete(group.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors" title="Delete Permanent">
+                                                            <RiDeleteBinLine size={18} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )) : (
+                                            <div className="py-8 text-left px-4 text-gray-500 text-sm italic">No items reported. Community is safe!</div>
                                         )}
                                     </div>
                                 </div>

@@ -4,6 +4,7 @@ import { createBackpackerGroup, listGroups, type CreateGroupPayload } from "@/da
 import { checkUserExists, getUser } from "@/lib/mongodbUtils";
 import { connectDB } from "@/lib/mongodb";
 import BackpackerGroup, { type IBackpackerGroup } from "../../../lib/models/BackpackerGroup";
+import User from "../../../lib/models/User";
 
 /**
  * Helper function to fetch user details and construct host profile
@@ -51,9 +52,28 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const showAll = searchParams.get("admin") === "true";
+    const reqUserId = searchParams.get("userId");
 
     // Build query
-    const query = showAll ? {} : { verified: true };
+    const query: any = showAll ? {} : { verified: true };
+
+    if (!showAll) {
+      query.isAutoHidden = { $ne: true };
+      
+      if (reqUserId) {
+        // Hide items reported by this user
+        query["reports.reporterId"] = { $ne: reqUserId };
+
+        // Hide items from blocked users
+        const user = await User.findOne({ 
+          $or: [{ _id: reqUserId.length === 24 ? reqUserId : null }, { email: reqUserId }] 
+        });
+        
+        if (user?.blockedUserIds?.length) {
+          query.creatorId = { $nin: user.blockedUserIds };
+        }
+      }
+    }
 
     // Fetch groups from MongoDB
     const mongoGroups = await BackpackerGroup.find(query).sort({ createdAt: -1 });
