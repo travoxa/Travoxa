@@ -37,6 +37,16 @@ const SafetyCard: React.FC = () => {
             />
           </div>
         </div>
+        
+        <div className="mt-6 pt-4 border-t border-gray-100">
+          <a 
+            href="/dashboard/delete-account" 
+            className="text-[10px] font-semibold text-red-500 hover:text-red-600 transition-colors uppercase tracking-tight flex items-center"
+          >
+            Delete Account Data Permanently
+          </a>
+          <p className="text-[9px] text-gray-400 mt-1">This action is irreversible and will remove all your trip data.</p>
+        </div>
       </div>
     </div>
   );
