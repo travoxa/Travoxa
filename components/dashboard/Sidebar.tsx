@@ -150,6 +150,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     }}
                                 />
                             )}
+                            {(permissions.includes('Landing') || permissions.includes('Admin')) && (
+                                <>
                                     <SubNavItem
                                         icon={<RiHistoryLine size={18} />}
                                         label="Activity"
