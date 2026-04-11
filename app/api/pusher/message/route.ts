@@ -1,33 +1,76 @@
 import { NextResponse } from 'next/server';
 import { pusher } from '@/lib/pusher';
+import { connectDB } from '@/lib/mongodb';
+import ChatMessage from '@/models/ChatMessage';
 
 /**
- * API route to trigger Pusher messages for real-time chat testing
+ * Handle sending and receiving chat messages with MongoDB persistence
  */
+
 export async function POST(req: Request) {
     try {
-        const { message, sender, channel = 'travoxa-test-chat', id, timestamp } = await req.json();
+        await connectDB();
+        const { message, sender, senderId, receiverId, channel, id, timestamp } = await req.json();
 
-        if (!message || !sender) {
-            return NextResponse.json(
-                { success: false, error: 'Missing message or sender' },
-                { status: 400 }
-            );
+        if (!message || !sender || !channel) {
+            return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
         }
 
-        // Trigger the Pusher event
-        await pusher.trigger(channel, 'new-message', {
-            id: id || Date.now().toString(),
+        // 1. Save to MongoDB
+        const chatEntry = await ChatMessage.create({
             text: message,
-            sender: sender, // 'user' or 'admin'
-            timestamp: timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            sender: sender,         // 'user' or 'admin'
+            senderId: senderId,     // email or 'admin'
+            receiverId: receiverId, // 'admin' or userEmail
+            channel: channel,
+            id: id,
+            timestamp: timestamp,
+            createdAt: new Date()
         });
 
-        return NextResponse.json({ success: true });
+        // 2. Trigger Pusher broadcast
+        await pusher.trigger(channel, 'new-message', {
+            id: id,
+            text: message,
+            sender: sender,
+            senderId: senderId,
+            timestamp: timestamp,
+        });
+
+        return NextResponse.json({ success: true, data: chatEntry });
     } catch (error: any) {
-        console.error('Pusher trigger error:', error);
+        console.error('Pusher/DB Error:', error);
         return NextResponse.json(
-            { success: false, error: error.message },
+            { success: false, error: error.message || 'Internal server error' },
+            { status: 500 }
+        );
+    }
+}
+
+/**
+ * Fetch history for a specific channel
+ */
+export async function GET(req: Request) {
+    try {
+        await connectDB();
+        const { searchParams } = new URL(req.url);
+        const channel = searchParams.get('channel');
+
+        if (!channel) {
+            return NextResponse.json({ success: false, error: 'Channel is required' }, { status: 400 });
+        }
+
+        // Fetch last 50 messages for this conversation
+        const history = await ChatMessage.find({ channel })
+            .sort({ createdAt: 1 }) // Show oldest first for chat flow
+            .limit(50)
+            .lean();
+
+        return NextResponse.json({ success: true, history });
+    } catch (error: any) {
+        console.error('Fetch History Error:', error);
+        return NextResponse.json(
+            { success: false, error: error.message || 'Internal server error' },
             { status: 500 }
         );
     }
