@@ -23,6 +23,7 @@ interface Message {
     text: string;
     sender: 'user' | 'admin';
     timestamp: string;
+    imageUrl?: string;
 }
 
 interface ChatSession {
@@ -31,6 +32,7 @@ interface ChatSession {
     lastMessage: string;
     timestamp: string;
     createdAt: string;
+    unread?: boolean;
 }
 
 const ChatClient = () => {
@@ -160,14 +162,38 @@ const ChatClient = () => {
             });
             
             setSessions(prev => {
-                const sessionExists = prev.some(s => s.email === activeSession.email);
+                const sessionExists = prev.some(s => s.email === data.senderId || s.email === activeSession?.email);
+                
+                // Determine if we should mark as unread
+                // (Only if it's from a user AND they aren't the currently active chat)
+                const shouldMarkUnread = data.sender === 'user' && activeSession?.email !== data.senderId;
+
                 if (sessionExists) {
-                    return prev.map(s => 
-                        s.email === activeSession.email 
-                        ? { ...s, lastMessage: data.text, timestamp: data.timestamp } 
-                        : s
-                    );
+                    return prev.map(s => {
+                        if (s.email === (data.senderId === 'admin' ? activeSession?.email : data.senderId)) {
+                            return { 
+                                ...s, 
+                                lastMessage: data.imageUrl ? '📷 Photo' : data.text, 
+                                timestamp: data.timestamp,
+                                unread: shouldMarkUnread ? true : s.unread
+                            };
+                        }
+                        return s;
+                    });
                 }
+                
+                // If it's a new user session that wasn't in the list
+                if (data.sender === 'user') {
+                    return [{
+                        email: data.senderId,
+                        name: data.senderName || 'Anonymous',
+                        lastMessage: data.imageUrl ? '📷 Photo' : data.text,
+                        timestamp: data.timestamp,
+                        createdAt: new Date().toISOString(),
+                        unread: true
+                    }, ...prev];
+                }
+
                 return prev;
             });
         });
@@ -235,17 +261,25 @@ const ChatClient = () => {
         }
     };
 
+    const selectSession = (session: ChatSession) => {
+        setActiveSession(session);
+        setSessions(prev => prev.map(s => 
+            s.email === session.email ? { ...s, unread: false } : s
+        ));
+    };
+
     const startChatWithUser = (user: any) => {
         const existingSession = sessions.find(s => s.email === user.email);
         if (existingSession) {
-            setActiveSession(existingSession);
+            selectSession(existingSession);
         } else {
             setActiveSession({
                 email: user.email,
                 name: user.name,
                 lastMessage: 'New chat session',
                 timestamp: 'Now',
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                unread: false
             });
         }
         setSearchQuery('');
@@ -334,20 +368,29 @@ const ChatClient = () => {
                             sessions.map((session) => (
                                 <button
                                     key={session.email}
-                                    onClick={() => setActiveSession(session)}
-                                    className={`w-full p-4 flex items-start gap-3 transition-all border-b border-gray-50 hover:bg-gray-50/50 ${
+                                    onClick={() => selectSession(session)}
+                                    className={`w-full p-4 flex items-start gap-3 transition-all border-b border-gray-50 hover:bg-gray-50/50 relative ${
                                         activeSession?.email === session.email ? 'bg-black/5 !border-l-4 !border-l-black' : ''
                                     }`}
                                 >
-                                    <div className="h-10 w-10 bg-gray-900 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
+                                    <div className="h-10 w-10 bg-gray-900 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 relative">
                                         {session.name.charAt(0).toUpperCase()}
+                                        {session.unread && (
+                                            <div className="absolute -top-0.5 -right-0.5 h-3 w-3 bg-red-500 rounded-full border-2 border-white" />
+                                        )}
                                     </div>
                                     <div className="flex-1 min-w-0 text-left">
                                         <div className="flex justify-between items-center mb-0.5">
-                                            <p className="text-sm font-bold text-gray-900 truncate">{session.name}</p>
-                                            <span className="text-[9px] text-gray-400 font-bold">{session.timestamp}</span>
+                                            <p className={`text-sm truncate ${session.unread ? 'font-black text-black' : 'font-bold text-gray-900'}`}>
+                                                {session.name}
+                                            </p>
+                                            <span className={`text-[9px] font-bold ${session.unread ? 'text-red-500' : 'text-gray-400'}`}>
+                                                {session.timestamp}
+                                            </span>
                                         </div>
-                                        <p className="text-xs text-gray-500 truncate">{session.lastMessage}</p>
+                                        <p className={`text-xs truncate ${session.unread ? 'text-black font-medium' : 'text-gray-500'}`}>
+                                            {session.lastMessage}
+                                        </p>
                                     </div>
                                 </button>
                             ))
@@ -384,12 +427,23 @@ const ChatClient = () => {
                                         className={`flex ${msg.sender === 'admin' ? 'justify-end' : 'justify-start'}`}
                                     >
                                         <div className="max-w-[80%] lg:max-w-[65%] space-y-1">
-                                            <div className={`px-4 py-3 rounded-2xl text-sm transition-all shadow-sm ${
+                                            <div className={`p-1 rounded-2xl text-sm transition-all shadow-sm overflow-hidden ${
                                                 msg.sender === 'admin' 
                                                 ? 'bg-black text-white rounded-tr-none' 
                                                 : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none'
                                             }`}>
-                                                {msg.text}
+                                                {msg.imageUrl && (
+                                                    <a href={msg.imageUrl} target="_blank" rel="noopener noreferrer">
+                                                        <img 
+                                                            src={msg.imageUrl} 
+                                                            alt="Attachment" 
+                                                            className="w-full max-h-60 object-cover rounded-xl hover:opacity-90 transition-opacity cursor-zoom-in"
+                                                        />
+                                                    </a>
+                                                )}
+                                                {msg.text && (
+                                                    <div className="px-4 py-2">{msg.text}</div>
+                                                )}
                                             </div>
                                             <p className={`text-[9px] text-gray-400 uppercase font-black tracking-tighter px-1 ${msg.sender === 'admin' ? 'text-right' : 'text-left'}`}>
                                                 {msg.sender === 'admin' ? 'Support Admin' : activeSession.name} • {msg.timestamp}
