@@ -47,8 +47,9 @@ export interface UserFormData {
 
 export const checkUserExists = async (email: string): Promise<boolean> => {
   try {
+    const normalizedEmail = email.trim().toLowerCase();
     await connectDB();
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     return !!user;
   } catch (error) {
     console.error("Error checking user exists:", error);
@@ -58,8 +59,9 @@ export const checkUserExists = async (email: string): Promise<boolean> => {
 
 export const getUser = async (email: string): Promise<IUser | null> => {
   try {
+    const normalizedEmail = email.trim().toLowerCase();
     await connectDB();
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     return user;
   } catch (error) {
     console.error("Error getting user:", error);
@@ -82,8 +84,10 @@ export const createUser = async (userData: UserFormData): Promise<IUser> => {
   try {
     await connectDB();
 
+    const normalizedEmail = userData.email.trim().toLowerCase();
     const newUser = new User({
       ...userData,
+      email: normalizedEmail,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -102,10 +106,11 @@ export const createUser = async (userData: UserFormData): Promise<IUser> => {
 
 export const updateUser = async (email: string, updates: Partial<UserFormData>): Promise<IUser | null> => {
   try {
+    const normalizedEmail = email.trim().toLowerCase();
     await connectDB();
 
     const updatedUser = await User.findOneAndUpdate(
-      { email },
+      { email: normalizedEmail },
       { ...updates, updatedAt: new Date() },
       { new: true }
     );
@@ -119,8 +124,9 @@ export const updateUser = async (email: string, updates: Partial<UserFormData>):
 
 export const deleteUser = async (email: string): Promise<boolean> => {
   try {
+    const normalizedEmail = email.trim().toLowerCase();
     await connectDB();
-    const result = await User.deleteOne({ email });
+    const result = await User.deleteOne({ email: normalizedEmail });
     return result.deletedCount > 0;
   } catch (error) {
     console.error("Error deleting user:", error);

@@ -9,7 +9,7 @@ import SavedItem from "@/lib/models/SavedItem";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, name, phone, gender, interests, hasBike, authProvider, role, vendorDetails, profileComplete, city } = body;
+    let { email, name, phone, gender, interests, hasBike, authProvider, role, vendorDetails, profileComplete, city } = body;
 
     if (!email || !name || !gender) {
       return NextResponse.json(
@@ -17,6 +17,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    email = email.trim().toLowerCase();
 
     const userData = {
       email,
@@ -56,7 +58,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const email = request.nextUrl.searchParams.get("email");
+    const rawEmail = request.nextUrl.searchParams.get("email");
+    const email = rawEmail?.trim().toLowerCase();
     const includeDashboard = request.nextUrl.searchParams.get("includeDashboard") === "true";
 
     if (!email) {
