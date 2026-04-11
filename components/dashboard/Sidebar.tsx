@@ -162,16 +162,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             if (onClose) onClose();
                                         }}
                                     />
-                                    <SubNavItem
-                                        icon={<RiChat3Line size={18} />}
-                                        label="Live Chat"
-                                        id="MobileActivity:Chat"
-                                        activeTab={activeTab}
-                                        onClick={(id) => {
-                                            setActiveTab(id);
-                                            if (onClose) onClose();
-                                        }}
-                                    />
                                 </>
                             )}
                             {(permissions.includes('Tour') || permissions.some(p => p.startsWith('Tour:'))) && (
@@ -368,16 +358,28 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     />
                                 )}
                             {permissions.includes('Other') && (
-                                <NavItem
-                                    icon={<RiCustomerService2Line size={20} />}
-                                    label="Help Control"
-                                    id="Help Control"
-                                    activeTab={activeTab}
-                                    onClick={(id) => {
-                                        setActiveTab(id);
-                                        if (onClose) onClose();
-                                    }}
-                                />
+                                <>
+                                    <NavItem
+                                        icon={<RiCustomerService2Line size={20} />}
+                                        label="Help Control"
+                                        id="Help Control"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
+                                    <SubNavItem
+                                        icon={<RiChat3Line size={18} />}
+                                        label="Customer Chat"
+                                        id="Help:Chat"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
+                                </>
                             )}
                             {permissions.includes('Listings') && (
                                     <NavItem

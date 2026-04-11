@@ -130,6 +130,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             (activeTab.startsWith('Tour:') && hasTourPermission(activeTab.split(':')[1])) ||
             (activeTab === 'AI:Harvester' || activeTab === 'AI:Settings') ||
             (activeTab === 'Help Control' && hasOtherPermission()) ||
+            (activeTab === 'Help:Chat' && hasOtherPermission()) ||
             (activeTab === 'Blogs' && hasOtherPermission()) ||
             (activeTab.startsWith('MobileActivity:') && (permissions.includes('MobileActivity') || permissions.includes('Admin') || permissions.includes('Landing')));
 
@@ -281,6 +282,14 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                     </div>
                 )
 
+            case 'Help:Chat':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Live Customer Support</h1>
+                        <ChatClient />
+                    </div>
+                )
+
             case 'AI:Harvester':
                 return (
                     <div className="space-y-6">
@@ -311,13 +320,6 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                     </div>
                 )
 
-            case 'MobileActivity:Chat':
-                return (
-                    <div className="space-y-6">
-                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Live Mobile Chat</h1>
-                        <ChatClient />
-                    </div>
-                )
 
             default:
                 return (
