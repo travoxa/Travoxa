@@ -24,7 +24,8 @@ import {
     RiArticleLine,
     RiSparklingLine,
     RiCustomerService2Line,
-    RiHistoryLine
+    RiHistoryLine,
+    RiChat3Line
 } from 'react-icons/ri';
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
@@ -150,16 +151,28 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 />
                             )}
                             {(permissions.includes('Landing') || permissions.includes('Admin')) && (
-                                <SubNavItem
-                                    icon={<RiHistoryLine size={18} />}
-                                    label="Activity"
-                                    id="MobileActivity:Activity"
-                                    activeTab={activeTab}
-                                    onClick={(id) => {
-                                        setActiveTab(id);
-                                        if (onClose) onClose();
-                                    }}
-                                />
+                                <>
+                                    <SubNavItem
+                                        icon={<RiHistoryLine size={18} />}
+                                        label="Activity"
+                                        id="MobileActivity:Activity"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
+                                    <SubNavItem
+                                        icon={<RiChat3Line size={18} />}
+                                        label="Live Chat"
+                                        id="MobileActivity:Chat"
+                                        activeTab={activeTab}
+                                        onClick={(id) => {
+                                            setActiveTab(id);
+                                            if (onClose) onClose();
+                                        }}
+                                    />
+                                </>
                             )}
                             {(permissions.includes('Tour') || permissions.some(p => p.startsWith('Tour:'))) && (
                                 <>

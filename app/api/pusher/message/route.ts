@@ -6,7 +6,7 @@ import { pusher } from '@/lib/pusher';
  */
 export async function POST(req: Request) {
     try {
-        const { message, sender, channel = 'travoxa-test-chat' } = await req.json();
+        const { message, sender, channel = 'travoxa-test-chat', id, timestamp } = await req.json();
 
         if (!message || !sender) {
             return NextResponse.json(
@@ -17,10 +17,10 @@ export async function POST(req: Request) {
 
         // Trigger the Pusher event
         await pusher.trigger(channel, 'new-message', {
-            id: Date.now().toString(),
+            id: id || Date.now().toString(),
             text: message,
             sender: sender, // 'user' or 'admin'
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            timestamp: timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         });
 
         return NextResponse.json({ success: true });

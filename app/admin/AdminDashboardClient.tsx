@@ -29,6 +29,7 @@ import AISettingsClient from '@/app/admin/components/AISettingsClient'
 import HomeCitiesClient from '@/app/admin/landing/HomeCitiesClient'
 import HelpControlClient from '@/app/admin/help-control/HelpControlClient'
 import ActivityClient from '@/app/admin/mobile-activity/ActivityClient'
+import ChatClient from '@/app/admin/mobile-activity/ChatClient'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -130,7 +131,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             (activeTab === 'AI:Harvester' || activeTab === 'AI:Settings') ||
             (activeTab === 'Help Control' && hasOtherPermission()) ||
             (activeTab === 'Blogs' && hasOtherPermission()) ||
-            (activeTab === 'MobileActivity:Activity' && (permissions.includes('MobileActivity') || permissions.includes('Admin') || permissions.includes('Landing')));
+            (activeTab.startsWith('MobileActivity:') && (permissions.includes('MobileActivity') || permissions.includes('Admin') || permissions.includes('Landing')));
 
         if (!isAllowed) {
             return (
@@ -307,6 +308,14 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                     <div className="space-y-6">
                         <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Mobile User Activity</h1>
                         <ActivityClient />
+                    </div>
+                )
+
+            case 'MobileActivity:Chat':
+                return (
+                    <div className="space-y-6">
+                        <h1 className="text-2xl md:text-3xl font-medium text-gray-800 mb-4 md:mb-6 Inter text-center md:text-left">Live Mobile Chat</h1>
+                        <ChatClient />
                     </div>
                 )
 
