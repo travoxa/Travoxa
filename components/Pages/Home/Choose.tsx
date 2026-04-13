@@ -562,6 +562,7 @@ const Choose = () => {
       </div>
 
       {/* Cards Grid - Alternating big/small layout with reduced height - Hidden on Mobile */}
+      {/* Cards Grid - Desktop Premium Bento Layout */}
       <div className="hidden lg:flex flex-col gap-[24px] max-w-6xl mx-auto">
         {rows.map((row, rowIndex) => (
           <div key={rowIndex} className="flex gap-[24px] items-stretch" data-aos="fade-up" data-aos-delay={rowIndex * 100}>
@@ -573,80 +574,112 @@ const Choose = () => {
                 <div
                   key={absoluteIndex}
                   onClick={() => !feature.isLocked && feature.path && router.push(feature.path)}
-                  className={`bg-white rounded-[12px] border border-gray-100 ${!feature.isLocked ? 'cursor-pointer hover:border-[#4da528]/50' : ''} hover:shadow-xl hover:shadow-gray-200/60 hover:-translate-y-[3px] transition-all duration-300 flex flex-col group relative overflow-hidden ${isBig
-                    ? 'flex-[1.6] p-[32px] min-h-[256px]'
-                    : 'flex-[1] p-[24px] min-h-[208px]'
-                    }`}
+                  className={`bg-white rounded-[32px] border border-gray-100 shadow-lg shadow-gray-200/40 transition-all duration-500 flex flex-col group overflow-hidden ${
+                    !feature.isLocked 
+                      ? 'cursor-pointer hover:border-[#4da528]/40 hover:shadow-xl hover:shadow-gray-200/60 hover:-translate-y-[4px]' 
+                      : 'opacity-95'
+                  } ${isBig ? 'flex-[1.6]' : 'flex-[1]'}`}
                 >
-                  {/* Premium Accent Line */}
-                  <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-[#4da528] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  {/* Visual Workspace Area (Header) */}
+                  <div className={`relative w-full bg-slate-50 border-b border-gray-100 flex items-center justify-center overflow-hidden transition-colors ${
+                    isBig ? 'h-[220px]' : 'h-[180px]'
+                  } ${!feature.isLocked ? 'group-hover:bg-slate-100/50' : ''}`}>
+                    
+                    {/* CSS Grid Pattern - Graph Paper Effect */}
+                    <div 
+                      className="absolute inset-0 z-0 opacity-40 mix-blend-multiply"
+                      style={{
+                        backgroundImage: 'linear-gradient(to right, #e5e7eb 1px, transparent 1px), linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)',
+                        backgroundSize: '40px 40px'
+                      }}
+                    />
 
-                  {/* Background Icon */}
-                  <feature.icon className="absolute -bottom-8 -right-8 text-[200px] text-[#4da528] opacity-10 pointer-events-none group-hover:scale-105 group-hover:opacity-15 transition-all duration-500" />
+                    {/* Central Elements */}
+                    <div className="relative z-10 flex items-center justify-center w-full h-full">
+                      {/* Main Icon Box */}
+                      <div className="relative bg-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-[20px] w-[88px] h-[88px] flex items-center justify-center z-10 transform group-hover:scale-105 transition-transform duration-500">
+                        <feature.icon className="text-[44px] text-[#4da528]" />
+                      </div>
 
-                  {/* Masking Overlay */}
-                  {feature.isLocked && (
-                    <div className="absolute inset-0 bg-white/40 backdrop-blur-md z-20 flex flex-col items-center justify-center p-6 text-center">
-                      <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg mb-4">
-                        {/* <span className="text-2xl">🔒</span> */}
-                        <span className="inline-block w-6 h-6">
+                      {/* Floating Decorative Elements representing application UI/System */}
+                      {isBig && (
+                        <>
+                          <div className="absolute top-1/2 left-[calc(50%-100px)] w-14 h-px border-t-[1.5px] border-dashed border-gray-300"></div>
+                          <div className="absolute top-1/2 right-[calc(50%-100px)] w-14 h-px border-t-[1.5px] border-dashed border-gray-300"></div>
+                          <div className="absolute top-[calc(50%-16px)] left-[calc(50%-170px)] w-[70px] h-[32px] bg-white rounded-lg shadow-sm border border-gray-100 flex items-center px-3 transform -translate-y-1">
+                            <div className="w-[6px] h-[6px] rounded-full bg-blue-400 mr-[6px]"></div>
+                            <div className="h-[4px] w-8 bg-gray-200 rounded-full"></div>
+                          </div>
+                          <div className="absolute top-[calc(50%-16px)] right-[calc(50%-160px)] w-[60px] h-[32px] bg-white rounded-lg shadow-sm border border-gray-100 flex items-center px-3 transform translate-y-1">
+                            <div className="w-[6px] h-[6px] rounded-full bg-green-400 mr-[6px]"></div>
+                            <div className="h-[4px] w-6 bg-gray-200 rounded-full"></div>
+                          </div>
+                        </>
+                      )}
+                      
+                      {!isBig && (
+                        <>
+                          <div className="absolute bottom-[calc(50%-68px)] w-px h-6 border-l-[1.5px] border-dashed border-gray-300"></div>
+                          <div className="absolute bottom-[calc(50%-92px)] bg-white shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100 rounded-full px-4 py-1.5 flex items-center gap-2">
+                             <div className={`w-[6px] h-[6px] rounded-full ${feature.isLocked ? 'bg-orange-400' : 'bg-green-400'}`}></div>
+                             <span className="text-[10px] text-gray-500 font-medium tracking-wide uppercase">
+                               {feature.isLocked ? 'Pending' : 'Active'}
+                             </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Masking Overlay for Locked features */}
+                    {feature.isLocked && (
+                      <div className="absolute inset-0 bg-white/50 backdrop-blur-[4px] z-20 flex flex-col items-center justify-center">
+                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-[0_8px_20px_rgb(0,0,0,0.08)] mb-2 relative">
                           <img
                             src="/lock.png"
                             alt="Lock"
-                            className="w-full h-full object-contain"
+                            className="w-5 h-5 object-contain opacity-80"
                           />
-                        </span>
+                        </div>
                       </div>
-                      <p className="text-black font-semibold Inter text-sm mb-1 uppercase tracking-wider">
-                        Coming Soon
-                      </p>
-                      <p className="text-gray-800 text-[11px] Inter font-medium max-w-[180px]">
-                        This feature will be unlocked after official launch.
-                      </p>
-                      <div className="mt-4 px-3 py-1 bg-black/5 rounded-full border border-black/10">
-                        <p className="text-[10px] text-gray-500 Inter italic">Currently under development</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Title - Conditionally Blurred */}
-                  <h3 className={`font-medium Mont leading-[1.2] text-gray-900 relative z-10 ${feature.isLocked ? 'blur-[4px]' : ''} ${isBig ? 'text-[26px]' : 'text-[20px]'
-                    }`}>
-                    {feature.title}
-                  </h3>
-
-                  {/* Description - Conditionally Blurred */}
-                  <p className={`text-gray-600 leading-[1.5] font-light mt-[6px] Inter relative z-10 ${feature.isLocked ? 'blur-[4px]' : ''} ${isBig ? 'text-[15px]' : 'text-[13px]'
-                    }`}>
-                    {feature.description}
-                  </p>
-
-                  {/* Feature Bullets - Conditionally Blurred */}
-                  <div className={`grid grid-cols-2 gap-x-[10px] gap-y-[6px] mt-[10px] relative z-10 ${feature.isLocked ? 'blur-[4px]' : ''} ${isBig ? 'text-[13px]' : 'text-[11px]'
-                    }`}>
-                    {feature.bullets.slice(0, 4).map((bullet, bulletIndex) => (
-                      <div key={bulletIndex} className="flex items-center gap-[5px]">
-                        <span className={`text-[#4da528] font-bold flex-shrink-0 leading-none ${isBig ? 'text-[14px]' : 'text-[12px]'
-                          }`}>•</span>
-                        <span className="text-gray-700 leading-[1.4] font-light Inter">
-                          {bullet}
-                        </span>
-                      </div>
-                    ))}
+                    )}
                   </div>
 
-                  {/* CTA Row - Compact */}
-                  <div className="mt-auto pt-[12px] flex items-center justify-between border-t border-gray-100 relative z-10">
-                    <button className={`bg-black text-white font-bold Mont rounded-full hover:shadow-lg transition-all duration-300 transform ${isBig ? 'text-[12px] px-[16px] py-[6px]' : 'text-[10px] px-[12px] py-[5px]'
-                      }`}>
-                      {feature.isLocked ? 'Coming Soon 🚀' : 'Explore Now'}
-                    </button>
-                    {/* Progress Line - Compact */}
-                    <div className="flex items-center gap-[4px] opacity-60">
-                      <div className={`h-[2px] bg-gray-300 rounded-full ${isBig ? 'w-[24px]' : 'w-[18px]'
-                        }`}></div>
-                      <div className={`h-[2px] bg-gray-200 rounded-full ${isBig ? 'w-[8px]' : 'w-[6px]'
-                        }`}></div>
+                  {/* Content Area */}
+                  <div className={`flex flex-col flex-1 relative z-10 bg-white ${isBig ? 'p-[36px]' : 'p-[28px]'}`}>
+                    <h3 className={`font-semibold Mont leading-[1.2] text-gray-900 ${isBig ? 'text-[24px]' : 'text-[20px]'}`}>
+                      {feature.title}
+                    </h3>
+
+                    <p className={`text-gray-500 leading-[1.5] mt-[10px] Inter ${isBig ? 'text-[15px]' : 'text-[14px]'}`}>
+                      {feature.description}
+                    </p>
+
+                    <div className={`grid grid-cols-2 gap-x-[16px] gap-y-[10px] mt-[24px] ${isBig ? 'text-[14px]' : 'text-[13px]'}`}>
+                      {feature.bullets.slice(0, 4).map((bullet, bulletIndex) => (
+                        <div key={bulletIndex} className="flex items-center gap-[8px]">
+                          <div className="w-[6px] h-[6px] rounded-full bg-[#4da528]/80 flex-shrink-0"></div>
+                          <span className="text-gray-600 font-medium Inter truncate">
+                            {bullet}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Bottom Action Area */}
+                    <div className="mt-auto pt-[24px] flex items-center justify-between border-t border-gray-50">
+                      <span className={`font-semibold text-[#4da528] flex items-center transition-all ${
+                        !feature.isLocked ? 'group-hover:tracking-wide' : 'opacity-60 text-gray-500'
+                      } ${isBig ? 'text-[14px]' : 'text-[13px]'}`}>
+                        {feature.isLocked ? 'Coming Soon' : 'Explore Now'} 
+                        {!feature.isLocked && <span className="ml-[6px] text-[16px] transition-transform group-hover:translate-x-1">&rarr;</span>}
+                      </span>
+                      
+                      {/* Abstract Progress or Status indicator */}
+                      <div className="flex items-center gap-[4px] opacity-40">
+                        <div className={`h-[3px] bg-gray-300 rounded-full ${isBig ? 'w-[20px]' : 'w-[16px]'}`}></div>
+                        <div className={`h-[3px] bg-gray-300 rounded-full ${isBig ? 'w-[8px]' : 'w-[6px]'}`}></div>
+                        <div className={`h-[3px] bg-[#4da528] rounded-full ${isBig ? 'w-[4px]' : 'w-[4px]'}`}></div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -656,47 +689,64 @@ const Choose = () => {
         ))}
       </div>
 
-      {/* Mobile Layout - 2 column grid with cubic boxes */}
-      <div className="lg:hidden grid grid-cols-2 gap-3 max-w-lg mx-auto mt-[48px] px-2">
+      {/* Mobile Layout */}
+      <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-[48px] px-2 max-w-2xl mx-auto">
         {featureData.map((feature, index) => (
           <div
             key={index}
             onClick={() => !feature.isLocked && feature.path && router.push(feature.path)}
-            className={`bg-white rounded-[12px] p-4 border border-gray-100 ${!feature.isLocked ? 'cursor-pointer' : ''} shadow-md relative overflow-hidden group aspect-square flex flex-col justify-between`}
+            className={`bg-white rounded-[24px] border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 flex flex-col group overflow-hidden ${
+              !feature.isLocked 
+                ? 'cursor-pointer hover:border-[#4da528]/40 hover:shadow-lg hover:-translate-y-[2px]' 
+                : 'opacity-95'
+            }`}
           >
-            {/* Masking Overlay */}
-            {feature.isLocked && (
-              <div className="absolute inset-0 bg-white/40 backdrop-blur-md z-20 flex flex-col items-center justify-center p-3 text-center">
-                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg mb-2">
-                  <span className="text-lg">🔒</span>
-                </div>
-                <p className="text-black font-semibold Inter text-[10px] mb-0.5 uppercase tracking-wider">
-                  Coming Soon
-                </p>
-                <p className="text-gray-800 text-[8px] Inter font-medium leading-tight">
-                  Unlocked after launch
-                </p>
+            {/* Visual Workspace Area (Header) */}
+            <div className={`relative w-full bg-slate-50 border-b border-gray-100 flex items-center justify-center overflow-hidden h-[150px] transition-colors ${!feature.isLocked ? 'group-hover:bg-slate-100/50' : ''}`}>
+              
+              {/* CSS Grid Pattern */}
+              <div 
+                className="absolute inset-0 z-0 opacity-40 mix-blend-multiply"
+                style={{
+                  backgroundImage: 'linear-gradient(to right, #e5e7eb 1px, transparent 1px), linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)',
+                  backgroundSize: '32px 32px'
+                }}
+              />
+
+              {/* Central Box */}
+              <div className="relative z-10 bg-white shadow-[0_6px_20px_rgb(0,0,0,0.06)] rounded-[18px] w-[72px] h-[72px] flex items-center justify-center transform group-hover:scale-105 transition-transform duration-500">
+                <feature.icon className="text-[32px] text-[#4da528]" />
               </div>
-            )}
 
-            {/* Background Icon - Conditionally Blurred */}
-            <feature.icon className={`absolute -bottom-4 -right-4 text-[80px] text-[#4da528] opacity-10 pointer-events-none ${feature.isLocked ? 'blur-[2px]' : ''}`} />
-
-            {/* Title only - Conditionally Blurred */}
-            <h3 className={`text-[14px] font-medium Mont leading-[1.2] relative z-10 ${feature.isLocked ? 'blur-[3px]' : ''}`}>
-              {feature.title}
-            </h3>
-
-            {/* Icon centered - Conditionally Blurred */}
-            <div className={`flex-1 flex items-center justify-center relative z-10 ${feature.isLocked ? 'blur-[3px]' : ''}`}>
-              <feature.icon className="text-[36px] text-[#4da528] opacity-80" />
+              {/* Masking Overlay */}
+              {feature.isLocked && (
+                <div className="absolute inset-0 bg-white/50 backdrop-blur-[3px] z-20 flex flex-col items-center justify-center">
+                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_4px_12px_rgb(0,0,0,0.08)] mb-2">
+                    <img src="/lock.png" alt="Lock" className="w-4 h-4 object-contain opacity-80" />
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Small See More button -> Coming Soon / Explore */}
-            <div className="relative z-10">
-              <button className="bg-black text-white text-[9px] font-bold Mont px-[10px] py-[4px] rounded-full">
-                {feature.isLocked ? 'Coming Soon 🚀' : 'Explore Now'}
-              </button>
+            {/* Content Area */}
+            <div className="p-[20px] flex flex-col flex-1 relative z-10 bg-white">
+              <h3 className="font-semibold Mont leading-[1.2] text-gray-900 text-[18px]">
+                {feature.title}
+              </h3>
+
+              <p className="text-gray-500 leading-[1.5] mt-[8px] Inter text-[13px]">
+                {feature.description}
+              </p>
+
+              {/* Bottom Action Area */}
+              <div className="mt-auto pt-[16px] flex items-center justify-between border-t border-gray-50">
+                <span className={`font-semibold text-[#4da528] flex items-center transition-all ${
+                  !feature.isLocked ? 'group-hover:tracking-wide' : 'opacity-60 text-gray-500'
+                } text-[13px]`}>
+                  {feature.isLocked ? 'Coming Soon' : 'Explore Now'} 
+                  {!feature.isLocked && <span className="ml-[4px] text-[15px] transition-transform group-hover:translate-x-1">&rarr;</span>}
+                </span>
+              </div>
             </div>
           </div>
         ))}

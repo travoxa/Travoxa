@@ -182,7 +182,7 @@ export default function ChatWidget() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
                         onAnimationComplete={() => scrollToBottom()}
-                        className="mb-4 w-80 md:w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
+                        className="absolute bottom-16 right-0 w-80 md:w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
                     >
                         {/* Header */}
                         <div className="bg-black p-4 flex items-center justify-between">
@@ -301,12 +301,12 @@ export default function ChatWidget() {
                 )}
             </AnimatePresence>
 
-            {/* Toggle Button */}
+            {/* Toggle Button — always stays at bottom-right corner */}
             <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all ${
+                className={`relative w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all ${
                     isOpen ? 'bg-white text-black border border-gray-100' : 'bg-black text-white'
                 }`}
             >

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { pusher } from '@/lib/pusher';
 import { connectDB } from '@/lib/mongodb';
 import ChatMessage from '@/models/ChatMessage';
+import PushSubscription from '@/models/PushSubscription';
+import { messaging } from '@/lib/firebaseAdmin';
 
 /**
  * Handle sending and receiving chat messages with MongoDB persistence
@@ -55,6 +57,47 @@ export async function POST(req: Request) {
                 imageUrl: imageUrl,
                 channel: channel // Include source channel
             });
+        } else if (sender === 'admin' && messaging) {
+            // Trigger Firebase Push Notification for the user
+            try {
+                const subscriptions = await PushSubscription.find({ email: receiverId });
+                const tokens = subscriptions.map(sub => sub.token);
+
+                if (tokens.length > 0) {
+                    const payload = {
+                        notification: {
+                            title: 'Travoxa Support',
+                            body: message || 'You received a new image message.',
+                        },
+                        data: {
+                            channel: channel,
+                            type: 'chat_message'
+                        }
+                    };
+                    
+                    const response = await messaging.sendEachForMulticast({
+                        tokens: tokens,
+                        notification: payload.notification,
+                        data: payload.data
+                    });
+                    console.log(`Sent ${response.successCount} push notifications to ${receiverId}`);
+                    
+                    // Cleanup failed tokens (e.g. invalid or unregistered config)
+                    if (response.failureCount > 0) {
+                        const failedTokens: string[] = [];
+                        response.responses.forEach((resp, idx) => {
+                            if (!resp.success) {
+                                failedTokens.push(tokens[idx]);
+                            }
+                        });
+                        if (failedTokens.length > 0) {
+                            await PushSubscription.deleteMany({ token: { $in: failedTokens } });
+                        }
+                    }
+                }
+            } catch (pushErr) {
+                console.error('FCM Push Error:', pushErr);
+            }
         }
 
         return NextResponse.json({ success: true, data: chatEntry });
