@@ -30,6 +30,7 @@ import HomeCitiesClient from '@/app/admin/landing/HomeCitiesClient'
 import HelpControlClient from '@/app/admin/help-control/HelpControlClient'
 import ActivityClient from '@/app/admin/mobile-activity/ActivityClient'
 import ChatClient from '@/app/admin/mobile-activity/ChatClient'
+import Pusher from 'pusher-js'
 
 interface AdminDashboardClientProps {
     adminUser: {
@@ -48,6 +49,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
     const [hasPendingVendorTours, setHasPendingVendorTours] = useState(false)
     const [hasPendingVendorRequests, setHasPendingVendorRequests] = useState(false)
     const [hasPendingBackpackers, setHasPendingBackpackers] = useState(false)
+    const [hasUnreadChatMessages, setHasUnreadChatMessages] = useState(false)
     const router = useRouter()
 
     useEffect(() => {
@@ -87,6 +89,11 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                     setHasPendingBackpackers(hasUnverified);
                 }
 
+                // 5. Check Unread Customer Chats
+                const chatRes = await fetch('/api/admin/chat/unread-count');
+                const chatData = await chatRes.json();
+                setHasUnreadChatMessages(chatData.success && chatData.count > 0);
+
             } catch (error) {
                 console.error('Error checking pending requests:', error);
             }
@@ -97,6 +104,28 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
         const interval = setInterval(checkPendingRequests, 5 * 60 * 1000);
         return () => clearInterval(interval);
     }, []);
+
+    // 2. Real-time Chat Notifications
+    useEffect(() => {
+        const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
+            cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+        });
+
+        const globalChannel = pusher.subscribe('admin-notifications');
+        
+        globalChannel.bind('new-message', (data: any) => {
+            // If message is from a user, show the notification dot
+            if (data.sender === 'user' && activeTab !== 'Help:Chat') {
+                setHasUnreadChatMessages(true);
+            }
+        });
+
+        return () => {
+            globalChannel.unbind_all();
+            globalChannel.unsubscribe();
+            pusher.disconnect();
+        };
+    }, [activeTab]);
 
     const renderContent = () => {
         const permissions = adminUser.permissions || [];
@@ -349,6 +378,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                 hasPendingVendorTours={hasPendingVendorTours}
                 hasPendingVendorRequests={hasPendingVendorRequests}
                 hasPendingBackpackers={hasPendingBackpackers}
+                hasUnreadChatMessages={hasUnreadChatMessages}
             />
 
             {/* Main Content */}

@@ -10,32 +10,52 @@ import ChatMessage from '@/models/ChatMessage';
 export async function POST(req: Request) {
     try {
         await connectDB();
-        const { message, sender, senderId, receiverId, channel, id, timestamp } = await req.json();
+        const { message, sender, senderId, receiverId, channel, id, timestamp, event, imageUrl } = await req.json();
 
-        if (!message || !sender || !channel) {
+        const eventName = event || 'new-message';
+
+        // Validation: Must have message OR imageUrl
+        if ((!message && !imageUrl) || !sender || !channel) {
             return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
         }
 
-        // 1. Save to MongoDB
-        const chatEntry = await ChatMessage.create({
-            text: message,
-            sender: sender,         // 'user' or 'admin'
-            senderId: senderId,     // email or 'admin'
-            receiverId: receiverId, // 'admin' or userEmail
-            channel: channel,
-            id: id,
-            timestamp: timestamp,
-            createdAt: new Date()
-        });
+        // 1. Save to MongoDB ONLY if it's a real message (not a presence pulse)
+        let chatEntry = null;
+        if (eventName === 'new-message') {
+            chatEntry = await ChatMessage.create({
+                text: message || '',
+                sender: sender,         // 'user' or 'admin'
+                senderId: senderId,     // email or 'admin'
+                receiverId: receiverId, // 'admin' or userEmail
+                channel: channel,
+                imageUrl: imageUrl,
+                id: id,
+                timestamp: timestamp,
+                createdAt: new Date()
+            });
+        }
 
         // 2. Trigger Pusher broadcast
-        await pusher.trigger(channel, 'new-message', {
+        await pusher.trigger(channel, eventName, {
             id: id,
-            text: message,
+            text: message || '',
             sender: sender,
             senderId: senderId,
             timestamp: timestamp,
+            imageUrl: imageUrl
         });
+        // 3. If message is from user, also trigger global admin notifications
+        if (sender === 'user') {
+            await pusher.trigger('admin-notifications', 'new-message', {
+                id: id,
+                text: message || '',
+                sender: sender,
+                senderId: senderId,
+                timestamp: timestamp,
+                imageUrl: imageUrl,
+                channel: channel // Include source channel
+            });
+        }
 
         return NextResponse.json({ success: true, data: chatEntry });
     } catch (error: any) {

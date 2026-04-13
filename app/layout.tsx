@@ -5,6 +5,7 @@ import "./globals.css";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import VerticalSidebar from "@/components/ui/VerticalSidebar";
+import ChatWidget from "@/components/Chat/ChatWidget";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -44,6 +45,7 @@ export default async function RootLayout({
               {children}
             </main>
             {session && session.user?.role === 'user' && <VerticalSidebar />}
+            <ChatWidget />
           </div>
         </Providers>
       </body>

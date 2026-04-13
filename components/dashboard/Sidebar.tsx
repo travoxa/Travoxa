@@ -45,6 +45,7 @@ interface SidebarProps {
     hasPendingVendorRequests?: boolean;
     hasPendingBackpackers?: boolean;
     hasPendingBlogs?: boolean;
+    hasUnreadChatMessages?: boolean;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -59,7 +60,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     hasPendingVendorTours = false,
     hasPendingVendorRequests = false,
     hasPendingBackpackers = false,
-    hasPendingBlogs = false
+    hasPendingBlogs = false,
+    hasUnreadChatMessages = false
 }) => {
     const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
@@ -374,6 +376,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                                         label="Customer Chat"
                                         id="Help:Chat"
                                         activeTab={activeTab}
+                                        showDot={hasUnreadChatMessages}
+                                        dotColor="bg-red-500"
                                         onClick={(id) => {
                                             setActiveTab(id);
                                             if (onClose) onClose();

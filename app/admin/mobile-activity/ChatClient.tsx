@@ -14,7 +14,8 @@ import {
     RiTimeLine,
     RiMessage3Line,
     RiAddLine,
-    RiUserAddLine
+    RiUserAddLine,
+    RiCheckDoubleLine
 } from 'react-icons/ri';
 import Pusher from 'pusher-js';
 
@@ -23,6 +24,8 @@ interface Message {
     text: string;
     sender: 'user' | 'admin';
     timestamp: string;
+    isRead?: boolean;
+    imageUrl?: string;
 }
 
 interface ChatSession {
@@ -31,6 +34,8 @@ interface ChatSession {
     lastMessage: string;
     timestamp: string;
     createdAt: string;
+    unread?: boolean;
+    unreadCount?: number;
 }
 
 const ChatClient = () => {
@@ -50,6 +55,12 @@ const ChatClient = () => {
     const [connected, setConnected] = useState(false);
     const [loading, setLoading] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const activeSessionRef = useRef<ChatSession | null>(null);
+
+    // Update ref whenever activeSession changes
+    useEffect(() => {
+        activeSessionRef.current = activeSession;
+    }, [activeSession]);
 
     // 1. Admin Presence Heartbeat
     useEffect(() => {
@@ -78,7 +89,17 @@ const ChatClient = () => {
                 const res = await fetch('/api/admin/chat/users');
                 const data = await res.json();
                 if (data.success) {
-                    setSessions(data.chats);
+                    setSessions(prev => {
+                        // Merge logic: preserve live unread status from Pusher if the poll is behind
+                        return data.chats.map((newS: ChatSession) => {
+                            const existing = prev.find(p => p.email.toLowerCase() === newS.email.toLowerCase());
+                            if (existing && existing.timestamp === newS.timestamp) {
+                                // If the last message is the same, trust the existing unread status (could be live from Pusher)
+                                return { ...newS, unread: existing.unread };
+                            }
+                            return newS;
+                        });
+                    });
                 }
             } catch (err) {
                 console.error('Failed to fetch sessions:', err);
@@ -137,47 +158,88 @@ const ChatClient = () => {
         };
 
         fetchHistory();
-    }, [activeSession]);
+    }, [activeSession?.email]);
 
-    // 4. Pusher Setup
+    // 4. Pusher Setup (Unified)
     useEffect(() => {
-        if (!activeSession) return;
-
         const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
             cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
         });
 
-        const currentChannel = `user-${activeSession.email}`;
-        const channel = pusher.subscribe(currentChannel);
-        
-        pusher.connection.bind('connected', () => setConnected(true));
-        pusher.connection.bind('disconnected', () => setConnected(false));
+        // A. Global Admin Notifications (Single Subscription)
+        const globalChannel = pusher.subscribe('admin-notifications');
+        globalChannel.bind('new-message', (data: any) => {
+            const currentActive = activeSessionRef.current;
+            const isCurrentlyActive = currentActive?.email.toLowerCase() === data.senderId.toLowerCase();
+            const shouldMarkUnread = data.sender === 'user' && !isCurrentlyActive;
 
-        channel.bind('new-message', (data: Message) => {
-            setMessages((prev) => {
-                if (prev.some(m => m.id === data.id)) return prev;
-                return [...prev, data];
-            });
-            
+            // 1. Update session list
             setSessions(prev => {
-                const sessionExists = prev.some(s => s.email === activeSession.email);
+                const sessionExists = prev.some(s => s.email === data.senderId);
+
                 if (sessionExists) {
-                    return prev.map(s => 
-                        s.email === activeSession.email 
-                        ? { ...s, lastMessage: data.text, timestamp: data.timestamp } 
-                        : s
-                    );
+                    return prev.map(s => {
+                        if (s.email === data.senderId) {
+                            return { 
+                                ...s, 
+                                lastMessage: data.imageUrl ? '📷 Photo' : data.text, 
+                                timestamp: data.timestamp,
+                                unread: isCurrentlyActive ? false : (shouldMarkUnread ? true : s.unread),
+                                unreadCount: isCurrentlyActive ? 0 : (shouldMarkUnread ? (s.unreadCount || 0) + 1 : s.unreadCount)
+                            };
+                        }
+                        return s;
+                    }).sort((a, b) => {
+                        // Move the user with the new message to the top
+                        if (a.email === data.senderId) return -1;
+                        if (b.email === data.senderId) return 1;
+                        return 0;
+                    });
+                }
+                
+                // New user session that wasn't in list
+                if (data.sender === 'user') {
+                    return [{
+                        email: data.senderId,
+                        name: data.senderName || data.senderId,
+                        lastMessage: data.imageUrl ? '📷 Photo' : data.text,
+                        timestamp: data.timestamp,
+                        createdAt: new Date().toISOString(),
+                        unread: !isCurrentlyActive,
+                        unreadCount: isCurrentlyActive ? 0 : 1
+                    }, ...prev];
                 }
                 return prev;
             });
+
+            // 2. If it's the active chat, also mark as read and update messages
+            if (isCurrentlyActive) {
+                setMessages((prev) => {
+                    if (prev.some(m => m.id === data.id)) return prev;
+                    return [...prev, data];
+                });
+                markAsRead(data.senderId);
+            }
+        });
+
+        // B. Global Read Notifications (to update blue checkmarks)
+        globalChannel.bind('messages-read', (data: { reader: string, channel: string }) => {
+            const currentActive = activeSessionRef.current;
+            if (data.channel === `user-${currentActive?.email}`) {
+                if (data.reader === 'user') {
+                    setMessages(prev => prev.map(m => 
+                        m.sender === 'admin' ? { ...m, isRead: true } : m
+                    ));
+                }
+            }
         });
 
         return () => {
-            channel.unbind_all();
-            channel.unsubscribe();
+            globalChannel.unbind_all();
+            globalChannel.unsubscribe();
             pusher.disconnect();
         };
-    }, [activeSession]);
+    }, []); // Only run ONCE on mount
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -235,17 +297,91 @@ const ChatClient = () => {
         }
     };
 
+    const markAsRead = async (email: string) => {
+        try {
+            const channel = `user-${email}`;
+            await fetch('/api/admin/chat/read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ channel, reader: 'admin' }),
+            });
+        } catch (err) {
+            console.error('Failed to mark as read:', err);
+        }
+    };
+
+    const selectSession = (session: ChatSession) => {
+        setActiveSession(session);
+        setSessions(prev => prev.map(s => 
+            s.email.toLowerCase() === session.email.toLowerCase() ? { ...s, unread: false, unreadCount: 0 } : s
+        ));
+        markAsRead(session.email);
+    };
+
+    const deleteSpecificChat = async (e: React.MouseEvent, session: ChatSession) => {
+        e.stopPropagation(); // Don't select the session
+        if (!confirm(`Are you sure you want to delete all messages for ${session.name}? This cannot be undone.`)) return;
+
+        try {
+            const res = await fetch(`/api/admin/chat/delete?channel=user-${session.email}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                setSessions(prev => prev.filter(s => s.email !== session.email));
+                if (activeSession?.email === session.email) {
+                    setActiveSession(null);
+                    setMessages([]);
+                }
+            }
+        } catch (err) {
+            console.error('Delete individual chat failed:', err);
+        }
+    };
+
+    const deleteAllChats = async () => {
+        if (!confirm('CRITICAL: Are you sure you want to delete EVERY message in the entire chat history? This cannot be undone.')) return;
+
+        try {
+            const res = await fetch('/api/admin/chat/delete?all=true', {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                setSessions([]);
+                setActiveSession(null);
+                setMessages([]);
+            }
+        } catch (err) {
+            console.error('Delete all chats failed:', err);
+        }
+    };
+
+    const clearAllUnread = async () => {
+        try {
+            const res = await fetch('/api/admin/chat/read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ all: true, reader: 'admin' }),
+            });
+            if (res.ok) {
+                setSessions(prev => prev.map(s => ({ ...s, unread: false, unreadCount: 0 })));
+            }
+        } catch (err) {
+            console.error('Clear all unread failed:', err);
+        }
+    };
+
     const startChatWithUser = (user: any) => {
         const existingSession = sessions.find(s => s.email === user.email);
         if (existingSession) {
-            setActiveSession(existingSession);
+            selectSession(existingSession);
         } else {
             setActiveSession({
                 email: user.email,
                 name: user.name,
                 lastMessage: 'New chat session',
                 timestamp: 'Now',
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                unread: false
             });
         }
         setSearchQuery('');
@@ -316,8 +452,26 @@ const ChatClient = () => {
                             </div>
                         )}
 
-                        <div className="p-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                            Active Conversations
+                        <div className="p-3 flex items-center justify-between border-b border-gray-50 bg-gray-50/20">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                Active Conversations
+                            </span>
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={clearAllUnread}
+                                    title="Mark all as read"
+                                    className="p-1.5 hover:bg-emerald-50 text-emerald-500 rounded-lg transition-colors border border-emerald-100/50"
+                                >
+                                    <RiShieldCheckLine size={14} />
+                                </button>
+                                <button 
+                                    onClick={deleteAllChats}
+                                    title="Delete ALL chats"
+                                    className="p-1.5 hover:bg-red-50 text-red-400 rounded-lg transition-colors border border-red-100/50"
+                                >
+                                    <RiDeleteBinLine size={14} />
+                                </button>
+                            </div>
                         </div>
                         
                         {loading ? (
@@ -332,24 +486,43 @@ const ChatClient = () => {
                             </div>
                         ) : (
                             sessions.map((session) => (
-                                <button
+                                <div
                                     key={session.email}
-                                    onClick={() => setActiveSession(session)}
-                                    className={`w-full p-4 flex items-start gap-3 transition-all border-b border-gray-50 hover:bg-gray-50/50 ${
+                                    onClick={() => selectSession(session)}
+                                    className={`w-full p-4 flex items-start gap-3 transition-all border-b border-gray-50 hover:bg-gray-50/50 relative group cursor-pointer ${
                                         activeSession?.email === session.email ? 'bg-black/5 !border-l-4 !border-l-black' : ''
                                     }`}
                                 >
-                                    <div className="h-10 w-10 bg-gray-900 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
+                                    <div className="h-10 w-10 bg-gray-900 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 relative">
                                         {session.name.charAt(0).toUpperCase()}
+                                        {session.unread && (
+                                            <div className="absolute -top-0.5 -right-0.5 h-3 w-3 bg-red-500 rounded-full border-2 border-white" />
+                                        )}
                                     </div>
                                     <div className="flex-1 min-w-0 text-left">
                                         <div className="flex justify-between items-center mb-0.5">
-                                            <p className="text-sm font-bold text-gray-900 truncate">{session.name}</p>
-                                            <span className="text-[9px] text-gray-400 font-bold">{session.timestamp}</span>
+                                            <p className={`text-sm truncate ${session.unread ? 'font-black text-emerald-600' : 'font-bold text-gray-900'}`}>
+                                                {session.name}
+                                            </p>
+                                            <span className={`text-[9px] font-bold ${session.unread ? 'text-emerald-500' : 'text-gray-400'}`}>
+                                                {session.timestamp}
+                                            </span>
                                         </div>
-                                        <p className="text-xs text-gray-500 truncate">{session.lastMessage}</p>
+                                        <p className={`text-xs truncate ${session.unread ? 'text-emerald-600 font-medium' : 'text-gray-500'}`}>
+                                            {session.lastMessage}
+                                        </p>
                                     </div>
-                                </button>
+                                    {/* Quick Actions */}
+                                    <div className="hidden group-hover:flex items-center h-full self-center">
+                                        <button 
+                                            onClick={(e) => deleteSpecificChat(e, session)}
+                                            className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                            title="Delete chat history"
+                                        >
+                                            <RiDeleteBinLine size={16} />
+                                        </button>
+                                    </div>
+                                </div>
                             ))
                         )}
                     </div>
@@ -384,15 +557,32 @@ const ChatClient = () => {
                                         className={`flex ${msg.sender === 'admin' ? 'justify-end' : 'justify-start'}`}
                                     >
                                         <div className="max-w-[80%] lg:max-w-[65%] space-y-1">
-                                            <div className={`px-4 py-3 rounded-2xl text-sm transition-all shadow-sm ${
+                                            <div className={`p-1 rounded-2xl text-sm transition-all shadow-sm overflow-hidden ${
                                                 msg.sender === 'admin' 
                                                 ? 'bg-black text-white rounded-tr-none' 
                                                 : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none'
                                             }`}>
-                                                {msg.text}
+                                                {msg.imageUrl && (
+                                                    <a href={msg.imageUrl} target="_blank" rel="noopener noreferrer">
+                                                        <img 
+                                                            src={msg.imageUrl} 
+                                                            alt="Attachment" 
+                                                            className="w-full max-h-60 object-cover rounded-xl hover:opacity-90 transition-opacity cursor-zoom-in"
+                                                        />
+                                                    </a>
+                                                )}
+                                                {msg.text && (
+                                                    <div className="px-4 py-2">{msg.text}</div>
+                                                )}
                                             </div>
-                                            <p className={`text-[9px] text-gray-400 uppercase font-black tracking-tighter px-1 ${msg.sender === 'admin' ? 'text-right' : 'text-left'}`}>
+                                            <p className={`text-[9px] text-gray-400 uppercase font-black tracking-tighter px-1 flex items-center gap-1 ${msg.sender === 'admin' ? 'justify-end' : 'justify-start'}`}>
                                                 {msg.sender === 'admin' ? 'Support Admin' : activeSession.name} • {msg.timestamp}
+                                                {msg.sender === 'admin' && (
+                                                    <RiCheckDoubleLine 
+                                                        size={14} 
+                                                        className={msg.isRead ? 'text-blue-500' : 'text-gray-300'} 
+                                                    />
+                                                )}
                                             </p>
                                         </div>
                                     </div>

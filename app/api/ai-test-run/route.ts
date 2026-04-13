@@ -75,7 +75,13 @@ export async function POST(req: Request) {
         parsedResult = messageContent;
     }
 
-    return NextResponse.json({ success: true, originalPrompt: userPrompt, data: parsedResult });
+    return NextResponse.json({ 
+      success: true, 
+      originalPrompt: userPrompt, 
+      data: parsedResult,
+      rawContent: messageContent,
+      fullResponse: data
+    });
 
   } catch (error: any) {
     console.error('AI Test API error:', error);

@@ -29,7 +29,10 @@ export default function AISettingsClient() {
     data?: any;
     error?: string;
     originalPrompt?: string;
+    rawContent?: string;
+    fullResponse?: any;
   } | null>(null);
+  const [activeTab, setActiveTab] = useState<'parsed' | 'raw' | 'technical'>('parsed');
   const [copiedType, setCopiedType] = useState<string | null>(null);
 
   useEffect(() => {
@@ -246,12 +249,15 @@ export default function AISettingsClient() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-orange-700 mb-1 uppercase tracking-wider">Primary Type</label>
-              <input
-                type="text"
+              <select
                 value={testInput.primaryType}
                 onChange={(e) => setTestInput({ ...testInput, primaryType: e.target.value })}
-                className="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm outline-none focus:border-orange-500"
-              />
+                className="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm outline-none focus:border-orange-500 appearance-none cursor-pointer"
+              >
+                {['Sightseeing', 'Hill Station', 'Beach', 'Weekend Getaway', 'Budget Trip', 'Adventure', 'Pilgrimage'].map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-xs font-semibold text-orange-700 mb-1 uppercase tracking-wider">Departure Name</label>
@@ -322,7 +328,7 @@ export default function AISettingsClient() {
                 </h3>
                 
                 {testResult.originalPrompt && (
-                  <div className="mb-4">
+                  <div className="mb-6">
                     <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-1.5 opacity-70">Processed System Prompt</p>
                     <div className="bg-white/60 border border-green-100 p-3 rounded-lg text-xs text-green-900 font-mono whitespace-pre-wrap leading-relaxed">
                       {testResult.originalPrompt}
@@ -330,12 +336,59 @@ export default function AISettingsClient() {
                   </div>
                 )}
 
-                <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-1.5 opacity-70">AI Response Data</p>
-                <div className="bg-white border border-green-200 p-4 rounded-xl max-h-[400px] overflow-y-auto shadow-inner shadow-green-50/50">
-                  <pre className="text-xs text-gray-800 font-mono leading-relaxed">
-                    {JSON.stringify(testResult.data, null, 2)}
-                  </pre>
+                <div className="flex items-center gap-1 mb-4 bg-green-100/50 p-1 rounded-lg w-fit">
+                  <button 
+                    onClick={() => setActiveTab('parsed')}
+                    className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${activeTab === 'parsed' ? 'bg-white text-green-700 shadow-sm' : 'text-green-600 hover:bg-white/40'}`}
+                  >
+                    PARSED UI
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('raw')}
+                    className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${activeTab === 'raw' ? 'bg-white text-green-700 shadow-sm' : 'text-green-600 hover:bg-white/40'}`}
+                  >
+                    RAW OUTPUT
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('technical')}
+                    className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${activeTab === 'technical' ? 'bg-white text-green-700 shadow-sm' : 'text-green-600 hover:bg-white/40'}`}
+                  >
+                    TECHNICAL
+                  </button>
                 </div>
+
+                {activeTab === 'parsed' && (
+                  <div>
+                    <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-1.5 opacity-70 border-b border-green-100 pb-1">AI Response (Parsed JSON)</p>
+                    <div className="bg-white border border-green-200 p-4 rounded-xl max-h-[400px] overflow-y-auto shadow-inner shadow-green-50/50 mt-2">
+                      <pre className="text-xs text-gray-800 font-mono leading-relaxed">
+                        {JSON.stringify(testResult.data, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'raw' && (
+                  <div>
+                    <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-1.5 opacity-70 border-b border-green-100 pb-1">Exact LLM Output (Text)</p>
+                    <div className="bg-gray-900 border border-gray-800 p-4 rounded-xl max-h-[400px] overflow-y-auto shadow-2xl mt-2">
+                      <pre className="text-xs text-green-400 font-mono leading-relaxed whitespace-pre-wrap">
+                        {testResult.rawContent || 'No raw content available.'}
+                      </pre>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'technical' && (
+                  <div>
+                    <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-1.5 opacity-70 border-b border-green-100 pb-1">OpenRouter Full Response</p>
+                    <div className="bg-gray-900 border border-gray-800 p-4 rounded-xl max-h-[400px] overflow-y-auto shadow-2xl mt-2">
+                      <pre className="text-[11px] text-blue-400 font-mono leading-relaxed">
+                        {JSON.stringify(testResult.fullResponse, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="bg-red-50 border border-red-100 rounded-2xl p-6">
