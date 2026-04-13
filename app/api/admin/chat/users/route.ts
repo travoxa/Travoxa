@@ -15,12 +15,13 @@ export async function GET(req: Request) {
 
         // 2. For each unique user, get their profile and last message
         const chatSessions = await Promise.all(uniqueUserIds.map(async (email) => {
-            const [userProfile, lastMsg] = await Promise.all([
+            const [userProfile, lastMsg, unreadCount] = await Promise.all([
                 User.findOne({ email }).select('name email').lean(),
                 ChatMessage.findOne({ senderId: email })
                     .sort({ createdAt: -1 })
                     .select('text timestamp createdAt')
-                    .lean()
+                    .lean(),
+                ChatMessage.countDocuments({ senderId: email, sender: 'user', isRead: { $ne: true } })
             ]);
 
             return {
@@ -28,7 +29,9 @@ export async function GET(req: Request) {
                 name: userProfile?.name || email,
                 lastMessage: lastMsg?.text || '',
                 timestamp: lastMsg?.timestamp || '',
-                createdAt: lastMsg?.createdAt || new Date(0)
+                createdAt: lastMsg?.createdAt || new Date(0),
+                unreadCount: unreadCount,
+                unread: unreadCount > 0
             };
         }));
 

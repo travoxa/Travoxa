@@ -44,6 +44,18 @@ export async function POST(req: Request) {
             timestamp: timestamp,
             imageUrl: imageUrl
         });
+        // 3. If message is from user, also trigger global admin notifications
+        if (sender === 'user') {
+            await pusher.trigger('admin-notifications', 'new-message', {
+                id: id,
+                text: message || '',
+                sender: sender,
+                senderId: senderId,
+                timestamp: timestamp,
+                imageUrl: imageUrl,
+                channel: channel // Include source channel
+            });
+        }
 
         return NextResponse.json({ success: true, data: chatEntry });
     } catch (error: any) {

@@ -9,6 +9,7 @@ export interface IChatMessage extends Document {
   imageUrl?: string;  // Cloudinary URL if it's an image message
   id: string;         // Client-side unique ID
   timestamp: string;  // Formatted local time
+  isRead: boolean;
   createdAt: Date;
 }
 
@@ -21,6 +22,7 @@ const ChatMessageSchema: Schema = new Schema({
   imageUrl: { type: String, required: false },
   id: { type: String, required: true, unique: true },
   timestamp: { type: String, required: true },
+  isRead: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now, index: true }
 });
 
