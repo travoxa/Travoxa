@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { 
     RiChat3Line, 
@@ -32,20 +32,32 @@ export default function ChatWidget() {
     const [inputText, setInputText] = useState('');
     const [isConnecting, setIsConnecting] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     const userEmail = session?.user?.email;
     const channelName = userEmail ? `user-${userEmail}` : '';
 
-    // Scroll to bottom
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Scroll to bottom - directly sets scrollTop on container (most reliable)
+    const scrollToBottom = (smooth = true) => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+        }
     };
 
+    // Scroll on every new message (only when widget is open)
+    useLayoutEffect(() => {
+        if (!isOpen) return;
+        // Small timeout to allow DOM to paint the new message bubble
+        const id = setTimeout(() => scrollToBottom(), 80);
+        return () => clearTimeout(id);
+    }, [messages]);
+
+    // When widget is first opened, scroll after animation completes (300ms)
     useEffect(() => {
-        if (isOpen) {
-            scrollToBottom();
-        }
-    }, [messages, isOpen]);
+        if (!isOpen) return;
+        const id = setTimeout(() => scrollToBottom(), 320);
+        return () => clearTimeout(id);
+    }, [isOpen]);
 
     // Fetch History
     useEffect(() => {
@@ -169,6 +181,7 @@ export default function ChatWidget() {
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        onAnimationComplete={() => scrollToBottom()}
                         className="mb-4 w-80 md:w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
                     >
                         {/* Header */}
@@ -194,7 +207,7 @@ export default function ChatWidget() {
                         </div>
 
                         {/* Messages Area */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-gray-50/50">
+                        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-gray-50/50">
                             {messages.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full text-center p-6">
                                     <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">

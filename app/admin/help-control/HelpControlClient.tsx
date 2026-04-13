@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { 
     RiSearchLine, 
     RiSendPlaneFill, 
@@ -50,6 +50,7 @@ const HelpControlClient = () => {
     const [lastPusherError, setLastPusherError] = useState<string | null>(null)
     
     const messagesEndRef = useRef<HTMLDivElement>(null)
+    const scrollContainerRef = useRef<HTMLDivElement>(null)
     const selectedSessionRef = useRef<ChatSession | null>(null)
     const pusherRef = useRef<Pusher | null>(null)
 
@@ -58,10 +59,27 @@ const HelpControlClient = () => {
         selectedSessionRef.current = selectedSession
     }, [selectedSession])
 
-    // Scroll to bottom on new messages
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // Scroll to bottom - directly sets scrollTop on container
+    const scrollToBottom = () => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight
+        }
+    }
+
+    // Scroll on every new message
+    useLayoutEffect(() => {
+        if (messages.length === 0) return
+        const id = setTimeout(() => scrollToBottom(), 80)
+        return () => clearTimeout(id)
     }, [messages])
+
+    // Scroll when switching conversations (after history loads)
+    useEffect(() => {
+        if (!selectedSession) return
+        // Longer delay to allow history fetch + render
+        const id = setTimeout(() => scrollToBottom(), 400)
+        return () => clearTimeout(id)
+    }, [selectedSession?.email])
 
     // 1. Fetch Chat Sessions (sidebar list)
     useEffect(() => {
@@ -531,7 +549,7 @@ const HelpControlClient = () => {
                         </div>
 
                         {/* Messages Area */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/30 custom-scrollbar">
+                        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/30 custom-scrollbar">
                             {messages.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center text-gray-300 opacity-50">
                                     <RiTimeLine size={48} className="mb-2" />
