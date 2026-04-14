@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
+import { generateAIResponse } from '@/lib/ai-service';
 import AIConfig from '@/models/AIConfig';
 
 export async function POST(req: Request) {
@@ -40,32 +41,32 @@ export async function POST(req: Request) {
       userPrompt += ` Also consider secondary preferences: ${secondaryTypes.join(', ')}.`;
     }
 
-    const payload = {
-      model: modelName || "google/gemini-2.0-flash-lite-preview-02-05:free",
-      messages: [
-        { role: 'system', content: 'You are an AI travel assistant that provides accurate location recommendations.' },
-        { role: 'user', content: userPrompt }
-      ],
-      // OpenRouter standard formats to try and get JSON
-      response_format: { type: 'json_object' }
-    };
+    // 4. Call Unified AI Service
+    let aiResponse;
+    try {
+        const aiOptions: any = {
+            response_format: { type: 'json_object' }
+        };
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
+        if (overrideConfig?.USE_LOCAL_CONFIG) {
+            aiOptions.overrideConfig = {
+                provider: overrideConfig.PROVIDER || 'openrouter',
+                apiKey: overrideConfig.API_KEY,
+                modelName: overrideConfig.MODEL
+            };
+        }
 
-    if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(`OpenRouter API error: ${response.status} - ${errorData}`);
+        aiResponse = await generateAIResponse([
+            { role: 'system', content: 'You are an AI travel assistant that provides accurate location recommendations.' },
+            { role: 'user', content: userPrompt }
+        ], aiOptions);
+    } catch (apiError: any) {
+        console.error("AI Service Error", apiError);
+        throw new Error(`AI Service Error: ${apiError.message}`);
     }
 
-    const data = await response.json();
-    const messageContent = data.choices[0]?.message?.content || '{}';
+    const messageContent = aiResponse.content || '{}';
+    const data = aiResponse.raw;
 
     let parsedResult;
     try {

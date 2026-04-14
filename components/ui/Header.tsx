@@ -20,6 +20,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
   type DropdownItem = {
     label: string;
     path: string;
+    isComingSoon?: boolean;
   };
 
   type MenuItem = {
@@ -44,10 +45,10 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
       path: "/ai-trip-planner",
       dropdown: [
         { label: "Ai Trip", path: "/ai-trip-planner" },
-        { label: "Mystery Trip", path: "/ai-trip-planner" },
-        { label: "Nearby Explorer", path: "/ai-trip-planner" },
-        { label: "Local Connect", path: "/ai-trip-planner" },
-        { label: "Khazana Map", path: "/ai-trip-planner" },
+        { label: "Mystery Trip", path: "/ai-trip-planner", isComingSoon: true },
+        { label: "Nearby Explorer", path: "/ai-trip-planner", isComingSoon: true },
+        { label: "Local Connect", path: "/ai-trip-planner", isComingSoon: true },
+        { label: "Khazana Map", path: "/ai-trip-planner", isComingSoon: true },
       ],
     },
     {
@@ -208,15 +209,21 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
                         key={sub.label}
                         type="button"
                         onClick={() => {
+                          if (sub.isComingSoon) return;
                           if (sub.label === "Create Group") {
                             handleCreateGroupClick();
                           } else {
                             navigateTo(sub.path);
                           }
                         }}
-                        className="block w-full text-left px-4 py-2 text-xs text-gray-800 hover:bg-green-50"
+                        className={`relative block w-full text-left px-4 py-2 text-xs transition-colors ${sub.isComingSoon ? 'text-gray-400 cursor-not-allowed' : 'text-gray-800 hover:bg-green-50'}`}
                       >
                         {sub.label}
+                        {sub.isComingSoon && (
+                          <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-end px-4">
+                            <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full border border-green-100">SOON</span>
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -310,8 +317,9 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
                     <button
                       key={sub.label}
                       type="button"
-                      className="py-2 text-left text-xs text-gray-700"
+                      className={`relative py-2 text-left text-xs flex items-center justify-between ${sub.isComingSoon ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700'}`}
                       onClick={() => {
+                        if (sub.isComingSoon) return;
                         if (sub.label === "Create Group") {
                           handleCreateGroupClick();
                           setMobileOpen(false);
@@ -320,7 +328,10 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
                         }
                       }}
                     >
-                      {sub.label}
+                      <span>{sub.label}</span>
+                      {sub.isComingSoon && (
+                        <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full border border-green-100">SOON</span>
+                      )}
                     </button>
                   ))}
 

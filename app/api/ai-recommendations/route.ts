@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
+import { generateAIResponse } from '@/lib/ai-service';
 import AIConfig from '@/models/AIConfig';
 import RecommendationCache from '@/models/RecommendationCache';
 import { fetchPlaceDetails } from '@/utils/wikipedia';
@@ -55,41 +56,26 @@ export async function POST(req: Request) {
       userPrompt += ` Consider secondary preferences: ${secondaryTypes.join(', ')}.`;
     }
 
-    // 4. Secure OpenRouter Direct Call
-    const payload = {
-        model: config.modelName || "google/gemini-2.0-flash-lite-preview-02-05:free",
-        messages: [
+    // 4. Call Unified AI Service
+    let aiResponse;
+    try {
+        aiResponse = await generateAIResponse([
             { role: 'system', content: 'You are a precise AI travel assistant. You ONLY output an array of raw JSON objects representing places (e.g., [{"name": "...", "description": "...", "lat": 12.3, "lon": 45.6}]). No markdown, no introductory text.' },
             { role: 'user', content: userPrompt }
-        ],
-        response_format: { type: 'json_object' }
-    };
-
-    console.log(`Making secure OpenRouter call to ${payload.model} for ${primaryType}...`);
-    const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${config.apiKey}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://www.travoxa.in',
-            'X-Title': 'Travoxa Backend AI'
-        },
-        body: JSON.stringify(payload)
-    });
-
-    if (!openRouterResponse.ok) {
-        const errorData = await openRouterResponse.text();
-        console.error("Openrouter Error", errorData);
+        ], {
+            response_format: { type: 'json_object' }
+        });
+    } catch (apiError) {
+        console.error("AI Service Error", apiError);
         // Fallback to cache if AI fails
         if (existingPayload.length > 0) {
             console.log("AI failed, falling back to cache content.");
             return NextResponse.json({ success: true, data: existingPayload, source: 'cache_fallback' });
         }
-        return NextResponse.json({ success: false, error: 'AI generation failed from OpenRouter' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'AI generation failed' }, { status: 500 });
     }
 
-    const aiData = await openRouterResponse.json();
-    let messageContent = aiData.choices[0]?.message?.content || '[]';
+    let messageContent = aiResponse.content || '[]';
     
     // Strip possible hallucinated markdown wrapper
     messageContent = messageContent.replace(/```json/g, '').replace(/```/g, '').trim();
