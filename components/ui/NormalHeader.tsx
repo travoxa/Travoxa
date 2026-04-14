@@ -20,6 +20,7 @@ export default function NormalHeader({ backgroundColor = "bg-white", logoHeight 
     type DropdownItem = {
         label: string;
         path: string;
+        isComingSoon?: boolean;
     };
 
     type MenuItem = {
@@ -44,10 +45,10 @@ export default function NormalHeader({ backgroundColor = "bg-white", logoHeight 
             path: "/ai-trip-planner",
             dropdown: [
                 { label: "Ai Trip", path: "/ai-trip-planner" },
-                { label: "Mystery Trip", path: "/ai-trip-planner" },
-                { label: "Nearby Explorer", path: "/ai-trip-planner" },
-                { label: "Local Connect", path: "/ai-trip-planner" },
-                { label: "Khazana Map", path: "/ai-trip-planner" },
+                { label: "Mystery Trip", path: "/ai-trip-planner", isComingSoon: true },
+                { label: "Nearby Explorer", path: "/ai-trip-planner", isComingSoon: true },
+                { label: "Local Connect", path: "/ai-trip-planner", isComingSoon: true },
+                { label: "Khazana Map", path: "/ai-trip-planner", isComingSoon: true },
             ],
         },
         {
@@ -183,15 +184,21 @@ export default function NormalHeader({ backgroundColor = "bg-white", logoHeight 
                                                 key={sub.label}
                                                 type="button"
                                                 onClick={() => {
+                                                    if (sub.isComingSoon) return;
                                                     if (sub.label === "Create Group") {
                                                         handleCreateGroupClick();
                                                     } else {
                                                         navigateTo(sub.path);
                                                     }
                                                 }}
-                                                className="block w-full text-left px-4 py-2 text-xs text-gray-800 hover:bg-green-50"
+                                                className={`relative block w-full text-left px-4 py-2 text-xs transition-colors ${sub.isComingSoon ? 'text-gray-400 cursor-not-allowed' : 'text-gray-800 hover:bg-green-50'}`}
                                             >
                                                 {sub.label}
+                                                {sub.isComingSoon && (
+                                                    <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-end px-4">
+                                                        <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full border border-green-100">SOON</span>
+                                                    </div>
+                                                )}
                                             </button>
                                         ))}
                                     </div>
@@ -271,23 +278,27 @@ export default function NormalHeader({ backgroundColor = "bg-white", logoHeight 
                             {/* MOBILE DROPDOWN */}
                             {openDropdown === item.label && item.dropdown.length > 0 && (
                                 <div className="ml-3 flex flex-col gap-2 py-2">
-                                    {item.dropdown.map((sub) => (
-                                        <button
-                                            key={sub.label}
-                                            type="button"
-                                            className="py-2 text-left text-xs text-gray-700 border-b"
-                                            onClick={() => {
-                                                if (sub.label === "Create Group") {
-                                                    handleCreateGroupClick();
-                                                    setMobileOpen(false);
-                                                } else {
-                                                    navigateTo(sub.path);
-                                                }
-                                            }}
-                                        >
-                                            {sub.label}
-                                        </button>
-                                    ))}
+                                        {item.dropdown.map((sub) => (
+                                            <button
+                                                key={sub.label}
+                                                type="button"
+                                                className={`relative flex items-center justify-between w-full py-2 text-left text-xs border-b ${sub.isComingSoon ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700'}`}
+                                                onClick={() => {
+                                                    if (sub.isComingSoon) return;
+                                                    if (sub.label === "Create Group") {
+                                                        handleCreateGroupClick();
+                                                        setMobileOpen(false);
+                                                    } else {
+                                                        navigateTo(sub.path);
+                                                    }
+                                                }}
+                                            >
+                                                <span>{sub.label}</span>
+                                                {sub.isComingSoon && (
+                                                    <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full border border-green-100">SOON</span>
+                                                )}
+                                            </button>
+                                        ))}
 
                                 </div>
                             )}

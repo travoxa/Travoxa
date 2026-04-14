@@ -32,8 +32,11 @@ export async function POST(req: Request) {
     let config = await AIConfig.findOne({});
     
     if (config) {
+      config.provider = body.provider ?? config.provider;
       config.apiKey = body.apiKey ?? config.apiKey;
       config.modelName = body.modelName ?? config.modelName;
+      config.googleApiKey = body.googleApiKey ?? config.googleApiKey;
+      config.googleModelName = body.googleModelName ?? config.googleModelName;
       config.promptTemplate = body.promptTemplate ?? config.promptTemplate;
       config.cityPromptTemplate = body.cityPromptTemplate ?? config.cityPromptTemplate;
       config.temperature = body.temperature ?? config.temperature;

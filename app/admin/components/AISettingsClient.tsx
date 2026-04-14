@@ -5,8 +5,11 @@ import { RiPlayLine, RiBugLine, RiCodeSSlashLine, RiTerminalLine, RiFileCopyLine
 
 export default function AISettingsClient() {
   const [config, setConfig] = useState({
+    provider: 'openrouter' as 'openrouter' | 'google',
     apiKey: '',
     modelName: '',
+    googleApiKey: '',
+    googleModelName: 'gemini-2.0-flash',
     promptTemplate: '',
     cityPromptTemplate: '',
   });
@@ -45,8 +48,11 @@ export default function AISettingsClient() {
       const json = await res.json();
       if (json.success && json.data) {
         setConfig({
+          provider: json.data.provider || 'openrouter',
           apiKey: json.data.apiKey || '',
           modelName: json.data.modelName || '',
+          googleApiKey: json.data.googleApiKey || '',
+          googleModelName: json.data.googleModelName || 'gemini-2.0-flash',
           promptTemplate: json.data.promptTemplate || '',
           cityPromptTemplate: json.data.cityPromptTemplate || '',
         });
@@ -102,8 +108,9 @@ export default function AISettingsClient() {
       if (useLocalOverride) {
         payload.overrideConfig = {
           USE_LOCAL_CONFIG: true,
-          API_KEY: config.apiKey,
-          MODEL: config.modelName,
+          PROVIDER: config.provider,
+          API_KEY: config.provider === 'google' ? config.googleApiKey : config.apiKey,
+          MODEL: config.provider === 'google' ? config.googleModelName : config.modelName,
           PROMPT: config.promptTemplate
         };
       }
@@ -175,26 +182,96 @@ export default function AISettingsClient() {
 
       <form onSubmit={handleSave} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">OpenRouter API Key</label>
-          <input
-             type="text"
-             value={config.apiKey}
-             onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
-             placeholder="sk-or-v1-..."
-             className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-          />
+          <label className="block text-sm font-medium text-gray-700 mb-2">AI Provider</label>
+          <div className="flex gap-4">
+            <button
+              type="button"
+              onClick={() => setConfig({ ...config, provider: 'openrouter' })}
+              className={`flex-1 py-3 px-4 rounded-xl border font-medium transition-all ${config.provider === 'openrouter' ? 'bg-green-50 border-green-500 text-green-700 shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+            >
+              OpenRouter
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfig({ ...config, provider: 'google' })}
+              className={`flex-1 py-3 px-4 rounded-xl border font-medium transition-all ${config.provider === 'google' ? 'bg-green-50 border-green-500 text-green-700 shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+            >
+              Google AI (Gemini)
+            </button>
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Model Name</label>
-          <input
-             type="text"
-             value={config.modelName}
-             onChange={(e) => setConfig({ ...config, modelName: e.target.value })}
-             placeholder="e.g. google/gemini-2.0-flash-lite-preview-02-05:free"
-             className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-          />
-        </div>
+        {config.provider === 'openrouter' ? (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">OpenRouter API Key</label>
+              <input
+                 type="password"
+                 value={config.apiKey}
+                 onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
+                 placeholder="sk-or-v1-..."
+                 className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Model Name</label>
+              <input
+                 type="text"
+                 value={config.modelName}
+                 onChange={(e) => setConfig({ ...config, modelName: e.target.value })}
+                 placeholder="e.g. google/gemini-2.0-flash-lite-preview-02-05:free"
+                 className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Google AI API Key</label>
+              <input
+                 type="password"
+                 value={config.googleApiKey}
+                 onChange={(e) => setConfig({ ...config, googleApiKey: e.target.value })}
+                 placeholder="AIzaSy..."
+                 className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Gemini Model</label>
+              <div className="flex gap-2 mb-2">
+                <select
+                  value={['gemini-2.0-flash', 'gemini-2.0-flash-lite-preview-02-05', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-flash-latest'].includes(config.googleModelName) ? config.googleModelName : 'custom'}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val !== 'custom') {
+                      setConfig({ ...config, googleModelName: val });
+                    }
+                  }}
+                  className="flex-1 p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 bg-white"
+                >
+                  <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                  <option value="gemini-2.0-flash-lite-preview-02-05">Gemini 2.0 Flash-Lite</option>
+                  <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                  <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                  <option value="gemini-flash-latest">Gemini Flash Latest (API default)</option>
+                  <option value="custom">-- Custom Model Name --</option>
+                </select>
+              </div>
+              
+              {(!['gemini-2.0-flash', 'gemini-2.0-flash-lite-preview-02-05', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-flash-latest'].includes(config.googleModelName) || config.googleModelName === 'custom') && (
+                <input
+                  type="text"
+                  value={config.googleModelName === 'custom' ? '' : config.googleModelName}
+                  onChange={(e) => setConfig({ ...config, googleModelName: e.target.value })}
+                  placeholder="Enter custom model name (e.g. gemini-flash-latest)"
+                  className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                />
+              )}
+            </div>
+          </>
+        )}
 
         <div>
            <label className="block text-sm font-medium text-gray-700 mb-2">Prompt Template</label>

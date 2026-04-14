@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { openrouter, MODEL_NAME } from "@/lib/openrouter";
+import { generateAIResponse } from "@/lib/ai-service";
 import { PHASE_PROMPTS, QuestionnairePhase } from "@/lib/ai-trip-planner/prompts";
 
 export async function POST(req: Request) {
@@ -27,16 +27,14 @@ export async function POST(req: Request) {
         `;
 
         try {
-            const completion = await openrouter.chat.completions.create({
-                model: MODEL_NAME,
-                messages: [
-                    { role: "system", content: "You are a smart travel assistant that outputs JSON." },
-                    { role: "user", content: prompt },
-                ],
-                response_format: { type: "json_object" },
+            const completion = await generateAIResponse([
+                { role: "system", content: "You are a smart travel assistant that outputs JSON." },
+                { role: "user", content: prompt },
+            ], {
+                response_format: { type: "json_object" }
             });
 
-            const result = completion.choices[0].message.content;
+            const result = completion.content;
 
             let parsedResult;
             try {

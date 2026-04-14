@@ -9,6 +9,19 @@ const AIConfigSchema = new mongoose.Schema({
     type: String,
     default: "google/gemini-2.0-flash-lite-preview-02-05:free",
   },
+  provider: {
+    type: String,
+    enum: ['openrouter', 'google'],
+    default: 'openrouter',
+  },
+  googleApiKey: {
+    type: String,
+    default: "",
+  },
+  googleModelName: {
+    type: String,
+    default: "gemini-2.0-flash",
+  },
   promptTemplate: {
     type: String,
     default: "You are a helpful travel assistant. Find top 5 places that match: PRIMARY_TYPE near LAT,LON."
