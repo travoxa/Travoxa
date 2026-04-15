@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import ChatMessage from '@/models/ChatMessage';
 import User from '@/lib/models/User';
+import PushSubscription from '@/models/PushSubscription';
 
 /**
  * Fetch a list of all unique users who have active chat conversations
@@ -15,13 +16,14 @@ export async function GET(req: Request) {
 
         // 2. For each unique user, get their profile and last message
         const chatSessions = await Promise.all(uniqueUserIds.map(async (email) => {
-            const [userProfile, lastMsg, unreadCount] = await Promise.all([
+            const [userProfile, lastMsg, unreadCount, pushSub] = await Promise.all([
                 User.findOne({ email }).select('name email').lean(),
                 ChatMessage.findOne({ senderId: email })
                     .sort({ createdAt: -1 })
                     .select('text timestamp createdAt')
                     .lean(),
-                ChatMessage.countDocuments({ senderId: email, sender: 'user', isRead: { $ne: true } })
+                ChatMessage.countDocuments({ senderId: email, sender: 'user', isRead: { $ne: true } }),
+                PushSubscription.findOne({ email: email?.toLowerCase() }).select('_id').lean()
             ]);
 
             return {
@@ -31,7 +33,8 @@ export async function GET(req: Request) {
                 timestamp: lastMsg?.timestamp || '',
                 createdAt: lastMsg?.createdAt || new Date(0),
                 unreadCount: unreadCount,
-                unread: unreadCount > 0
+                unread: unreadCount > 0,
+                hasPushToken: !!pushSub
             };
         }));
 

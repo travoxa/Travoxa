@@ -11,10 +11,12 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: 'Email and token are required' }, { status: 400 });
         }
 
+        const normalizedEmail = email.toLowerCase();
+
         // Upsert the token for this user
         const subscription = await PushSubscription.findOneAndUpdate(
             { token }, // Find by token to avoid duplicates across accounts if a device changes ownership
-            { email, platform, updatedAt: new Date() },
+            { email: normalizedEmail, platform, updatedAt: new Date() },
             { upsert: true, new: true }
         );
 

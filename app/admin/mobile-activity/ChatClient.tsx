@@ -36,6 +36,7 @@ interface ChatSession {
     createdAt: string;
     unread?: boolean;
     unreadCount?: number;
+    hasPushToken?: boolean;
 }
 
 const ChatClient = () => {
@@ -399,6 +400,12 @@ const ChatClient = () => {
                     </span>
                 </div>
                 <div className="flex items-center gap-4">
+                    {activeSession?.hasPushToken && (
+                        <div className="flex items-center gap-2 text-[10px] text-emerald-500 font-bold bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100">
+                            <RiSmartphoneLine size={14} />
+                            PUSH ACTIVE
+                        </div>
+                    )}
                     <div className="flex items-center gap-2 text-[10px] text-gray-400 font-medium">
                         <RiShieldCheckLine size={14} className="text-green-500" />
                         SECURE SYNC Active
@@ -495,6 +502,11 @@ const ChatClient = () => {
                                 >
                                     <div className="h-10 w-10 bg-gray-900 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 relative">
                                         {session.name.charAt(0).toUpperCase()}
+                                        {session.hasPushToken && (
+                                            <div className="absolute -bottom-0.5 -right-0.5 p-0.5 bg-emerald-500 rounded-full border-2 border-white" title="Push notifications active">
+                                                <RiSmartphoneLine size={8} className="text-white" />
+                                            </div>
+                                        )}
                                         {session.unread && (
                                             <div className="absolute -top-0.5 -right-0.5 h-3 w-3 bg-red-500 rounded-full border-2 border-white" />
                                         )}
