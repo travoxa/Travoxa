@@ -2,6 +2,16 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import AIConfig from '@/models/AIConfig';
 
+const DEFAULT_AI_CONFIG = {
+  temperature: 0.4,
+  maxTokens: 8192,
+  topP: 0.9,
+  topK: 40,
+  thinkingBudget: 0,
+  stopSequences: [],
+  responseSchema: null,
+};
+
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Unknown error';
 }
@@ -23,12 +33,21 @@ export async function GET() {
         modelName: "google/gemini-2.0-flash-lite-preview-02-05:free",
         promptTemplate: `You are an AI travel assistant helping users find optimal locations. The user is looking for a $\{primaryType\} destination near $\{{lat: departure.lat, lon: departure.lon}\}. Provide top 5 detailed location recommendations in JSON.`,
         cityPromptTemplate: `Find top 10 sightseeing places in {cityName}. Return JSON array where objects have name, description, lat, lon and category.`,
-        topP: null,
-        topK: null,
-        thinkingBudget: null,
-        stopSequences: [],
-        responseSchema: null,
+        ...DEFAULT_AI_CONFIG,
       });
+    } else {
+      let shouldSave = false;
+
+      for (const [key, value] of Object.entries(DEFAULT_AI_CONFIG)) {
+        if (config[key as keyof typeof DEFAULT_AI_CONFIG] == null) {
+          config[key as keyof typeof DEFAULT_AI_CONFIG] = value as never;
+          shouldSave = true;
+        }
+      }
+
+      if (shouldSave) {
+        await config.save();
+      }
     }
 
     return NextResponse.json({ success: true, data: config });
