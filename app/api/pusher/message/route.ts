@@ -60,10 +60,12 @@ export async function POST(req: Request) {
         } else if (sender === 'admin' && messaging) {
             // Trigger Firebase Push Notification for the user
             try {
-                const subscriptions = await PushSubscription.find({ email: receiverId });
+                const normalizedReceiverId = receiverId?.toLowerCase();
+                const subscriptions = await PushSubscription.find({ email: normalizedReceiverId });
                 const tokens = subscriptions.map(sub => sub.token);
 
                 if (tokens.length > 0) {
+                    console.log(`[Push] Attempting to send message to ${normalizedReceiverId} on ${tokens.length} devices`);
                     const payload = {
                         notification: {
                             title: 'Travoxa Support',
@@ -80,13 +82,14 @@ export async function POST(req: Request) {
                         notification: payload.notification,
                         data: payload.data
                     });
-                    console.log(`Sent ${response.successCount} push notifications to ${receiverId}`);
+                    console.log(`[Push] Result for ${normalizedReceiverId}: ${response.successCount} success, ${response.failureCount} failure`);
                     
                     // Cleanup failed tokens (e.g. invalid or unregistered config)
                     if (response.failureCount > 0) {
                         const failedTokens: string[] = [];
                         response.responses.forEach((resp, idx) => {
                             if (!resp.success) {
+                                console.log(`[Push] Failed token [${idx}]:`, resp.error?.message);
                                 failedTokens.push(tokens[idx]);
                             }
                         });
@@ -94,6 +97,8 @@ export async function POST(req: Request) {
                             await PushSubscription.deleteMany({ token: { $in: failedTokens } });
                         }
                     }
+                } else {
+                    console.log(`[Push] No subscriptions found for ${normalizedReceiverId}`);
                 }
             } catch (pushErr) {
                 console.error('FCM Push Error:', pushErr);
