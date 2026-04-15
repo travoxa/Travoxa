@@ -38,6 +38,26 @@ const AIConfigSchema = new mongoose.Schema({
     type: Number,
     default: 4096,
   },
+  topP: {
+    type: Number,
+    default: null,
+  },
+  topK: {
+    type: Number,
+    default: null,
+  },
+  thinkingBudget: {
+    type: Number,
+    default: null,
+  },
+  stopSequences: {
+    type: [String],
+    default: [],
+  },
+  responseSchema: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null,
+  },
   isActive: {
     type: Boolean,
     default: true,

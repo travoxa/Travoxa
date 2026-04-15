@@ -3,7 +3,32 @@
 import React, { useState, useEffect } from 'react';
 import { RiPlayLine, RiBugLine, RiCodeSSlashLine, RiTerminalLine, RiFileCopyLine, RiCheckLine } from 'react-icons/ri';
 
+type TestResult = {
+  success: boolean;
+  data?: unknown;
+  error?: string;
+  originalPrompt?: string;
+  rawContent?: string;
+  fullResponse?: unknown;
+  finishReason?: string | null;
+  usageMetadata?: unknown;
+  generationConfig?: unknown;
+};
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'An unexpected error occurred during the test.';
+}
+
 export default function AISettingsClient() {
+  const generationFieldHelp = {
+    maxTokens: 'Max output length. Too low truncates JSON; higher values increase cost and latency.',
+    thinkingBudget: 'Hidden reasoning budget for supported Gemini thinking models. Higher values can reduce visible output space.',
+    topP: 'Controls randomness by limiting probability mass. Too low can become repetitive; too high can reduce consistency.',
+    topK: 'Limits next-token choices on supported models, mainly Gemini. Too low can make output rigid and unnatural.',
+    stopSequences: 'Stops generation when any listed text appears. Unsafe values can cut JSON in the middle.',
+    responseSchema: 'Defines expected JSON structure, mainly for Gemini. Invalid or over-strict schema can cause failures.',
+  } as const;
+
   const [config, setConfig] = useState({
     provider: 'openrouter' as 'openrouter' | 'google',
     apiKey: '',
@@ -12,6 +37,13 @@ export default function AISettingsClient() {
     googleModelName: 'gemini-2.0-flash',
     promptTemplate: '',
     cityPromptTemplate: '',
+    temperature: '0.7',
+    maxTokens: '4096',
+    topP: '',
+    topK: '',
+    thinkingBudget: '',
+    stopSequences: '',
+    responseSchema: '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -21,20 +53,21 @@ export default function AISettingsClient() {
   const [testInput, setTestInput] = useState({
     primaryType: 'Sightseeing',
     secondaryTypes: ['Nature', 'Photography'],
-    departureName: 'London',
-    lat: '51.5074',
-    lon: '-0.1278'
+    departureName: 'Alappuzha',
+    lat: '9.4981',
+    lon: '76.3329'
+  });
+  const [testGenerationConfig, setTestGenerationConfig] = useState({
+    maxTokens: '',
+    thinkingBudget: '',
+    topP: '',
+    topK: '',
+    stopSequences: '',
+    responseSchema: '',
   });
   const [useLocalOverride, setUseLocalOverride] = useState(false);
   const [testLoading, setTestLoading] = useState(false);
-  const [testResult, setTestResult] = useState<{
-    success: boolean;
-    data?: any;
-    error?: string;
-    originalPrompt?: string;
-    rawContent?: string;
-    fullResponse?: any;
-  } | null>(null);
+  const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [activeTab, setActiveTab] = useState<'parsed' | 'raw' | 'technical'>('parsed');
   const [copiedType, setCopiedType] = useState<string | null>(null);
 
@@ -47,6 +80,8 @@ export default function AISettingsClient() {
       const res = await fetch('/api/admin/ai-config');
       const json = await res.json();
       if (json.success && json.data) {
+        const savedStopSequences = Array.isArray(json.data.stopSequences) ? json.data.stopSequences.join('\n') : '';
+        const savedResponseSchema = json.data.responseSchema ? JSON.stringify(json.data.responseSchema, null, 2) : '';
         setConfig({
           provider: json.data.provider || 'openrouter',
           apiKey: json.data.apiKey || '',
@@ -55,6 +90,22 @@ export default function AISettingsClient() {
           googleModelName: json.data.googleModelName || 'gemini-2.0-flash',
           promptTemplate: json.data.promptTemplate || '',
           cityPromptTemplate: json.data.cityPromptTemplate || '',
+          temperature: String(json.data.temperature ?? '0.7'),
+          maxTokens: String(json.data.maxTokens ?? '4096'),
+          topP: json.data.topP == null ? '' : String(json.data.topP),
+          topK: json.data.topK == null ? '' : String(json.data.topK),
+          thinkingBudget: json.data.thinkingBudget == null ? '' : String(json.data.thinkingBudget),
+          stopSequences: savedStopSequences,
+          responseSchema: savedResponseSchema,
+        });
+
+        setTestGenerationConfig({
+          maxTokens: json.data.maxTokens == null ? '' : String(json.data.maxTokens),
+          thinkingBudget: json.data.thinkingBudget == null ? '' : String(json.data.thinkingBudget),
+          topP: json.data.topP == null ? '' : String(json.data.topP),
+          topK: json.data.topK == null ? '' : String(json.data.topK),
+          stopSequences: savedStopSequences,
+          responseSchema: savedResponseSchema,
         });
       }
     } catch (error) {
@@ -71,10 +122,35 @@ export default function AISettingsClient() {
     setMessage('');
 
     try {
+      let parsedResponseSchema: unknown = null;
+      if (config.responseSchema.trim()) {
+        try {
+          parsedResponseSchema = JSON.parse(config.responseSchema);
+        } catch {
+          setMessage('Error: Response schema must be valid JSON before saving.');
+          setSaving(false);
+          return;
+        }
+      }
+
+      const stopSequences = config.stopSequences
+        .split('\n')
+        .map((value) => value.trim())
+        .filter(Boolean);
+
       const res = await fetch('/api/admin/ai-config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
+        body: JSON.stringify({
+          ...config,
+          temperature: Number(config.temperature),
+          maxTokens: Number(config.maxTokens),
+          topP: config.topP === '' ? null : Number(config.topP),
+          topK: config.topK === '' ? null : Number(config.topK),
+          thinkingBudget: config.thinkingBudget === '' ? null : Number(config.thinkingBudget),
+          stopSequences,
+          responseSchema: parsedResponseSchema,
+        }),
       });
 
       const json = await res.json();
@@ -95,14 +171,58 @@ export default function AISettingsClient() {
     setTestLoading(true);
     setTestResult(null);
     try {
-      const payload: any = {
+      let parsedSchema: unknown;
+      if (testGenerationConfig.responseSchema.trim()) {
+        try {
+          parsedSchema = JSON.parse(testGenerationConfig.responseSchema);
+        } catch {
+          setTestResult({
+            success: false,
+            error: 'Response schema must be valid JSON before running the test.'
+          });
+          setTestLoading(false);
+          return;
+        }
+      }
+
+      const stopSequences = testGenerationConfig.stopSequences
+        .split('\n')
+        .map((value) => value.trim())
+        .filter(Boolean);
+
+      const generationConfig: Record<string, unknown> = {};
+      if (testGenerationConfig.maxTokens !== '') generationConfig.maxTokens = Number(testGenerationConfig.maxTokens);
+      if (testGenerationConfig.thinkingBudget !== '') generationConfig.thinkingBudget = Number(testGenerationConfig.thinkingBudget);
+      if (testGenerationConfig.topP !== '') generationConfig.topP = Number(testGenerationConfig.topP);
+      if (testGenerationConfig.topK !== '') generationConfig.topK = Number(testGenerationConfig.topK);
+      if (stopSequences.length > 0) generationConfig.stopSequences = stopSequences;
+      if (parsedSchema) generationConfig.responseSchema = parsedSchema;
+
+      const payload: {
+        primaryType: string;
+        secondaryTypes: string[];
+        departure: {
+          name: string;
+          lat: number;
+          lon: number;
+        };
+        generationConfig: Record<string, unknown>;
+        overrideConfig?: {
+          USE_LOCAL_CONFIG: boolean;
+          PROVIDER: 'openrouter' | 'google';
+          API_KEY: string;
+          MODEL: string;
+          PROMPT: string;
+        };
+      } = {
         primaryType: testInput.primaryType,
         secondaryTypes: testInput.secondaryTypes,
         departure: {
           name: testInput.departureName,
           lat: parseFloat(testInput.lat),
           lon: parseFloat(testInput.lon)
-        }
+        },
+        generationConfig,
       };
 
       if (useLocalOverride) {
@@ -123,10 +243,10 @@ export default function AISettingsClient() {
 
       const json = await res.json();
       setTestResult(json);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setTestResult({
         success: false,
-        error: error.message || 'An unexpected error occurred during the test.'
+        error: getErrorMessage(error)
       });
     } finally {
       setTestLoading(false);
@@ -140,6 +260,28 @@ export default function AISettingsClient() {
   };
 
   const getPostmanPayload = () => {
+    const stopSequences = testGenerationConfig.stopSequences
+      .split('\n')
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    let responseSchema: unknown;
+    if (testGenerationConfig.responseSchema.trim()) {
+      try {
+        responseSchema = JSON.parse(testGenerationConfig.responseSchema);
+      } catch {
+        responseSchema = testGenerationConfig.responseSchema;
+      }
+    }
+
+    const generationConfig: Record<string, unknown> = {};
+    if (testGenerationConfig.maxTokens !== '') generationConfig.maxTokens = Number(testGenerationConfig.maxTokens);
+    if (testGenerationConfig.thinkingBudget !== '') generationConfig.thinkingBudget = Number(testGenerationConfig.thinkingBudget);
+    if (testGenerationConfig.topP !== '') generationConfig.topP = Number(testGenerationConfig.topP);
+    if (testGenerationConfig.topK !== '') generationConfig.topK = Number(testGenerationConfig.topK);
+    if (stopSequences.length > 0) generationConfig.stopSequences = stopSequences;
+    if (responseSchema) generationConfig.responseSchema = responseSchema;
+
     return JSON.stringify({
       primaryType: testInput.primaryType,
       secondaryTypes: testInput.secondaryTypes,
@@ -147,22 +289,24 @@ export default function AISettingsClient() {
         name: testInput.departureName,
         lat: parseFloat(testInput.lat),
         lon: parseFloat(testInput.lon)
-      }
+      },
+      generationConfig,
     }, null, 2);
   };
 
   const getCurlCommand = () => {
     return `curl -X POST ${window.location.origin}/api/ai-test-run \\
   -H "Content-Type: application/json" \\
-  -d '${JSON.stringify({
-      primaryType: testInput.primaryType,
-      secondaryTypes: testInput.secondaryTypes,
-      departure: {
-        name: testInput.departureName,
-        lat: parseFloat(testInput.lat),
-        lon: parseFloat(testInput.lon)
-      }
-    })}'`;
+	      -d '${JSON.stringify({
+	      primaryType: testInput.primaryType,
+	      secondaryTypes: testInput.secondaryTypes,
+	      departure: {
+	        name: testInput.departureName,
+	        lat: parseFloat(testInput.lat),
+	        lon: parseFloat(testInput.lon)
+	      },
+        generationConfig: JSON.parse(getPostmanPayload()).generationConfig
+	    })}'`;
   };
 
   if (loading) return <div className="p-8 text-gray-500">Loading AI Settings...</div>;
@@ -297,6 +441,102 @@ export default function AISettingsClient() {
            />
         </div>
 
+        <div className="border border-gray-200 rounded-2xl p-5 bg-gray-50/70">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Global Generation Defaults</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Temperature</label>
+              <input
+                type="number"
+                min="0"
+                max="2"
+                step="0.1"
+                value={config.temperature}
+                onChange={(e) => setConfig({ ...config, temperature: e.target.value })}
+                className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+              />
+              <p className="mt-1 text-xs text-gray-500">General creativity level. Higher values add variety but can reduce consistency.</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Max Tokens</label>
+              <input
+                type="number"
+                min="1"
+                value={config.maxTokens}
+                onChange={(e) => setConfig({ ...config, maxTokens: e.target.value })}
+                className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+              />
+              <p className="mt-1 text-xs text-gray-500">{generationFieldHelp.maxTokens}</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Top P</label>
+              <input
+                type="number"
+                min="0"
+                max="1"
+                step="0.01"
+                value={config.topP}
+                onChange={(e) => setConfig({ ...config, topP: e.target.value })}
+                placeholder="Optional"
+                className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+              />
+              <p className="mt-1 text-xs text-gray-500">{generationFieldHelp.topP}</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Top K</label>
+              <input
+                type="number"
+                min="1"
+                value={config.topK}
+                onChange={(e) => setConfig({ ...config, topK: e.target.value })}
+                placeholder="Optional"
+                className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+              />
+              <p className="mt-1 text-xs text-gray-500">{generationFieldHelp.topK}</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Thinking Budget</label>
+              <input
+                type="number"
+                min="0"
+                value={config.thinkingBudget}
+                onChange={(e) => setConfig({ ...config, thinkingBudget: e.target.value })}
+                placeholder="Optional"
+                className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+              />
+              <p className="mt-1 text-xs text-gray-500">{generationFieldHelp.thinkingBudget}</p>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Stop Sequences</label>
+              <textarea
+                value={config.stopSequences}
+                onChange={(e) => setConfig({ ...config, stopSequences: e.target.value })}
+                rows={3}
+                placeholder={'One stop sequence per line'}
+                className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-mono text-sm"
+              />
+              <p className="mt-1 text-xs text-gray-500">{generationFieldHelp.stopSequences}</p>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Response Schema (JSON)</label>
+              <textarea
+                value={config.responseSchema}
+                onChange={(e) => setConfig({ ...config, responseSchema: e.target.value })}
+                rows={8}
+                placeholder={'{\n  "type": "ARRAY",\n  "items": {\n    "type": "OBJECT"\n  }\n}'}
+                className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 font-mono text-sm"
+              />
+              <p className="mt-1 text-xs text-gray-500">{generationFieldHelp.responseSchema}</p>
+            </div>
+          </div>
+        </div>
+
         <div className="pt-4 flex justify-end">
           <button 
             type="submit" 
@@ -366,6 +606,89 @@ export default function AISettingsClient() {
             </div>
           </div>
 
+          <div className="mt-6">
+            <h4 className="text-xs font-semibold text-orange-700 uppercase tracking-wider mb-3">Generation Controls</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-orange-700 mb-1 uppercase tracking-wider">Max Tokens</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={testGenerationConfig.maxTokens}
+                  onChange={(e) => setTestGenerationConfig({ ...testGenerationConfig, maxTokens: e.target.value })}
+                  placeholder="e.g. 4096"
+                  className="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm outline-none focus:border-orange-500"
+                />
+                <p className="mt-1 text-xs text-orange-700/80">{generationFieldHelp.maxTokens}</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-orange-700 mb-1 uppercase tracking-wider">Thinking Budget</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={testGenerationConfig.thinkingBudget}
+                  onChange={(e) => setTestGenerationConfig({ ...testGenerationConfig, thinkingBudget: e.target.value })}
+                  placeholder="e.g. 0"
+                  className="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm outline-none focus:border-orange-500"
+                />
+                <p className="mt-1 text-xs text-orange-700/80">{generationFieldHelp.thinkingBudget}</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-orange-700 mb-1 uppercase tracking-wider">Top P</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={testGenerationConfig.topP}
+                  onChange={(e) => setTestGenerationConfig({ ...testGenerationConfig, topP: e.target.value })}
+                  placeholder="e.g. 0.9"
+                  className="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm outline-none focus:border-orange-500"
+                />
+                <p className="mt-1 text-xs text-orange-700/80">{generationFieldHelp.topP}</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-orange-700 mb-1 uppercase tracking-wider">Top K</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={testGenerationConfig.topK}
+                  onChange={(e) => setTestGenerationConfig({ ...testGenerationConfig, topK: e.target.value })}
+                  placeholder="e.g. 40"
+                  className="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm outline-none focus:border-orange-500"
+                />
+                <p className="mt-1 text-xs text-orange-700/80">{generationFieldHelp.topK}</p>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold text-orange-700 mb-1 uppercase tracking-wider">Stop Sequences</label>
+                <textarea
+                  value={testGenerationConfig.stopSequences}
+                  onChange={(e) => setTestGenerationConfig({ ...testGenerationConfig, stopSequences: e.target.value })}
+                  rows={3}
+                  placeholder={'One stop sequence per line\nExample: ```'}
+                  className="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm outline-none focus:border-orange-500 font-mono"
+                />
+                <p className="mt-1 text-xs text-orange-700/80">{generationFieldHelp.stopSequences}</p>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold text-orange-700 mb-1 uppercase tracking-wider">Response Schema (JSON)</label>
+                <textarea
+                  value={testGenerationConfig.responseSchema}
+                  onChange={(e) => setTestGenerationConfig({ ...testGenerationConfig, responseSchema: e.target.value })}
+                  rows={8}
+                  placeholder={'{\n  "type": "ARRAY",\n  "items": {\n    "type": "OBJECT"\n  }\n}'}
+                  className="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm outline-none focus:border-orange-500 font-mono"
+                />
+                <p className="mt-1 text-xs text-orange-700/80">{generationFieldHelp.responseSchema}</p>
+              </div>
+            </div>
+          </div>
+
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
@@ -409,6 +732,21 @@ export default function AISettingsClient() {
                     <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-1.5 opacity-70">Processed System Prompt</p>
                     <div className="bg-white/60 border border-green-100 p-3 rounded-lg text-xs text-green-900 font-mono whitespace-pre-wrap leading-relaxed">
                       {testResult.originalPrompt}
+                    </div>
+                  </div>
+                )}
+
+                {(testResult.finishReason || testResult.usageMetadata || testResult.generationConfig) && (
+                  <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="bg-white/60 border border-green-100 p-3 rounded-lg">
+                      <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-1.5 opacity-70">Finish Reason</p>
+                      <p className="text-sm text-green-900 font-mono">{testResult.finishReason || 'n/a'}</p>
+                    </div>
+                    <div className="bg-white/60 border border-green-100 p-3 rounded-lg md:col-span-2">
+                      <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-1.5 opacity-70">Applied Generation Config</p>
+                      <pre className="text-xs text-green-900 font-mono whitespace-pre-wrap leading-relaxed">
+                        {JSON.stringify(testResult.generationConfig || {}, null, 2)}
+                      </pre>
                     </div>
                   </div>
                 )}
@@ -457,11 +795,15 @@ export default function AISettingsClient() {
                 )}
 
                 {activeTab === 'technical' && (
-                  <div>
-                    <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-1.5 opacity-70 border-b border-green-100 pb-1">OpenRouter Full Response</p>
+                    <div>
+                    <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-1.5 opacity-70 border-b border-green-100 pb-1">Provider Full Response</p>
                     <div className="bg-gray-900 border border-gray-800 p-4 rounded-xl max-h-[400px] overflow-y-auto shadow-2xl mt-2">
                       <pre className="text-[11px] text-blue-400 font-mono leading-relaxed">
-                        {JSON.stringify(testResult.fullResponse, null, 2)}
+                        {JSON.stringify({
+                          finishReason: testResult.finishReason,
+                          usageMetadata: testResult.usageMetadata,
+                          fullResponse: testResult.fullResponse,
+                        }, null, 2)}
                       </pre>
                     </div>
                   </div>
