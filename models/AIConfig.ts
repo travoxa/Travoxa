@@ -36,7 +36,7 @@ const AIConfigSchema = new mongoose.Schema({
   },
   maxTokens: {
     type: Number,
-    default: 1000,
+    default: 4096,
   },
   isActive: {
     type: Boolean,
