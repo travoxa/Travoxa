@@ -30,7 +30,7 @@ export async function generateAIResponse(
 
     const provider = options.overrideConfig?.provider || dbConfig?.provider || "openrouter";
     const temperature = options.temperature ?? dbConfig?.temperature ?? 0.7;
-    const maxTokens = options.maxTokens ?? dbConfig?.maxTokens ?? 1000;
+    const maxTokens = options.maxTokens ?? dbConfig?.maxTokens ?? 4096;
 
     if (provider === "google") {
         return await callGoogleGemini(messages, {

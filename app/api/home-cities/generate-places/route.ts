@@ -49,8 +49,8 @@ export async function POST(req: Request) {
 
     // 2. Fetch Config securely from DB
     const config = await AIConfig.findOne({});
-    if (!config || !config.apiKey) {
-        return NextResponse.json({ success: false, error: 'AI OpenRouter API Key is not configured on the server.' }, { status: 500 });
+    if (!config || (config.provider === 'openrouter' && !config.apiKey) || (config.provider === 'google' && !config.googleApiKey)) {
+        return NextResponse.json({ success: false, error: `AI ${config?.provider || 'OpenRouter'} API Key is not configured on the server.` }, { status: 500 });
     }
 
     // 3. Compile AI Prompt specifically for city places

@@ -23,9 +23,7 @@ export async function POST(req: Request) {
         }
     }
 
-    if (!apiKey) {
-      return NextResponse.json({ success: false, error: 'API Key is missing.' }, { status: 400 });
-    }
+
 
     // Basic string replacement for the prompt template
     let userPrompt = promptTemplate || `Find top 5 location recommendations for primaryType: $\{primaryType\} near \{lat: $\{departure?.lat\}, lon: $\{departure?.lon\}\}. Return as JSON array.`;
