@@ -736,7 +736,7 @@ export default function AISettingsClient() {
                   </div>
                 )}
 
-                {(testResult.finishReason || testResult.usageMetadata || testResult.generationConfig) && (
+                {(!!testResult.finishReason || !!testResult.usageMetadata || !!testResult.generationConfig) && (
                   <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div className="bg-white/60 border border-green-100 p-3 rounded-lg">
                       <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-1.5 opacity-70">Finish Reason</p>

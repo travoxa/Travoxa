@@ -96,7 +96,7 @@ export async function POST(req: Request) {
     }
 
     const messageContent = aiResponse.content || '{}';
-    const data = aiResponse.raw;
+    const data = aiResponse.raw as any;
 
     let parsedResult;
     try {

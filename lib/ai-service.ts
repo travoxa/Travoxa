@@ -114,7 +114,7 @@ async function callGoogleGemini(
         parts: [{ text: m.content }]
     }));
 
-    const body: Record<string, unknown> = {
+    const body: any = {
         contents,
         generationConfig: {
             temperature: options.temperature,
