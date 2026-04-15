@@ -32,23 +32,23 @@ const AIConfigSchema = new mongoose.Schema({
   },
   temperature: {
     type: Number,
-    default: 0.7,
+    default: 0.4,
   },
   maxTokens: {
     type: Number,
-    default: 4096,
+    default: 8192,
   },
   topP: {
     type: Number,
-    default: null,
+    default: 0.9,
   },
   topK: {
     type: Number,
-    default: null,
+    default: 40,
   },
   thinkingBudget: {
     type: Number,
-    default: null,
+    default: 0,
   },
   stopSequences: {
     type: [String],
