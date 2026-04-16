@@ -57,51 +57,55 @@ export async function POST(req: Request) {
                 imageUrl: imageUrl,
                 channel: channel // Include source channel
             });
-        } else if (sender === 'admin' && messaging) {
-            // Trigger Firebase Push Notification for the user
-            try {
-                const normalizedReceiverId = receiverId?.toLowerCase();
-                const subscriptions = await PushSubscription.find({ email: normalizedReceiverId });
-                const tokens = subscriptions.map(sub => sub.token);
+        } else if (sender === 'admin') {
+            if (messaging) {
+                // Trigger Firebase Push Notification for the user
+                try {
+                    const normalizedReceiverId = receiverId?.toLowerCase();
+                    const subscriptions = await PushSubscription.find({ email: normalizedReceiverId });
+                    const tokens = subscriptions.map(sub => sub.token);
 
-                if (tokens.length > 0) {
-                    console.log(`[Push] Attempting to send message to ${normalizedReceiverId} on ${tokens.length} devices`);
-                    const payload = {
-                        notification: {
-                            title: 'Travoxa Support',
-                            body: message || 'You received a new image message.',
-                        },
-                        data: {
-                            channel: channel,
-                            type: 'chat_message'
-                        }
-                    };
-                    
-                    const response = await messaging.sendEachForMulticast({
-                        tokens: tokens,
-                        notification: payload.notification,
-                        data: payload.data
-                    });
-                    console.log(`[Push] Result for ${normalizedReceiverId}: ${response.successCount} success, ${response.failureCount} failure`);
-                    
-                    // Cleanup failed tokens (e.g. invalid or unregistered config)
-                    if (response.failureCount > 0) {
-                        const failedTokens: string[] = [];
-                        response.responses.forEach((resp, idx) => {
-                            if (!resp.success) {
-                                console.log(`[Push] Failed token [${idx}]:`, resp.error?.message);
-                                failedTokens.push(tokens[idx]);
+                    if (tokens.length > 0) {
+                        console.log(`[Push] Attempting to send message to ${normalizedReceiverId} on ${tokens.length} devices`);
+                        const payload = {
+                            notification: {
+                                title: 'Travoxa Support',
+                                body: message || 'You received a new image message.',
+                            },
+                            data: {
+                                channel: channel,
+                                type: 'chat_message'
                             }
+                        };
+                        
+                        const response = await messaging.sendEachForMulticast({
+                            tokens: tokens,
+                            notification: payload.notification,
+                            data: payload.data
                         });
-                        if (failedTokens.length > 0) {
-                            await PushSubscription.deleteMany({ token: { $in: failedTokens } });
+                        console.log(`[Push] Result for ${normalizedReceiverId}: ${response.successCount} success, ${response.failureCount} failure`);
+                        
+                        // Cleanup failed tokens (e.g. invalid or unregistered config)
+                        if (response.failureCount > 0) {
+                            const failedTokens: string[] = [];
+                            response.responses.forEach((resp, idx) => {
+                                if (!resp.success) {
+                                    console.log(`[Push] Failed token [${idx}]:`, resp.error?.message);
+                                    failedTokens.push(tokens[idx]);
+                                }
+                            });
+                            if (failedTokens.length > 0) {
+                                await PushSubscription.deleteMany({ token: { $in: failedTokens } });
+                            }
                         }
+                    } else {
+                        console.log(`[Push] No subscriptions found for ${normalizedReceiverId}`);
                     }
-                } else {
-                    console.log(`[Push] No subscriptions found for ${normalizedReceiverId}`);
+                } catch (pushErr) {
+                    console.error('FCM Push Error:', pushErr);
                 }
-            } catch (pushErr) {
-                console.error('FCM Push Error:', pushErr);
+            } else {
+                console.warn('[Push] Skipping push: Firebase Messaging is NOT initialized. Check your environment variables.');
             }
         }
 

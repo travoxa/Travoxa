@@ -16,9 +16,14 @@ if (!admin.apps.length) {
                     privateKey: privateKey.replace(/\\n/g, '\n'),
                 }),
             });
-            console.log('Firebase Admin initialized successfully');
+            console.log('[FirebaseAdmin] Initialized successfully');
         } else {
-            console.warn('Firebase Admin env variables not found. Push notifications will be disabled.');
+            console.warn('[FirebaseAdmin] Initialization failed - Missing variables:', {
+                projectId: !!projectId,
+                clientEmail: !!clientEmail,
+                privateKey: !!privateKey
+            });
+            console.warn('Ensure FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY are set in Vercel.');
         }
     } catch (error) {
         console.error('Firebase Admin initialization error', error);
