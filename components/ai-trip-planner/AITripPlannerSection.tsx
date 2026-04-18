@@ -31,6 +31,7 @@ interface Place {
     name: string;
     category: string;
     description: string;
+    highlight?: string;
     tags: string[];
     image?: string;
     distance?: number;
@@ -157,8 +158,13 @@ const AITripPlannerSection = () => {
                     setCompletedSteps(prev => [...prev, steps[stepIndex - 1]]);
                 }
                 stepIndex++;
+            } else if (stepIndex === steps.length) {
+                // Final visual indicator
+                setProcessingMessage('Generation complete!');
+                setCompletedSteps(prev => [...prev, steps[steps.length - 1]]);
+                stepIndex++;
             }
-        }, 1500);
+        }, 1200);
 
         try {
             const preferences = {
@@ -166,7 +172,8 @@ const AITripPlannerSection = () => {
                 secondaryTypes: secondaryTripTypes,
                 departure: selectedLocation
             };
-
+            
+            console.log("Starting generation with preferences:", preferences);
             const response = await fetch('/api/ai-recommendations', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -174,13 +181,26 @@ const AITripPlannerSection = () => {
             });
 
             const data = await response.json();
-            if (data.success) {
+            console.log("API Response received:", data);
+            
+            if (data.success && Array.isArray(data.data)) {
+                console.log(`Success! Received ${data.data.length} recommendations.`);
+                console.log("First recommendation sample:", data.data[0]);
+                console.log("Expected structure for rendering:", {
+                    _id: "string",
+                    name: "string",
+                    category: "string",
+                    description: "string",
+                    image: "string (optional)",
+                    distance: "number (optional)",
+                    location: { coordinates: "[number, number]" }
+                });
                 clearInterval(interval);
                 setRecommendations(data.data);
                 
-                // Save trip automatically
+                // Save trip in background without blocking UI transition
                 if (session?.user?.email) {
-                    await fetch('/api/trips', {
+                    fetch('/api/trips', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
@@ -191,18 +211,20 @@ const AITripPlannerSection = () => {
                                 recommendations: data.data.slice(0, 3).map((r: any) => r.name)
                             } 
                         })
-                    });
+                    }).catch(err => console.error('Silent background save failed:', err));
                 }
                 
+                setModalStep(1); 
                 setViewState('results');
             } else {
-                throw new Error(data.error);
+                throw new Error(data.error || 'The model returned an empty or invalid result set.');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Generation error:', error);
             clearInterval(interval);
-            alert('Failed to generate recommendations. Please try again.');
+            alert(`Oops! ${error.message || 'Failed to generate recommendations. Please try again.'}`);
             setViewState('landing');
+            setModalStep(1);
         }
     };
 
@@ -248,7 +270,17 @@ const AITripPlannerSection = () => {
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between mb-8">
-                            <button onClick={() => modalStep > 1 ? setModalStep(s => s - 1) : setViewState('landing')} className="p-2 hover:bg-gray-100 rounded-full">
+                            <button 
+                                onClick={() => {
+                                    if (modalStep > 1) {
+                                        setModalStep(s => s - 1);
+                                    } else {
+                                        setModalStep(1);
+                                        setViewState('landing');
+                                    }
+                                }} 
+                                className="p-2 hover:bg-gray-100 rounded-full"
+                            >
                                 <FiChevronLeft size={24} />
                             </button>
                             <div className="flex flex-col items-center">
@@ -257,7 +289,13 @@ const AITripPlannerSection = () => {
                                     <div className="h-full bg-[#050a05] transition-all duration-300" style={{ width: `${(modalStep / 3) * 100}%` }} />
                                 </div>
                             </div>
-                            <button onClick={() => setViewState('landing')} className="p-2 hover:bg-gray-100 rounded-full">
+                            <button 
+                                onClick={() => {
+                                    setModalStep(1);
+                                    setViewState('landing');
+                                }} 
+                                className="p-2 hover:bg-gray-100 rounded-full"
+                            >
                                 <FiX size={24} />
                             </button>
                         </div>
@@ -394,6 +432,7 @@ const AITripPlannerSection = () => {
                         key="results"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         className="w-full flex flex-col"
                     >
                         <div className="flex justify-between items-end mb-8">
@@ -452,6 +491,15 @@ const AITripPlannerSection = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Temporary Debug Footer - will remove after confirmation */}
+            <div className="fixed bottom-4 left-4 bg-[#050a05] text-white px-4 py-2 rounded-full text-xs font-bold shadow-2xl z-[100] flex gap-3">
+                <span className="opacity-50 uppercase">Debug State:</span>
+                <span className="text-brand-green">{viewState}</span>
+                <span className="opacity-20">|</span>
+                <span className="opacity-50 uppercase">Step:</span>
+                <span className="text-brand-green">{modalStep}</span>
+            </div>
         </div>
     );
 };

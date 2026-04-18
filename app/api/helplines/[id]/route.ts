@@ -8,8 +8,19 @@ export async function GET(
 ) {
     try {
         const urlParams = await params;
+        const identifier = urlParams.id;
         await connectDB();
-        const helpline = await Helpline.findById(urlParams.id);
+        
+        let helpline = null;
+
+        // Try finding by slug first
+        helpline = await Helpline.findOne({ slug: identifier });
+
+        // If not found and identifier is valid Mongo ID, try finding by ID
+        if (!helpline && identifier.match(/^[0-9a-fA-F]{24}$/)) {
+            helpline = await Helpline.findById(identifier);
+        }
+
         if (!helpline) {
             return NextResponse.json({ success: false, error: 'Helpline not found' }, { status: 404 });
         }

@@ -79,6 +79,26 @@ const HelplineSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    slug: {
+        type: String,
+        unique: true,
+        sparse: true,
+        lowercase: true,
+        trim: true
+    }
+});
+
+// Pre-save hook to generate slug
+HelplineSchema.pre('save', function (this: any) {
+    if (this.isModified('serviceName') || !this.slug) {
+        this.slug = this.serviceName
+            .toString()
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w-]+/g, '')
+            .replace(/--+/g, '-');
+    }
 });
 
 export default mongoose.models.Helpline || mongoose.model('Helpline', HelplineSchema);
