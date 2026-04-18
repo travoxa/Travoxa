@@ -6,6 +6,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import VerticalSidebar from "@/components/ui/VerticalSidebar";
 import ChatWidget from "@/components/Chat/ChatWidget";
+import PageLoader from "@/components/ui/PageLoader";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -40,6 +41,7 @@ export default async function RootLayout({
         className={`${playfair.variable} ${montserrat.variable} font-sans `}
       >
         <Providers>
+          <PageLoader />
           <div className="flex min-h-screen w-full">
             <main className="flex-1 min-w-0 relative">
               {children}

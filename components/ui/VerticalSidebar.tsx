@@ -21,7 +21,6 @@ export default function VerticalSidebar() {
     const [isHovering, setIsHovering] = useState(false);
     const [savedItems, setSavedItems] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [isNavigating, setIsNavigating] = useState(false);
 
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -51,17 +50,13 @@ export default function VerticalSidebar() {
         };
     }, [isExpanded]);
 
-    // Reset navigation loader when path changes
-    useEffect(() => {
-        setIsNavigating(false);
-    }, [pathname]);
-
     // Fetch saved items when expanded
     useEffect(() => {
         if (isExpanded && status === "authenticated" && session?.user?.id) {
             fetchSavedItems();
         }
     }, [isExpanded, session?.user?.id, status]);
+
 
     const fetchSavedItems = async () => {
         if (!session?.user?.email) return;
@@ -244,7 +239,6 @@ export default function VerticalSidebar() {
                                                 href={item.itemLink || '#'}
                                                 className="flex-1 min-w-0"
                                                 onClick={() => {
-                                                    setIsNavigating(true);
                                                     setIsExpanded(false);
                                                 }}
                                             >
@@ -270,25 +264,7 @@ export default function VerticalSidebar() {
                 </div>
 
             </aside>
-
-            {/* Global Page Loader Overlay */}
-            {
-                isNavigating && (
-                    <div className="fixed inset-0 z-[9999] bg-white/60 backdrop-blur-[2px] flex flex-col items-center justify-center transition-all duration-300">
-                        <div className="relative">
-                            {/* Outer rotating ring */}
-                            <div className="w-16 h-16 rounded-full border-4 border-slate-100 border-t-emerald-500 animate-spin"></div>
-                            {/* Inner static logo or icon placeholder */}
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-8 h-8 bg-emerald-500 rounded-full animate-pulse shadow-lg shadow-emerald-500/20"></div>
-                            </div>
-                        </div>
-                        <p className="mt-4 text-slate-600 font-bold text-[10px] uppercase tracking-[0.2em] animate-pulse">
-                            Loading your journey...
-                        </p>
-                    </div>
-                )
-            }
         </>
     );
 }
+
