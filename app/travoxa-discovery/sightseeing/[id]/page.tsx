@@ -33,7 +33,7 @@ export default function SightseeingDetailPage() {
         const fetchPackage = async () => {
             setLoading(true);
             try {
-                const res = await fetch(`/api/sightseeing/${id}`);
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/sightseeing/${id}`);
                 const data = await res.json();
                 if (data.success) {
                     const foundPackage = data.data;

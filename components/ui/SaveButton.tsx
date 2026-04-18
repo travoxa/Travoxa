@@ -32,7 +32,7 @@ export default function SaveButton({
         if (status === "authenticated" && session?.user?.id) {
             const checkStatus = async () => {
                 try {
-                    const res = await fetch(`/api/save?itemId=${itemId}&itemType=${itemType}&email=${session.user.email}`);
+                    const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/save?itemId=${itemId}&itemType=${itemType}&email=${session.user.email}`);
                     const data = await res.json();
                     if (data.saved !== undefined) {
                         setIsSaved(data.saved);
@@ -56,7 +56,7 @@ export default function SaveButton({
 
         setIsLoading(true);
         try {
-            const res = await fetch("/api/save", {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/save", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -77,7 +77,7 @@ export default function AISettingsClient() {
 
   const fetchConfig = async () => {
     try {
-      const res = await fetch('/api/admin/ai-config');
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/ai-config');
       const json = await res.json();
       if (json.success && json.data) {
         const savedStopSequences = Array.isArray(json.data.stopSequences) ? json.data.stopSequences.join('\n') : '';
@@ -138,7 +138,7 @@ export default function AISettingsClient() {
         .map((value) => value.trim())
         .filter(Boolean);
 
-      const res = await fetch('/api/admin/ai-config', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/ai-config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -235,7 +235,7 @@ export default function AISettingsClient() {
         };
       }
 
-      const res = await fetch('/api/ai-test-run', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/ai-test-run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

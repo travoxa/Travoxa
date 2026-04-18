@@ -38,7 +38,7 @@ const SightseeingPage = () => {
         const fetchPackages = async () => {
             setLoading(true);
             try {
-                const res = await fetch('/api/sightseeing');
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/sightseeing');
                 const data = await res.json();
                 if (data.success) {
                     setSightseeingPackages(data.data);

@@ -57,8 +57,8 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
             try {
                 // 1. Check Tour Requests (Standard & Custom)
                 const [standardRes, customRes] = await Promise.all([
-                    fetch('/api/tours/request'),
-                    fetch('/api/tours/custom-request')
+                    fetch(process.env.NEXT_PUBLIC_API_URL + '/api/tours/request'),
+                    fetch(process.env.NEXT_PUBLIC_API_URL + '/api/tours/custom-request')
                 ]);
                 const standardData = await standardRes.json();
                 const customData = await customRes.json();
@@ -68,21 +68,21 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                 setHasPendingTourRequests(hasPendingStandard || hasPendingCustom);
 
                 // 2. Check Vendor Tours
-                const vendorToursRes = await fetch('/api/tours?admin=true&status=pending');
+                const vendorToursRes = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/tours?admin=true&status=pending');
                 const vendorToursData = await vendorToursRes.json();
                 setHasPendingVendorTours(vendorToursData.success && vendorToursData.data.length > 0);
 
                 // 3. Check Other Vendor Requests
                 const otherCollections = ['activities', 'rentals', 'sightseeing', 'stay', 'food'];
                 const otherRes = await Promise.all(
-                    otherCollections.map(col => fetch(`/api/${col}?admin=true&status=pending`))
+                    otherCollections.map(col => fetch(process.env.NEXT_PUBLIC_API_URL + `/api/${col}?admin=true&status=pending`))
                 );
                 const otherData = await Promise.all(otherRes.map(res => res.json()));
                 const hasAnyOtherPending = otherData.some(d => d.success && d.data.length > 0);
                 setHasPendingVendorRequests(hasAnyOtherPending);
 
                 // 4. Check Pending Backpackers (Unverified community trips)
-                const backpackersRes = await fetch('/api/groups?admin=true');
+                const backpackersRes = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/groups?admin=true');
                 const backpackersData = await backpackersRes.json();
                 if (backpackersData.groups) {
                     const hasUnverified = backpackersData.groups.some((g: any) => g.tripSource !== 'hosted' && !g.verified);
@@ -90,7 +90,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({ adminUser }
                 }
 
                 // 5. Check Unread Customer Chats
-                const chatRes = await fetch('/api/admin/chat/unread-count');
+                const chatRes = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/chat/unread-count');
                 const chatData = await chatRes.json();
                 setHasUnreadChatMessages(chatData.success && chatData.count > 0);
 

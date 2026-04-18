@@ -50,11 +50,11 @@ export default function TourRequestsClient() {
         setLoading(true);
         try {
             // Fetch Standard Requests
-            const standardRes = await fetch('/api/tours/request?admin=true');
+            const standardRes = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/tours/request?admin=true');
             const standardData = await standardRes.json();
 
             // Fetch Custom Requests
-            const customRes = await fetch('/api/tours/custom-request');
+            const customRes = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/tours/custom-request');
             const customData = await customRes.json();
 
             let all: Request[] = [];

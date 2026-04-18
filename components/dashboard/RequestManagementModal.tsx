@@ -38,7 +38,7 @@ const RequestManagementModal: React.FC<RequestManagementModalProps> = ({
     const handleAction = async (requestId: string, action: 'approve' | 'reject') => {
         setProcessingId(requestId);
         try {
-            const response = await fetch(`/api/backpackers/group/${groupId}/requests/${requestId}/${action}`, {
+            const response = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/backpackers/group/${groupId}/requests/${requestId}/${action}`, {
                 method: 'POST',
             });
 

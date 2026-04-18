@@ -25,7 +25,7 @@ const BlogListingPage = () => {
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const res = await fetch('/api/blogs')
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/blogs')
                 const data = await res.json()
                 if (data.success) {
                     setBlogs(data.data)

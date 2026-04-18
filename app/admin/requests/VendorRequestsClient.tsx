@@ -27,7 +27,7 @@ export default function VendorRequestsClient() {
             let allPending: VendorRequest[] = [];
 
             for (const col of collections) {
-                const res = await fetch(`/api/${col}?admin=true&status=pending`);
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/${col}?admin=true&status=pending`);
                 const data = await res.json();
                 if (data.success && data.data) {
                     // Map the data to a standard format for the table
@@ -66,7 +66,7 @@ export default function VendorRequestsClient() {
             // A dedicated universal approval API is cleaner. 
             // We'll create `/api/admin/vendor-approval` next.
 
-            const res = await fetch('/api/admin/vendor-approval', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/vendor-approval', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

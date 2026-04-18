@@ -43,7 +43,7 @@ export default function VendorTourApprovalClient() {
     const fetchPendingTours = async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/tours?admin=true&status=pending');
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/tours?admin=true&status=pending');
             const data = await res.json();
             if (data.success && data.data) {
                 setTours(data.data.map((t: any) => ({
@@ -92,7 +92,7 @@ export default function VendorTourApprovalClient() {
 
     const handleAction = async (id: string, newStatus: 'approved' | 'rejected') => {
         try {
-            const res = await fetch('/api/admin/vendor-approval', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/vendor-approval', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

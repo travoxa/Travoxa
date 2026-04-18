@@ -5,6 +5,7 @@ import Link from 'next/link';
 interface EmergencyCardProps {
     helpline: {
         _id: string;
+        slug?: string;
         serviceName: string;
         emergencyType: string;
         city: string;

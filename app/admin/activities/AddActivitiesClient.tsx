@@ -208,12 +208,12 @@ export default function AddActivitiesClient({
         setLoadingRelated(true);
         try {
             const [attRes, foodRes, tourRes, sightRes, rentRes, stayRes] = await Promise.all([
-                fetch('/api/attractions'),
-                fetch('/api/food'),
-                fetch('/api/tours'),
-                fetch('/api/sightseeing'),
-                fetch('/api/rentals'),
-                fetch('/api/stay')
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/attractions'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/food'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/tours'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/sightseeing'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/rentals'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/stay')
             ]);
             const attData = await attRes.json();
             const foodData = await foodRes.json();
@@ -247,7 +247,7 @@ export default function AddActivitiesClient({
 
         setDeletingId(id);
         try {
-            const res = await fetch(`/api/activities/${id}`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/activities/${id}`, {
                 method: 'DELETE',
             });
 

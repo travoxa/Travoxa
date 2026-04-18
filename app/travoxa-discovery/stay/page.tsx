@@ -34,7 +34,7 @@ const StayPage = () => {
         const fetchStays = async () => {
             setLoading(true);
             try {
-                const res = await fetch('/api/stay');
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/stay');
                 const data = await res.json();
                 if (data.success) {
                     setStays(data.data);

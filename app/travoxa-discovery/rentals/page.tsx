@@ -26,7 +26,7 @@ const RentalsPage = () => {
     useEffect(() => {
         const fetchRentals = async () => {
             try {
-                const res = await fetch('/api/rentals');
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/rentals');
                 const data = await res.json();
                 if (data.success) {
                     setAllRentals(data.data);

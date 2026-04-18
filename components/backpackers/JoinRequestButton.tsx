@@ -24,7 +24,7 @@ export default function JoinRequestButton({ groupId }: JoinRequestButtonProps) {
     setErrorMessage('');
 
     try {
-      const response = await fetch(`/api/backpackers/group/${groupId}/join`, {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/backpackers/group/${groupId}/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -35,7 +35,7 @@ export default function DeleteAccountPage() {
 
     try {
       // 1. Delete from MongoDB via API
-      const response = await fetch(`/api/users/delete?email=${encodeURIComponent(session.user.email)}`, {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/users/delete?email=${encodeURIComponent(session.user.email)}`, {
         method: 'DELETE',
       });
 

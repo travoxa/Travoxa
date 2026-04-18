@@ -58,7 +58,7 @@ export default function EnquireModal({
         setError('');
 
         try {
-            const res = await fetch('/api/tours/request', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/tours/request', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

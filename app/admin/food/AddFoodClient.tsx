@@ -191,12 +191,12 @@ export default function AddFoodClient({
         setLoadingRelated(true);
         try {
             const [attRes, tourRes, sightRes, actRes, rentRes, stayRes] = await Promise.all([
-                fetch('/api/attractions'),
-                fetch('/api/tours'),
-                fetch('/api/sightseeing'),
-                fetch('/api/activities'),
-                fetch('/api/rentals'),
-                fetch('/api/stay')
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/attractions'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/tours'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/sightseeing'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/activities'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/rentals'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/stay')
             ]);
             const attData = await attRes.json();
             const tourData = await tourRes.json();
@@ -230,7 +230,7 @@ export default function AddFoodClient({
 
         setDeletingId(id);
         try {
-            const res = await fetch(`/api/food/${id}`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/food/${id}`, {
                 method: 'DELETE',
             });
 

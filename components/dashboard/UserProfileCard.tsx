@@ -87,7 +87,7 @@ const UserProfileCard: React.FC = () => {
   const fetchUserData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/users?email=${encodeURIComponent(session?.user?.email || '')}`);
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/users?email=${encodeURIComponent(session?.user?.email || '')}`);
       if (response.ok) {
         const data = await response.json();
 
@@ -202,7 +202,7 @@ const UserProfileCard: React.FC = () => {
       setSuccess(null);
       setSaving(true);
 
-      const response = await fetch('/api/users/edit', {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/users/edit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

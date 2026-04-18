@@ -38,13 +38,13 @@ export default function VendorLogin() {
             const checkUserInDB = async () => {
                 try {
                     await new Promise(resolve => setTimeout(resolve, 500));
-                    const response = await fetch(`/api/users/check?email=${encodeURIComponent(session.user.email!)}`);
+                    const response = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/users/check?email=${encodeURIComponent(session.user.email!)}`);
                     if (!response.ok) return;
                     
                     const result = await response.json();
 
                     if (!result.exists) {
-                        const createResponse = await fetch('/api/users', {
+                        const createResponse = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/users', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -91,7 +91,7 @@ export default function VendorLogin() {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                const response = await fetch(`/api/users/check?email=${encodeURIComponent(email)}`);
+                const response = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/users/check?email=${encodeURIComponent(email)}`);
                 if (!response.ok) { setLoading(false); return; }
 
                 const result = await response.json();
@@ -126,7 +126,7 @@ export default function VendorLogin() {
                     await updateProfile(user, { displayName: `${firstName.trim()} ${lastName.trim()}` });
                 }
 
-                const response = await fetch('/api/users', {
+                const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/users', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

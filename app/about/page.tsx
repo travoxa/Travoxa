@@ -9,6 +9,7 @@ import { FaHiking, FaMapMarkedAlt, FaHandsHelping, FaHome, FaLeaf, FaCamera, FaC
 import { GiBackpack } from 'react-icons/gi';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import { CONTACT_INFO } from "@/config/contact";
 
 export default function AboutPage() {
 

@@ -172,10 +172,10 @@ const GalleryPage = () => {
 
             <main className="flex-grow container mx-auto px-4 py-12">
                 <div className="text-center mb-12" data-aos="fade-up">
-                    <h1 className="text-3xl md:text-5xl font-playfair font-medium text-gray-900 mb-4 tracking-tight">
+                    <h1 className="text-3xl md:text-5xl font-display font-medium text-gray-900 mb-4 tracking-tight">
                         Vibrant India <span className="text-green-600">Gallery</span>
                     </h1>
-                    <p className="text-lg text-gray-600 max-w-2xl mx-auto font-montserrat font-light">
+                    <p className="text-lg text-gray-600 max-w-2xl mx-auto font-sans font-light">
                         A visual journey through the soul of India. Experience the enthusiasm, the colors, and the untold stories.
                     </p>
                 </div>

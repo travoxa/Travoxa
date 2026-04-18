@@ -31,7 +31,7 @@ export default function ReviewSection({ packageId }: ReviewSectionProps) {
 
     const fetchReviews = async () => {
         try {
-            const res = await fetch(`/api/sightseeing/${packageId}/reviews`);
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/sightseeing/${packageId}/reviews`);
             const data = await res.json();
             if (data.success) {
                 setReviews(data.data);
@@ -62,7 +62,7 @@ export default function ReviewSection({ packageId }: ReviewSectionProps) {
         setError("");
 
         try {
-            const res = await fetch(`/api/sightseeing/${packageId}/reviews`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/sightseeing/${packageId}/reviews`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ rating, comment })

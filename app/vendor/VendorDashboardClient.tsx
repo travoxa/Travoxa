@@ -56,7 +56,7 @@ const VendorDashboardClient: React.FC<VendorDashboardClientProps> = ({ vendorUse
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            const response = await fetch('/api/vendor/update', {
+            const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/vendor/update', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

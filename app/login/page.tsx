@@ -33,7 +33,7 @@ export default function Login() {
           await new Promise(resolve => setTimeout(resolve, 1000));
 
           // Check if user exists in MongoDB by email
-          const response = await fetch(`/api/users/check?email=${encodeURIComponent(session.user.email!)}`);
+          const response = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/users/check?email=${encodeURIComponent(session.user.email!)}`);
 
           if (!response.ok) {
             console.error('Failed to check user in MongoDB');
@@ -44,7 +44,7 @@ export default function Login() {
 
           if (!result.exists) {
             // User doesn't exist, add them to MongoDB
-            const createResponse = await fetch('/api/users', {
+            const createResponse = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/users', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ export default function Login() {
         const user = userCredential.user;
 
         // Check if user exists in MongoDB by email
-        const response = await fetch(`/api/users/check?email=${encodeURIComponent(email)}`);
+        const response = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/users/check?email=${encodeURIComponent(email)}`);
 
         if (!response.ok) {
           console.error('Failed to check user in MongoDB');
@@ -124,7 +124,7 @@ export default function Login() {
 
         if (!result.exists) {
           // User doesn't exist, add them to MongoDB
-          const createResponse = await fetch('/api/users', {
+          const createResponse = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/users', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -218,7 +218,7 @@ export default function Login() {
         }
 
         // IMMEDIATELY create user in MongoDB with basic info
-        const response = await fetch('/api/users', {
+        const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/users', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

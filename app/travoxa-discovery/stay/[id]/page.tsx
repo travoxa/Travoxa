@@ -21,7 +21,7 @@ export default function StayDetailsPage() {
     useEffect(() => {
         const fetchStay = async () => {
             try {
-                const res = await fetch(`/api/stay/${id}`);
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/stay/${id}`);
                 const data = await res.json();
                 if (data.success) {
                     setStay(data.data);

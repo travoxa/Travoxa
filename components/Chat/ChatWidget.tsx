@@ -65,7 +65,7 @@ export default function ChatWidget() {
 
         const fetchHistory = async () => {
             try {
-                const res = await fetch(`/api/pusher/message?channel=${channelName}`);
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/pusher/message?channel=${channelName}`);
                 const data = await res.json();
                 if (data.success && data.history) {
                     setMessages(data.history);
@@ -77,7 +77,7 @@ export default function ChatWidget() {
 
         const markAsRead = async () => {
             try {
-                await fetch('/api/admin/chat/read', {
+                await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/chat/read', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ channel: channelName, reader: 'user' }),
@@ -144,7 +144,7 @@ export default function ChatWidget() {
         setMessages(prev => [...prev, localMsg]);
 
         try {
-            const res = await fetch('/api/pusher/message', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/pusher/message', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

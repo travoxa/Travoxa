@@ -35,7 +35,7 @@ export default function JourneyClient({ onBack }: JourneyClientProps) {
 
     const fetchItems = async () => {
         try {
-            const res = await fetch('/api/team/journey');
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/team/journey');
             const data = await res.json();
             if (data.success) {
                 setItems(data.data);
@@ -62,7 +62,7 @@ export default function JourneyClient({ onBack }: JourneyClientProps) {
         if (!confirm("Are you sure you want to delete this journey item?")) return;
 
         try {
-            const res = await fetch(`/api/team/journey/${id}`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/team/journey/${id}`, {
                 method: 'DELETE'
             });
             if (res.ok) {

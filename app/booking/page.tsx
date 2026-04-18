@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Header from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
-import { FiTrain, FiTruck, FiPlay, FiSearch, FiFileText, FiZap, FiArrowRight, FiInfo, FiCheck } from "react-icons/fi";
+import { FiSearch, FiFileText, FiZap, FiArrowRight, FiInfo, FiCheck } from "react-icons/fi";
+import { MdTrain, MdFlight, MdDirectionsBus } from "react-icons/md";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function BookingPage() {
@@ -39,19 +40,19 @@ export default function BookingPage() {
                             onClick={() => setActiveTab('train')} 
                             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl transition-all font-medium text-sm ${activeTab === 'train' ? 'bg-green-600 text-white shadow-md shadow-green-200' : 'text-slate-400 hover:text-slate-600'}`}
                         >
-                            <FiTrain className="w-4 h-4" /> Train
+                            <MdTrain className="w-4 h-4" /> Train
                         </button>
                         <button 
                             onClick={() => setActiveTab('bus')} 
                             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl transition-all font-medium text-sm ${activeTab === 'bus' ? 'bg-green-600 text-white shadow-md shadow-green-200' : 'text-slate-400 hover:text-slate-600'}`}
                         >
-                            <FiTruck className="w-4 h-4" /> Bus
+                            <MdDirectionsBus className="w-4 h-4" /> Bus
                         </button>
                         <button 
                             onClick={() => setActiveTab('flight')} 
                             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl transition-all font-medium text-sm ${activeTab === 'flight' ? 'bg-green-600 text-white shadow-md shadow-green-200' : 'text-slate-400 hover:text-slate-600'}`}
                         >
-                            <FiPlay className="w-4 h-4 -rotate-90" /> Flight
+                            <MdFlight className="w-4 h-4" /> Flight
                         </button>
                     </div>
 
@@ -176,7 +177,7 @@ export default function BookingPage() {
                                 className="bg-white border border-slate-200 p-8 rounded-3xl shadow-lg shadow-slate-200/50"
                             >
                                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-slate-900 Mont">
-                                    <FiTruck className="text-green-600" /> Bus Travel Concierge
+                                    <MdDirectionsBus className="text-green-600" /> Bus Travel Concierge
                                 </h2>
                                 <form onSubmit={handleBooking} className="space-y-6">
                                     <div className="grid md:grid-cols-2 gap-4">
@@ -223,7 +224,7 @@ export default function BookingPage() {
                                 className="bg-white border border-green-100 p-8 rounded-3xl shadow-lg shadow-green-200/20"
                             >
                                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-slate-900 Mont">
-                                    <FiPlay className="text-green-600 -rotate-90" /> Premium Flight Booking
+                                    <MdFlight className="text-green-600" /> Premium Flight Booking
                                 </h2>
                                 <form onSubmit={handleBooking} className="space-y-6">
                                     <div className="grid md:grid-cols-2 gap-4">

@@ -15,7 +15,7 @@ const TravoxaCirclePage = () => {
 
         setStatus('loading');
         try {
-            const res = await fetch('/api/circle-waitlist', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/circle-waitlist', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),

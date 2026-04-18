@@ -60,7 +60,7 @@ export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
 
     const fetchMembers = async () => {
         try {
-            const res = await fetch('/api/team/core');
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/team/core');
             const data = await res.json();
             if (data.success) {
                 setMembers(data.data);
@@ -103,7 +103,7 @@ export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
         if (!confirm('Are you sure you want to delete this team member?')) return;
 
         try {
-            const res = await fetch(`/api/team/core/${id}`, { method: 'DELETE' });
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/team/core/${id}`, { method: 'DELETE' });
             if (res.ok) {
                 setMembers(members.filter(m => m._id !== id));
             } else {

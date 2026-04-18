@@ -15,7 +15,7 @@ const BlogManagementClient = () => {
     const fetchBlogs = async () => {
         setLoading(true)
         try {
-            const res = await fetch('/api/blogs')
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/blogs')
             const data = await res.json()
             if (data.success) {
                 setBlogs(data.data)
@@ -35,7 +35,7 @@ const BlogManagementClient = () => {
         if (!window.confirm('Are you sure you want to delete this blog?')) return
 
         try {
-            const res = await fetch(`/api/blogs/${id}`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/blogs/${id}`, {
                 method: 'DELETE',
             })
             const data = await res.json()

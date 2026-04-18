@@ -139,7 +139,7 @@ export default function GroupCreateForm() {
     try {
 
 
-      const response = await fetch('/api/groups', {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/groups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

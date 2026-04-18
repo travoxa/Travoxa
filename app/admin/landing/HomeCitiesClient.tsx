@@ -49,7 +49,7 @@ export default function HomeCitiesClient() {
     const fetchCities = async () => {
         try {
             setIsLoading(true);
-            const res = await fetch('/api/home-cities');
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/home-cities');
             const data = await res.json();
             if (data.success) {
                 setCities(data.data);
@@ -156,7 +156,7 @@ export default function HomeCitiesClient() {
         if (!editingCity) return;
         setSubmitLoading(true);
         try {
-            const res = await fetch('/api/home-cities/generate-places', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/home-cities/generate-places', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -182,7 +182,7 @@ export default function HomeCitiesClient() {
     const handleSavePlaces = async () => {
         setSubmitLoading(true);
         try {
-            const res = await fetch(`/api/home-cities/${editingCity?._id}`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/home-cities/${editingCity?._id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ touristPlaces: places })
@@ -243,7 +243,7 @@ export default function HomeCitiesClient() {
         if (!window.confirm('Are you sure you want to delete this city?')) return;
 
         try {
-            const res = await fetch(`/api/home-cities/${id}`, { method: 'DELETE' });
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/home-cities/${id}`, { method: 'DELETE' });
             const data = await res.json();
             if (data.success) {
                 fetchCities();

@@ -58,7 +58,7 @@ export default function AdminChatPage() {
 
         setStatus('sending');
         try {
-            const res = await fetch('/api/pusher/message', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/pusher/message', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

@@ -108,7 +108,7 @@ const Destinations = () => {
   React.useEffect(() => {
     const fetchTours = async () => {
       try {
-        const res = await fetch("/api/tours");
+        const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/tours");
         const data = await res.json();
 
         if (data.success && Array.isArray(data.data) && data.data.length > 0) {

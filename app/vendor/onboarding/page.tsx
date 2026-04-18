@@ -90,7 +90,7 @@ export default function VendorOnboardingPage() {
             }
 
             // Automatically update the vendor profile
-            const response = await fetch('/api/users/edit-vendor', {
+            const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/users/edit-vendor', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

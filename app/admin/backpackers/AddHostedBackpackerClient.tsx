@@ -84,7 +84,7 @@ export default function AddHostedBackpackerClient({
     const fetchGroups = async () => {
         setLoadingGroups(true);
         try {
-            const res = await fetch('/api/groups?admin=true');
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/groups?admin=true');
             const data = await res.json();
             if (data.groups) {
                 // Filter trips by source
@@ -114,7 +114,7 @@ export default function AddHostedBackpackerClient({
         if (!confirm('Are you sure you want to delete this trip?')) return;
 
         try {
-            const res = await fetch(`/api/groups/${id}`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/groups/${id}`, {
                 method: 'DELETE',
             });
 
@@ -131,7 +131,7 @@ export default function AddHostedBackpackerClient({
         if (!confirm('Are you sure you want to verify and publish this trip?')) return;
 
         try {
-            const res = await fetch(`/api/groups/${id}`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/groups/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ verified: true }),
@@ -151,7 +151,7 @@ export default function AddHostedBackpackerClient({
         if (!confirm('Are you sure you want to clear all reports for this trip?')) return;
 
         try {
-            const res = await fetch(`/api/groups/${id}`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/groups/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ reports: [], reportCount: 0, isAutoHidden: false }),
@@ -206,7 +206,7 @@ export default function AddHostedBackpackerClient({
                 tripSource: 'hosted' // Explicitly setting this
             };
 
-            const res = await fetch('/api/groups', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/groups', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),

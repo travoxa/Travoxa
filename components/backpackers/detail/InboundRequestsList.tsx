@@ -31,7 +31,7 @@ export default function InboundRequestsList({ groupId }: InboundRequestsListProp
 
     const fetchRequests = async () => {
         try {
-            const res = await fetch(`/api/backpackers/group/${groupId}/join`);
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/backpackers/group/${groupId}/join`);
             if (res.ok) {
                 const data = await res.json();
                 // Filter only pending requests for now, or show all with tabs?
@@ -48,7 +48,7 @@ export default function InboundRequestsList({ groupId }: InboundRequestsListProp
     const handleAction = async (requestId: string, action: 'approve' | 'reject') => {
         setActionLoading(requestId);
         try {
-            const res = await fetch(`/api/backpackers/group/${groupId}/requests/${requestId}/${action}`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/backpackers/group/${groupId}/requests/${requestId}/${action}`, {
                 method: 'POST',
             });
 

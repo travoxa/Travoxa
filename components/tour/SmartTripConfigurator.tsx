@@ -221,7 +221,7 @@ export default function SmartTripConfigurator({ tour, initialNotes }: SmartTripC
     const handleBuildTrip = async () => {
         setIsSubmitting(true);
         try {
-            const response = await fetch('/api/tours/request', {
+            const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/tours/request', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

@@ -66,7 +66,7 @@ const ChatClient = () => {
     // 1. Admin Presence Heartbeat
     useEffect(() => {
         const sendHeartbeat = () => {
-            fetch('/api/pusher/message', {
+            fetch(process.env.NEXT_PUBLIC_API_URL + '/api/pusher/message', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -87,7 +87,7 @@ const ChatClient = () => {
     useEffect(() => {
         const fetchSessions = async () => {
             try {
-                const res = await fetch('/api/admin/chat/users');
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/chat/users');
                 const data = await res.json();
                 if (data.success) {
                     setSessions(prev => {
@@ -125,7 +125,7 @@ const ChatClient = () => {
 
             setIsSearching(true);
             try {
-                const res = await fetch(`/api/admin/chat/search?query=${encodeURIComponent(searchQuery)}`);
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/admin/chat/search?query=${encodeURIComponent(searchQuery)}`);
                 const data = await res.json();
                 if (data.success) {
                     setSearchResults(data.users);
@@ -148,7 +148,7 @@ const ChatClient = () => {
         const fetchHistory = async () => {
             try {
                 const channel = `user-${activeSession.email}`;
-                const res = await fetch(`/api/pusher/message?channel=${channel}`);
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/pusher/message?channel=${channel}`);
                 const data = await res.json();
                 if (data.success) {
                     setMessages(data.history || []);
@@ -263,7 +263,7 @@ const ChatClient = () => {
 
         setStatus('sending');
         try {
-            const res = await fetch('/api/pusher/message', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/pusher/message', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -301,7 +301,7 @@ const ChatClient = () => {
     const markAsRead = async (email: string) => {
         try {
             const channel = `user-${email}`;
-            await fetch('/api/admin/chat/read', {
+            await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/chat/read', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ channel, reader: 'admin' }),
@@ -324,7 +324,7 @@ const ChatClient = () => {
         if (!confirm(`Are you sure you want to delete all messages for ${session.name}? This cannot be undone.`)) return;
 
         try {
-            const res = await fetch(`/api/admin/chat/delete?channel=user-${session.email}`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/admin/chat/delete?channel=user-${session.email}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
@@ -343,7 +343,7 @@ const ChatClient = () => {
         if (!confirm('CRITICAL: Are you sure you want to delete EVERY message in the entire chat history? This cannot be undone.')) return;
 
         try {
-            const res = await fetch('/api/admin/chat/delete?all=true', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/chat/delete?all=true', {
                 method: 'DELETE'
             });
             if (res.ok) {
@@ -358,7 +358,7 @@ const ChatClient = () => {
 
     const clearAllUnread = async () => {
         try {
-            const res = await fetch('/api/admin/chat/read', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/chat/read', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ all: true, reader: 'admin' }),
