@@ -20,7 +20,7 @@ const BlogDetailPage = () => {
 
     const fetchBlog = async () => {
         try {
-            const res = await fetch(`/api/blogs/${slug}`)
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/blogs/${slug}`)
             const data = await res.json()
             if (data.success) {
                 setBlog(data.data)
@@ -36,7 +36,7 @@ const BlogDetailPage = () => {
     const fetchComments = async () => {
         if (!blog?._id) return
         try {
-            const res = await fetch(`/api/blogs/${blog._id}/comments`)
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/blogs/${blog._id}/comments`)
             const data = await res.json()
             if (data.success) {
                 setComments(data.data)
@@ -60,7 +60,7 @@ const BlogDetailPage = () => {
             return
         }
         try {
-            const res = await fetch(`/api/blogs/${blog._id}/like`, { method: 'POST' })
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/blogs/${blog._id}/like`, { method: 'POST' })
             const data = await res.json()
             if (data.success) {
                 setIsLiked(data.liked)
@@ -77,7 +77,7 @@ const BlogDetailPage = () => {
             return
         }
         try {
-            const res = await fetch(`/api/blogs/${blog._id}/rate`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/blogs/${blog._id}/rate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ rating }),
@@ -102,7 +102,7 @@ const BlogDetailPage = () => {
 
         setSubmittingComment(true)
         try {
-            const res = await fetch(`/api/blogs/${blog._id}/comments`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/blogs/${blog._id}/comments`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content: commentText }),

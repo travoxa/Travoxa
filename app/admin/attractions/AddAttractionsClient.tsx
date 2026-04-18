@@ -189,7 +189,7 @@ export default function AddAttractionsClient({
 
     const fetchMetadata = async () => {
         try {
-            const res = await fetch('/api/attractions/metadata');
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/attractions/metadata');
             const data = await res.json();
             if (data.success) {
                 setMetadata(data.data);
@@ -206,12 +206,12 @@ export default function AddAttractionsClient({
             const attUrl = vendorId ? `/api/attractions?vendorId=${vendorId}` : '/api/attractions';
             const [attRes, foodRes, tourRes, sightRes, actRes, rentRes, stayRes] = await Promise.all([
                 fetch(attUrl),
-                fetch('/api/food'),
-                fetch('/api/tours'),
-                fetch('/api/sightseeing'),
-                fetch('/api/activities'),
-                fetch('/api/rentals'),
-                fetch('/api/stay')
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/food'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/tours'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/sightseeing'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/activities'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/rentals'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/stay')
             ]);
             const attData = await attRes.json();
             const foodData = await foodRes.json();
@@ -243,7 +243,7 @@ export default function AddAttractionsClient({
         if (!city) return;
         setLoadingHelplines(true);
         try {
-            const res = await fetch(`/api/helplines?city=${city}&status=approved`);
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/helplines?city=${city}&status=approved`);
             const data = await res.json();
             if (data.success) {
                 setAllHelplines(data.data);
@@ -273,7 +273,7 @@ export default function AddAttractionsClient({
 
         setDeletingId(id);
         try {
-            const res = await fetch(`/api/attractions/${id}`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/attractions/${id}`, {
                 method: 'DELETE',
             });
 

@@ -24,8 +24,8 @@ export default function TeamPage() {
         const fetchData = async () => {
             try {
                 const [teamRes, journeyRes] = await Promise.all([
-                    fetch('/api/team/core'),
-                    fetch('/api/team/journey')
+                    fetch(process.env.NEXT_PUBLIC_API_URL + '/api/team/core'),
+                    fetch(process.env.NEXT_PUBLIC_API_URL + '/api/team/journey')
                 ]);
 
                 const teamData = await teamRes.json();

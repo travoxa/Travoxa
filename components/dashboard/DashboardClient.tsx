@@ -68,7 +68,7 @@ const DashboardClient: React.FC<DashboardClientProps> = ({ user, createdGroups =
         setNotifications(updatedNotifications);
 
         try {
-            await fetch('/api/users/notifications/mark-seen', { method: 'POST' });
+            await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/users/notifications/mark-seen', { method: 'POST' });
         } catch (error) {
             console.error("Failed to mark notifications as seen", error);
             // Revert if needed, but usually fine to leave as read in UI

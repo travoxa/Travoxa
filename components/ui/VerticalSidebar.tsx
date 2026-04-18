@@ -21,7 +21,6 @@ export default function VerticalSidebar() {
     const [isHovering, setIsHovering] = useState(false);
     const [savedItems, setSavedItems] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [isNavigating, setIsNavigating] = useState(false);
 
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -51,11 +50,6 @@ export default function VerticalSidebar() {
         };
     }, [isExpanded]);
 
-    // Reset navigation loader when path changes
-    useEffect(() => {
-        setIsNavigating(false);
-    }, [pathname]);
-
     // Fetch saved items when expanded
     useEffect(() => {
         if (isExpanded && status === "authenticated" && session?.user?.id) {
@@ -63,11 +57,12 @@ export default function VerticalSidebar() {
         }
     }, [isExpanded, session?.user?.id, status]);
 
+
     const fetchSavedItems = async () => {
         if (!session?.user?.email) return;
         setIsLoading(true);
         try {
-            const res = await fetch(`/api/save?email=${encodeURIComponent(session.user.email)}`);
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/save?email=${encodeURIComponent(session.user.email)}`);
             const data = await res.json();
             if (data.success) {
                 setSavedItems(data.data);
@@ -82,7 +77,7 @@ export default function VerticalSidebar() {
     const handleRemove = async (itemId: string, itemType: string) => {
         if (!session?.user?.email) return;
         try {
-            const res = await fetch("/api/save", {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/save", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ itemId, itemType, email: session.user.email }),
@@ -244,7 +239,6 @@ export default function VerticalSidebar() {
                                                 href={item.itemLink || '#'}
                                                 className="flex-1 min-w-0"
                                                 onClick={() => {
-                                                    setIsNavigating(true);
                                                     setIsExpanded(false);
                                                 }}
                                             >
@@ -270,25 +264,7 @@ export default function VerticalSidebar() {
                 </div>
 
             </aside>
-
-            {/* Global Page Loader Overlay */}
-            {
-                isNavigating && (
-                    <div className="fixed inset-0 z-[9999] bg-white/60 backdrop-blur-[2px] flex flex-col items-center justify-center transition-all duration-300">
-                        <div className="relative">
-                            {/* Outer rotating ring */}
-                            <div className="w-16 h-16 rounded-full border-4 border-slate-100 border-t-emerald-500 animate-spin"></div>
-                            {/* Inner static logo or icon placeholder */}
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-8 h-8 bg-emerald-500 rounded-full animate-pulse shadow-lg shadow-emerald-500/20"></div>
-                            </div>
-                        </div>
-                        <p className="mt-4 text-slate-600 font-bold text-[10px] uppercase tracking-[0.2em] animate-pulse">
-                            Loading your journey...
-                        </p>
-                    </div>
-                )
-            }
         </>
     );
 }
+

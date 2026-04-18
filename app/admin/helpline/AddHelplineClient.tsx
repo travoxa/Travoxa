@@ -164,7 +164,7 @@ export default function AddHelplineClient({
         if (!confirm("Are you sure you want to delete this helpline?")) return;
 
         try {
-            const res = await fetch(`/api/helplines/${id}`, { method: "DELETE" });
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/helplines/${id}`, { method: "DELETE" });
             const data = await res.json();
             if (data.success) {
                 fetchHelplines();
@@ -203,7 +203,7 @@ export default function AddHelplineClient({
         ];
 
         for (const item of dummyData) {
-            await fetch("/api/helplines", {
+            await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/helplines", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(item),

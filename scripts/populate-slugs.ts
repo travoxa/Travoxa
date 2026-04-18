@@ -39,11 +39,9 @@ async function populateSlugs() {
             console.log(`Found ${items.length} items without slugs in ${col.name}`);
 
             for (const item of items) {
-                // Pre-save hook will handle slug generation if we mark it modified or just save it
-                // We'll manually trigger it to be safe
                 const titleField = (item as any).title || (item as any).name || (item as any).serviceName;
                 if (titleField) {
-                    item.slug = titleField
+                    let baseSlug = titleField
                         .toString()
                         .toLowerCase()
                         .trim()
@@ -51,11 +49,27 @@ async function populateSlugs() {
                         .replace(/[^\w-]+/g, '')
                         .replace(/--+/g, '-');
                     
-                    try {
-                        await item.save();
-                        console.log(`  Updated: ${titleField} -> ${item.slug}`);
-                    } catch (err) {
-                        console.error(`  Failed to update: ${titleField}`, err);
+                    let slug = baseSlug;
+                    let counter = 1;
+                    let success = false;
+
+                    while (!success) {
+                        try {
+                            item.slug = slug;
+                            await item.save();
+                            console.log(`  Updated: ${titleField} -> ${item.slug}`);
+                            success = true;
+                        } catch (err: any) {
+                            if (err.code === 11000) {
+                                // Duplicate key error
+                                slug = `${baseSlug}-${counter}`;
+                                counter++;
+                                console.log(`  Retrying with slug: ${slug}`);
+                            } else {
+                                console.error(`  Failed to update: ${titleField}`, err);
+                                break;
+                            }
+                        }
                     }
                 }
             }

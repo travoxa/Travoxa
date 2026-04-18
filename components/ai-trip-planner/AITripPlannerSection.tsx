@@ -174,7 +174,7 @@ const AITripPlannerSection = () => {
             };
             
             console.log("Starting generation with preferences:", preferences);
-            const response = await fetch('/api/ai-recommendations', {
+            const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/ai-recommendations', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(preferences)
@@ -200,7 +200,7 @@ const AITripPlannerSection = () => {
                 
                 // Save trip in background without blocking UI transition
                 if (session?.user?.email) {
-                    fetch('/api/trips', {
+                    fetch(process.env.NEXT_PUBLIC_API_URL + '/api/trips', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 

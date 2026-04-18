@@ -20,7 +20,7 @@ export default function ChatInput({ groupId, onMessageSent }: ChatInputProps) {
     setStatus('sending');
 
     try {
-      const response = await fetch(`/api/groups/${groupId}/chat`, {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/groups/${groupId}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

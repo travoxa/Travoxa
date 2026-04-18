@@ -271,7 +271,7 @@ export default function AddTourClient({
     const fetchRequests = async () => {
         setLoadingRequests(true);
         try {
-            const res = await fetch('/api/tours/request');
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/tours/request');
             const data = await res.json();
             if (data.success) {
                 setRequests(data.data);
@@ -286,7 +286,7 @@ export default function AddTourClient({
     const fetchCustomRequests = async () => {
         setLoadingCustomRequests(true);
         try {
-            const res = await fetch('/api/tours/custom-request');
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/tours/custom-request');
             const data = await res.json();
             if (data.success) {
                 setCustomRequests(data.data);
@@ -302,12 +302,12 @@ export default function AddTourClient({
         setLoadingRelated(true);
         try {
             const [attRes, foodRes, sightRes, actRes, rentRes, stayRes] = await Promise.all([
-                fetch('/api/attractions'),
-                fetch('/api/food'),
-                fetch('/api/sightseeing'),
-                fetch('/api/activities'),
-                fetch('/api/rentals'),
-                fetch('/api/stay')
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/attractions'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/food'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/sightseeing'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/activities'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/rentals'),
+                fetch(process.env.NEXT_PUBLIC_API_URL + '/api/stay')
             ]);
             const attData = await attRes.json();
             const foodData = await foodRes.json();
@@ -383,7 +383,7 @@ export default function AddTourClient({
         setDeletingId(id);
         try {
             console.log('[DELETE] Sending DELETE request to:', `/api/tours/${id}`);
-            const res = await fetch(`/api/tours/${id}`, {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/tours/${id}`, {
                 method: 'DELETE',
             });
 

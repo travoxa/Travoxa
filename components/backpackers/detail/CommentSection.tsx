@@ -21,7 +21,7 @@ export default function CommentSection({ groupId, initialComments }: CommentSect
   const handleSubmit = async (text: string) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/groups/${groupId}/comments`, {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/groups/${groupId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text }),
@@ -38,7 +38,7 @@ export default function CommentSection({ groupId, initialComments }: CommentSect
   const handleToggleLike = async (commentId: string, like: boolean) => {
     setLikeBusyId(commentId);
     try {
-      const response = await fetch(`/api/groups/${groupId}/comments/${commentId}`, {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/groups/${groupId}/comments/${commentId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ like }),

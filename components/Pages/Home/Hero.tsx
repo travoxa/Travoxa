@@ -32,7 +32,7 @@ export default function Hero() {
       
       setIsSearching(true);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`);
+        const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/search?q=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}`);
         const data = await res.json();
         if (data.success) {
           setSuggestions(data.data);
@@ -52,7 +52,7 @@ export default function Hero() {
   useEffect(() => {
     const fetchTours = async () => {
       try {
-        const res = await fetch('/api/tours');
+        const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/tours');
         const data = await res.json();
         if (data.success) {
           setDynamicTours(data.data);

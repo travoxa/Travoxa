@@ -38,7 +38,7 @@ function SearchContent() {
             const loc = searchParams.get('location') || '';
 
             try {
-                const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}&full=true`);
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/search?q=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}&full=true`);
                 const data = await res.json();
                 if (data.success) {
                     setResults(data.data);

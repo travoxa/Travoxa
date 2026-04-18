@@ -13,8 +13,9 @@ const PrivacyPage = () => {
 
                 <div className="prose prose-lg prose-gray max-w-none Inter">
                     <p className="lead text-xl text-gray-600 mb-12 border-b pb-8">
-                        Travoxa ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and our website (https://travoxa.in).
+                        {CONTACT_INFO.tradeName} ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and our website (https://travoxa.in).
                     </p>
+
 
                     <h3 className="text-2xl font-medium text-gray-900 mt-12 mb-6">1. Information We Collect</h3>
                     

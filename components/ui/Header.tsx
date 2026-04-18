@@ -106,7 +106,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
     },
     {
       label: "Blog",
-      path: "/#blog",
+      path: "/blog",
       dropdown: [],
     },
   ];

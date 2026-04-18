@@ -16,7 +16,7 @@ export default function ChatRoom({ groupId, initialMessages }: ChatRoomProps) {
   const [messages, setMessages] = useState<GroupMessage[]>(initialMessages);
 
   const refreshMessages = async () => {
-    const response = await fetch(`/api/groups/${groupId}/chat`);
+    const response = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/groups/${groupId}/chat`);
     if (!response.ok) return messages;
     const data = await response.json();
     if (Array.isArray(data?.messages)) {

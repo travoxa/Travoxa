@@ -34,7 +34,7 @@ export default function AIHarvesterClient() {
         setPlaceData(null);
 
         try {
-            const res = await fetch('/api/admin/ai-harvester', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/ai-harvester', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'fetch', ...payload }),
@@ -60,7 +60,7 @@ export default function AIHarvesterClient() {
         setMessage(null);
 
         try {
-            const res = await fetch('/api/admin/ai-harvester', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/admin/ai-harvester', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'seed', placeData }),

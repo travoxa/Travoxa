@@ -20,7 +20,7 @@ export function useGroups(): UseGroupsReturn {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('/api/groups');
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/groups');
       
       if (!response.ok) {
         throw new Error(`Failed to fetch groups: ${response.status} ${response.statusText}`);

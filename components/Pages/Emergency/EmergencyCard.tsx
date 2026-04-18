@@ -5,6 +5,7 @@ import Link from 'next/link';
 interface EmergencyCardProps {
     helpline: {
         _id: string;
+        slug?: string;
         serviceName: string;
         emergencyType: string;
         city: string;
@@ -82,7 +83,7 @@ const EmergencyCard: React.FC<EmergencyCardProps> = ({ helpline }) => {
                         </a>
                     )}
                     <Link
-                        href={`/travoxa-discovery/emergency-help/${helpline._id}`}
+                        href={`/travoxa-discovery/emergency-help/${helpline.slug || helpline._id}`}
                         className="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-sm shadow-slate-200 Inter text-sm"
                     >
                         Details

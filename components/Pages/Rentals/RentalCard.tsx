@@ -107,7 +107,7 @@ export default function RentalCard({ item }: RentalCardProps) {
                             itemId={item.id}
                             itemType="rental"
                             title={item.name}
-                            itemLink={`/travoxa-discovery/rentals/${item.id}`}
+                            itemLink={`/travoxa-discovery/rentals/${item.slug || item.id}`}
                             isSmall={true}
                             activeColor="bg-emerald-500"
                         />

@@ -38,7 +38,7 @@ const SightseeingPage = () => {
         const fetchPackages = async () => {
             setLoading(true);
             try {
-                const res = await fetch('/api/sightseeing');
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/sightseeing');
                 const data = await res.json();
                 if (data.success) {
                     setSightseeingPackages(data.data);
@@ -134,7 +134,9 @@ const SightseeingPage = () => {
         }
 
         if (currentFilters.vehicleType.length > 0) {
-            results = results.filter(pkg => currentFilters.vehicleType.includes(pkg.vehicleType));
+            results = results.filter(pkg => 
+                currentFilters.vehicleType.some(v => pkg.vehicleType.includes(v))
+            );
         }
 
         if (currentFilters.priceRange) {

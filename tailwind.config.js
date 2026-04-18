@@ -3,8 +3,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['var(--font-playfair)', 'serif'],
-        sans: ['var(--font-montserrat)', 'sans-serif'],
+        display: ['Montserrat', 'serif'],
+        sans: ['Montserrat', 'sans-serif'],
       },
       keyframes: {
         loop: {

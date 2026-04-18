@@ -19,12 +19,15 @@ const Footer = () => {
             <FaFacebook color='white' size={36} />
           </div>
 
-          <div className='mt-[24px] lg:mt-0 flex flex-col lg:flex-row justify-center items-center gap-[12px] lg:gap-[24px]' >
-            <Link href="/help" className='text-white text-[24px] lg:ml-[48px] font-light hover:text-gray-300 transition-colors' >Help Center</Link>
-            <Link href="/terms" className='text-white text-[24px]  font-light hover:text-gray-300 transition-colors' >Term of Use</Link>
-            <Link href="/support" className='text-white text-[24px]  font-light hover:text-gray-300 transition-colors' >Support</Link>
-            <Link href="/privacy" className='text-white text-[24px]  font-light hover:text-gray-300 transition-colors' >Privacy Policy</Link>
+          <div className='mt-[24px] lg:mt-0 flex flex-wrap justify-center items-center gap-[12px] lg:gap-[24px]' >
+            <Link href="/help" className='text-white text-[18px] lg:text-[24px] lg:ml-[48px] font-light hover:text-gray-300 transition-colors' >Help Center</Link>
+            <Link href="/terms" className='text-white text-[18px] lg:text-[24px] font-light hover:text-gray-300 transition-colors' >Terms of Use</Link>
+            <Link href="/privacy" className='text-white text-[18px] lg:text-[24px] font-light hover:text-gray-300 transition-colors' >Privacy Policy</Link>
+            <Link href="/refund-policy" className='text-white text-[18px] lg:text-[24px] font-light hover:text-gray-300 transition-colors' >Refund Policy</Link>
+            <Link href="/cancellation-policy" className='text-white text-[18px] lg:text-[24px] font-light hover:text-gray-300 transition-colors' >Cancellation Policy</Link>
+            <Link href="/shipping-policy" className='text-white text-[18px] lg:text-[24px] font-light hover:text-gray-300 transition-colors' >Shipping Policy</Link>
           </div>
+
         </div>
         <div className="text-white space-y-3 py-5 pl-3">
           <p>

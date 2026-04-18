@@ -31,7 +31,7 @@ const ShowCase = () => {
     React.useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const res = await fetch('/api/blogs?limit=3')
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/blogs?limit=3')
                 const data = await res.json()
                 if (data.success && data.data) {
                     const realBlogs = data.data.map((blog: any) => ({
@@ -72,7 +72,7 @@ const ShowCase = () => {
         setStatus('idle')
 
         try {
-            const res = await fetch('/api/blog-subscribe', {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/blog-subscribe', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),

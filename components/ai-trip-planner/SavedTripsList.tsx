@@ -28,7 +28,7 @@ export default function SavedTripsList({ onSelectTrip }: Props) {
 
         const fetchTrips = async () => {
             try {
-                const res = await fetch("/api/trips");
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/trips");
                 const data = await res.json();
                 if (data.trips) {
                     setTrips(data.trips);

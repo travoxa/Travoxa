@@ -27,7 +27,7 @@ export default function SavedItemsCard() {
                 return;
             }
             try {
-                const res = await fetch(`/api/save?email=${encodeURIComponent(session.user.email)}`);
+                const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/api/save?email=${encodeURIComponent(session.user.email)}`);
                 const data = await res.json();
                 if (data.success) {
                     setSavedItems(data.data);
@@ -44,7 +44,7 @@ export default function SavedItemsCard() {
     const handleRemove = async (id: string, itemId: string, itemType: string) => {
         if (!session?.user?.email) return;
         try {
-            const res = await fetch("/api/save", {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/save", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

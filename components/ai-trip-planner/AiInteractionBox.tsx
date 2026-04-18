@@ -121,7 +121,7 @@ export default function AiInteractionBox({ onComplete, initialProfile }: Props) 
         setIsLoading(true);
 
         try {
-            const res = await fetch("/api/ai-trip-planner", {
+            const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/ai-trip-planner", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -269,7 +269,7 @@ export default function AiInteractionBox({ onComplete, initialProfile }: Props) 
                                         return;
                                     }
                                     try {
-                                        const res = await fetch("/api/trips", {
+                                        const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/trips", {
                                             method: "POST",
                                             headers: { "Content-Type": "application/json" },
                                             body: JSON.stringify({ profile }),

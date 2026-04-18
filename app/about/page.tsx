@@ -9,6 +9,7 @@ import { FaHiking, FaMapMarkedAlt, FaHandsHelping, FaHome, FaLeaf, FaCamera, FaC
 import { GiBackpack } from 'react-icons/gi';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import { CONTACT_INFO } from "@/config/contact";
 
 export default function AboutPage() {
 
@@ -230,7 +231,33 @@ export default function AboutPage() {
                     </div>
                 </section>
 
-                {/* 9. CTA */}
+                {/* 9. LEGAL & REGISTERED INFO */}
+                <section className="bg-slate-50 p-12 rounded-[36px]" data-aos="fade-up">
+                    <div className="max-w-4xl mx-auto space-y-8">
+                        <h2 className="text-3xl md:text-4xl font-extralight text-black text-center Mont">Legal & Registered Information</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                            <div className="space-y-4">
+                                <h3 className="text-xl font-medium text-black">Company Details</h3>
+                                <p className="text-zinc-600 font-light leading-relaxed">
+                                    <span className="font-semibold text-black">Trade Name:</span> {CONTACT_INFO.tradeName}<br />
+                                    <span className="font-semibold text-black">Legal Name:</span> {CONTACT_INFO.legalName}<br />
+                                    <span className="font-semibold text-black">Operations:</span> This website is operated by {CONTACT_INFO.tradeName}.
+                                </p>
+                            </div>
+                            <div className="space-y-4">
+                                <h3 className="text-xl font-medium text-black">Registered Address</h3>
+                                <p className="text-zinc-600 font-light leading-relaxed">
+                                    {CONTACT_INFO.address.line1}<br />
+                                    {CONTACT_INFO.address.line2}<br />
+                                    {CONTACT_INFO.address.line3}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* 10. CTA */}
+
                 <section className="text-center py-12" data-aos="zoom-in-up">
                     <h2 className="text-3xl md:text-5xl font-extralight text-black mb-8 leading-tight Mont">
                         Travoxa is not just a travel platform — it is a complete <strong className="font-semibold text-green-600">travel operating system</strong> for India.

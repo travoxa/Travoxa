@@ -12,8 +12,9 @@ const TermsPage = () => {
 
                 <div className="prose prose-lg prose-gray max-w-none Inter">
                     <p className="lead text-xl text-gray-600 mb-12 border-b pb-8">
-                        Welcome to Travoxa. These Terms of Use ("Terms") govern your access to and use of our website, mobile application, and services (collectively, the "Services"). By accessing or using our Services, you agree to be bound by these Terms.
+                        Welcome to {CONTACT_INFO.tradeName}. This website is operated by {CONTACT_INFO.tradeName}. These Terms of Use ("Terms") govern your access to and use of our website, mobile application, and services (collectively, the "Services"). By accessing or using our Services, you agree to be bound by these Terms.
                     </p>
+
 
                     <h3 className="text-2xl font-medium text-gray-900 mt-12 mb-6">1. Acceptance of Terms</h3>
                     <p>
