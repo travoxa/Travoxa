@@ -1,4 +1,6 @@
 export const CONTACT_INFO = {
+  tradeName: "Travoxa",
+  legalName: "Travoxa",
   emails: {
     main: "hello@travoxa.in",
     contact: "contact@travoxa.in",
@@ -14,8 +16,9 @@ export const CONTACT_INFO = {
     whatsapp: "918100539204",
   },
   address: {
-    line1: "Flat 402, Shree Ganesh Residency,",
-    line2: "MG Road, Andheri East,",
-    line3: "Mumbai, Maharashtra 400069, India",
+    line1: "F5XH+8HJ, Durga Mandir, Chakmadhu,",
+    line2: "Bauria, Fort Gloster, Howrah,",
+    line3: "Kolkata, West Bengal 711310",
   }
 };
+

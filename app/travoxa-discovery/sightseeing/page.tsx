@@ -134,7 +134,9 @@ const SightseeingPage = () => {
         }
 
         if (currentFilters.vehicleType.length > 0) {
-            results = results.filter(pkg => currentFilters.vehicleType.includes(pkg.vehicleType));
+            results = results.filter(pkg => 
+                currentFilters.vehicleType.some(v => pkg.vehicleType.includes(v))
+            );
         }
 
         if (currentFilters.priceRange) {

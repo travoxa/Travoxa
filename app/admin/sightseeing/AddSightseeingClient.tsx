@@ -54,7 +54,7 @@ export default function AddSightseeingClient({
         state: 'Rajasthan',
         durationDays: '1',
         durationNights: '0',
-        vehicleType: 'Sedan',
+        vehicleType: '4 Seater (Sedan)',
 
         highlights: ['Amber Fort', 'Hawa Mahal', 'City Palace', 'Jantar Mantar'],
         placesCovered: ['Amber Fort', 'Jal Mahal', 'Hawa Mahal', 'City Palace', 'Jantar Mantar', 'Albert Hall Museum'],
@@ -97,7 +97,7 @@ export default function AddSightseeingClient({
         state: '',
         durationDays: '',
         durationNights: '',
-        vehicleType: 'Sedan',
+        vehicleType: '4 Seater (Sedan)',
 
         highlights: [] as string[],
         placesCovered: [] as string[],
@@ -440,7 +440,7 @@ export default function AddSightseeingClient({
                 state: '',
                 durationDays: '',
                 durationNights: '',
-                vehicleType: 'Sedan',
+                vehicleType: '4 Seater (Sedan)',
 
                 highlights: [],
                 placesCovered: [],
@@ -551,7 +551,7 @@ export default function AddSightseeingClient({
                                         state: '',
                                         durationDays: '',
                                         durationNights: '',
-                                        vehicleType: 'Sedan',
+                                        vehicleType: '4 Seater (Sedan)',
 
                                         highlights: [] as string[],
                                         placesCovered: [] as string[],
@@ -710,7 +710,7 @@ export default function AddSightseeingClient({
                                 state: '',
                                 durationDays: '',
                                 durationNights: '',
-                                vehicleType: 'Sedan',
+                                vehicleType: '4 Seater (Sedan)',
 
                                 highlights: [] as string[],
                                 placesCovered: [] as string[],

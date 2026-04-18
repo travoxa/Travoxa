@@ -36,6 +36,11 @@ export default function NormalHeader({ backgroundColor = "bg-white", logoHeight 
 
     const menuItems: MenuItem[] = [
         {
+            label: "Booking",
+            path: "/booking",
+            dropdown: [],
+        },
+        {
             label: "Tour",
             path: "/tour",
             dropdown: [],
@@ -93,7 +98,7 @@ export default function NormalHeader({ backgroundColor = "bg-white", logoHeight 
         },
         {
             label: "Blog",
-            path: "/#blog",
+            path: "/blog",
             dropdown: [],
         },
     ];

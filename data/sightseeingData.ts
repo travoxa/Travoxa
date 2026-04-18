@@ -7,7 +7,7 @@ export interface SightseeingPackage {
     state: string;
     duration: string; // e.g., "Full Day (8 Hours)"
 
-    vehicleType: "Sedan" | "SUV" | "Tempo Traveller" | "Mini Bus";
+    vehicleType: "4 Seater (Sedan)" | "6 Seater (SUV)" | "12 Seater (Tempo Traveller)" | "20 Seater (Mini Bus)" | "Sedan" | "SUV" | "Tempo Traveller" | "Mini Bus";
     highlights: string[];
     placesCovered: string[];
     price: number;
