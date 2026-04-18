@@ -18,10 +18,18 @@ const serializeConfig = (doc: any) => {
 
 export default async function HelplineDetailsPage({ params }: PageProps) {
     await connectDB();
-    const { id } = await params;
+    const { id: identifier } = await params;
 
     try {
-        const helpline = await Helpline.findById(id).lean();
+        let helpline = null;
+
+        // Try finding by slug first
+        helpline = await Helpline.findOne({ slug: identifier }).lean();
+
+        // If not found and identifier is valid Mongo ID, try finding by ID
+        if (!helpline && identifier.match(/^[0-9a-fA-F]{24}$/)) {
+            helpline = await Helpline.findById(identifier).lean();
+        }
 
         if (!helpline) {
             notFound();

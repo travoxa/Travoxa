@@ -80,6 +80,8 @@ export async function POST(req: Request) {
     // Strip possible hallucinated markdown wrapper
     messageContent = messageContent.replace(/```json/g, '').replace(/```/g, '').trim();
 
+    console.log("RAW AI CONTENT:", messageContent.slice(0, 500) + (messageContent.length > 500 ? "..." : ""));
+
     let aiPlaces = [];
     try {
         aiPlaces = JSON.parse(messageContent);
@@ -98,34 +100,46 @@ export async function POST(req: Request) {
     }
 
     // 5. Enrich & Format Data (Inject Wikipedia Images)
-    console.log(`Received ${aiPlaces.length} places from AI. Enriching with Wikipedia images...`);
+    console.log(`Received ${aiPlaces.length} places from AI. Enriching first 6 with Wikipedia images...`);
     const freshResults = await Promise.all(aiPlaces.map(async (place: any, index: number) => {
-        const lat = parseFloat(place.lat) || departure.lat;
-        const lon = parseFloat(place.lon) || departure.lon;
-        const dist = calculateDistance(departure.lat, departure.lon, lat, lon);
+        try {
+            const lat = parseFloat(place.lat) || (place.location?.coordinates?.[1]) || departure.lat;
+            const lon = parseFloat(place.lon) || (place.location?.coordinates?.[0]) || departure.lon;
+            const dist = place.distance_km || place.distance || calculateDistance(departure.lat, departure.lon, lat, lon);
 
-        // Run place through Wikipedia exactly like the old logic to get image/summary
-        const wiki = await fetchPlaceDetails(place.name);
+            // Only fetch Wikipedia details for the top 6 results to avoid timeouts
+            // and keep the response fast.
+            let wiki = { summary: '', image: '' };
+            if (index < 6 && place.name) {
+                wiki = await fetchPlaceDetails(place.name);
+            }
 
-        return {
-            _id: new mongoose.Types.ObjectId().toHexString(), // Generate a fake Mongoose _id so React Native renders keys properly
-            name: place.name || "Unknown Place",
-            description: wiki.summary || place.description || "A beautiful place to visit.",
-            image: wiki.image || null,
-            location: {
-                type: "Point",
-                coordinates: [lon, lat]
-            },
-            distance: dist,
-            category: place.category || primaryType,
-            tags: [primaryType, ...(secondaryTypes || [])],
-            source: 'ai_direct',
-            score: (100 - index) // Arbitrary score based on AI output order
-        };
+            const mapped = {
+                _id: new mongoose.Types.ObjectId().toHexString(), // Generate a fake Mongoose _id so React Native renders keys properly
+                name: place.name || "Unknown Place",
+                description: wiki.summary || place.highlight || place.description || "A beautiful place to visit.",
+                image: wiki.image || place.image || null,
+                location: {
+                    type: "Point",
+                    coordinates: [lon, lat]
+                },
+                distance: dist,
+                category: place.category || primaryType,
+                tags: [primaryType, ...(secondaryTypes || [])],
+                source: 'ai_direct',
+                score: (100 - index) // Arbitrary score based on AI output order
+            };
+
+            if (index === 0) console.log("MAPPED FIRST ITEM:", mapped);
+            return mapped;
+        } catch (err) {
+            console.error(`Error enriching place at index ${index}:`, err);
+            return null; // Filter out if something goes catastrophically wrong with one item
+        }
     }));
 
-    // Filter out generic bad drops
-    const validFreshResults = freshResults.filter(p => p.name !== "Unknown Place");
+    // Filter out generic bad drops or items that failed enrichment
+    const validFreshResults = freshResults.filter((p): p is NonNullable<typeof p> => p !== null && p.name !== "Unknown Place");
 
     // 6. Merge with Cache (Priority to Fresh Results)
     const mergedResults = [...validFreshResults];
