@@ -62,6 +62,7 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
         { label: "Activities", path: "/travoxa-discovery/activities" },
         { label: "Attractions", path: "/travoxa-discovery/attractions" },
         { label: "Food & Cafes", path: "/travoxa-discovery/food-and-cafes" },
+        { label: "Travel Journals", path: "/travoxa-discovery/travel-journals" },
         { label: "Emergency Help", path: "/travoxa-discovery/emergency-help" },
         { label: "Volunteer Yatra", path: "/travoxa-discovery/volunteer-yatra" },
         { label: "Creator Collab", path: "/travoxa-discovery/creator-collab" },
