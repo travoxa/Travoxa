@@ -160,7 +160,7 @@ const RentalsPage = () => {
                     ) : filteredRentals.length > 0 ? (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredRentals.map((item, index) => (
-                                <div key={item.id} data-aos="fade-up" data-aos-delay={index * 50}>
+                                <div key={item._id || item.id || `rent-${index}`} data-aos="fade-up" data-aos-delay={index * 50}>
                                     <RentalCard item={item} />
                                 </div>
                             ))}

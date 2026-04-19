@@ -164,7 +164,7 @@ function TourContent() {
             <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <Image
-                        src="/Destinations/Des5.jpg"
+                        src="https://res.cloudinary.com/dta29uych/image/upload/v1776543551/ideogram-v3.0_cinematic_wide-angle_composition_representing_India_travel_Taj_Mahal_at_sunrise_-0_u8dy7h.png"
                         alt="Tour Hero"
                         fill
                         className="object-cover"
@@ -219,7 +219,7 @@ function TourContent() {
                                 const isBlurItem = !isExpanded && index >= 6;
                                 return (
                                     <PackageCard
-                                        key={pkg.id}
+                                        key={pkg._id || pkg.id || `tour-${index}`}
                                         pkg={pkg}
                                         isBlurItem={isBlurItem}
                                     />

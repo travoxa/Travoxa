@@ -39,6 +39,7 @@ const PackageSlider = ({ title, items, linkPrefix, viewAllLink, colorTheme }: { 
             <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
                 {items.map((item, idx) => {
                     const id = item._id ? item._id.toString() : item.id;
+                    // Prioritize slug, fallback to ID for routing but aim for slug-based SEO
                     const urlId = item.slug || id;
                     const itemTitle = item.title || item.name;
                     const location = item.city || item.location || item.state || '';

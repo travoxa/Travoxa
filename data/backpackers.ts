@@ -10,6 +10,7 @@ const coverPool = [
 ];
 
 export interface GroupMember {
+  _id?: string;
   id: string;
   name: string;
   avatarColor: string;
@@ -23,6 +24,7 @@ export interface Badge {
 }
 
 export interface HostProfile {
+  _id?: string;
   id: string;
   name?: string;
   handle: string;
@@ -34,6 +36,7 @@ export interface HostProfile {
 }
 
 export interface BackpackerGroup {
+  _id?: string;
   id: string;
   groupName: string;
   destination: string;
@@ -79,6 +82,7 @@ export interface BackpackerGroup {
 }
 
 export interface GroupDetail {
+  _id?: string;
   id: string;
   groupName: string;
   destination: string;
@@ -110,6 +114,7 @@ export interface GroupDetail {
 }
 
 export interface GroupComment {
+  _id?: string;
   id: string;
   groupId: string;
   authorId: string;
@@ -124,6 +129,7 @@ export interface GroupComment {
 export type JoinRequestStatus = "pending" | "approved" | "rejected";
 
 export interface JoinRequest {
+  _id?: string;
   id: string;
   groupId: string;
   userId: string;
@@ -134,6 +140,7 @@ export interface JoinRequest {
 }
 
 export interface GroupMessage {
+  _id?: string;
   id: string;
   groupId: string;
   senderId: string;

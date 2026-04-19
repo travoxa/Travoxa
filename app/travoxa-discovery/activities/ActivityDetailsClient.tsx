@@ -82,7 +82,7 @@ const ActivityDetailsClient: React.FC<ActivityDetailsClientProps> = ({ activity 
                                     itemId={activity.id}
                                     itemType="activity"
                                     title={activity.title}
-                                    itemLink={`/travoxa-discovery/activities/${activity.id}`}
+                                    itemLink={`/travoxa-discovery/activities/${activity.slug || activity.id}`}
                                 />
                             </div>
 
