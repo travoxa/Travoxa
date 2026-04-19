@@ -1,5 +1,6 @@
 
 export interface AttractionPackage {
+    _id?: string;
     id: string;
     title: string;
     city: string;

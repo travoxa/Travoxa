@@ -1,4 +1,5 @@
 export interface RentalItem {
+    _id?: string;
     id: string;
     slug?: string;
     name: string;

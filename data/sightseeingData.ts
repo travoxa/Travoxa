@@ -1,5 +1,6 @@
 
 export interface SightseeingPackage {
+    _id?: string;
     id: string;
     slug?: string;
     title: string;

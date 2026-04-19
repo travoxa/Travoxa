@@ -1,5 +1,6 @@
 
 export interface FoodPackage {
+    _id?: string;
     id: string;
     title: string;
     city: string;

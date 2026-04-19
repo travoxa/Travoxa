@@ -1,5 +1,6 @@
 
 export interface ActivityPackage {
+    _id?: string;
     id: string;
     title: string;
     city: string;
