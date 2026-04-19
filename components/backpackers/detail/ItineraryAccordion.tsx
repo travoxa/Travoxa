@@ -19,14 +19,14 @@ export default function ItineraryAccordion({ plan }: ItineraryAccordionProps) {
           <h2 className="text-2xl font-semibold">How the days flow</h2>
         </div>
         <span className="rounded-full bg-gray-100 px-4 py-1 text-sm text-gray-600">
-          {plan.itinerary.length} itinerary drops
+          {plan?.itinerary?.length || 0} itinerary drops
         </span>
       </header>
 
-      <p className="mt-3 text-sm text-gray-600">{plan.overview}</p>
+      <p className="mt-3 text-sm text-gray-600">{plan?.overview}</p>
 
       <div className="mt-6 space-y-3">
-        {plan.itinerary.map((summary, index) => {
+        {plan?.itinerary?.map((summary, index) => {
           const isOpen = openIndex === index;
           return (
             <button
@@ -57,7 +57,7 @@ export default function ItineraryAccordion({ plan }: ItineraryAccordionProps) {
       <div className="mt-6">
         <h3 className="text-sm uppercase tracking-[0.3em] text-gray-600">Highlight activities</h3>
         <div className="mt-3 flex flex-wrap gap-2">
-          {plan.activities.map((activity) => (
+          {plan?.activities?.map((activity) => (
             <span key={activity} className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs uppercase text-gray-700">
               {activity}
             </span>

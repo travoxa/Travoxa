@@ -114,7 +114,7 @@ export default function GroupCardList({ groups, viewMode = 'community' }: GroupC
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {group.plan.activities.slice(0, 3).map((activity) => (
+                {group.plan?.activities?.slice(0, 3).map((activity) => (
                   <span key={activity} className={pillClass}>
                     {activity}
                   </span>
@@ -122,7 +122,7 @@ export default function GroupCardList({ groups, viewMode = 'community' }: GroupC
               </div>
 
               <div className="mt-auto flex items-center justify-between">
-                <span className="text-sm text-white/70 ">{group.plan.overview}</span>
+                <span className="text-sm text-white/70 ">{group.plan?.overview}</span>
                 <Link
                   href={`/backpackers/group/${group.id}`}
                   className="w-[40%] text-center rounded-full bg-white px-5 py-2 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5"

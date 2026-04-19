@@ -22,7 +22,7 @@ export default function GroupHeader({ group }: GroupHeaderProps) {
           <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/90 via-black/50 to-transparent p-6">
             <p className="text-sm uppercase tracking-[0.3em] text-white/70">{group.destination}</p>
             <h1 className="text-3xl font-semibold md:text-4xl">{group.groupName}</h1>
-            <p className="mt-3 text-sm text-white/80">{group.plan.overview}</p>
+            <p className="mt-3 text-sm text-white/80">{group.plan?.overview}</p>
           </div>
         </div>
 
