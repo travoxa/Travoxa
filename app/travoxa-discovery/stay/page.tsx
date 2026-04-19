@@ -159,7 +159,7 @@ const StayPage = () => {
                     {filteredStays.length > 0 ? (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredStays.map((pkg, index) => (
-                                <div key={pkg.id} data-aos="fade-up" data-aos-delay={index * 50}>
+                                <div key={pkg._id || pkg.id || `stay-${index}`} data-aos="fade-up" data-aos-delay={index * 50}>
                                     <StayPackageCard pkg={pkg} />
                                 </div>
                             ))}
