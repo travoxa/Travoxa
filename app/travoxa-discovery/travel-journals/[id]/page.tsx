@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
 import Timeline from '@/components/Discovery/Timeline';
-import { FiHeart, FiBookmark, FiShare2, FiArrowLeft, FiClock, FiMapPin, FiInstagram } from 'react-icons/fi';
+import { FiHeart, FiBookmark, FiShare2, FiArrowLeft, FiClock, FiMapPin, FiInstagram, FiCheck } from 'react-icons/fi';
 import { route } from '@/lib/route';
 import { useSession } from 'next-auth/react';
 import AOS from 'aos';
