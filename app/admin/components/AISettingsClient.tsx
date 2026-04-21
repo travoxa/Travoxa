@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { RiPlayLine, RiBugLine, RiCodeSSlashLine, RiTerminalLine, RiFileCopyLine, RiCheckLine } from 'react-icons/ri';
+import Spinner from '@/components/ui/Spinner';
 
 type TestResult = {
   success: boolean;
@@ -309,7 +310,11 @@ export default function AISettingsClient() {
 	    })}'`;
   };
 
-  if (loading) return <div className="p-8 text-gray-500">Loading AI Settings...</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <Spinner size="md" text="Loading AI Settings..." />
+    </div>
+  );
 
   return (
     <div className="max-w-4xl max-h-screen overflow-y-auto p-8 rounded-2xl bg-white shadow-sm border border-gray-100">
@@ -706,10 +711,10 @@ export default function AISettingsClient() {
               className="px-8 py-2.5 bg-orange-600 text-white rounded-xl font-semibold hover:bg-orange-700 disabled:opacity-50 transition-all shadow-md shadow-orange-200 flex items-center gap-2"
             >
               {testLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white" />
-                  Testing AI...
-                </>
+                <div className="flex items-center gap-2">
+                  <Spinner size="sm" variant="white" />
+                  <span>Testing AI...</span>
+                </div>
               ) : (
                 <>
                   <RiPlayLine /> Run AI Test

@@ -6,6 +6,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { getFirebaseAuth } from '@/lib/firebaseAuth';
 import { signOut as firebaseSignOut, deleteUser } from 'firebase/auth';
 import { RiAlertLine, RiDeleteBin7Line, RiArrowLeftLine } from 'react-icons/ri';
+import Spinner from '@/components/ui/Spinner';
 import Link from 'next/link';
 
 export default function DeleteAccountPage() {
@@ -129,7 +130,7 @@ export default function DeleteAccountPage() {
               }`}
             >
               {loading ? (
-                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <Spinner size="sm" variant="white" />
               ) : (
                 <>
                   <RiDeleteBin7Line className="mr-2" /> Delete My Account Permanently

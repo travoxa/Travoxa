@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from 'react';
 import { useSession } from "next-auth/react";
+import Spinner from '@/components/ui/Spinner';
 
 const genderPreferenceOptions = [
   { label: 'No preference', value: 'any' },
@@ -96,10 +97,9 @@ export default function GroupCreateForm() {
   // Check if user is authenticated
   if (sessionStatus === 'loading') {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
-          <p className="mt-4 text-gray-600">Checking authentication...</p>
+          <Spinner size="md" text="Checking authentication..." />
         </div>
       </div>
     );

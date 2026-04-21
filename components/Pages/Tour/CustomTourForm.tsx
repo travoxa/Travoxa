@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { HiPaperAirplane, HiLocationMarker, HiUserGroup, HiCalendar, HiCurrencyDollar, HiCheckCircle, HiUser, HiMail, HiPhone } from "react-icons/hi";
 import { route } from "@/lib/route";
+import Spinner from '@/components/ui/Spinner';
 
 export default function CustomTourForm() {
     const { data: session } = useSession();
@@ -479,7 +480,7 @@ export default function CustomTourForm() {
                             className="w-full bg-black text-white font-bold py-5 rounded-2xl hover:bg-gray-800 transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg"
                         >
                             {loading ? (
-                                <span className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <Spinner size="sm" variant="white" />
                             ) : (
                                 <>
                                     Design My Perfect Trip <HiPaperAirplane className="rotate-90 text-xl" />

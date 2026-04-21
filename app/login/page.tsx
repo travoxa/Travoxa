@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { getFirebaseAuth } from "@/lib/firebaseAuth";
 import Loading from "@/components/ui/components/Loading";
 import GoBackButton from "@/components/ui/components/GoBackButton";
+import Spinner from "@/components/ui/Spinner";
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -469,7 +470,7 @@ export default function Login() {
           disabled={isGoogleLoading}
           className="flex gap-[12px] justify-center items-center text-black font-light border border-[#3e4462] w-full mt-[36px] rounded-[6px] py-[12px] disabled:opacity-50 disabled:cursor-not-allowed">
           {isGoogleLoading ? (
-            <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+            <Spinner size="sm" />
           ) : (
             <>
               <img

@@ -47,7 +47,7 @@ const TravelJournalCard: React.FC<TravelJournalCardProps> = ({ journal, onLike, 
     };
 
     // Get cover image: standalone IG thumbnail or first step image or fallback
-    const coverImage = journal.igLink ? (journal.image || '/journal-placeholder.webp') : (journal.steps?.[0]?.images?.[0] || '/journal-placeholder.webp');
+    const coverImage = journal.igLink ? (journal.image || '/placeholder.jpg') : (journal.steps?.[0]?.images?.[0] || '/placeholder.jpg');
 
     return (
         <div 

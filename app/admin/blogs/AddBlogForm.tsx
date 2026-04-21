@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { RiCloseLine, RiSaveLine, RiImageAddLine } from 'react-icons/ri'
 import { CldUploadWidget } from 'next-cloudinary'
+import Spinner from '@/components/ui/Spinner';
 
 interface AddBlogFormProps {
     onClose: () => void
@@ -209,7 +210,7 @@ const AddBlogForm: React.FC<AddBlogFormProps> = ({ onClose, blog }) => {
                         className="flex items-center gap-2 px-8 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-all text-sm font-light disabled:opacity-50"
                     >
                         {loading ? (
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <Spinner size="sm" variant="white" />
                         ) : (
                             <RiSaveLine size={20} />
                         )}
