@@ -12,6 +12,7 @@ import {
     FiTrash2
 } from "react-icons/fi";
 import { route } from "@/lib/route";
+import Spinner from "./Spinner";
 
 export default function VerticalSidebar() {
     const { data: session, status } = useSession();
@@ -222,7 +223,7 @@ export default function VerticalSidebar() {
 
                             {isLoading ? (
                                 <div className="flex-1 flex items-center justify-center">
-                                    <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                                    <Spinner size="sm" />
                                 </div>
                             ) : savedItems.length === 0 ? (
                                 <div className="flex-1 flex flex-col items-center justify-center text-center px-4">

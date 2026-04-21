@@ -15,6 +15,7 @@ import {
 } from 'react-icons/ri'
 import { formatDistanceToNow } from 'date-fns'
 import Pusher from 'pusher-js'
+import Spinner from '@/components/ui/Spinner'
 
 interface Message {
     id: string
@@ -417,7 +418,7 @@ const HelpControlClient = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+                <Spinner size="md" text="Loading conversations..." />
             </div>
         )
     }

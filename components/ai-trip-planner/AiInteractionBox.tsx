@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { FaPaperPlane, FaMagic, FaStar, FaUser, FaClock, FaMoneyBillWave, FaMapMarkedAlt, FaSmile, FaCheckCircle, FaSave } from "react-icons/fa";
+import Spinner from "@/components/ui/Spinner";
 import { useSession } from "next-auth/react";
 import { QuestionnairePhase } from "@/lib/ai-trip-planner/prompts";
 
@@ -177,8 +178,7 @@ export default function AiInteractionBox({ onComplete, initialProfile }: Props) 
             <div className="w-full relative z-10 mx-auto transition-all duration-500">
                 <div className="relative overflow-hidden rounded-2xl border border-[#4da528]/20 bg-white/10 backdrop-blur-xl shadow-2xl h-[550px] flex items-center justify-center">
                     <div className="flex flex-col items-center gap-3">
-                        <FaStar className="text-4xl text-[#4da528] animate-spin-slow" />
-                        <span className="text-[#4da528] font-semibold animate-pulse">Personalizing your planner...</span>
+                        <Spinner size="lg" text="Personalizing your planner..." />
                     </div>
                 </div>
             </div>
@@ -225,7 +225,7 @@ export default function AiInteractionBox({ onComplete, initialProfile }: Props) 
                             {isLoading && (
                                 <div className="flex justify-start">
                                     <div className="bg-white px-4 py-3 rounded-2xl rounded-bl-none shadow-sm flex items-center gap-2 text-gray-500 text-sm border border-gray-100">
-                                        <FaStar className="animate-spin text-[#4da528]" /> Analyzing...
+                                        <Spinner size="sm" text="Analyzing..." />
                                     </div>
                                 </div>
                             )}

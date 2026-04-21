@@ -8,6 +8,7 @@ import Timeline from '@/components/Discovery/Timeline';
 import { FiHeart, FiBookmark, FiShare2, FiArrowLeft, FiClock, FiMapPin, FiInstagram, FiCheck } from 'react-icons/fi';
 import { route } from '@/lib/route';
 import { useSession } from 'next-auth/react';
+import Spinner from '@/components/ui/Spinner';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -57,7 +58,7 @@ const JournalDetailPage = () => {
 
     if (loading) return (
         <div className="min-h-screen bg-white flex items-center justify-center">
-            <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+            <Spinner size="lg" />
         </div>
     );
 
@@ -68,7 +69,7 @@ const JournalDetailPage = () => {
         </div>
     );
 
-    const coverImage = journal.igLink ? (journal.image || '/journal-placeholder.webp') : (journal.steps?.[0]?.images?.[0] || '/journal-placeholder.webp');
+    const coverImage = journal.igLink ? (journal.image || '/placeholder.jpg') : (journal.steps?.[0]?.images?.[0] || '/placeholder.jpg');
 
     return (
         <div className="bg-[#fcfdfd] min-h-screen font-sans">

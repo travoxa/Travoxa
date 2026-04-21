@@ -6,6 +6,7 @@ import Link from "next/link";
 import { FaRegTrashAlt, FaChevronRight } from "react-icons/fa";
 import { FiTag } from "react-icons/fi";
 import Image from "next/image";
+import Spinner from "@/components/ui/Spinner";
 
 interface SavedItem {
     _id: string;
@@ -63,10 +64,7 @@ export default function SavedItemsCard() {
     if (isLoading) {
         return (
             <div className="bg-white rounded-[32px] p-8 border border-gray-100 flex items-center justify-center min-h-[400px]">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-gray-500 font-medium">Loading your favorites...</p>
-                </div>
+                <Spinner size="md" text="Loading your favorites..." />
             </div>
         );
     }

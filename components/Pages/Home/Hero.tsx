@@ -4,6 +4,7 @@
 import Image from "next/image";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Spinner from "@/components/ui/Spinner";
 import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaUserFriends, FaChevronDown, FaRegCompass } from "react-icons/fa";
 import { rentalsData } from "@/data/rentalsData";
 import { sightseeingPackages } from "@/data/sightseeingData";
@@ -162,9 +163,9 @@ export default function Hero() {
                 {showQueryDropdown && (querySuggestions.length > 0 || isSearching) && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-100 z-50 min-w-[300px] max-h-[380px] overflow-y-auto overflow-x-hidden custom-scrollbar scroll-smooth">
                     {isSearching ? (
-                      <div className="px-4 py-3 text-xs text-slate-400 flex items-center gap-2">
-                        <div className="w-3 h-3 border-2 border-slate-200 border-t-emerald-500 rounded-full animate-spin" />
-                        Searching...
+                      <div className="px-4 py-3 flex items-center gap-2">
+                        <Spinner size="xs" />
+                        <span className="text-xs text-slate-400">Searching...</span>
                       </div>
                     ) : (
                       querySuggestions.map((suggestion, idx) => (

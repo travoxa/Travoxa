@@ -7,6 +7,7 @@ import { FirebaseError } from "firebase/app";
 import { useRouter } from "next/navigation";
 import { getFirebaseAuth } from "@/lib/firebaseAuth";
 import Loading from "@/components/ui/components/Loading";
+import Spinner from "@/components/ui/Spinner";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -370,7 +371,7 @@ export default function Login() {
           >
             {loading ? (
               <div className="flex items-center justify-center space-x-2">
-                <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                <Spinner size="sm" variant="white" />
                 <span>{isLogin ? "Signing In..." : "Creating Account..."}</span>
               </div>
             ) : (
@@ -396,7 +397,7 @@ export default function Login() {
               className="w-full inline-flex justify-center items-center px-4 py-3 border border-white/30 rounded-lg shadow-sm bg-white/10 text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isGoogleLoading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <Spinner size="sm" variant="white" />
               ) : (
                 <>
                   <span className="text-lg mr-2">🟢</span>
@@ -411,7 +412,7 @@ export default function Login() {
               className="w-full inline-flex justify-center items-center px-4 py-3 border border-white/30 rounded-lg shadow-sm bg-white/10 text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isGithubLoading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <Spinner size="sm" variant="white" />
               ) : (
                 <>
                   <span className="text-lg mr-2">⚫</span>

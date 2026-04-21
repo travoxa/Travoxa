@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { RiDeleteBinLine, RiAddLine, RiCloseLine, RiMoreLine, RiEditLine } from 'react-icons/ri';
 import { CldUploadWidget } from 'next-cloudinary';
 import { INDIA_STATES, getCitiesForState } from '@/data/indiaStatesAndCities';
+import Spinner from '@/components/ui/Spinner';
 
 const STAY_TYPE_OPTIONS = ['Hotel', 'Resort', 'Homestay', 'Villa', 'Apartment', 'Hostel', 'Campsite'];
 const PRICE_TYPE_OPTIONS = ["per_night", "per_person"];
@@ -413,10 +414,9 @@ export default function AddStayClient({
         <div className="space-y-6 relative">
             {/* Loading Overlay */}
             {deletingId && (
-                <div className="fixed inset-0 bg-white bg-opacity-60 z-50 flex items-center justify-center">
-                    <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-3 shadow-lg border border-gray-200">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900"></div>
-                        <p className="text-gray-900 font-medium">Deleting stay package...</p>
+                <div className="fixed inset-0 bg-white/60 z-[100] flex items-center justify-center backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl p-8 flex flex-col items-center gap-4 shadow-2xl border border-gray-100 animate-in fade-in zoom-in duration-300">
+                        <Spinner size="md" text="Deleting stay package..." />
                     </div>
                 </div>
             )}
@@ -817,8 +817,8 @@ export default function AddStayClient({
                         <div className="pt-8 border-t border-gray-200 mt-8 mb-8">
                             <h3 className="text-lg font-bold text-gray-800 mb-6">Related Packages</h3>
                             {loadingRelated ? (
-                                <div className="text-sm text-gray-500 flex items-center gap-2">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div> Loading related packages...
+                                <div className="py-6 flex items-center gap-3">
+                                    <Spinner size="sm" text="Loading related packages..." />
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">

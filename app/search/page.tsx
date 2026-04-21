@@ -11,6 +11,7 @@ import ActivitiesCard from '@/components/Pages/Activities/ActivitiesCard';
 import AttractionsCard from '@/components/Pages/Attractions/AttractionsCard';
 import FoodCard from '@/components/Pages/FoodAndCafes/FoodCard';
 import { FaSearch, FaHotel, FaRunning, FaLandmark, FaUtensils } from 'react-icons/fa';
+import Spinner from '@/components/ui/Spinner';
 
 function SearchContent() {
     const searchParams = useSearchParams();
@@ -95,8 +96,7 @@ function SearchContent() {
                 {/* Results */}
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20">
-                        <div className="w-12 h-12 border-4 border-slate-200 border-t-emerald-500 rounded-full animate-spin mb-4" />
-                        <p className="text-slate-500 font-medium">Searching across all categories...</p>
+                        <Spinner size="lg" text="Searching across all categories..." />
                     </div>
                 ) : !hasResults ? (
                     <div className="text-center py-20">

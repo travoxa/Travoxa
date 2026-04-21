@@ -6,6 +6,7 @@ import TopBar from '@/components/dashboard/TopBar'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { RiStore2Line, RiEditLine, RiCloseLine, RiCheckLine, RiNotification3Line, RiLogoutBoxLine, RiMenuLine } from 'react-icons/ri'
+import Spinner from '@/components/ui/Spinner'
 
 // Reusing Admin components for now since Vendor uses same listings framework
 import AddActivitiesClient from '@/app/admin/activities/AddActivitiesClient'
@@ -221,7 +222,7 @@ const VendorDashboardClient: React.FC<VendorDashboardClientProps> = ({ vendorUse
                             className="flex-1 md:flex-none px-6 py-2 bg-black text-white rounded-lg hover:bg-black/90 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                             {isSaving ? (
-                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <Spinner size="sm" variant="white" />
                             ) : (
                                 <RiCheckLine size={18} />
                             )}

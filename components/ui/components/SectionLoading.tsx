@@ -1,9 +1,10 @@
 import React from 'react'
+import Spinner from '../Spinner'
 
 const SectionLoading = () => {
     return (
-        <div className="flex justify-center items-center w-full py-20 bg-gray-50 rounded-3xl">
-            <div className="w-12 h-12 border-4 border-gray-200 text-green-600 animate-spin flex items-center justify-center border-t-green-600 rounded-full"></div>
+        <div className="flex justify-center items-center w-full py-20 bg-slate-50/50 rounded-3xl border border-slate-100">
+            <Spinner size="md" />
         </div>
     )
 }

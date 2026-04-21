@@ -6,6 +6,7 @@ import { useState } from "react";
 import LoginRequiredPopup from "@/components/ui/LoginRequiredPopup";
 import { route } from "@/lib/route";
 import { useGroups } from "@/lib/hooks/useGroups";
+import Spinner from "@/components/ui/Spinner";
 
 export default function BackpackersPage() {
   const { groups, loading, error } = useGroups();
@@ -27,9 +28,8 @@ export default function BackpackersPage() {
           </header>
 
           {loading && (
-            <div className="flex justify-center items-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-              <span className="ml-3 text-sm text-black/70">Loading groups...</span>
+            <div className="flex justify-center items-center py-12">
+              <Spinner size="md" text="Loading groups..." />
             </div>
           )}
 

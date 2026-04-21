@@ -3,6 +3,7 @@
 import { useState, useEffect, SetStateAction } from 'react';
 import { RiDeleteBinLine, RiAddLine, RiMoreLine, RiCloseLine, RiEditLine, RiCheckLine, RiSettings4Line, RiImageLine } from 'react-icons/ri';
 import { CldUploadWidget } from 'next-cloudinary';
+import Spinner from '@/components/ui/Spinner';
 
 const INCLUSION_OPTIONS = [
     "Airport transfers",
@@ -923,10 +924,9 @@ export default function AddTourClient({
         <div className="mx-auto space-y-6 relative">
             {/* Loading Overlay */}
             {deletingId && (
-                <div className="fixed inset-0 bg-white bg-opacity-60 z-50 flex items-center justify-center">
-                    <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-3 shadow-lg border border-gray-200">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900"></div>
-                        <p className="text-gray-900 font-medium">Deleting tour...</p>
+                <div className="fixed inset-0 bg-white/60 z-[100] flex items-center justify-center backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl p-8 flex flex-col items-center gap-4 shadow-2xl border border-gray-100 animate-in fade-in zoom-in duration-300">
+                        <Spinner size="md" text="Deleting tour..." />
                     </div>
                 </div>
             )}
@@ -997,7 +997,9 @@ export default function AddTourClient({
 
                             {requestTab === 'standard' ? (
                                 loadingRequests ? (
-                                    <div className="py-8 text-center text-gray-500">Loading enquiries...</div>
+                                    <div className="py-12 flex justify-center">
+                                        <Spinner size="md" text="Loading enquiries..." />
+                                    </div>
                                 ) : requests.length === 0 ? (
                                     <div className="py-8 text-left px-1 text-gray-500 text-sm">No standard enquiries found.</div>
                                 ) : (
@@ -1056,7 +1058,9 @@ export default function AddTourClient({
                                 )
                             ) : (
                                 loadingCustomRequests ? (
-                                    <div className="py-8 text-center text-gray-500">Loading custom requests...</div>
+                                    <div className="py-12 flex justify-center">
+                                        <Spinner size="md" text="Loading custom requests..." />
+                                    </div>
                                 ) : customRequests.length === 0 ? (
                                     <div className="py-8 text-left px-1 text-gray-500 text-sm">No custom trip requests found.</div>
                                 ) : (
@@ -2518,8 +2522,8 @@ export default function AddTourClient({
                         <div className="pt-8 border-t border-gray-200 mt-8 mb-8">
                             <h3 className="text-lg font-bold text-gray-800 mb-6">Related Packages</h3>
                             {loadingRelated ? (
-                                <div className="text-sm text-gray-500 flex items-center gap-2">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div> Loading related packages...
+                                <div className="py-6 flex items-center gap-3">
+                                    <Spinner size="sm" text="Loading related packages..." />
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">

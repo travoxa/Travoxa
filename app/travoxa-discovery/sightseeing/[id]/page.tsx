@@ -13,6 +13,7 @@ import ReviewSection from "@/components/sightseeing/ReviewSection";
 import { CONTACT_INFO } from "@/config/contact";
 import SaveButton from "@/components/ui/SaveButton";
 import RelatedPackages from "@/components/ui/RelatedPackages";
+import Spinner from "@/components/ui/Spinner";
 
 export default function SightseeingDetailPage() {
     const params = useParams();
@@ -60,8 +61,7 @@ export default function SightseeingDetailPage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-white flex flex-col items-center justify-center">
-                <NormalHeader />
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mt-20"></div>
+                <Spinner size="lg" />
             </div>
         );
     }

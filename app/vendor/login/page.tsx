@@ -9,6 +9,7 @@ import { getFirebaseAuth } from "@/lib/firebaseAuth";
 import Loading from "@/components/ui/components/Loading";
 import GoBackButton from "@/components/ui/components/GoBackButton";
 import LogoutPopup from "@/components/vendor/LogoutPopup";
+import Spinner from "@/components/ui/Spinner";
 import Image from "next/image";
 import { FiMail, FiLock, FiUser, FiArrowRight } from "react-icons/fi";
 
@@ -270,7 +271,7 @@ export default function VendorLogin() {
                         className="flex items-center justify-center gap-3 py-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all active:scale-[0.98] disabled:opacity-50 group"
                     >
                         {isGoogleLoading ? (
-                            <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                            <Spinner size="sm" />
                         ) : (
                             <>
                                 <img width={18} src="https://www.gstatic.com/marketing-cms/assets/images/d5/dc/cfe9ce8b4425b410b49b7f2dd3f3/g.webp=s96-fcrop64=1,00000000ffffffff-rw" alt="Google" />

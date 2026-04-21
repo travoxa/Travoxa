@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { RiLoader4Line, RiCheckLine, RiCloseLine, RiUserLine } from 'react-icons/ri';
 import { useRouter } from 'next/navigation';
+import Spinner from '@/components/ui/Spinner';
 
 interface Request {
     id: string;
@@ -121,7 +122,7 @@ const RequestManagementModal: React.FC<RequestManagementModalProps> = ({
                                                     className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                                                 >
                                                     {processingId === request.id ? (
-                                                        <RiLoader4Line size={14} className="animate-spin" />
+                                                        <Spinner size="xs" variant="white" />
                                                     ) : (
                                                         <RiCheckLine size={14} />
                                                     )}

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
 import { checkUserExistsByEmail } from "@/lib/clientUtils";
+import Spinner from "@/components/ui/Spinner";
 
 interface VendorFormData {
     businessName: string;
@@ -121,9 +122,8 @@ export default function VendorOnboardingPage() {
                 <Header />
                 <div className="min-h-screen bg-dots-svg px-4 py-24 text-black sm:px-6 lg:px-12">
                     <div className="mx-auto max-w-4xl flex items-center justify-center">
-                        <div className="text-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
-                            <p className="mt-4 text-lg">Setting up your vendor space...</p>
+                        <div className="text-center py-12 flex flex-col items-center">
+                            <Spinner size="md" text="Setting up your vendor space..." />
                         </div>
                     </div>
                 </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import Spinner from './Spinner';
 
 /**
  * Global Page Loader Component
@@ -53,20 +54,13 @@ function LoaderContent() {
                     className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm"
                 >
                     <div className="relative flex flex-col items-center">
-                        {/* Premium Spinner Animation */}
-                        <motion.div
-                            animate={{ 
-                                rotate: 360,
-                                borderRadius: ["25%", "25%", "50%", "50%", "25%"],
-                            }}
-                            transition={{ 
-                                rotate: { repeat: Infinity, duration: 1.5, ease: "linear" },
-                                borderRadius: { repeat: Infinity, duration: 2, ease: "easeInOut" }
-                            }}
-                            className="w-16 h-16 border-t-4 border-l-4 border-emerald-500 shadow-xl shadow-emerald-500/20"
+                        {/* Unified Spinner Component */}
+                        <Spinner 
+                            size="lg" 
+                            text="Drafting your journey" 
                         />
                         
-                        {/* Floating Dots */}
+                        {/* Floating Dots (Kept for brand flair) */}
                         <div className="mt-8 flex gap-2">
                             {[0, 1, 2].map((i) => (
                                 <motion.div
@@ -82,14 +76,6 @@ function LoaderContent() {
                                 />
                             ))}
                         </div>
-
-                        <motion.p
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mt-6 text-[10px] font-black uppercase tracking-[0.3em] text-slate-800"
-                        >
-                            Drafting your journey
-                        </motion.p>
                     </div>
 
                     {/* Progress line at the very top */}

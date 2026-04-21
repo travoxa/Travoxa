@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import React from 'react'
 import { HiArrowRight } from "react-icons/hi2"
+import Spinner from '@/components/ui/Spinner'
 
 const ShowCase = () => {
 
@@ -148,7 +149,7 @@ const ShowCase = () => {
                                     className="bg-black text-white p-3 rounded-full hover:bg-black/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex-shrink-0"
                                 >
                                     {isSubmitting ? (
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        <Spinner size="sm" variant="white" />
                                     ) : (
                                         <HiArrowRight className="text-lg" />
                                     )}

@@ -10,6 +10,7 @@ import { HiBadgeCheck, HiLocationMarker, HiPhone, HiGlobeAlt } from "react-icons
 import SaveButton from "@/components/ui/SaveButton";
 import { useRouter } from "next/navigation";
 import RelatedPackages from "@/components/ui/RelatedPackages";
+import Spinner from "@/components/ui/Spinner";
 
 export default function StayDetailsPage() {
     const { id } = useParams();
@@ -54,7 +55,7 @@ export default function StayDetailsPage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+                <Spinner size="lg" />
             </div>
         );
     }

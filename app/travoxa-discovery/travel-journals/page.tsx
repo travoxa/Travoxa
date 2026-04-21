@@ -9,6 +9,7 @@ import { route } from '@/lib/route';
 import { useSession } from 'next-auth/react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import MetaBalls from '@/components/Discovery/MetaBalls';
 
 const TravelJournalsPage = () => {
     const { data: session } = useSession();
@@ -47,43 +48,131 @@ const TravelJournalsPage = () => {
 
     return (
         <div className="bg-[#fcfdfd] min-h-screen font-sans">
+            <style jsx>{`
+                @keyframes float {
+                    0% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-15px) rotate(1deg); }
+                    100% { transform: translateY(0px) rotate(0deg); }
+                }
+                @keyframes float-slow {
+                    0% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-10px) rotate(-1deg); }
+                    100% { transform: translateY(0px) rotate(0deg); }
+                }
+                .animate-float {
+                    animation: float 6s ease-in-out infinite;
+                }
+                .animate-float-slow {
+                    animation: float-slow 8s ease-in-out infinite;
+                }
+            `}</style>
             <Header forceWhite={true} />
 
-            {/* Premium Hero Section */}
-            <section className="relative pt-32 pb-20 overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-emerald-50/50 to-transparent -z-10" />
-                <div className="max-w-[1400px] mx-auto px-6 text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100/50 text-emerald-700 rounded-full text-xs font-bold uppercase tracking-widest mb-6 animate-fade-in">
-                        <FiBookOpen size={14} /> Discovery: Travel Journals
+            {/* Premium Dark Bento Hero Section - BOX TYPE */}
+            <div className="px-3 md:px-4 py-3 bg-white">
+                <section className="relative h-[65vh] min-h-[550px] bg-[#000] rounded-[24px] overflow-hidden flex flex-col justify-between pt-24 pb-12 px-8 md:px-16 transition-all duration-500">
+                    
+                    {/* Background Decor */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-600/15 blur-[100px] rounded-full pointer-events-none" />
+                    
+                    {/* Dynamic MetaBalls Background */}
+                    <div className="absolute inset-y-0 right-0 w-full md:w-[60%] z-0 opacity-60">
+                        <MetaBalls 
+                            color="#10b981"
+                            cursorBallColor="#34d399"
+                            cursorBallSize={2.5}
+                            ballCount={20}
+                            animationSize={20}
+                            enableMouseInteraction={true}
+                            enableTransparency={true}
+                            hoverSmoothness={0.03}
+                            clumpFactor={1.2}
+                            speed={0.4}
+                        />
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-bold text-slate-900 Mont mb-6 leading-tight" data-aos="fade-up">
-                        Stories that <span className="text-emerald-600 italic">inspire</span> <br /> your next escape.
-                    </h1>
-                    <p className="text-lg text-slate-500 Inter max-w-2xl mx-auto mb-10" data-aos="fade-up" data-aos-delay="100">
-                        Explore authentic trip experiences shared by the Travoxa community.
-                        From hidden mountain trails to secret city cafes.
-                    </p>
+                    
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4" data-aos="fade-up" data-aos-delay="200">
-                        <div className="relative w-full max-w-md">
-                            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                            <input 
-                                type="text" 
-                                placeholder="Search stories, locations..."
-                                className="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium text-slate-900"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
+
+                    {/* Randomly Positioned Bento Boxes with animations */}
+                    <div className="absolute top-[20%] right-[10%] z-20 hidden md:block animate-float" data-aos="zoom-in" data-aos-delay="400">
+                        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 rounded-[2rem] w-48 shadow-2xl">
+                            <span className="text-3xl font-bold text-white mb-2 block Mont">320+</span>
+                            <h3 className="text-sm font-bold text-white mb-1 Mont">Trips Shared</h3>
+                            <p className="text-[10px] text-white/40 Inter leading-tight">
+                                Join the circle of real explorers.
+                            </p>
                         </div>
-                        <button 
-                            onClick={() => route('/travoxa-discovery/travel-journals/create')}
-                            className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-emerald-600 transition-all shadow-lg hover:shadow-emerald-200"
-                        >
-                            <FiPlus size={20} /> Share your Story
-                        </button>
                     </div>
-                </div>
-            </section>
+
+                    <div className="absolute bottom-[35%] right-[25%] z-20 hidden lg:block animate-float-slow" data-aos="zoom-in" data-aos-delay="600">
+                        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 rounded-[2rem] w-48 shadow-2xl">
+                            <span className="text-3xl font-bold text-white mb-2 block Mont">99%</span>
+                            <h3 className="text-sm font-bold text-white mb-1 Mont">Happy Travelers</h3>
+                            <p className="text-[10px] text-white/40 Inter leading-tight">
+                                Community-sourced authentic insights.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="max-w-[1400px] mx-auto w-full flex-1 flex flex-col justify-between relative z-10">
+                        
+                        {/* Top Section: Typography */}
+                        <div className="flex flex-col lg:flex-row justify-between items-start gap-12">
+                            <div className="max-w-2xl">
+                                <h1 className="text-[clamp(2.5rem,6vw,4.5rem)] font-bold text-white Mont leading-[1] tracking-tight mb-6" data-aos="fade-right">
+                                    Stories that <br />
+                                    <span className="italic font-serif text-emerald-500 text-[1.1em]">Escape</span> the <br />
+                                    Ordinary
+                                </h1>
+                            </div>
+                        </div>
+
+                        {/* Mobile view of boxes (visible only on mobile) */}
+                        <div className="flex flex-row gap-4 md:hidden mb-8">
+                             <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-4 rounded-[1.5rem] flex-1">
+                                <span className="text-2xl font-bold text-white block Mont">320+</span>
+                                <span className="text-[10px] text-white/50 Mont font-bold uppercase">Trips</span>
+                             </div>
+                             <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-4 rounded-[1.5rem] flex-1">
+                                <span className="text-2xl font-bold text-white block Mont">99%</span>
+                                <span className="text-[10px] text-white/50 Mont font-bold uppercase">Happy</span>
+                             </div>
+                        </div>
+
+                        {/* Bottom Section: Search Bar & Share Button side-by-side */}
+                        <div className="flex flex-col md:flex-row items-end gap-4 mt-8">
+                            <div className="w-full max-w-lg" data-aos="fade-up" data-aos-delay="800">
+                                <label className="block text-white/30 text-[9px] font-bold uppercase tracking-[0.2em] mb-3 ml-2">Discover Journals</label>
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <div className="relative group flex-1 min-w-[280px]">
+                                        <FiSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-emerald-500 transition-colors" size={16} />
+                                        <input 
+                                            type="text" 
+                                            placeholder="Where to? Search location..."
+                                            className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500/50 transition-all font-medium text-sm placeholder:text-white/20"
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                        />
+                                    </div>
+                                    <button 
+                                        onClick={() => route('/travoxa-discovery/travel-journals/create')}
+                                        className="bg-emerald-600 text-white px-6 py-4 rounded-2xl font-bold text-xs flex items-center gap-2 hover:bg-emerald-500 transition-all shadow-[0_0_30px_rgba(16,185,129,0.2)] active:scale-95 whitespace-nowrap"
+                                        data-aos="fade-up" data-aos-delay="1000"
+                                    >
+                                        <FiPlus size={18} /> SHARE JOURNEY
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Aesthetic Detail Box at bottom right */}
+                    <div className="absolute bottom-8 right-12 text-right hidden xl:block opacity-10 pointer-events-none" data-aos="fade-in" data-aos-delay="1200">
+                         <p className="text-[9px] font-bold text-white uppercase tracking-[0.4em] mb-1">Discovery Protocol</p>
+                         <p className="text-[8px] text-white/50 Inter">CURATED EXPERIENCES / TRAVEL JOURNALS</p>
+                    </div>
+                </section>
+            </div>
 
             {/* Filter Bar */}
             <div className="sticky top-[80px] z-[80] bg-white/80 backdrop-blur-xl border-y border-slate-100 py-4 mb-12">
@@ -93,13 +182,13 @@ const TravelJournalsPage = () => {
                             <button
                                 key={f}
                                 onClick={() => setActiveFilter(f)}
-                                className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all ${activeFilter === f ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                                className={`px-6 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${activeFilter === f ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                             >
                                 {f}
                             </button>
                         ))}
                     </div>
-                    <button className="hidden md:flex items-center gap-2 text-slate-600 font-bold text-sm hover:text-emerald-600 transition-colors">
+                    <button className="hidden md:flex items-center gap-2 text-slate-600 font-bold text-xs hover:text-emerald-600 transition-colors">
                         <FiFilter size={18} /> Filters
                     </button>
                 </div>
@@ -138,7 +227,9 @@ const TravelJournalsPage = () => {
                 )}
             </main>
 
-            <Footer />
+            <div className="relative z-[90] bg-[#fcfdfd]">
+                <Footer />
+            </div>
         </div>
     );
 };

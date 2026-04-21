@@ -12,6 +12,7 @@ import {
     RiArrowRightLine,
     RiLoader4Line
 } from 'react-icons/ri';
+import Spinner from '@/components/ui/Spinner';
 
 const CATEGORIES = ['Sightseeing', 'Beaches', 'Pilgrimage', 'Adventure', 'Nature', 'Historical', 'Market'];
 
@@ -166,7 +167,7 @@ export default function AIHarvesterClient() {
                                 : 'bg-black text-white hover:bg-gray-800 shadow-md active:scale-95 px-10'
                         }`}
                     >
-                        {isFetching ? <RiLoader4Line className="animate-spin" size={20} /> : <RiArrowRightLine size={20} />}
+                        {isFetching ? <Spinner size="sm" color="border-white" /> : <RiArrowRightLine size={20} />}
                         {isFetching ? 'Fetching...' : 'Find Details'}
                     </button>
                 </div>
@@ -301,7 +302,7 @@ export default function AIHarvesterClient() {
                                         : 'bg-black text-white hover:bg-gray-900'
                                 }`}
                             >
-                                {isSeeding ? <RiLoader4Line className="animate-spin" size={20} /> : <RiSave3Line size={20} />}
+                                {isSeeding ? <Spinner size="sm" variant="white" /> : <RiSave3Line size={20} />}
                                 {isSeeding ? 'Seeding...' : 'Seed to Database'}
                             </button>
                         </div>

@@ -12,7 +12,7 @@ import {
     FiAlertTriangle 
 } from 'react-icons/fi';
 import { FaUniversity as Landmark } from 'react-icons/fa';
-import { AiOutlineLoading3Quarters as Loader2 } from 'react-icons/ai';
+import Spinner from '@/components/ui/Spinner';
 import OrbView from './OrbView';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -347,7 +347,7 @@ const AITripPlannerSection = () => {
                                             placeholder="Search city or place..."
                                             className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-[#050a05] transition-all"
                                         />
-                                        {isSearching && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-gray-400" size={20} />}
+                                        {isSearching && <div className="absolute right-4 top-1/2 -translate-y-1/2"><Spinner size="sm" /></div>}
                                     </div>
 
                                     {searchResults.length > 0 && (
@@ -376,7 +376,7 @@ const AITripPlannerSection = () => {
                                             isAutoDetecting ? "bg-[#050a05] text-white" : "bg-gray-50 hover:bg-gray-100 text-[#050a05]"
                                         }`}
                                     >
-                                        {isAutoDetecting ? <Loader2 className="animate-spin" size={20} /> : <FiCompass size={20} />}
+                                        {isAutoDetecting ? <Spinner size="sm" variant="white" /> : <FiCompass size={20} />}
                                         <span className="font-bold">{isAutoDetecting ? "Detecting..." : "Use current location"}</span>
                                     </button>
                                 </div>
@@ -408,7 +408,7 @@ const AITripPlannerSection = () => {
                         exit={{ opacity: 0 }}
                         className="w-full max-w-2xl flex flex-col items-center pt-20"
                     >
-                        <Loader2 className="animate-spin text-[#050a05] mb-6" size={60} />
+                        <Spinner size="lg" className="mb-6" />
                         <h2 className="text-3xl font-bold text-[#050a05] mb-2">Generation in progress</h2>
                         <p className="text-gray-400 text-center mb-12">We're finding the best spots based on your preferences.</p>
                         

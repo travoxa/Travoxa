@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { RiDeleteBinLine, RiEditLine, RiAddLine, RiCloseLine, RiMoreLine, RiUserLine } from 'react-icons/ri';
 import { CldUploadWidget } from 'next-cloudinary';
+import Spinner from '@/components/ui/Spinner';
 
 interface CoreTeamMember {
     _id: string;
@@ -324,8 +325,8 @@ export default function CoreTeamClient({ onBack }: CoreTeamClientProps) {
             ) : (
                 <div className="w-full">
                     {loading ? (
-                        <div className="flex items-center justify-center p-12">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                        <div className="flex items-center justify-center p-20">
+                            <Spinner size="md" text="Loading team members..." />
                         </div>
                     ) : (
                         <div className="border border-gray-100 rounded-lg overflow-visible">

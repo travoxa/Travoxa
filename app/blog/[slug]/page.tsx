@@ -6,6 +6,7 @@ import Header from '@/components/ui/Header'
 import Footer from '@/components/ui/Footer'
 import { RiTimeLine, RiChat3Line, RiHeartLine, RiHeartFill, RiStarLine, RiStarFill, RiUserLine, RiSendPlaneLine } from 'react-icons/ri'
 import { useSession } from 'next-auth/react'
+import Spinner from '@/components/ui/Spinner'
 
 const BlogDetailPage = () => {
     const { slug } = useParams()
@@ -121,7 +122,7 @@ const BlogDetailPage = () => {
 
     if (loading) return (
         <div className="min-h-screen bg-white flex items-center justify-center">
-            <div className="w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
+            <Spinner size="lg" text="Loading blog..." />
         </div>
     )
 
@@ -243,7 +244,7 @@ const BlogDetailPage = () => {
                                     className="flex items-center gap-2 px-8 py-3 bg-black text-white rounded-2xl hover:bg-gray-800 disabled:opacity-50 transition-all font-normal"
                                 >
                                     {submittingComment ? (
-                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        <Spinner size="sm" variant="white" />
                                     ) : (
                                         <>
                                             Post Comment <RiSendPlaneLine />
