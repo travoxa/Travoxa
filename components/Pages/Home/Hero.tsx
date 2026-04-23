@@ -303,7 +303,12 @@ export default function Hero() {
       </div>
 
       {/* Discover Bottom Link Section */}
-      <div className="w-full flex-1 flex flex-col md:flex-row items-center justify-start lg:justify-between px-2 md:px-6 lg:px-12 gap-5 lg:gap-8 pt-4 pb-2" data-aos="fade-up" data-aos-delay="200">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
+        className="w-full flex-1 flex flex-col md:flex-row items-center justify-start lg:justify-between px-2 md:px-6 lg:px-12 gap-5 lg:gap-8 pt-4 pb-2"
+      >
         
         {/* left: Overlapping Circles */}
         <Link href="/travoxa-discovery" className="group flex items-center shrink-0 cursor-pointer self-start md:self-auto">
@@ -333,7 +338,7 @@ export default function Hero() {
            </h2>
         </div>
 
-      </div>
+      </motion.div>
 
     </div>
 

@@ -151,13 +151,9 @@ export default function Header({ forceWhite }: { forceWhite?: boolean }) {
   };
 
 
-  const containerClasses = forceWhite
-    ? "bg-white shadow-xl"
-    : "backdrop-blur-xl bg-white/5 border border-white/10 hover:bg-white/10";
+  const containerClasses = "bg-white shadow-xl border border-gray-100";
 
-  const buttonClasses = forceWhite
-    ? "bg-black text-white"
-    : "bg-white text-black";
+  const buttonClasses = "bg-black text-white";
 
 
   return (

@@ -4,11 +4,25 @@ import ForwordButton from './components/ForwordButton'
 import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 import { LiaCopyrightSolid } from "react-icons/lia";
 import Link from 'next/link';
+import Particles from './Particles';
 
 const Footer = () => {
   return (
-    <div className='mx-[12px] my-[24px] lg:m-[24px] bg-black text-white rounded-[12px] pt-[24px] lg:pt-[48px] pb-[24px] lg:pb-[48px]' >
-      <div className='px-[24px] lg:px-[48px]' >
+    <div className='relative overflow-hidden m-[12px] bg-black text-white rounded-[12px] pt-[24px] lg:pt-[48px] pb-[24px] lg:pb-[48px]' >
+      <div className="absolute inset-0 z-0 opacity-50">
+        <Particles
+          particleColors={['#ffffff']}
+          particleCount={200}
+          particleSpread={10}
+          speed={0.1}
+          particleBaseSize={100}
+          moveParticlesOnHover={true}
+          alphaParticles={false}
+          disableRotation={false}
+        />
+      </div>
+
+      <div className='relative z-10 px-[24px] lg:px-[48px]' >
         <p className='text-[18px] lg:text-[36px] ' >Let Travoxa be your guide to the soul of India. From peaceful escapes to breathtaking adventures, we craft journeys that touch the heart and stay with you forever.</p>
 
         <div className='mt-[24px] lg:flex lg:justify-between gap-[48px]'>
@@ -55,7 +69,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-      <div className='text-center flex flex-1 justify-center items-center flex-col pt-[0px]' >
+      <div className='relative z-10 text-center flex flex-1 justify-center items-center flex-col pt-[0px]' >
         <p className='text-center flex items-center gap-[12px] pb-3 font-light' ><LiaCopyrightSolid color='white' />2025 Travoxa. All Rights Reserved.</p>
         <p className='Mont mt-0 lg:mt-[36px] text-[14vw] lg:text-[16vw] leading-[15vh] pb-4 tracking-[1vw] font-extrabold ' >TRAVOXA</p>
       </div>
