@@ -13,12 +13,16 @@ import {
   RiCompass3Line,
   RiCupLine,
   RiGroupLine,
+  RiMegaphoneLine,
+  RiHandHeartLine,
 } from "react-icons/ri";
 import { FaPaperPlane, FaMagic, FaUser, FaClock, FaMapMarkedAlt, FaCheckCircle, FaStar } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+
 
 // Register ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
@@ -169,9 +173,36 @@ const featureData = [
       "Meet guides",
       "Language aid",
       "Cultural exchange",
-      "Community events"
     ],
     isLocked: true
+  },
+  {
+    icon: RiMegaphoneLine,
+    title: "Travoxa Collab",
+    description: "Generate click-worthy opportunities and grow your reach in seconds, fully automated.",
+    bullets: [
+      "Grow your reach",
+      "Automated tasks",
+      "Creator tools",
+      "Sponsorships"
+    ],
+    isLocked: false,
+    path: "/travoxa-partners",
+    theme: "purple"
+  },
+  {
+    icon: RiHandHeartLine,
+    title: "Travoxa Yatra",
+    description: "Travel for free by volunteering. Exchange your skills for stays, food, and unforgettable experiences.",
+    bullets: [
+      "Volunteer travel",
+      "Skill exchange",
+      "Free stays & food",
+      "Immersive experience"
+    ],
+    isLocked: false,
+    path: "/travoxa-yatra",
+    theme: "green"
   }
 ];
 
@@ -182,6 +213,7 @@ interface Feature {
   icon: React.ElementType;
   isLocked?: boolean;
   path?: string;
+  theme?: "purple" | "green";
 }
 
 const Choose = () => {
@@ -315,16 +347,6 @@ const Choose = () => {
     }
   };
 
-  // Create alternating rows with proper typing
-  const rows: Feature[][] = [];
-  featureData.forEach((feature, index) => {
-    if (index % 2 === 0) {
-      rows.push([feature]);
-    } else {
-      rows[rows.length - 1].push(feature);
-    }
-  });
-
   return (
     <div className="mx-auto max-w-[1600px] px-4 lg:px-[80px] py-[80px]">
 
@@ -379,7 +401,7 @@ const Choose = () => {
         </h2>
         <p className="Mont text-[22px] text-gray-600 leading-[1.6] max-w-5xl mx-auto ">
           Every trip tells a story, and we help you write yours beautifully.
-          Discover our active sections and see what’s coming soon.
+          Discover our active sections and see what's coming soon.
         </p>
       </div>
 
@@ -561,148 +583,230 @@ const Choose = () => {
         </div>
       </div>
 
-      {/* Cards Grid - Alternating big/small layout with reduced height - Hidden on Mobile */}
-      {/* Cards Grid - Desktop Premium Bento Layout */}
-      <div className="hidden lg:flex flex-col gap-[24px] max-w-6xl mx-auto">
-        {rows.map((row, rowIndex) => (
-          <div key={rowIndex} className="flex gap-[24px] items-stretch" data-aos="fade-up" data-aos-delay={rowIndex * 100}>
-            {row.map((feature, featureIndex) => {
-              const absoluteIndex = rowIndex * 2 + featureIndex;
-              const isBig = (rowIndex % 2 === 0 && featureIndex === 0) || (rowIndex % 2 === 1 && featureIndex === 1);
 
-              return (
-                <div
-                  key={absoluteIndex}
-                  onClick={() => !feature.isLocked && feature.path && router.push(feature.path)}
-                  className={`bg-white rounded-[32px] border border-gray-100 shadow-lg shadow-gray-200/40 transition-all duration-500 flex flex-col group overflow-hidden ${
-                    !feature.isLocked 
-                      ? 'cursor-pointer hover:border-[#4da528]/40 hover:shadow-xl hover:shadow-gray-200/60 hover:-translate-y-[4px]' 
-                      : 'opacity-95'
-                  } ${isBig ? 'flex-[1.6]' : 'flex-[1]'}`}
-                >
-                  {/* Visual Workspace Area (Header) */}
-                  <div className={`relative w-full bg-slate-50 border-b border-gray-100 flex items-center justify-center overflow-hidden transition-colors ${
-                    isBig ? 'h-[220px]' : 'h-[180px]'
-                  } ${!feature.isLocked ? 'group-hover:bg-slate-100/50' : ''}`}>
-                    
-                    {/* CSS Grid Pattern - Graph Paper Effect */}
-                    <div 
-                      className="absolute inset-0 z-0 opacity-40 mix-blend-multiply"
-                      style={{
-                        backgroundImage: 'linear-gradient(to right, #e5e7eb 1px, transparent 1px), linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)',
-                        backgroundSize: '40px 40px'
-                      }}
-                    />
+      {/* Cards Grid - Desktop Premium Scrambled Bento Layout */}
+      <div className="hidden lg:grid grid-cols-4 grid-flow-row-dense auto-rows-[180px] gap-[20px] max-w-[1400px] mx-auto">
+        {featureData.map((feature, featureIndex) => {
+          const isBig = featureIndex === 0 || featureIndex === 7;
+          const isWide = featureIndex === 5 || featureIndex === 12 || featureIndex === 13;
+          const isTall = featureIndex === 3;
+          const isSmall = !isBig && !isWide && !isTall;
 
-                    {/* Central Elements */}
-                    <div className="relative z-10 flex items-center justify-center w-full h-full">
-                      {/* Main Icon Box */}
-                      <div className="relative bg-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-[20px] w-[88px] h-[88px] flex items-center justify-center z-10 transform group-hover:scale-105 transition-transform duration-500">
-                        <feature.icon className="text-[44px] text-[#4da528]" />
-                      </div>
+          const bentoClasses: Record<number, string> = {
+            0: "lg:col-span-2 lg:row-span-2",
+            1: "lg:col-span-1 lg:row-span-1",
+            2: "lg:col-span-1 lg:row-span-1",
+            3: "lg:col-span-1 lg:row-span-2",
+            4: "lg:col-span-1 lg:row-span-1",
+            5: "lg:col-span-2 lg:row-span-1",
+            6: "lg:col-span-1 lg:row-span-1",
+            7: "lg:col-span-2 lg:row-span-2",
+            8: "lg:col-span-1 lg:row-span-1",
+            9: "lg:col-span-1 lg:row-span-1",
+            10: "lg:col-span-1 lg:row-span-1",
+            11: "lg:col-span-1 lg:row-span-1",
+            12: "lg:col-span-2 lg:row-span-1",
+            13: "lg:col-span-2 lg:row-span-1",
+          };
 
-                      {/* Floating Decorative Elements representing application UI/System */}
-                      {isBig && (
-                        <>
-                          <div className="absolute top-1/2 left-[calc(50%-100px)] w-14 h-px border-t-[1.5px] border-dashed border-gray-300"></div>
-                          <div className="absolute top-1/2 right-[calc(50%-100px)] w-14 h-px border-t-[1.5px] border-dashed border-gray-300"></div>
-                          <div className="absolute top-[calc(50%-16px)] left-[calc(50%-170px)] w-[70px] h-[32px] bg-white rounded-lg shadow-sm border border-gray-100 flex items-center px-3 transform -translate-y-1">
-                            <div className="w-[6px] h-[6px] rounded-full bg-blue-400 mr-[6px]"></div>
-                            <div className="h-[4px] w-8 bg-gray-200 rounded-full"></div>
-                          </div>
-                          <div className="absolute top-[calc(50%-16px)] right-[calc(50%-160px)] w-[60px] h-[32px] bg-white rounded-lg shadow-sm border border-gray-100 flex items-center px-3 transform translate-y-1">
-                            <div className="w-[6px] h-[6px] rounded-full bg-green-400 mr-[6px]"></div>
-                            <div className="h-[4px] w-6 bg-gray-200 rounded-full"></div>
-                          </div>
-                        </>
-                      )}
-                      
-                      {!isBig && (
-                        <>
-                          <div className="absolute bottom-[calc(50%-68px)] w-px h-6 border-l-[1.5px] border-dashed border-gray-300"></div>
-                          <div className="absolute bottom-[calc(50%-92px)] bg-white shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100 rounded-full px-4 py-1.5 flex items-center gap-2">
-                             <div className={`w-[6px] h-[6px] rounded-full ${feature.isLocked ? 'bg-orange-400' : 'bg-green-400'}`}></div>
-                             <span className="text-[10px] text-gray-500 font-medium tracking-wide uppercase">
-                               {feature.isLocked ? 'Pending' : 'Active'}
-                             </span>
-                          </div>
-                        </>
-                      )}
-                    </div>
+          const themeStyles = {
+             purple: {
+                borderHover: "hover:border-purple-500/40",
+                shadowHover: "hover:shadow-[0_8px_40px_rgba(168,85,247,0.12)]",
+                bgLight: "bg-purple-50",
+                bgLightHover: "group-hover:bg-purple-100/50",
+                iconColor: "text-purple-600",
+                iconBg: "bg-white",
+                textColor: "text-purple-600",
+                bulletColor: "bg-purple-500/80",
+                progressBg: "bg-purple-600",
+                borderColor: "border-purple-100"
+             },
+             green: {
+                borderHover: "hover:border-emerald-500/40",
+                shadowHover: "hover:shadow-[0_8px_40px_rgba(16,185,129,0.12)]",
+                bgLight: "bg-emerald-50",
+                bgLightHover: "group-hover:bg-emerald-100/50",
+                iconColor: "text-emerald-600",
+                iconBg: "bg-white",
+                textColor: "text-emerald-600",
+                bulletColor: "bg-emerald-500/80",
+                progressBg: "bg-emerald-600",
+                borderColor: "border-emerald-100"
+             },
+             default: {
+                borderHover: "hover:border-[#4da528]/40",
+                shadowHover: "hover:shadow-[0_8px_40px_rgba(77,165,40,0.12)]",
+                bgLight: "bg-slate-50",
+                bgLightHover: "group-hover:bg-slate-100/50",
+                iconColor: "text-[#4da528]",
+                iconBg: "bg-white",
+                textColor: "text-[#4da528]",
+                bulletColor: "bg-[#4da528]/80",
+                progressBg: "bg-[#4da528]",
+                borderColor: "border-gray-100"
+             }
+          };
+          const theme = feature.theme === 'purple' ? themeStyles.purple : feature.theme === 'green' ? themeStyles.green : themeStyles.default;
 
-                    {/* Masking Overlay for Locked features */}
-                    {feature.isLocked && (
-                      <div className="absolute inset-0 bg-white/50 backdrop-blur-[4px] z-20 flex flex-col items-center justify-center">
-                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-[0_8px_20px_rgb(0,0,0,0.08)] mb-2 relative">
-                          <img
-                            src="/lock.png"
-                            alt="Lock"
-                            className="w-5 h-5 object-contain opacity-80"
-                          />
-                        </div>
-                      </div>
-                    )}
+          return (
+            <div
+              key={featureIndex}
+              onClick={() => !feature.isLocked && feature.path && router.push(feature.path)}
+              className={`bg-white rounded-[24px] border ${theme.borderColor} shadow-[0_4px_20px_rgb(0,0,0,0.04)] transition-all duration-300 group overflow-hidden ${
+                !feature.isLocked 
+                  ? `cursor-pointer ${theme.borderHover} ${theme.shadowHover} hover:-translate-y-[4px]` 
+                  : 'opacity-90'
+              } ${bentoClasses[featureIndex] || "col-span-1 row-span-1"} flex ${isWide ? 'flex-row' : 'flex-col'}`}
+              data-aos="fade-up" 
+              data-aos-delay={(featureIndex % 4) * 100}
+            >
+              {/* Visual Workspace Area (Header) */}
+              <div className={`relative ${theme.bgLight} flex items-center justify-center overflow-hidden transition-colors ${!feature.isLocked ? theme.bgLightHover : ''} ${
+                isWide 
+                  ? `w-[40%] h-full border-r ${theme.borderColor} flex-shrink-0` 
+                  : `w-full border-b ${theme.borderColor} flex-shrink-0 ${isBig ? 'h-[160px]' : isTall ? 'h-[140px]' : 'h-[70px]'}`
+              }`}>
+                
+                {/* CSS Grid Pattern */}
+                <div 
+                  className="absolute inset-0 z-0 opacity-30 mix-blend-multiply"
+                  style={{
+                    backgroundImage: 'linear-gradient(to right, #e5e7eb 1px, transparent 1px), linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)',
+                    backgroundSize: isBig ? '32px 32px' : '20px 20px'
+                  }}
+                />
+
+                {/* Main Icon Box */}
+                <div className={`relative z-10 ${theme.iconBg} shadow-[0_4px_20px_rgb(0,0,0,0.06)] rounded-[16px] flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500 ${
+                  isBig ? 'w-[72px] h-[72px]' : isTall ? 'w-[64px] h-[64px]' : 'w-[40px] h-[40px]'
+                }`}>
+                  <feature.icon className={`${theme.iconColor} ${isBig ? 'text-[36px]' : isTall ? 'text-[32px]' : 'text-[20px]'}`} />
+                </div>
+
+                {/* Status Overlay */}
+                {(!isSmall || feature.isLocked) && (
+                  <div className={`absolute ${isWide ? 'bottom-4 left-4' : 'bottom-3'} bg-white/90 backdrop-blur-sm shadow-sm border border-gray-100 rounded-full px-2 py-1 flex items-center gap-1.5 z-20`}>
+                    <div className={`w-[5px] h-[5px] rounded-full ${feature.isLocked ? 'bg-orange-400' : 'bg-green-400'}`}></div>
+                    <span className="text-[8px] text-gray-500 font-bold tracking-wide uppercase">
+                      {feature.isLocked ? 'Pending' : 'Active'}
+                    </span>
                   </div>
+                )}
 
-                  {/* Content Area */}
-                  <div className={`flex flex-col flex-1 relative z-10 bg-white ${isBig ? 'p-[36px]' : 'p-[28px]'}`}>
-                    <h3 className={`font-semibold Mont leading-[1.2] text-gray-900 ${isBig ? 'text-[24px]' : 'text-[20px]'}`}>
-                      {feature.title}
-                    </h3>
-
-                    <p className={`text-gray-500 leading-[1.5] mt-[10px] Inter ${isBig ? 'text-[15px]' : 'text-[14px]'}`}>
-                      {feature.description}
-                    </p>
-
-                    <div className={`grid grid-cols-2 gap-x-[16px] gap-y-[10px] mt-[24px] ${isBig ? 'text-[14px]' : 'text-[13px]'}`}>
-                      {feature.bullets.slice(0, 4).map((bullet, bulletIndex) => (
-                        <div key={bulletIndex} className="flex items-center gap-[8px]">
-                          <div className="w-[6px] h-[6px] rounded-full bg-[#4da528]/80 flex-shrink-0"></div>
-                          <span className="text-gray-600 font-medium Inter truncate">
-                            {bullet}
-                          </span>
-                        </div>
-                      ))}
+                {/* Masking Overlay for Locked */}
+                {feature.isLocked && (
+                  <div className="absolute inset-0 bg-white/30 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center">
+                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-[0_4px_12px_rgb(0,0,0,0.08)] absolute top-3 right-3">
+                      <img src="/lock.png" alt="Lock" className="w-4 h-4 object-contain opacity-70" />
                     </div>
+                  </div>
+                )}
+              </div>
 
-                    {/* Bottom Action Area */}
-                    <div className="mt-auto pt-[24px] flex items-center justify-between border-t border-gray-50">
-                      <span className={`font-semibold text-[#4da528] flex items-center transition-all ${
-                        !feature.isLocked ? 'group-hover:tracking-wide' : 'opacity-60 text-gray-500'
-                      } ${isBig ? 'text-[14px]' : 'text-[13px]'}`}>
-                        {feature.isLocked ? 'Coming Soon' : 'Explore Now'} 
-                        {!feature.isLocked && <span className="ml-[6px] text-[16px] transition-transform group-hover:translate-x-1">&rarr;</span>}
-                      </span>
-                      
-                      {/* Abstract Progress or Status indicator */}
-                      <div className="flex items-center gap-[4px] opacity-40">
-                        <div className={`h-[3px] bg-gray-300 rounded-full ${isBig ? 'w-[20px]' : 'w-[16px]'}`}></div>
-                        <div className={`h-[3px] bg-gray-300 rounded-full ${isBig ? 'w-[8px]' : 'w-[6px]'}`}></div>
-                        <div className={`h-[3px] bg-[#4da528] rounded-full ${isBig ? 'w-[4px]' : 'w-[4px]'}`}></div>
+              {/* Content Area */}
+              <div className={`flex flex-col flex-1 relative z-10 bg-white ${
+                isBig ? 'p-[24px]' : isWide ? 'p-[20px]' : 'px-[16px] py-[12px]'
+              }`}>
+                <h3 className={`font-semibold Mont leading-[1.2] text-gray-900 ${
+                  isBig ? 'text-[22px]' : isWide ? 'text-[20px]' : isTall ? 'text-[18px]' : 'text-[15px]'
+                }`}>
+                  {feature.title}
+                </h3>
+
+                <p className={`text-gray-500 leading-[1.4] Inter ${
+                  isBig || isTall ? 'mt-[8px] text-[13px]' : 'mt-[6px] text-[12px] line-clamp-2'
+                }`}>
+                  {feature.description}
+                </p>
+
+                {/* Bullet Points - Only for Big, Wide, and Tall */}
+                {(isBig || isWide || isTall) && (
+                  <div className={`mt-[14px] ${
+                    isBig 
+                      ? 'grid grid-cols-2 gap-x-[12px] gap-y-[8px]' 
+                      : isWide 
+                        ? 'flex flex-row flex-wrap gap-x-[16px] gap-y-[8px]' 
+                        : 'flex flex-col gap-[8px]'
+                  }`}>
+                    {feature.bullets.slice(0, isBig ? 4 : 2).map((bullet, bulletIndex) => (
+                      <div key={bulletIndex} className="flex items-center gap-[6px] min-w-[120px]">
+                        <div className={`w-[4px] h-[4px] rounded-full ${theme.bulletColor} flex-shrink-0`}></div>
+                        <span className="text-gray-600 font-medium Inter text-[12px] truncate">
+                          {bullet}
+                        </span>
                       </div>
-                    </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Bottom Action Area */}
+                <div className={`mt-auto ${isSmall ? 'pt-[12px]' : 'pt-[20px]'} flex items-center justify-between border-t border-gray-50`}>
+                  <span className={`font-medium ${theme.textColor} flex items-center transition-all ${
+                    !feature.isLocked ? 'group-hover:tracking-wide' : 'opacity-60 text-gray-500'
+                  } ${isSmall ? 'text-[11px]' : 'text-[13px]'}`}>
+                    {feature.isLocked ? 'Coming Soon' : 'Explore Now'} 
+                    {!feature.isLocked && <span className="ml-[4px] transition-transform group-hover:translate-x-1">&rarr;</span>}
+                  </span>
+                  
+                  {/* Abstract Progress or Status indicator */}
+                  <div className="flex items-center gap-[3px] opacity-40">
+                    <div className={`h-[2.5px] bg-gray-300 rounded-full ${isSmall ? 'w-[8px]' : 'w-[12px]'}`}></div>
+                    <div className={`h-[2.5px] ${theme.progressBg} rounded-full w-[4px]`}></div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Mobile Layout */}
       <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-[16px] mt-[48px] px-2 max-w-2xl mx-auto">
-        {featureData.map((feature, index) => (
+        {featureData.map((feature, index) => {
+          const themeStyles = {
+             purple: {
+                borderHover: "hover:border-purple-500/40",
+                bgLight: "bg-purple-50",
+                bgLightHover: "group-hover:bg-purple-100/50",
+                iconColor: "text-purple-600",
+                iconBg: "bg-white",
+                textColor: "text-purple-600",
+                borderColor: "border-purple-100"
+             },
+             green: {
+                borderHover: "hover:border-emerald-500/40",
+                bgLight: "bg-emerald-50",
+                bgLightHover: "group-hover:bg-emerald-100/50",
+                iconColor: "text-emerald-600",
+                iconBg: "bg-white",
+                textColor: "text-emerald-600",
+                borderColor: "border-emerald-100"
+             },
+             default: {
+                borderHover: "hover:border-[#4da528]/40",
+                bgLight: "bg-slate-50",
+                bgLightHover: "group-hover:bg-slate-100/50",
+                iconColor: "text-[#4da528]",
+                iconBg: "bg-white",
+                textColor: "text-[#4da528]",
+                borderColor: "border-gray-100"
+             }
+          };
+          const theme = feature.theme === 'purple' ? themeStyles.purple : feature.theme === 'green' ? themeStyles.green : themeStyles.default;
+
+          return (
           <div
             key={index}
             onClick={() => !feature.isLocked && feature.path && router.push(feature.path)}
-            className={`bg-white rounded-[24px] border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 flex flex-col group overflow-hidden ${
+            className={`bg-white rounded-[24px] border ${theme.borderColor} shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 flex flex-col group overflow-hidden ${
               !feature.isLocked 
-                ? 'cursor-pointer hover:border-[#4da528]/40 hover:shadow-lg hover:-translate-y-[2px]' 
+                ? `cursor-pointer ${theme.borderHover} hover:shadow-lg hover:-translate-y-[2px]` 
                 : 'opacity-95'
             }`}
           >
             {/* Visual Workspace Area (Header) */}
-            <div className={`relative w-full bg-slate-50 border-b border-gray-100 flex items-center justify-center overflow-hidden h-[150px] transition-colors ${!feature.isLocked ? 'group-hover:bg-slate-100/50' : ''}`}>
+            <div className={`relative w-full ${theme.bgLight} border-b ${theme.borderColor} flex items-center justify-center overflow-hidden h-[150px] transition-colors ${!feature.isLocked ? theme.bgLightHover : ''}`}>
               
               {/* CSS Grid Pattern */}
               <div 
@@ -714,8 +818,8 @@ const Choose = () => {
               />
 
               {/* Central Box */}
-              <div className="relative z-10 bg-white shadow-[0_6px_20px_rgb(0,0,0,0.06)] rounded-[18px] w-[72px] h-[72px] flex items-center justify-center transform group-hover:scale-105 transition-transform duration-500">
-                <feature.icon className="text-[32px] text-[#4da528]" />
+              <div className={`relative z-10 ${theme.iconBg} shadow-[0_6px_20px_rgb(0,0,0,0.06)] rounded-[18px] w-[72px] h-[72px] flex items-center justify-center transform group-hover:scale-105 transition-transform duration-500`}>
+                <feature.icon className={`text-[32px] ${theme.iconColor}`} />
               </div>
 
               {/* Masking Overlay */}
@@ -740,7 +844,7 @@ const Choose = () => {
 
               {/* Bottom Action Area */}
               <div className="mt-auto pt-[16px] flex items-center justify-between border-t border-gray-50">
-                <span className={`font-semibold text-[#4da528] flex items-center transition-all ${
+                <span className={`font-semibold ${theme.textColor} flex items-center transition-all ${
                   !feature.isLocked ? 'group-hover:tracking-wide' : 'opacity-60 text-gray-500'
                 } text-[13px]`}>
                   {feature.isLocked ? 'Coming Soon' : 'Explore Now'} 
@@ -749,8 +853,10 @@ const Choose = () => {
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
+
     </div>
   );
 };

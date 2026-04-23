@@ -56,43 +56,75 @@ const EmergencyHelpClient: React.FC<EmergencyHelpClientProps> = ({ initialHelpli
             <Header forceWhite={true} />
 
             {/* Hero Section */}
-            <div className="pt-32 pb-20 bg-slate-900 relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                    <div className="absolute top-0 left-0 w-96 h-96 bg-rose-500 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2"></div>
-                    <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500 rounded-full blur-[120px] translate-x-1/2 translate-y-1/2"></div>
+            <div className="relative mx-[12px] mt-[12px] rounded-[12px] h-[65vh] min-h-[550px] overflow-hidden flex flex-col justify-between pt-24 pb-12 px-8 md:px-16 transition-all duration-500 bg-slate-900">
+                <div className="absolute inset-0 z-0">
+                    <div className="absolute inset-0 opacity-10 pointer-events-none">
+                        <div className="absolute top-0 left-0 w-96 h-96 bg-rose-500 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2"></div>
+                        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500 rounded-full blur-[120px] translate-x-1/2 translate-y-1/2"></div>
+                    </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-                    <h1 className="text-4xl md:text-6xl font-black text-white mb-6 Mont" data-aos="fade-up">Emergency & Help</h1>
-                    <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 Inter" data-aos="fade-up" data-aos-delay="100">
-                        Quick access to verified emergency services, hospitals, and helplines across your destination.
-                    </p>
-
-                    {/* Search Bar */}
-                    <div className="max-w-3xl mx-auto bg-white p-2 rounded-2xl shadow-2xl flex flex-col md:flex-row gap-2" data-aos="fade-up" data-aos-delay="200">
-                        <div className="flex-1 flex items-center px-4 py-3 gap-3 border-b md:border-b-0 md:border-r border-slate-100">
-                            <FaMapMarkerAlt className="text-rose-500" />
-                            <input
-                                type="text"
-                                placeholder="Search by Location (e.g. Varanasi)"
-                                className="w-full outline-none Inter font-medium text-slate-900 border-none"
-                                value={searchLocation}
-                                onChange={(e) => setSearchLocation(e.target.value)}
-                            />
+                {/* Content Overlay */}
+                <div className="max-w-[1400px] mx-auto w-full flex-1 flex flex-col justify-between relative z-10">
+                    
+                    {/* Top Section: Typography */}
+                    <div className="flex flex-col lg:flex-row justify-between items-start gap-12">
+                        <div className="max-w-2xl">
+                            <h1 className="text-[clamp(2.5rem,6vw,4.5rem)] font-bold text-white Mont leading-[1] tracking-tight mb-6 drop-shadow-sm" data-aos="fade-right">
+                                Emergency <br />
+                                <span className="italic font-serif text-rose-500 text-[1.1em]">& Help</span>
+                            </h1>
+                            <p className="text-slate-400 text-sm md:text-base max-w-xl Inter" data-aos="fade-up" data-aos-delay="100">
+                                Quick access to verified emergency services, hospitals, and helplines across your destination.
+                            </p>
                         </div>
-                        <div className="flex-1 flex items-center px-4 py-3 gap-3">
-                            <FaSearch className="text-slate-300" />
-                            <input
-                                type="text"
-                                placeholder="Hospital, Police, Fire..."
-                                className="w-full outline-none Inter font-medium text-slate-900 border-none"
-                            // We use the type filter below but could also add text search here
-                            />
-                        </div>
-                        <button className="bg-rose-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-rose-600 transition-colors shadow-lg shadow-rose-200 Inter">
-                            Find Now
-                        </button>
                     </div>
+
+                    {/* Bottom Section: Search Bar */}
+                    <div className="flex flex-col md:flex-row items-end gap-4 mt-8">
+                        <div className="w-full max-w-4xl" data-aos="fade-up" data-aos-delay="200">
+                            <label className="block text-slate-500 text-[9px] font-bold uppercase tracking-[0.2em] mb-3 ml-2">Discover Emergency Services</label>
+                            <div className="w-full bg-white/10 backdrop-blur-md rounded-full p-2.5 flex flex-col md:flex-row gap-1 items-center border border-white/10 hover:border-rose-500/30 transition-colors shadow-lg">
+
+                                <div className="flex-1 w-full relative group">
+                                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-rose-500 transition-colors">
+                                        <FaMapMarkerAlt size={10} />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Search by Location (e.g. Varanasi)"
+                                        className="w-full h-9 pl-10 pr-6 rounded-full bg-transparent hover:bg-white/5 border-none text-white text-xs font-light focus:outline-none focus:ring-0 placeholder:text-slate-400 cursor-text transition-colors"
+                                        value={searchLocation}
+                                        onChange={(e) => setSearchLocation(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="h-5 w-[1px] bg-white/10 hidden md:block"></div>
+
+                                <div className="flex-1 w-full relative group">
+                                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-rose-500 transition-colors">
+                                        <FaSearch size={10} />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Hospital, Police, Fire..."
+                                        className="w-full h-9 pl-10 pr-6 rounded-full bg-transparent hover:bg-white/5 border-none text-white text-xs font-light focus:outline-none focus:ring-0 placeholder:text-slate-400 cursor-text transition-colors"
+                                    />
+                                </div>
+
+                                <button className="w-full md:w-auto h-9 px-6 bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-medium rounded-full transition-all flex items-center justify-center gap-2 active:scale-95 uppercase tracking-wide ml-1 shadow-md">
+                                    <FaSearch size={8} />
+                                    Find Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Aesthetic Detail Box at bottom right */}
+                <div className="absolute bottom-8 right-12 text-right hidden xl:block opacity-30 pointer-events-none" data-aos="fade-in" data-aos-delay="1200">
+                    <p className="text-[9px] font-bold text-white uppercase tracking-[0.4em] mb-1">Discovery Protocol</p>
+                    <p className="text-[8px] text-slate-400 Inter">CRITICAL SERVICES / EMERGENCY</p>
                 </div>
             </div>
 

@@ -4,8 +4,10 @@
 import Image from "next/image";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Spinner from "@/components/ui/Spinner";
-import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaUserFriends, FaChevronDown, FaRegCompass } from "react-icons/fa";
+import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaUserFriends, FaChevronDown, FaRegCompass, FaStar, FaArrowRight } from "react-icons/fa";
 import { rentalsData } from "@/data/rentalsData";
 import { sightseeingPackages } from "@/data/sightseeingData";
 import { tourData as staticTourData } from "@/data/tourData";
@@ -17,11 +19,61 @@ export default function Hero() {
   const [dynamicTours, setDynamicTours] = useState<any[]>([]);
   const [showQueryDropdown, setShowQueryDropdown] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [enquiryInput, setEnquiryInput] = useState("");
+  const [enquirySuccess, setEnquirySuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const queryRef = useRef<HTMLDivElement>(null);
   const locationRef = useRef<HTMLDivElement>(null);
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  // Parallax Motion Values
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Smooth Spring config
+  const springConfig = { damping: 25, stiffness: 100 };
+  const smoothX = useSpring(mouseX, springConfig);
+  const smoothY = useSpring(mouseY, springConfig);
+
+  // Transformations for 3D effect
+  const backgroundX = useTransform(smoothX, [-500, 500], [15, -15]);
+  const backgroundY = useTransform(smoothY, [-500, 500], [15, -15]);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!heroRef.current) return;
+    const { clientX, clientY } = e;
+    const { left, top, width, height } = heroRef.current.getBoundingClientRect();
+    
+    // Center-orient coordinates
+    const x = clientX - (left + width / 2);
+    const y = clientY - (top + height / 2);
+    
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  const handleEnquirySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!enquiryInput) return;
+    
+    setIsSubmitting(true);
+    // Simulate API call
+    setTimeout(() => {
+      setEnquirySuccess(true);
+      setIsSubmitting(false);
+      setEnquiryInput("");
+      setTimeout(() => setEnquirySuccess(false), 5000);
+    }, 1500);
+  };
 
   // Fetch dynamic suggestions
   useEffect(() => {
@@ -49,7 +101,7 @@ export default function Hero() {
     return () => clearTimeout(timer);
   }, [query, location]);
 
-  // Fetch dynamic tours once on load (for initial locations list)
+  // Fetch dynamic tours once on load
   useEffect(() => {
     const fetchTours = async () => {
       try {
@@ -93,14 +145,12 @@ export default function Hero() {
     return Array.from(locs).sort();
   }, [allTours]);
 
-  // Use dynamic suggestions instead of static ones
   const querySuggestions = suggestions;
 
   const filteredLocations = useMemo(() => {
-    if (!location) return allLocations.slice(0, 8); // Show first 8 default
+    if (!location) return allLocations.slice(0, 8);
     return allLocations.filter(l => l.toLowerCase().includes(location.toLowerCase())).slice(0, 8);
   }, [location, allLocations]);
-
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -118,79 +168,64 @@ export default function Hero() {
   };
 
   return (
-    <div className="w-full flex justify-center items-center px-[12px] py-[12px]" >
-      <div className="w-full h-[47vh] lg:h-[97vh] bg-center bg-cover bg-no-repeat rounded-[12px] relative overflow-hidden" >
-        <Image
-          src="https://res.cloudinary.com/dta29uych/image/upload/v1772911288/895_uemkuk.jpg"
-          alt="Travoxa Hero Background"
-          fill
-          priority
-          className="object-cover -scale-x-100"
-          sizes="100vw"
-        />
-        {/* Overlay for better text visibility if needed */}
-        <div className="absolute inset-0 bg-black/10 rounded-[12px]"></div>
+    <div className="w-full h-[100svh] flex flex-col justify-between p-[12px] bg-white overflow-hidden">
+      <div 
+        ref={heroRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="w-full h-[80%] lg:h-[90%] rounded-[12px] relative overflow-hidden shrink-0"
+      >
+        {/* Parallax Background Container */}
+        <motion.div 
+          className="absolute inset-0 z-0 scale-110"
+          style={{ x: backgroundX, y: backgroundY }}
+        >
+          <Image
+            src="https://res.cloudinary.com/dta29uych/image/upload/v1772911288/895_uemkuk.jpg"
+            alt="Travoxa Hero Background"
+            fill
+            priority
+            className="object-cover -scale-x-100"
+            sizes="100vw"
+          />
+        </motion.div>
 
-        <div className="relative z-10 flex flex-col items-center justify-center h-full pt-16 md:pt-0">
-          {/* Title */}
-          <p className="text-center text-[14vw] md:text-[12vw] lg:text-[14vw] font-bold text-white Mont tracking-wider text-shadow-blue-400 leading-none drop-shadow-lg" data-aos="fade-down">TRAVOXA</p>
+        {/* Main Content Wrapper */}
+        <div className="relative z-10 w-full h-full flex flex-col px-6 lg:px-12 pointer-events-none">
+          
+          {/* Top Section: Headline & Search (Pinned Top Left) */}
+          <div className="pt-20 lg:pt-28 w-full max-w-2xl pointer-events-auto" data-aos="fade-right">
+            <div className="space-y-4 mb-8">
+              <p className="text-black font-bold uppercase tracking-[0.4em] text-[10px] md:text-xs bg-emerald-400 w-fit px-3 py-1 rounded-sm">Dil Se Bana Travel Partner</p>
+              <h1 className="text-4xl md:text-6xl lg:text-8xl font-bold text-white Mont leading-[0.9] [text-shadow:2px_2px_15px_rgba(0,0,0,0.3)]">
+                Discover <br />
+                <span className="text-white">India's Hidden</span> <br />
+                Wonders
+              </h1>
+            </div>
 
-          {/* Subtitle */}
-          <p className="text-center text-sm md:text-lg lg:text-2xl text-white font-medium Mont tracking-wide mt-2 mb-6 md:mb-12 drop-shadow-md" data-aos="fade-up" data-aos-delay="100">
-            Dil Se Bana Travel Partner.
-          </p>
-
-          {/* Refined Search Bar Component */}
-          <div className="w-full max-w-[95%] md:max-w-[90%] lg:max-w-5xl mx-auto relative z-50" data-aos="fade-up" data-aos-delay="200">
-
-            {/* Main Search Container - Horizontal on mobile */}
-            <div className="bg-white rounded-full p-1 shadow-2xl flex flex-row items-center gap-1 relative max-w-3xl mx-auto border border-slate-200">
-
-              {/* General Search Input (Leftmost) */}
-              <div ref={queryRef} className="flex-1 relative group px-2 md:px-4 py-1 md:py-1.5 rounded-full hover:bg-slate-50 transition-colors flex items-center gap-1 md:gap-2 h-8 md:h-9">
-                <FaSearch className="text-slate-400 text-[10px] md:text-xs flex-shrink-0" />
+            {/* Integrated Search Bar (Slim & Minimalist) */}
+            <div className="w-full max-w-lg bg-white/10 backdrop-blur-xl border border-white/20 p-1 rounded-full shadow-[0_15px_35px_rgba(0,0,0,0.2)] flex items-center gap-1 group transition-all hover:bg-white/15 focus-within:bg-white/20 focus-within:border-white/30">
+              <div ref={queryRef} className="flex-1 relative flex items-center gap-2 px-3 py-1.5 border-r border-white/10">
+                <FaSearch className="text-white/60 text-[10px]" />
                 <input
                   type="text"
                   value={query}
                   onChange={(e) => { setQuery(e.target.value); setShowQueryDropdown(true); }}
                   onFocus={() => setShowQueryDropdown(true)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Search..."
-                  className="w-full bg-transparent border-none theme-none outline-none text-slate-700 placeholder-slate-400 text-[10px] md:text-xs font-medium focus:ring-0 p-0"
+                  placeholder="Search destinations..."
+                  className="w-full bg-transparent border-none outline-none text-white placeholder:text-white/50 text-[11px] font-medium focus:ring-0 p-0"
                 />
-
-                {/* Query Dropdown */}
                 {showQueryDropdown && (querySuggestions.length > 0 || isSearching) && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-100 z-50 min-w-[300px] max-h-[380px] overflow-y-auto overflow-x-hidden custom-scrollbar scroll-smooth">
+                  <div className="absolute top-full left-0 right-0 mt-3 bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/20 z-[100] max-h-[280px] overflow-y-auto custom-scrollbar">
                     {isSearching ? (
-                      <div className="px-4 py-3 flex items-center gap-2">
-                        <Spinner size="xs" />
-                        <span className="text-xs text-slate-400">Searching...</span>
-                      </div>
+                      <div className="px-4 py-3 flex items-center gap-2"><Spinner size="xs" /><span className="text-[10px] text-slate-400">Searching...</span></div>
                     ) : (
                       querySuggestions.map((suggestion, idx) => (
-                        <div
-                          key={idx}
-                          onClick={() => { 
-                            setQuery(suggestion.title); 
-                            setShowQueryDropdown(false); 
-                            // If it's a specific item, maybe we want to navigate directly?
-                            // For now just fill the search bar.
-                          }}
-                          className="px-4 py-2 hover:bg-slate-50 cursor-pointer text-xs text-slate-700 font-medium flex flex-col gap-0.5 border-b border-slate-50 last:border-0"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="truncate">{suggestion.title}</span>
-                            <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold bg-slate-100 px-1.5 py-0.5 rounded">
-                              {suggestion.category}
-                            </span>
-                          </div>
-                          {suggestion.location && (
-                            <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                              <FaMapMarkerAlt className="text-[8px]" />
-                              {typeof suggestion.location === 'string' ? suggestion.location : (suggestion.location.name || '')}
-                            </span>
-                          )}
+                        <div key={idx} onClick={() => { setQuery(suggestion.title); setShowQueryDropdown(false); }} className="px-5 py-3 hover:bg-emerald-50 cursor-pointer text-xs text-slate-700 font-medium flex justify-between items-center border-b border-slate-50 last:border-0 transition-colors">
+                          <span>{suggestion.title}</span>
+                          <span className="text-[9px] uppercase tracking-wider text-slate-300 font-bold bg-slate-50 px-1.5 py-0.5 rounded">{suggestion.category}</span>
                         </div>
                       ))
                     )}
@@ -198,75 +233,114 @@ export default function Hero() {
                 )}
               </div>
 
-              <div className="w-[1px] h-4 md:h-5 bg-slate-200"></div>
-
-              {/* Location Field */}
-              <div ref={locationRef} className="flex-1 relative group px-2 md:px-3 py-1 md:py-1.5 hover:bg-slate-50 rounded-full transition-colors cursor-pointer h-8 md:h-9 flex items-center justify-between">
-                <div className="flex items-center gap-1 md:gap-2 w-full">
-                  <FaMapMarkerAlt className="text-slate-400 text-[10px] md:text-xs group-hover:text-emerald-500 transition-colors flex-shrink-0" />
-                  <input
-                    type="text"
-                    value={location}
-                    onChange={(e) => { setLocation(e.target.value); setShowLocationDropdown(true); }}
-                    onFocus={() => setShowLocationDropdown(true)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Location"
-                    className="w-full bg-transparent border-none outline-none text-slate-600 placeholder-slate-600 font-medium text-[10px] md:text-xs focus:ring-0 p-0"
-                  />
-                </div>
-                {/* Location Dropdown */}
+              <div ref={locationRef} className="relative hidden md:flex items-center gap-2 px-3 py-1.5">
+                <FaMapMarkerAlt className="text-white/60 text-[10px]" />
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => { setLocation(e.target.value); setShowLocationDropdown(true); }}
+                  onFocus={() => setShowLocationDropdown(true)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Location"
+                  className="w-24 bg-transparent border-none outline-none text-white placeholder:text-white/50 text-[11px] font-medium focus:ring-0 p-0"
+                />
                 {showLocationDropdown && filteredLocations.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50 max-h-48 overflow-y-auto">
+                  <div className="absolute top-full right-0 mt-3 bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/20 z-[100] min-w-[200px] overflow-hidden">
                     {filteredLocations.map((loc, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => { setLocation(loc); setShowLocationDropdown(false); }}
-                        className="px-4 py-2 hover:bg-slate-50 cursor-pointer text-xs text-slate-700 font-medium flex items-center gap-2"
-                      >
-                        <FaMapMarkerAlt className="text-slate-300 text-[10px]" />
-                        {loc}
+                      <div key={idx} onClick={() => { setLocation(loc); setShowLocationDropdown(false); }} className="px-5 py-3 hover:bg-emerald-50 cursor-pointer text-xs text-slate-700 font-medium flex items-center gap-2">
+                         <FaMapMarkerAlt className="text-slate-400 text-[10px]" /> {loc}
                       </div>
                     ))}
                   </div>
                 )}
               </div>
 
-              <div className="w-[1px] h-4 md:h-5 bg-slate-200 hidden md:block"></div>
-
-              {/* Type/Activity Field - Hidden on mobile */}
-              <div className="hidden md:flex flex-1 w-full lg:w-auto relative group px-3 py-1.5 hover:bg-slate-50 rounded-full transition-colors cursor-pointer border lg:border-none border-slate-100 h-9 items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FaRegCompass className="text-slate-400 text-xs group-hover:text-emerald-500 transition-colors" />
-                  <span className="text-slate-600 font-medium text-xs">Type</span>
-                </div>
-                <FaChevronDown className="text-slate-300 text-[8px]" />
-              </div>
-
-              <div className="w-[1px] h-5 bg-slate-200 hidden lg:block"></div>
-
-              {/* Travelers Field - Hidden on mobile */}
-              <div className="hidden md:flex flex-1 w-full lg:w-auto relative group px-3 py-1.5 hover:bg-slate-50 rounded-full transition-colors cursor-pointer border lg:border-none border-slate-100 h-9 items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FaUserFriends className="text-slate-400 text-xs group-hover:text-emerald-500 transition-colors" />
-                  <span className="text-slate-600 font-medium text-xs">Guests</span>
-                </div>
-                <FaChevronDown className="text-slate-300 text-[8px]" />
-              </div>
-
-              {/* Search Button */}
-              <button onClick={handleSearch} className="aspect-square h-8 md:h-9 bg-slate-900 hover:bg-emerald-600 rounded-full flex items-center justify-center text-white transition-all shadow-md active:scale-95 group ml-1">
-                <FaSearch className="text-[10px] md:text-xs group-hover:scale-110 transition-transform" />
+              <button onClick={handleSearch} className="h-8 w-8 bg-emerald-500 hover:bg-emerald-400 text-white rounded-full flex items-center justify-center transition-all active:scale-95 flex-shrink-0">
+                <FaSearch className="text-[10px]" />
               </button>
-
             </div>
           </div>
 
-          {/* Bottom Text */}
-          <p className="mt-12 text-center text-sm lg:text-base text-white/90 font-medium Inter [text-shadow:1px_1px_4px_rgba(0,0,0,0.8)] max-w-2xl px-4 hidden lg:block">
-            Plan smarter with Travoxa AI, find groups with Backpackers Club, or discover budget-friendly destinations.
-          </p>
+          {/* Bottom Right Content (Pinned Bottom Right) */}
+          <div className="absolute bottom-2 lg:bottom-3 right-2 lg:right-3 z-10 w-full max-w-[260px] md:max-w-[280px] pointer-events-auto" data-aos="fade-left" data-aos-delay="400">
+            <div className="bg-white border border-slate-100 rounded-[12px] p-4 lg:p-5 shadow-sm">
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-lg md:text-xl font-medium text-slate-900 Mont tracking-tight">Free Enquiry</h3>
+                  <p className="text-slate-500 text-[9px] font-medium leading-tight">Personalized itinerary within 24 hours.</p>
+                </div>
+                
+                {enquirySuccess ? (
+                  <div className="py-12 text-center bg-emerald-50 rounded-[12px] border border-emerald-100 animate-in zoom-in duration-500">
+                    <p className="text-emerald-600 text-sm font-bold truncate px-2">✓ Request Sent!</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleEnquirySubmit} className="space-y-5">
+                    <div className="space-y-1.5 focus-within:space-y-2 transition-all">
+                      <input
+                        type="text"
+                        required
+                        value={enquiryInput}
+                        onChange={(e) => setEnquiryInput(e.target.value)}
+                        placeholder="Email or Phone"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 text-[11px] placeholder:text-slate-400 focus:bg-white focus:border-emerald-500/40 transition-all outline-none"
+                      />
+                    </div>
+                    <button 
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full bg-slate-900 text-white text-[11px] font-bold py-3.5 rounded-lg hover:bg-emerald-600 transition-all active:scale-[0.98] disabled:opacity-50"
+                    >
+                      {isSubmitting ? "Sending Request..." : "Book a Free Enquiry"}
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
+
+      {/* Discover Bottom Link Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
+        className="w-full flex-1 flex flex-col md:flex-row items-center justify-start lg:justify-between px-2 md:px-6 lg:px-12 gap-5 lg:gap-8 pt-4 pb-2"
+      >
+        
+        {/* left: Overlapping Circles */}
+        <Link href="/travoxa-discovery" className="group flex items-center shrink-0 cursor-pointer self-start md:self-auto">
+          <div className="w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden border-[3px] border-white relative z-0 shadow-md">
+            <Image src="/Destinations/Des1.jpeg" alt="Discover" fill className="object-cover" />
+          </div>
+          <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#111] flex items-center justify-center border-[3px] border-white relative z-10 -ml-4 shadow-md group-hover:bg-emerald-500 transition-colors duration-300">
+            <FaArrowRight className="text-white text-base md:text-xl -rotate-45" />
+          </div>
+        </Link>
+        
+        {/* Divider 1 */}
+        <div className="hidden md:block w-px h-10 bg-slate-200 shrink-0"></div>
+
+        {/* Center Text */}
+        <div className="hidden md:block max-w-[200px] lg:max-w-[240px] text-[11px] lg:text-xs text-slate-500 font-medium leading-relaxed">
+          Elevate your journey with our modern itineraries and curated travel experiences.
+        </div>
+        
+        {/* Divider 2 */}
+        <div className="hidden lg:block h-px bg-slate-200 flex-1 min-w-[30px] max-w-[120px]"></div>
+        
+        {/* Right Main Text */}
+        <div className="flex-1 max-w-full md:max-w-md lg:max-w-[360px]">
+           <h2 className="text-lg md:text-xl lg:text-[22px] font-medium text-slate-800 leading-snug tracking-tight">
+             Discover timeless places for every kind of traveler.
+           </h2>
+        </div>
+
+      </motion.div>
+
     </div>
+
   );
 }

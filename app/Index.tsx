@@ -14,8 +14,6 @@ import AboutUsQuote from '@/components/Pages/Home/AboutUsQuote'
 const Destinations = dynamic(() => import('@/components/Pages/Home/Destinations'), { ssr: false })
 const Choose = dynamic(() => import('@/components/Pages/Home/Choose'), { ssr: false })
 const ShowCase = dynamic(() => import('@/components/Pages/Home/ShowCase'), { ssr: false })
-const PartnersCTA = dynamic(() => import('@/components/Pages/Home/PartnersCTA'), { ssr: false })
-const YatraCTA = dynamic(() => import('@/components/Pages/Home/YatraCTA'), { ssr: false })
 const Footer = dynamic(() => import('@/components/ui/Footer'), { ssr: false })
 const Cta = dynamic(() => import('@/components/ui/cta'), { ssr: false })
 
@@ -34,10 +32,6 @@ const Index = () => {
       <Destinations />
       <Choose />
       <ShowCase />
-      <section className="w-full max-w-[1600px] mx-auto px-4 lg:px-8 py-12 grid grid-cols-1 lg:grid-cols-2 gap-[10px]">
-        <PartnersCTA />
-        <YatraCTA />
-      </section>
       <Cta />
       <Footer />
     </div>
