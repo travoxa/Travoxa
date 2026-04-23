@@ -20,6 +20,8 @@ import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+
+
 // Register ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
 
@@ -379,7 +381,7 @@ const Choose = () => {
         </h2>
         <p className="Mont text-[22px] text-gray-600 leading-[1.6] max-w-5xl mx-auto ">
           Every trip tells a story, and we help you write yours beautifully.
-          Discover our active sections and see what’s coming soon.
+          Discover our active sections and see what's coming soon.
         </p>
       </div>
 
@@ -561,7 +563,7 @@ const Choose = () => {
         </div>
       </div>
 
-      {/* Cards Grid - Alternating big/small layout with reduced height - Hidden on Mobile */}
+
       {/* Cards Grid - Desktop Premium Bento Layout */}
       <div className="hidden lg:flex flex-col gap-[24px] max-w-6xl mx-auto">
         {rows.map((row, rowIndex) => (
@@ -601,7 +603,7 @@ const Choose = () => {
                         <feature.icon className="text-[44px] text-[#4da528]" />
                       </div>
 
-                      {/* Floating Decorative Elements representing application UI/System */}
+                      {/* Floating Decorative Elements */}
                       {isBig && (
                         <>
                           <div className="absolute top-1/2 left-[calc(50%-100px)] w-14 h-px border-t-[1.5px] border-dashed border-gray-300"></div>
@@ -678,7 +680,7 @@ const Choose = () => {
                       <div className="flex items-center gap-[4px] opacity-40">
                         <div className={`h-[3px] bg-gray-300 rounded-full ${isBig ? 'w-[20px]' : 'w-[16px]'}`}></div>
                         <div className={`h-[3px] bg-gray-300 rounded-full ${isBig ? 'w-[8px]' : 'w-[6px]'}`}></div>
-                        <div className={`h-[3px] bg-[#4da528] rounded-full ${isBig ? 'w-[4px]' : 'w-[4px]'}`}></div>
+                        <div className={`h-[3px] bg-[#4da528] rounded-full w-[4px]`}></div>
                       </div>
                     </div>
                   </div>
@@ -751,6 +753,7 @@ const Choose = () => {
           </div>
         ))}
       </div>
+
     </div>
   );
 };
