@@ -6,6 +6,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import GalleryHeader from "@/components/ui/GalleryHeader";
 import Footer from "@/components/ui/Footer";
+import Masonry from "@/components/ui/Masonry";
 
 const GalleryPage = () => {
     useEffect(() => {
@@ -156,15 +157,6 @@ const GalleryPage = () => {
         // }
     ];
 
-    // Helper to get random rotation for scrambled look
-    const getRotation = (index: number) => {
-        const rotations = ["rotate-1", "-rotate-1", "rotate-2", "-rotate-2", "rotate-0"];
-        return rotations[index % rotations.length];
-    };
-
-    const getDelay = (index: number) => {
-        return (index % 5) * 100;
-    };
 
     return (
         <div className="min-h-screen bg-white flex flex-col pt-24">
@@ -180,45 +172,22 @@ const GalleryPage = () => {
                     </p>
                 </div>
 
-                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
-                    {destinations.map((image, index) => (
-                        <div
-                            key={index}
-                            className={`break-inside-avoid overflow-hidden rounded-2xl shadow-md bg-white p-2 transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] cursor-pointer group ${getRotation(index)} hover:rotate-0`}
-                            data-aos="zoom-in"
-                            data-aos-delay={getDelay(index)}
-                        >
-                            <div className="relative overflow-hidden rounded-xl group">
-                                <Image
-                                    src={image.src}
-                                    alt={image.alt}
-                                    width={500}
-                                    height={IMAGE_HEIGHTS[index % IMAGE_HEIGHTS.length]}
-                                    className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110"
-                                    loading="lazy"
-                                />
-
-                                {/* Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 gap-2">
-
-                                    {/* Explore India tag */}
-                                    <span className="inline-block bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full self-start">
-                                        Explore India
-                                    </span>
-
-                                    {/* Name */}
-                                    <h3 className="text-white font-montserrat font-semibold text-lg md:text-xl">
-                                        {image.name}
-                                    </h3>
-
-                                    {/* Description */}
-                                    <p className="text-white font-inter text-sm md:text-base">
-                                        {image.description}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                <div className="w-full">
+                    <Masonry 
+                        items={destinations.map((d, index) => ({
+                            id: d.id.toString(),
+                            img: d.src,
+                            url: "#", // Gallery images usually don't link anywhere or open in lightbox
+                            height: IMAGE_HEIGHTS[index % IMAGE_HEIGHTS.length]
+                        }))}
+                        animateFrom="bottom"
+                        duration={0.8}
+                        stagger={0.05}
+                        scaleOnHover={true}
+                        hoverScale={0.95}
+                        blurToFocus={true}
+                        colorShiftOnHover={false}
+                    />
                 </div>
             </main>
 
