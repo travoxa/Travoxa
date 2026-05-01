@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
-import TravelJournalCard from '@/components/Discovery/TravelJournalCard';
+import StoryCard from '@/components/Discovery/StoryCard';
 import { FiPlus, FiFilter, FiSearch, FiBookOpen } from 'react-icons/fi';
 import { route } from '@/lib/route';
 import { useSession } from 'next-auth/react';
@@ -11,27 +11,27 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Image from 'next/image';
 
-const TravelJournalsPage = () => {
+const StoriesPage = () => {
     const { data: session } = useSession();
-    const [journals, setJournals] = useState<any[]>([]);
+    const [stories, setStories] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [activeFilter, setActiveFilter] = useState("All");
 
     useEffect(() => {
         AOS.init({ duration: 800, once: true });
-        fetchJournals();
+        fetchStories();
     }, []);
 
-    const fetchJournals = async () => {
+    const fetchStories = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/travel-journals`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stories`);
             const data = await res.json();
             if (data.success) {
-                setJournals(data.data);
+                setStories(data.data);
             }
         } catch (error) {
-            console.error("Failed to fetch journals:", error);
+            console.error("Failed to fetch stories:", error);
         } finally {
             setLoading(false);
         }
@@ -39,10 +39,10 @@ const TravelJournalsPage = () => {
 
     const filters = ["All", "Adventurous", "Relaxing", "Family", "Solo", "Honeymoon"];
 
-    const filteredJournals = journals.filter(j => {
-        const matchesSearch = j.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                             j.description.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = activeFilter === "All" || j.tripType === activeFilter;
+    const filteredStories = stories.filter(s => {
+        const matchesSearch = s.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                             s.description.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = activeFilter === "All" || s.tripType === activeFilter;
         return matchesSearch && matchesCategory;
     });
 
@@ -75,7 +75,7 @@ const TravelJournalsPage = () => {
                 <div className="absolute inset-0 z-0">
                     <Image
                         src="https://res.cloudinary.com/dta29uych/image/upload/v1776924313/ideogram-v3.0_A_soft_warm-toned_illustrated_landscape_of_India_in_a_minimal_modern_travel_webs-0_e3ax7k.png"
-                        alt="Travel Journals Background"
+                        alt="Stories Background"
                         fill
                         className="object-cover"
                         priority
@@ -90,7 +90,7 @@ const TravelJournalsPage = () => {
                 <div className="absolute top-[20%] right-[10%] z-20 hidden md:block animate-float" data-aos="zoom-in" data-aos-delay="400">
                     <div className="bg-white/70 backdrop-blur-xl border border-white/50 p-5 rounded-[2rem] w-48 shadow-lg">
                         <span className="text-3xl font-bold text-slate-900 mb-2 block Mont">320+</span>
-                        <h3 className="text-sm font-bold text-slate-900 mb-1 Mont">Trips Shared</h3>
+                        <h3 className="text-sm font-bold text-slate-900 mb-1 Mont">Stories Shared</h3>
                         <p className="text-[10px] text-slate-600 Inter leading-tight">
                             Join the circle of real explorers.
                         </p>
@@ -124,7 +124,7 @@ const TravelJournalsPage = () => {
                     <div className="flex flex-row gap-4 md:hidden mb-8">
                          <div className="bg-white/70 backdrop-blur-xl border border-white/50 p-4 rounded-[1.5rem] flex-1 shadow-md">
                             <span className="text-2xl font-bold text-slate-900 block Mont">320+</span>
-                            <span className="text-[10px] text-slate-500 Mont font-bold uppercase">Trips</span>
+                            <span className="text-[10px] text-slate-500 Mont font-bold uppercase">Stories</span>
                          </div>
                          <div className="bg-white/70 backdrop-blur-xl border border-white/50 p-4 rounded-[1.5rem] flex-1 shadow-md">
                             <span className="text-2xl font-bold text-slate-900 block Mont">99%</span>
@@ -135,7 +135,7 @@ const TravelJournalsPage = () => {
                     {/* Bottom Section: Search Bar & Share Button side-by-side */}
                     <div className="flex flex-col md:flex-row items-end gap-4 mt-8">
                         <div className="w-full max-w-lg" data-aos="fade-up" data-aos-delay="800">
-                            <label className="block text-slate-500 text-[9px] font-bold uppercase tracking-[0.2em] mb-3 ml-2">Discover Journals</label>
+                            <label className="block text-slate-500 text-[9px] font-bold uppercase tracking-[0.2em] mb-3 ml-2">Discover Stories</label>
                             <div className="flex flex-wrap items-center gap-3">
                                 <div className="relative group flex-1 min-w-[280px]">
                                     <FiSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-600 transition-colors" size={16} />
@@ -148,11 +148,11 @@ const TravelJournalsPage = () => {
                                     />
                                 </div>
                                 <button 
-                                    onClick={() => route('/travoxa-discovery/travel-journals/create')}
+                                    onClick={() => route('/travoxa-discovery/stories/create')}
                                     className="bg-emerald-600 text-white px-6 py-4 rounded-2xl font-bold text-xs flex items-center gap-2 hover:bg-emerald-500 transition-all shadow-[0_4px_15px_rgba(16,185,129,0.3)] active:scale-95 whitespace-nowrap"
                                     data-aos="fade-up" data-aos-delay="1000"
                                 >
-                                    <FiPlus size={18} /> SHARE JOURNEY
+                                    <FiPlus size={18} /> SHARE STORY
                                 </button>
                             </div>
                         </div>
@@ -162,7 +162,7 @@ const TravelJournalsPage = () => {
                 {/* Aesthetic Detail Box at bottom right */}
                 <div className="absolute bottom-8 right-12 text-right hidden xl:block opacity-30 pointer-events-none" data-aos="fade-in" data-aos-delay="1200">
                      <p className="text-[9px] font-bold text-slate-900 uppercase tracking-[0.4em] mb-1">Discovery Protocol</p>
-                     <p className="text-[8px] text-slate-500 Inter">CURATED EXPERIENCES / TRAVEL JOURNALS</p>
+                     <p className="text-[8px] text-slate-500 Inter">CURATED EXPERIENCES / STORIES</p>
                 </div>
             </div>
 
@@ -194,11 +194,11 @@ const TravelJournalsPage = () => {
                             <div key={i} className="h-[450px] bg-slate-100 rounded-3xl animate-pulse" />
                         ))}
                     </div>
-                ) : filteredJournals.length > 0 ? (
+                ) : filteredStories.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredJournals.map((journal, index) => (
-                            <div key={journal._id} data-aos="fade-up" data-aos-delay={index * 100}>
-                                <TravelJournalCard journal={journal} />
+                        {filteredStories.map((story, index) => (
+                            <div key={story._id} data-aos="fade-up" data-aos-delay={index * 100}>
+                                <StoryCard story={story} />
                             </div>
                         ))}
                     </div>
@@ -210,10 +210,10 @@ const TravelJournalsPage = () => {
                         <h3 className="text-2xl font-bold text-slate-900 Mont mb-2">No stories found</h3>
                         <p className="text-slate-500 Inter mb-8">Try adjusting your search or be the first to share this trip!</p>
                         <button 
-                             onClick={() => route('/travoxa-discovery/travel-journals/create')}
+                             onClick={() => route('/travoxa-discovery/stories/create')}
                              className="text-emerald-600 font-bold hover:underline flex items-center gap-2 mx-auto"
                         >
-                            <FiPlus size={18} /> Create Journal
+                            <FiPlus size={18} /> Create Story
                         </button>
                     </div>
                 )}
@@ -226,4 +226,4 @@ const TravelJournalsPage = () => {
     );
 };
 
-export default TravelJournalsPage;
+export default StoriesPage;

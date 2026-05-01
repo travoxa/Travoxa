@@ -6,30 +6,29 @@ import { FiHeart, FiBookmark, FiShare2, FiPlay, FiMapPin } from 'react-icons/fi'
 import { useSession } from 'next-auth/react';
 import { route } from '@/lib/route';
 
-interface TravelJournalCardProps {
-    journal: any;
+interface StoryCardProps {
+    story: any;
     onLike?: () => void;
     onSave?: () => void;
 }
 
-const TravelJournalCard: React.FC<TravelJournalCardProps> = ({ journal, onLike, onSave }) => {
+const StoryCard: React.FC<StoryCardProps> = ({ story, onLike, onSave }) => {
     const { data: session } = useSession();
-    const [isLiked, setIsLiked] = useState(journal.likes?.includes(session?.user?.email));
-    const [likesCount, setLikesCount] = useState(journal.likes?.length || 0);
+    const [isLiked, setIsLiked] = useState(story.likes?.includes(session?.user?.email));
+    const [likesCount, setLikesCount] = useState(story.likes?.length || 0);
 
     const handleLike = async (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!session) {
-            alert("Please login to like journals");
+            alert("Please login to like stories");
             return;
         }
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/travel-journals/${journal._id}/like`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stories/${story._id}/like`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${session.user?.email}` // Note: backend identifyUser/authenticate uses either token or origin. 
-                    // Need to check how web sends auth. Usually it's session based or token.
+                    'Authorization': `Bearer ${session.user?.email}`
                 }
             });
             const data = await res.json();
@@ -43,11 +42,11 @@ const TravelJournalCard: React.FC<TravelJournalCardProps> = ({ journal, onLike, 
     };
 
     const handleCardClick = () => {
-        route(`/travoxa-discovery/travel-journals/${journal._id}`);
+        route(`/travoxa-discovery/stories/${story._id}`);
     };
 
     // Get cover image: standalone IG thumbnail or first step image or fallback
-    const coverImage = journal.igLink ? (journal.image || '/placeholder.jpg') : (journal.steps?.[0]?.images?.[0] || '/placeholder.jpg');
+    const coverImage = story.igLink ? (story.image || '/placeholder.jpg') : (story.steps?.[0]?.images?.[0] || '/placeholder.jpg');
 
     return (
         <div 
@@ -58,7 +57,7 @@ const TravelJournalCard: React.FC<TravelJournalCardProps> = ({ journal, onLike, 
             <div className="relative h-64 w-full overflow-hidden">
                 <img 
                     src={coverImage} 
-                    alt={journal.title}
+                    alt={story.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 
@@ -67,12 +66,12 @@ const TravelJournalCard: React.FC<TravelJournalCardProps> = ({ journal, onLike, 
 
                 {/* Tags */}
                 <div className="absolute top-4 left-4 flex gap-2">
-                    {journal.tripType && (
+                    {story.tripType && (
                         <span className="px-3 py-1 bg-white/90 backdrop-blur-md text-emerald-600 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm">
-                            {journal.tripType}
+                            {story.tripType}
                         </span>
                     )}
-                    {journal.type === 'standalone_link' && (
+                    {story.type === 'standalone_link' && (
                         <span className="px-3 py-1 bg-pink-500/90 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1">
                             <FiPlay size={10} /> REEL
                         </span>
@@ -101,24 +100,24 @@ const TravelJournalCard: React.FC<TravelJournalCardProps> = ({ journal, onLike, 
                 <div className="flex items-center gap-2 mb-3">
                     <div className="relative w-6 h-6 rounded-full overflow-hidden border border-slate-200">
                         <img 
-                            src={journal.author?.image || `https://ui-avatars.com/api/?name=${journal.author?.name}&background=random`} 
-                            alt={journal.author?.name}
+                            src={story.author?.image || `https://ui-avatars.com/api/?name=${story.author?.name}&background=random`} 
+                            alt={story.author?.name}
                             className="object-cover w-full h-full"
                         />
                     </div>
-                    <span className="text-xs text-slate-500 font-medium">{journal.author?.name}</span>
+                    <span className="text-xs text-slate-500 font-medium">{story.author?.name}</span>
                     <span className="text-[10px] text-slate-300">•</span>
                     <span className="text-[10px] text-slate-400 font-medium uppercase tracking-tight">
-                        {new Date(journal.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                        {new Date(story.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                     </span>
                 </div>
 
                 <h3 className="text-lg font-bold text-slate-900 Mont mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors">
-                    {journal.title}
+                    {story.title}
                 </h3>
                 
                 <p className="text-sm text-slate-500 Inter line-clamp-2 mb-4 flex-1">
-                    {journal.description}
+                    {story.description}
                 </p>
 
                 {/* Footer Info */}
@@ -130,7 +129,7 @@ const TravelJournalCard: React.FC<TravelJournalCardProps> = ({ journal, onLike, 
                         </div>
                         <div className="flex items-center gap-1 text-slate-400">
                             <FiMapPin size={14} />
-                            <span className="text-xs font-semibold">{journal.steps?.length || 0} stops</span>
+                            <span className="text-xs font-semibold">{story.steps?.length || 0} stops</span>
                         </div>
                     </div>
                     <div className="text-emerald-600 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
@@ -142,4 +141,5 @@ const TravelJournalCard: React.FC<TravelJournalCardProps> = ({ journal, onLike, 
     );
 };
 
-export default TravelJournalCard;
+export default StoryCard;
+
