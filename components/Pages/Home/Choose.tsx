@@ -119,8 +119,8 @@ const featureData = [
   },
   {
     icon: RiBookLine,
-    title: "Travel Journal",
-    description: "Document every moment of your journey.",
+    title: "Stories",
+    description: "Share and explore real travel stories.",
     bullets: [
       "Photo memories",
       "Daily logs",

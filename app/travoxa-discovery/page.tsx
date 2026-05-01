@@ -48,9 +48,9 @@ const services = [
         link: "/travoxa-discovery/local-connect"
     },
     {
-        title: "Travel Journal",
+        title: "Stories",
         description: "Document your beautiful memories",
-        link: "/journal"
+        link: "/travoxa-discovery/stories"
     },
     {
         title: "Volunteer Yatra",

@@ -17,7 +17,7 @@ const EMPTY_FORM_DATA = {
     description: '',
     tripType: 'Adventurous',
     duration: '',
-    type: 'journal' as 'journal' | 'standalone_link',
+    type: 'story' as 'story' | 'standalone_link',
     igLink: '',
     isPublic: true,
     steps: [
@@ -30,7 +30,7 @@ const DUMMY_FORM_DATA = {
     description: 'The mountains of Spiti are not just stones; they are the guardians of history and the keepers of secrets. It was a journey of a lifetime.',
     tripType: 'Adventurous',
     duration: '7 Days',
-    type: 'journal' as 'journal' | 'standalone_link',
+    type: 'story' as 'story' | 'standalone_link',
     igLink: 'https://www.instagram.com/reels/C4p_B3LS8vN/',
     isPublic: true,
     steps: [
@@ -51,7 +51,7 @@ const DUMMY_FORM_DATA = {
     ]
 };
 
-const CreateJournalPage = () => {
+const CreateStoryPage = () => {
     const { data: session } = useSession();
     const [loading, setLoading] = useState(false);
     const [savingDraft, setSavingDraft] = useState(false);
@@ -62,7 +62,7 @@ const CreateJournalPage = () => {
 
     useEffect(() => {
         if (!session) {
-            // alert("Please login to create a journal");
+            // alert("Please login to create a story");
             // route('/login');
         }
     }, [session]);
@@ -114,7 +114,7 @@ const CreateJournalPage = () => {
         setSavingDraft(status === 'draft');
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/travel-journals`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stories`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -128,9 +128,9 @@ const CreateJournalPage = () => {
 
             const data = await res.json();
             if (data.success) {
-                alert(status === 'draft' ? "Draft saved!" : "Journal published successfully!");
+                alert(status === 'draft' ? "Draft saved!" : "Story published successfully!");
                 if (status === 'published') {
-                    route('/travoxa-discovery/travel-journals');
+                    route('/travoxa-discovery/stories');
                 }
             } else {
                 alert(data.error);
@@ -151,15 +151,16 @@ const CreateJournalPage = () => {
             <main className="max-w-4xl mx-auto px-4 py-24 sm:px-6 lg:px-12 mt-[10vh]">
                 {/* Header Section */}
                 <header className="space-y-3 text-center Mont mb-12">
-                    <p className="text-xs uppercase tracking-[0.7em] text-[var(--green)]">Journalist corner</p>
+                    <p className="text-xs uppercase tracking-[0.7em] text-[var(--green)]">Storyteller corner</p>
                     <h1 className="text-[3.5vw] font-semibold leading-tight">
-                        Share your soul-stirring journey
+                        Share your soul-stirring story
                     </h1>
                     <p className="text-base text-black/70 max-w-2xl mx-auto Inter">
                         Draft your trip experience in a story format. Our community thrives on authentic, 
                         breathtaking adventures that inspire the wanderlust in everyone.
                     </p>
                 </header>
+
 
                 {/* Main Form */}
                 <div className="space-y-8">
@@ -380,7 +381,7 @@ const CreateJournalPage = () => {
                         </div>
                         
                         <button 
-                            onClick={() => route('/travoxa-discovery/travel-journals')}
+                            onClick={() => route('/travoxa-discovery/stories')}
                             className="text-black/40 font-bold hover:text-black transition-colors flex items-center justify-center gap-2 text-sm mt-4 uppercase tracking-widest"
                         >
                             <FiChevronLeft /> Cancel and return
@@ -394,4 +395,4 @@ const CreateJournalPage = () => {
     );
 };
 
-export default CreateJournalPage;
+export default CreateStoryPage;
