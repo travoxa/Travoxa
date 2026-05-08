@@ -13,9 +13,11 @@ const TimelineStep: React.FC<TimelineStepProps> = ({ step, index, isLast }) => {
     const isEven = index % 2 === 0;
 
     return (
-        <div className={`relative flex items-center justify-between mb-12 md:mb-24 w-full ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
+        <div className={`relative flex items-center justify-between ${isLast ? 'mb-0' : 'mb-12 md:mb-24'} w-full ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
             {/* Center Line & Dot */}
-            <div className="absolute left-[20px] md:left-1/2 top-4 md:top-1/2 h-full w-[2px] bg-slate-100 -translate-x-1/2 z-0 hidden md:block" />
+            {!isLast && (
+                <div className="absolute left-[20px] md:left-1/2 top-4 md:top-8 h-[calc(100%+3rem)] md:h-[calc(100%+6rem)] w-[2px] bg-slate-100 -translate-x-1/2 z-0" />
+            )}
             <div className="absolute left-[20px] md:left-1/2 top-4 md:top-8 w-10 h-10 -translate-x-1/2 z-10 flex items-center justify-center">
                 <div className="w-full h-full bg-white rounded-full border-4 border-emerald-500 shadow-lg flex items-center justify-center text-emerald-600 font-bold text-sm">
                     {index + 1}
@@ -100,8 +102,7 @@ const Timeline: React.FC<{ steps: any[] }> = ({ steps }) => {
 
     return (
         <div className="relative py-12">
-            {/* The line for all viewports (on desktop it's centered, on mobile it's on the left) */}
-            <div className="absolute left-[20px] md:left-1/2 top-4 bottom-4 w-[2px] bg-slate-100 md:-translate-x-1/2 z-0" />
+            {/* Lines are now handled per-step in TimelineStep to ensure they stop at the final milestone */}
             
             <div className="relative z-10 space-y-4">
                 {steps.map((step, index) => (

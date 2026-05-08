@@ -645,8 +645,34 @@ export default function AddStayClient({
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image URL</label>
-                            <input type="text" required value={formData.coverImage} onChange={e => setFormData({ ...formData, coverImage: e.target.value })} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="https://..." />
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
+                            <div className="flex items-center gap-4 bg-white p-3 rounded-lg border border-gray-100">
+                                <div className="w-24 h-24 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                                    {formData.coverImage ? (
+                                        <img src={formData.coverImage} alt="Cover" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-[10px] text-gray-400 uppercase font-bold text-center px-1">No Image</span>
+                                    )}
+                                </div>
+                                <div className="flex-1">
+                                    <CldUploadWidget
+                                        uploadPreset="travoxa"
+                                        onSuccess={(result: any) => {
+                                            setFormData({ ...formData, coverImage: result.info.secure_url });
+                                        }}
+                                    >
+                                        {({ open }) => (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => { e.preventDefault(); open(); }}
+                                                className="px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm font-bold hover:bg-gray-100 transition-colors flex items-center gap-2"
+                                            >
+                                                <RiAddLine /> {formData.coverImage ? 'Change Image' : 'Upload Image'}
+                                            </button>
+                                        )}
+                                    </CldUploadWidget>
+                                </div>
+                            </div>
                         </div>
 
                         <div>
