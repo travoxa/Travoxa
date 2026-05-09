@@ -29,7 +29,7 @@ export async function loginAction(prevState: any, formData: FormData) {
         if (isValid) sessionValue = 'admin';
     } else {
         // 2. Check if it's a team member
-        const member = await TeamMember.findOne({ username: loginId });
+        const member = await TeamMember.findOne({ username: loginId.toString() });
         if (member && member.password) {
             isValid = await bcrypt.compare(password.toString(), member.password);
             if (isValid) sessionValue = member._id.toString();
