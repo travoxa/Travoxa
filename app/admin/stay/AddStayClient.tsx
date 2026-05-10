@@ -656,7 +656,7 @@ export default function AddStayClient({
                                 </div>
                                 <div className="flex-1">
                                     <CldUploadWidget
-                                        uploadPreset="travoxa"
+                                        uploadPreset="travoxa_tours"
                                         onSuccess={(result: any) => {
                                             setFormData({ ...formData, coverImage: result.info.secure_url });
                                         }}
@@ -749,7 +749,7 @@ export default function AddStayClient({
                                                             )}
                                                         </div>
                                                         <CldUploadWidget
-                                                            uploadPreset="travoxa"
+                                                            uploadPreset="travoxa_tours"
                                                             onSuccess={(result: any) => {
                                                                 updatePartner(idx, 'logo', result.info.secure_url);
                                                             }}
