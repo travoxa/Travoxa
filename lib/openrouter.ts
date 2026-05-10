@@ -8,7 +8,7 @@ if (!apiKey) {
 
 export const openrouter = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
-    apiKey: apiKey || "",
+    apiKey: apiKey || "dummy-key-for-build",
 });
 
 export const MODEL_NAME = "google/gemini-2.0-flash-lite-preview-02-05:free";
