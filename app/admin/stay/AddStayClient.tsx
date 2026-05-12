@@ -676,6 +676,55 @@ export default function AddStayClient({
                         </div>
 
                         <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-3">Media Gallery (Images & Videos)</label>
+
+                            <CldUploadWidget
+                                uploadPreset="travoxa_tours"
+                                options={{ multiple: true, resourceType: "auto" }}
+                                onSuccess={(result: any) => {
+                                    if (result.event === 'success') {
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            images: [...prev.images, result.info.secure_url]
+                                        }));
+                                    }
+                                }}
+                            >
+                                {({ open }) => (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.preventDefault(); open(); }}
+                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs font-light mb-4"
+                                    >
+                                        + Upload Media
+                                    </button>
+                                )}
+                            </CldUploadWidget>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {formData.images.map((mediaUrl, idx) => {
+                                    const isVideo = mediaUrl.endsWith('.mp4') || mediaUrl.endsWith('.mov') || mediaUrl.endsWith('.webm') || mediaUrl.includes('/video/upload/');
+                                    return (
+                                        <div key={idx} className="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                                            {isVideo ? (
+                                                <video src={mediaUrl} className="w-full h-full object-cover" muted loop playsInline />
+                                            ) : (
+                                                <img src={mediaUrl} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }))}
+                                                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <RiDeleteBinLine size={14} />
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Overview</label>
                             <textarea required value={formData.overview} onChange={e => setFormData({ ...formData, overview: e.target.value })} rows={4} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="Describe the stay..." />
                         </div>
